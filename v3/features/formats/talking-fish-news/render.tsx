@@ -35,6 +35,9 @@ export function TalkingFishNewsRenderer({
   const speechSegment = scene.layout.speechSegments.find((segment) => (
     timeMs >= segment.startMs && timeMs < segment.endMs
   ));
+  const caption = scene.audio.captions.find((item) => (
+    timeMs >= item.startMs && timeMs < item.endMs
+  ));
   const mouthOpen = speechSegment
     ? Math.floor((timeMs - speechSegment.startMs) / 150) % 2 === 0
     : false;
@@ -169,7 +172,7 @@ export function TalkingFishNewsRenderer({
             textShadow: "0 0.48cqw 0.32cqw rgba(54,19,28,0.78)",
           }}
         >
-          {beat.caption}
+          {caption?.text ?? ""}
         </div>
       </section>
     </div>

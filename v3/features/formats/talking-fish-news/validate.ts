@@ -39,15 +39,28 @@ export function validateTalkingFishNewsScene(scene: TalkingFishNewsProofScene): 
   if (scene.backgroundMusic) errors.push("Talking Fish News proof cannot use a music bed.");
   if (scene.audio.status !== "generated" || !scene.audio.url) {
     errors.push("Talking Fish News narration is missing.");
+  } else {
+    const captionText = scene.audio.captions.map((caption) => caption.text).join(" ");
+    if (captionText !== scene.audio.transcript) {
+      errors.push("Talking Fish News captions must match the narration exactly.");
+    }
+    if (
+      scene.audio.captions.length === 0
+      || scene.audio.captions.some((caption) => (
+        wordCount(caption.text) > 7
+        || caption.startMs < 0
+        || caption.endMs <= caption.startMs
+        || caption.endMs > durationMs
+      ))
+    ) {
+      errors.push("Talking Fish News caption timing is invalid.");
+    }
   }
 
   let previousEnd = 0;
   for (const [index, beat] of scene.layout.beats.entries()) {
     if (!beat.line.trim()) errors.push(`Talking Fish News beat ${index + 1} line is missing.`);
     if (!beat.proofSrc.trim()) errors.push(`Talking Fish News beat ${index + 1} proof is missing.`);
-    if (wordCount(beat.caption) < 2 || wordCount(beat.caption) > 7) {
-      errors.push(`Talking Fish News beat ${index + 1} caption must be 2-7 words.`);
-    }
     if (!Number.isFinite(beat.startMs) || !Number.isFinite(beat.endMs) || beat.startMs < previousEnd || beat.endMs <= beat.startMs) {
       errors.push(`Talking Fish News beat ${index + 1} timing is invalid.`);
     }

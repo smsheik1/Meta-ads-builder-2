@@ -583,7 +583,6 @@ export type StaticPackageAdScene = AdSceneBase<
 
 export type TalkingFishNewsBeat = {
   line: string;
-  caption: string;
   proofSrc: string;
   startMs: number;
   endMs: number;

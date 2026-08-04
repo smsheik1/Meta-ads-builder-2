@@ -21,9 +21,12 @@ assert.equal(talkingFishNewsProofScene.backgroundMusic, undefined);
 assert.equal(getFormatModule("talking-fish-news").id, "talking-fish-news");
 
 for (const beat of talkingFishNewsProofScene.layout.beats) {
-  assert.ok(wordCount(beat.caption) >= 2 && wordCount(beat.caption) <= 7);
   assert.ok(beat.proofSrc.startsWith("/talking-fish-news-assets/mars-"));
 }
+assert.equal(
+  talkingFishNewsProofScene.audio.captions.map((caption) => caption.text).join(" "),
+  talkingFishNewsProofScript,
+);
 
 const closedMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: talkingFishNewsProofScene,
@@ -46,7 +49,8 @@ assert.ok(closedMouthHtml.includes('data-talking-fish-news-caption="true"'));
 assert.ok(closedMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
 assert.ok(openMouthHtml.includes('data-talking-fish-news-mouth="open"'));
 assert.ok(silentMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
-assert.ok(closedMouthHtml.includes("Tiny polygons. Entire valley."));
+assert.ok(closedMouthHtml.includes("Each polygon is only"));
+assert.equal(closedMouthHtml.includes("Tiny polygons. Entire valley."), false);
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
 assert.ok(closedMouthHtml.includes("translateY(6cqw)"));

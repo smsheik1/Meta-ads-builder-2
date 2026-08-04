@@ -42,6 +42,7 @@ used.
 - The supplied suited fish anchor fills the lower half behind a plain desk.
 - Talking uses exactly two aligned fixed sprites: one open mouth and one closed mouth.
 - The renderer closes the mouth during WAV-detected pauses and swaps the two sprites during speech; it does not generate lip sync or morph the character.
+- Captions use the exact narration words and their own audio timing; visual evidence changes independently.
 - White captions with a coral outline sit directly over the anchor.
 - No station header, generic report pill, or dark lower-third box.
 - Narration uses Fish Audio voice `105a95c3aa3d4301b175ca1f7b3996ca` on `s2.1-pro-free`.
