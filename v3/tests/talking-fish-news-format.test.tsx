@@ -25,19 +25,27 @@ for (const beat of talkingFishNewsProofScene.layout.beats) {
   assert.ok(beat.proofSrc.startsWith("/talking-fish-news-assets/mars-"));
 }
 
-const html = renderToStaticMarkup(createElement(AdRenderSurface, {
+const closedMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: talkingFishNewsProofScene,
   mode: "video",
-  timeSeconds: 8,
+  timeSeconds: 7.5,
 }));
-assert.ok(html.includes('data-render-surface="ad"'));
-assert.ok(html.includes('data-format="talking-fish-news"'));
-assert.ok(html.includes('data-talking-fish-news-caption="true"'));
-assert.ok(html.includes("Tiny polygons. Entire valley."));
-assert.ok(html.includes("fixed-fish-anchor-suited.png"));
-assert.ok(html.includes("mars-polygons-closeup.png"));
-assert.equal(html.includes("THE DAILY CURRENT"), false);
-assert.equal(html.includes("REPORT"), false);
+const openMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: talkingFishNewsProofScene,
+  mode: "video",
+  timeSeconds: 7.65,
+}));
+assert.ok(closedMouthHtml.includes('data-render-surface="ad"'));
+assert.ok(closedMouthHtml.includes('data-format="talking-fish-news"'));
+assert.ok(closedMouthHtml.includes('data-talking-fish-news-caption="true"'));
+assert.ok(closedMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
+assert.ok(openMouthHtml.includes('data-talking-fish-news-mouth="open"'));
+assert.ok(closedMouthHtml.includes("Tiny polygons. Entire valley."));
+assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
+assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
+assert.ok(closedMouthHtml.includes("mars-polygons-closeup.png"));
+assert.equal(closedMouthHtml.includes("THE DAILY CURRENT"), false);
+assert.equal(closedMouthHtml.includes("REPORT"), false);
 
 const invalid = validateTalkingFishNewsScene({
   ...talkingFishNewsProofScene,

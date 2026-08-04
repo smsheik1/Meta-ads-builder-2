@@ -596,7 +596,8 @@ export type TalkingFishNewsProofScene = AdSceneBase<
     preset: "talking-fish-news-report";
     durationMs: number;
     stationName: string;
-    anchorImageSrc: string;
+    anchorOpenImageSrc: string;
+    anchorClosedImageSrc: string;
     linkText: string;
     beats: [
       TalkingFishNewsBeat,

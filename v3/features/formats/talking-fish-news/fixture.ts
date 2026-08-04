@@ -73,7 +73,8 @@ export const talkingFishNewsProofScene: TalkingFishNewsProofScene = {
     preset: "talking-fish-news-report",
     durationMs: 18504,
     stationName: "Breaking News",
-    anchorImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-suited.png",
+    anchorOpenImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-open.png",
+    anchorClosedImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-closed.png",
     linkText: "nasa.gov",
     beats: [
       {

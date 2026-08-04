@@ -40,10 +40,17 @@ used.
 
 - Evidence fills the upper half of the vertical frame.
 - The supplied suited fish anchor fills the lower half behind a plain desk.
+- Talking uses exactly two aligned fixed sprites: one open mouth and one closed mouth.
+- The renderer swaps the two sprites during narration; it does not generate lip sync or morph the character.
 - White captions with a coral outline sit directly over the anchor.
 - No station header, generic report pill, or dark lower-third box.
 - Narration uses Fish Audio voice `105a95c3aa3d4301b175ca1f7b3996ca` on `s2.1-pro-free`.
 - No image-generation or video-generation call.
+
+The two proof-only anchor poses were extracted from the public
+[CreatorSet green-screen preview](https://shop.creatorset.com/products/spongebob-realistic-fish-head-green-screen),
+whose listing limits the download to personal use. They are not cleared as a
+commercial asset for a public Format kit.
 
 ## Local Proof Gate
 

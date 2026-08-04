@@ -31,6 +31,17 @@ export function TalkingFishNewsRenderer({
   const fadeIn = Math.min(1, elapsedMs / 220);
   const fadeOut = Math.min(1, remainingMs / 220);
   const proofOpacity = Math.min(fadeIn, fadeOut);
+  const mouthOpen = timeSeconds * 1000 < scene.layout.durationMs
+    && Math.floor((timeSeconds * 1000) / 150) % 2 === 1;
+
+  const anchorStyle: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    filter: "drop-shadow(0 1.2cqw 1.8cqw rgba(0,0,0,0.26))",
+  };
 
   return (
     <div data-format="talking-fish-news" data-talking-fish-news-beat={activeIndex + 1} style={rootStyle}>
@@ -109,18 +120,18 @@ export function TalkingFishNewsRenderer({
             opacity: 1,
           }}
         />
-        <Image
-          alt="Fixed fish anchor"
-          src={scene.layout.anchorImageSrc}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            filter: "drop-shadow(0 1.2cqw 1.8cqw rgba(0,0,0,0.26))",
-          }}
-        />
+        <div data-talking-fish-news-mouth={mouthOpen ? "open" : "closed"}>
+          <Image
+            alt="Fish anchor, mouth closed"
+            src={scene.layout.anchorClosedImageSrc}
+            style={{ ...anchorStyle, opacity: mouthOpen ? 0 : 1 }}
+          />
+          <Image
+            alt="Fish anchor, mouth open"
+            src={scene.layout.anchorOpenImageSrc}
+            style={{ ...anchorStyle, opacity: mouthOpen ? 1 : 0 }}
+          />
+        </div>
         <div
           aria-hidden="true"
           style={{

@@ -20,7 +20,8 @@ export function validateTalkingFishNewsScene(scene: TalkingFishNewsProofScene): 
   if (wordCount(script) < 38 || wordCount(script) > 60) {
     errors.push("Talking Fish News script must be 38-60 words.");
   }
-  if (!scene.layout.anchorImageSrc.trim()) errors.push("Talking Fish News fixed anchor image is missing.");
+  if (!scene.layout.anchorOpenImageSrc.trim()) errors.push("Talking Fish News open-mouth anchor image is missing.");
+  if (!scene.layout.anchorClosedImageSrc.trim()) errors.push("Talking Fish News closed-mouth anchor image is missing.");
   if (!scene.layout.stationName.trim()) errors.push("Talking Fish News station name is missing.");
   if (!scene.layout.linkText.trim()) errors.push("Talking Fish News final link is missing.");
   if (scene.backgroundMusic) errors.push("Talking Fish News proof cannot use a music bed.");
