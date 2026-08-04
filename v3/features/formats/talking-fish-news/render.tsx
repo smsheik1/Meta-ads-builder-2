@@ -48,7 +48,7 @@ export function TalkingFishNewsRenderer({
     width: "100%",
     height: "100%",
     objectFit: "contain",
-    transform: "translateY(6cqw)",
+    transform: "translateY(13cqw)",
     filter: "drop-shadow(0 1.2cqw 1.8cqw rgba(0,0,0,0.26))",
   };
 

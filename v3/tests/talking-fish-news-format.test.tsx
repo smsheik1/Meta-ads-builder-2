@@ -54,7 +54,7 @@ assert.ok(closedMouthHtml.includes("Each polygon is only"));
 assert.equal(closedMouthHtml.includes("Tiny polygons. Entire valley."), false);
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
-assert.ok(closedMouthHtml.includes("translateY(6cqw)"));
+assert.ok(closedMouthHtml.includes("translateY(13cqw)"));
 assert.ok(closedMouthHtml.includes("mars-polygons-closeup.png"));
 assert.ok(closedMouthHtml.includes("Framed evidence screen"));
 assert.equal(closedMouthHtml.includes("height:50%"), false);
