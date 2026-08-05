@@ -53,7 +53,7 @@ try {
   const files = await listFiles(staged);
   await writeFile(path.join(staged, "KIT-MANIFEST.json"), `${JSON.stringify({
     kit: kitName,
-    formatVersion: "0.2.0-proof",
+    formatVersion: "0.2.1-proof",
     builtAt: new Date().toISOString(),
     excluded: ["secrets", "node_modules", "agent run caches", "download artifacts"],
     files,

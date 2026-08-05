@@ -1,11 +1,11 @@
 {
   "status": "pass",
-  "inspectedAt": "2026-08-05T02:48:00.910Z",
+  "inspectedAt": "2026-08-05T03:53:38.048Z",
   "attempt": 1,
-  "contentHash": "e4a55060d266b4152a0fd0fd8f6d8711c63c1a0f4725366798153441139a0a93",
-  "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
+  "contentHash": "c96df7bd469b48874b64d2a7a59a0e7319011f94fed8601db3196cf59b608030",
+  "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
   "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
-  "videoHash": "75bdafa54f867ed1ce4e62de955f84b96b083c39384b89561aeea7265fcd138d",
+  "videoHash": "4225ac87c1d6db293579502c2ffe5b660a6351aa8b74e16b471060f7e80657db",
   "video": "review.mp4",
   "contactSheet": "contact-sheet.png",
   "probe": {
@@ -31,8 +31,8 @@
     ],
     "format": {
       "duration": "30.000000",
-      "size": "2585832",
-      "bit_rate": "689555"
+      "size": "2677371",
+      "bit_rate": "713965"
     }
   },
   "silences": [

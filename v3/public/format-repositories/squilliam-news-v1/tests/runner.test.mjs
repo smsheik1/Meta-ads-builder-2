@@ -69,7 +69,16 @@ test("character catalog exposes only verified rigs as production presenters", as
   for (const pack of catalog.packs.filter((candidate) => candidate.status === "presenter-ready")) {
     assert.equal(pack.format, "collada");
     assert.ok(pack.rig?.leftArm && pack.rig?.rightArm && pack.rig?.mouth && pack.rig?.blink);
-    await access(path.join(root, pack.model));
+    assert.ok(["none", "lids"].includes(pack.rig.blink.mode), `${pack.id} uses an unverified blink mode`);
+    if (pack.rig.blink.mode === "none") {
+      assert.match(pack.rig.blink.reason, /pupils/);
+    }
+    assert.ok(pack.transparentTextures?.length, `${pack.id} has no transparent face textures`);
+    assert.ok(pack.transparentMaterials?.length, `${pack.id} has no stable transparent material mapping`);
+    const model = await readFile(path.join(root, pack.model), "utf8");
+    for (const material of pack.transparentMaterials) {
+      assert.match(model, new RegExp(`name=["']${material.replace(".", "\\.")}["']`), `${pack.id} is missing ${material}`);
+    }
   }
   for (const relative of await runtimeFilesUnder("assets/characters")) {
     assert.ok(documentedAssets.has(relative), `undocumented character asset: ${relative}`);
@@ -96,6 +105,8 @@ test("renderer contains no We The Artists proof facts", async () => {
   for (const forbidden of ["We The Artists", "Bicentennial", "Gainbridge", "Eventbrite", "Indianapolis talent", "Wiggly Format Lab", "Goo Lagoon"]) {
     assert.equal(renderer.includes(forbidden), false, `renderer leaked proof content: ${forbidden}`);
   }
+  assert.match(renderer, /transparentMaterials\?\.includes\(source\.name\)/);
+  assert.equal(renderer.includes("depthWrite: !isTransparentOverlay"), false);
 });
 
 test("the two promotional proofs use one runtime but different content and outputs", async () => {
@@ -121,8 +132,8 @@ test("the two promotional proofs use one runtime but different content and outpu
   }
 });
 
-test("the current blind handoff used only the package and stopped at human review", async () => {
-  const evidenceRoot = path.join(root, "evidence", "blind-handoff", "v0.2");
+test("the eye-regressed blind handoff is archived and cannot authorize the current runtime", async () => {
+  const evidenceRoot = path.join(root, "evidence", "blind-handoff", "history", "v0.2.0-broken-eyes");
   const receipt = JSON.parse(await readFile(path.join(evidenceRoot, "handoff-receipt.json"), "utf8"));
   const report = JSON.parse(await readFile(path.join(evidenceRoot, "quality-report.json"), "utf8"));
   const state = JSON.parse(await readFile(path.join(evidenceRoot, "state.json"), "utf8"));
@@ -133,14 +144,14 @@ test("the current blind handoff used only the package and stopped at human revie
   assert.equal(receipt.finalizeRan, false);
   assert.equal(receipt.humanReviewRequired, true);
   assert.equal(report.status, "pass");
-  assert.equal(report.runtimeHash, await currentRuntimeHash());
+  assert.notEqual(report.runtimeHash, await currentRuntimeHash());
   assert.equal(report.videoHash, receipt.videoSha256);
   assert.equal(state.attempts.length, 1);
   assert.equal(state.attempts[0].providerCall, undefined);
-  const packagedVideo = await readFile(path.resolve(evidenceRoot, receipt.packagedEquivalentVideo));
-  assert.equal(createHash("sha256").update(packagedVideo).digest("hex"), receipt.videoSha256);
+  const correctedVideo = await readFile(path.join(root, "examples", "we-the-artists", "evidence", "review.mp4"));
+  assert.notEqual(createHash("sha256").update(correctedVideo).digest("hex"), receipt.videoSha256);
   const renderer = await readFile(path.join(root, "runtime", "renderer", "app.js"));
-  assert.equal(createHash("sha256").update(renderer).digest("hex"), receipt.rendererAppSha256After);
+  assert.notEqual(createHash("sha256").update(renderer).digest("hex"), receipt.rendererAppSha256After);
 });
 
 test("validation rejects content outside the contract", async () => {

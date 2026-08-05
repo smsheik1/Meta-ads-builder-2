@@ -153,7 +153,7 @@ async function validateDirectory(baseDirectory, writeReceipt = true) {
     if (content[field] === undefined) errors.push(`Missing content.${field}.`);
   }
   if (content.schemaVersion !== 1) errors.push("content.schemaVersion must be 1.");
-  if (content.formatVersion !== "0.2.0-proof") errors.push("content.formatVersion must be 0.2.0-proof.");
+  if (content.formatVersion !== "0.2.1-proof") errors.push("content.formatVersion must be 0.2.1-proof.");
   const characterPack = characterCatalog.packs.find((pack) => pack.id === content.characterId);
   if (!characterPack) errors.push(`Unknown characterId: ${content.characterId}`);
   else if (characterPack.status !== "presenter-ready") {
@@ -519,7 +519,7 @@ async function commandFinalize() {
   const finalization = {
     status: "pass",
     finalizedAt: new Date().toISOString(),
-    formatVersion: "0.2.0-proof",
+    formatVersion: "0.2.1-proof",
     contentHash: receipt.contentHash,
     runtimeHash: currentRuntimeHash,
     audioHash: report.audioHash,

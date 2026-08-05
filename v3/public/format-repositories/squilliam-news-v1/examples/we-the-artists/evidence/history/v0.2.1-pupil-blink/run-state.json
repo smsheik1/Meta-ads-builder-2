@@ -1,0 +1,23 @@
+{
+  "runId": "v021-we-the-artists",
+  "createdAt": "2026-08-05T03:31:39.884Z",
+  "source": "we-the-artists",
+  "attempts": [
+    {
+      "number": 1,
+      "status": "rendered",
+      "startedAt": "2026-08-05T03:31:59.495Z",
+      "contentHash": "c96df7bd469b48874b64d2a7a59a0e7319011f94fed8601db3196cf59b608030",
+      "audio": {
+        "sourceDuration": 30,
+        "finalDuration": 30,
+        "tempo": "anull"
+      },
+      "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+      "completedAt": "2026-08-05T03:34:32.236Z",
+      "video": "attempts/attempt-01/video.mp4",
+      "videoHash": "966b601ebc40e1fed8724fdcb7c843fb027c56d950eb8e4dabafe54d9757dcd8"
+    }
+  ],
+  "currentAttempt": 1
+}

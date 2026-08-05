@@ -39,7 +39,23 @@
       "friction": "The historical blind agent had to infer dependency installation and host-viewer use; the v0.2 blind agent then found the Mac GUI locked while inspecting the actual video.",
       "rootCause": "The ordered loop initially omitted facts that appeared only in README, and host GUI availability cannot be assumed in an agent environment.",
       "smallestFix": "Put npm install before smoke, name the host viewer at the point of use, allow packaged Playwright plus installed Chrome as an actual-MP4 playback fallback, and clarify that Fish variables are optional when approved audio ships with an example.",
-      "evidence": "The v0.2 archive-only run completed smoke, validation, attempt-one rendering, automatic inspection, and actual-video playback with zero provider calls and stopped at the human gate; receipts are preserved under evidence/blind-handoff/v0.2."
+      "evidence": "The v0.2.0 archive-only run completed the operational loop with zero provider calls but later failed human creative review; receipts are preserved under evidence/blind-handoff/history/v0.2.0-broken-eyes."
+    },
+    {
+      "status": "proven",
+      "scope": "covered by existing Wiggly rules 7 and 8; implementation fix is format-specific",
+      "friction": "The user found Squilliam's eyes missing after v0.2.0 automatic inspection, agent visual review, and blind playback had all been reported as passing.",
+      "rootCause": "The character-pack renderer classified alpha-cutout facial textures by browser-resolved image URL, which was not a stable model contract. The resulting opaque cutout background hid eye art, while the quality gates checked media integrity and body framing but not character identity details.",
+      "smallestFix": "Declare stable transparent material names per Collada character, alpha-test those materials with normal depth writes, assert every mapping exists in the model, archive all affected proof evidence, and require renewed human review after rerendering.",
+      "evidence": "Broken v0.2.0 contact sheets are archived under evidence/character-packs/history/v0.2.0-broken-eyes. Corrected v0.2.1 smoke sheets show eye art on all four presenters."
+    },
+    {
+      "status": "proven",
+      "scope": "format-specific",
+      "friction": "After the facial cutouts were restored, close playback review showed Squilliam's supposed blink removed only the red pupils while the yellow eye fields stayed open.",
+      "rootCause": "The source Collada eye-scale joints influence the pupil overlay, not an eyelid or the entire eye, so treating those joints as blink controls created a disappearing-pupil gesture.",
+      "smallestFix": "Mark pupil-only scale rigs as non-blinking and animate blinks only for characters with verified lid controls. Preserve the full eye art continuously instead of inventing a broken blink.",
+      "evidence": "The pupil-blink proof is archived under examples/we-the-artists/evidence/history/v0.2.1-pupil-blink. Current Squilliam and Squidward smoke sheets retain yellow eyes and red pupils in every sample; both full proofs share runtime hash 6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538."
     },
     {
       "status": "proven",
@@ -50,5 +66,5 @@
       "evidence": "Squilliam, Squidward, SpongeBob, and Mr. Krabs pass hashed smoke evidence under evidence/character-packs; CHARACTER-AUDIT.md records six exclusions."
     }
   ],
-  "sharedStandardChange": "None. The cross-Format lessons are already represented by proven Wiggly rules 6, 7, and 9; the remaining fixes are specific to this video Format."
+  "sharedStandardChange": "None. Human rejection of an automatically valid file directly reinforces existing rules 7 and 8; stable Collada material mapping is specific to this video Format."
 }

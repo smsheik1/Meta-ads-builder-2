@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "formatVersion": "0.2.0-proof",
+  "formatVersion": "0.2.1-proof",
   "source": "Audio recovered locally from the historical v0.1 review output produced by the recorded Fish Audio job.",
   "sourceAudio": "audio.wav",
   "sourceAudioSha256": "1ec21b8276bc0797371a001bac30a1e5f1a8f7f54f292ce50a56c8426182603b",

@@ -394,7 +394,9 @@ character.traverse((object) => {
     const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
     const materials = sourceMaterials.map((source) => {
       const textureSource = source.map?.image?.currentSrc || source.map?.image?.src || "";
-      const isTransparentOverlay = characterPack.transparentTextures?.some((filename) => textureSource.endsWith(filename));
+      const texturePath = textureSource.split(/[?#]/, 1)[0];
+      const isTransparentOverlay = characterPack.transparentMaterials?.includes(source.name)
+        || characterPack.transparentTextures?.some((filename) => texturePath.endsWith(filename));
       if (source.map) {
         characterTextures.add(source.map);
         source.map.magFilter = THREE.NearestFilter;
@@ -407,7 +409,6 @@ character.traverse((object) => {
         side: THREE.DoubleSide,
         transparent: isTransparentOverlay,
         alphaTest: isTransparentOverlay ? 0.08 : 0,
-        depthWrite: !isTransparentOverlay,
         toneMapped: false,
       });
     });
