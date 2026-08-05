@@ -43,7 +43,7 @@ for (const relative of [
   "goldens/nasa-curiosity.mp4",
 ]) assert.equal(existsSync(path.join(root, relative)), true, `${relative} is missing.`);
 
-for (const fixtureName of ["nasa-curiosity.json", "nasa-wandering-black-hole.json"]) {
+for (const fixtureName of ["nasa-curiosity.json"]) {
   const fixture = readJson<Fixture>(`fixtures/${fixtureName}`);
   const conceptErrors = validateTalkingFishNewsConcepts(fixture.concepts, fixture.selection, fixture.research);
   assert.deepEqual(conceptErrors, [], `${fixtureName}: ${conceptErrors.join(" ")}`);
@@ -52,9 +52,25 @@ for (const fixtureName of ["nasa-curiosity.json", "nasa-wandering-black-hole.jso
   assert.deepEqual(scriptErrors, [], `${fixtureName}: ${scriptErrors.join(" ")}`);
   assert.equal(fixture.concepts.concepts.length, 5);
   assert.equal(concept.assetIds.length, 4);
+  assert.equal(concept.storyMoves.length, 4);
   assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /exactly five concepts/i);
+  assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /setup, escalation, reveal, payoff/i);
+  assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /shuffle test/i);
+  assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /fact stacking/i);
   assert.match(buildTalkingFishNewsScriptPrompt({ concept, research: fixture.research }), /38-60 words/);
+  const scriptPrompt = buildTalkingFishNewsScriptPrompt({ concept, research: fixture.research });
+  for (const storyStage of ["beginning", "escalation", "reveal", "ending"]) {
+    assert.match(scriptPrompt, new RegExp(storyStage, "i"));
+  }
+  assert.match(scriptPrompt, /removal test/i);
 }
+
+const rejectedVisualFixture = readJson<Fixture>("fixtures/nasa-wandering-black-hole.json");
+assert.ok(validateTalkingFishNewsConcepts(
+  rejectedVisualFixture.concepts,
+  rejectedVisualFixture.selection,
+  rejectedVisualFixture.research,
+).some((error) => error.includes("phone-size readability")));
 
 const mars = readJson<Fixture & { audio: { captions: Array<{ text: string; startMs: number; endMs: number }> } }>(
   "fixtures/nasa-curiosity.json",
@@ -76,6 +92,22 @@ assert.ok(validateTalkingFishNewsConcepts(
   mars.selection,
   mars.research,
 ).some((error) => error.includes("Exactly five concepts")));
+
+const flatConcepts = structuredClone(mars.concepts);
+flatConcepts.concepts[0].storyMoves = [] as unknown as [string, string, string, string];
+assert.ok(validateTalkingFishNewsConcepts(
+  flatConcepts,
+  mars.selection,
+  mars.research,
+).some((error) => error.includes("four clear story moves")));
+
+const duplicatedAssetResearch = structuredClone(mars.research);
+duplicatedAssetResearch.visualAssets[1].src = duplicatedAssetResearch.visualAssets[0].src;
+assert.ok(validateTalkingFishNewsConcepts(
+  mars.concepts,
+  mars.selection,
+  duplicatedAssetResearch,
+).some((error) => error.includes("distinct local image files")));
 
 const invalidScript = structuredClone(mars.script);
 invalidScript.beats[3] = "Visit a website now.";

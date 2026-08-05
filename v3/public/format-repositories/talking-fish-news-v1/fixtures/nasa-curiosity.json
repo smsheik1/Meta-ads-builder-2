@@ -24,21 +24,27 @@
         "src": "/talking-fish-news-assets/mars-polygons-panorama.jpg",
         "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
         "description": "Wide Curiosity panorama of Valle Grande",
-        "credit": "NASA/JPL-Caltech/MSSS"
+        "credit": "NASA/JPL-Caltech/MSSS",
+        "focalSubject": "A wide Martian valley covered in visible polygon textures",
+        "phoneReadable": true
       },
       {
         "id": "closeup",
         "src": "/talking-fish-news-assets/mars-polygons-closeup.png",
         "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
         "description": "Close crop of the polygon textures",
-        "credit": "NASA/JPL-Caltech/MSSS"
+        "credit": "NASA/JPL-Caltech/MSSS",
+        "focalSubject": "Large honeycomb-shaped cracks filling the frame",
+        "phoneReadable": true
       },
       {
         "id": "butte",
         "src": "/talking-fish-news-assets/mars-miraflores-butte.png",
         "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
         "description": "Curiosity view near Miraflores Butte",
-        "credit": "NASA/JPL-Caltech/MSSS"
+        "credit": "NASA/JPL-Caltech/MSSS",
+        "focalSubject": "A prominent Martian butte above the rover terrain",
+        "phoneReadable": true
       }
     ]
   },
@@ -50,7 +56,13 @@
         "premise": "Curiosity found a valley covered in tiny polygons with more than one possible origin.",
         "whyItWorks": "A huge alien valley is reduced to a familiar floor pattern.",
         "punchline": "Mars has officially entered its floor-tile era.",
-        "assetIds": ["panorama", "closeup", "closeup", "butte"]
+        "assetIds": ["panorama", "closeup", "closeup", "butte"],
+        "storyMoves": [
+          "Reveal the huge valley covered in an unexpected repeating pattern.",
+          "Escalate by showing that every tile is only inches wide.",
+          "Reveal two possible water-driven origins for the same visible pattern.",
+          "Resolve on the planetary view and reframe Mars as a tiled floor."
+        ]
       },
       {
         "id": "martian-mud-cracks",
@@ -58,7 +70,13 @@
         "premise": "Some tiny polygons could preserve ancient wet conditions.",
         "whyItWorks": "The visual starts ordinary and ends planetary.",
         "punchline": "Mars kept the receipt from mud season.",
-        "assetIds": ["panorama", "closeup", "closeup", "butte"]
+        "assetIds": ["panorama", "closeup", "closeup", "butte"],
+        "storyMoves": [
+          "Open on a valley whose surface looks strangely familiar.",
+          "Move close enough to reveal inch-wide cracks rather than rocks.",
+          "Connect those cracks to ancient wet conditions scientists are testing.",
+          "Return wide and land the mud-season punchline."
+        ]
       },
       {
         "id": "buried-water",
@@ -66,7 +84,13 @@
         "premise": "Mineral-rich water could have squeezed through buried sediment.",
         "whyItWorks": "Invisible movement becomes a visible pattern.",
         "punchline": "Even Martian plumbing leaves a pattern.",
-        "assetIds": ["panorama", "closeup", "closeup", "butte"]
+        "assetIds": ["panorama", "closeup", "closeup", "butte"],
+        "storyMoves": [
+          "Show the unexplained field of shapes across the valley.",
+          "Escalate with the small repeating pattern visible up close.",
+          "Reveal that buried water may have drawn the shapes through soil.",
+          "Resolve on the landscape with the Martian-plumbing joke."
+        ]
       },
       {
         "id": "tiny-giant-field",
@@ -74,7 +98,13 @@
         "premise": "The largest field of these textures seen by Curiosity contains inch-wide pieces.",
         "whyItWorks": "The scale reversal is instantly visual.",
         "punchline": "Mars went big by building very small.",
-        "assetIds": ["panorama", "closeup", "closeup", "butte"]
+        "assetIds": ["panorama", "closeup", "closeup", "butte"],
+        "storyMoves": [
+          "Begin with the largest field of these textures Curiosity has seen.",
+          "Contrast the giant landscape with shapes only inches across.",
+          "Reveal the possible ancient-water process behind the tiny pieces.",
+          "Resolve by returning to the giant landscape for the scale joke."
+        ]
       },
       {
         "id": "chemistry-test",
@@ -82,7 +112,13 @@
         "premise": "Scientists still need chemistry tests to separate two possible origins.",
         "whyItWorks": "The mystery stays open after the reveal.",
         "punchline": "The floor is ready. The label is pending.",
-        "assetIds": ["panorama", "closeup", "closeup", "butte"]
+        "assetIds": ["panorama", "closeup", "closeup", "butte"],
+        "storyMoves": [
+          "Open on the strange finished-looking pattern scientists found.",
+          "Escalate with two plausible origins that look identical from above.",
+          "Reveal that chemistry testing is needed to separate the explanations.",
+          "Resolve on the landscape while the label remains pending."
+        ]
       }
     ]
   },

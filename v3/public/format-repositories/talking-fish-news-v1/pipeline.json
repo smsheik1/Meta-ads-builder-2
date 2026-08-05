@@ -3,13 +3,13 @@
   "stages": [
     {
       "id": "Research",
-      "output": "One trustworthy current source, three or more sourced facts, and three or more local official images",
+      "output": "One trustworthy current source, three or more sourced facts, and three or more phone-readable official images",
       "providerCall": false,
       "approvalRequired": false
     },
     {
       "id": "Concepts",
-      "output": "Five distinct evidence-backed story angles and one selection",
+      "output": "Five evidence-backed setup-to-payoff story arcs and one selection",
       "providerCall": false,
       "approvalRequired": true
     },

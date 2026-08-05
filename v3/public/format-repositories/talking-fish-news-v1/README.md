@@ -10,15 +10,15 @@ npm run format:talking-fish-news -- check
 npm run format:talking-fish-news -- init --run=my-report
 ```
 
-The agent researches one trustworthy source, finds official visuals, creates five concepts, writes one approved four-beat report, shows the script and estimate, and asks before making the voice. If you already have a source, add `--source-url=https://example.com/story` to `init`.
+The agent researches one trustworthy source, rejects visuals that do not read clearly at phone size, creates five setup-to-payoff concepts, writes one approved four-beat report, shows the script and estimate, and asks before making the voice. If you already have a source, add `--source-url=https://example.com/story` to `init`.
 
 ## Assembly line
 
 `Research -> Concepts -> Script -> Voice -> Render -> Deliver`
 
-1. **Research** saves sourced facts plus official local visuals and credits.
-2. **Concepts** creates exactly five evidence-backed ways to tell the story.
-3. **Script** turns the selected concept into four spoken beats.
+1. **Research** saves sourced facts plus official local visuals, credits, and a phone-size readability verdict.
+2. **Concepts** creates exactly five setup → escalation → reveal → payoff arcs.
+3. **Script** turns the selected arc into four spoken story beats.
 4. **Voice** uses the fixed Fish voice and times exact captions after approval.
 5. **Render** creates one local 1080x1920 MP4 through Wiggly's shared renderer.
 6. **Deliver** checks media, captions, evidence, and hashes, then waits for the user to approve the finished video.

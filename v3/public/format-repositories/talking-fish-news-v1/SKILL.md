@@ -61,24 +61,26 @@ Run commands from the downloaded kit's `v3` directory.
 3. Research the source with your own web tools.
 4. Save only sourced facts in `research.json`.
 5. Download at least three official or source-owned images into `public/talking-fish-news-assets/`.
-6. Record every image's source URL and credit in `research.json`.
-7. Run `concept-prompt --run=<id>`.
-8. Use the generated prompt yourself and save exactly five concepts in `concepts.json`.
-9. In Guide mode, show the five choices and save the user's choice in `selection.json`.
-10. In Turbo mode, save the strongest choice and a short reason.
-11. Run `validate-concepts --run=<id>`.
-12. Run `script-prompt --run=<id>`.
-13. Use the generated prompt yourself and save the four beats in `script.json`.
-14. Run `validate --run=<id>`.
-15. Run `estimate --run=<id>`.
-16. Show the complete script and estimate.
-17. Ask: `Ready to make the fish voice?`
-18. Wait for a clear yes.
-19. Run `voice --run=<id> --approve-voice` once.
-20. Run `render --run=<id>`.
-21. Run `inspect --run=<id>`.
-22. Watch the full MP4 yourself, then let the user watch it and see the contact sheet.
-23. Only after the user says it passes, run `finalize --run=<id> --human-verdict=pass`.
+6. Preview each image at roughly phone-card size. Reject tiny dots, dense screenshots, decorative logos, near-duplicates, or anything whose subject is not obvious in one second.
+7. Put the four candidate images in story order. If the middle images can trade places without weakening the story, choose a better sequence or a better story.
+8. Record every image's source URL, credit, obvious focal subject, and `phoneReadable: true` in `research.json`.
+9. Run `concept-prompt --run=<id>`.
+10. Use the generated prompt yourself and save exactly five four-move arcs in `concepts.json`.
+11. In Guide mode, show the five choices and save the user's choice in `selection.json`.
+12. In Turbo mode, save the clearest arc with the strongest image sequence and a short reason.
+13. Run `validate-concepts --run=<id>`.
+14. Run `script-prompt --run=<id>`.
+15. Use the generated prompt yourself and save the four beats in `script.json`.
+16. Run `validate --run=<id>`.
+17. Run `estimate --run=<id>`.
+18. Show the complete script and estimate.
+19. Ask: `Ready to make the fish voice?`
+20. Wait for a clear yes.
+21. Run `voice --run=<id> --approve-voice` once.
+22. Run `render --run=<id>`.
+23. Run `inspect --run=<id>`.
+24. Watch the full MP4 yourself, then let the user watch it and see the contact sheet.
+25. Only after the user says it passes, run `finalize --run=<id> --human-verdict=pass`.
 
 ## Story rules
 
@@ -86,7 +88,9 @@ Run commands from the downloaded kit's `v3` directory.
 - Make five concepts before writing the script.
 - Use exactly four short spoken beats and 38-60 words total.
 - Beat 1 begins with `Breaking news.`
-- Explain what happened before explaining why it matters.
+- Build a beginning, middle, and end: setup, escalation, reveal, payoff.
+- If removing or swapping a middle beat changes nothing, the arc is too flat.
+- A large number followed by a larger number is fact stacking, not escalation and reveal.
 - End with the exact approved deadpan punchline.
 - The report should feel like news, not an ad.
 - Never invent a fact, quote, result, number, source, or image credit.
@@ -97,7 +101,9 @@ Run commands from the downloaded kit's `v3` directory.
 - Prefer the primary source's own images.
 - Use web image search only to find an official or source-owned original.
 - Save the original source URL and credit.
-- Reject screenshots with tiny unreadable text, logos used as evidence, generic stock, and unrelated decorative images.
+- Judge visuals at phone size, not in a desktop tab. One obvious subject must survive the crop.
+- Reject tiny dots, screenshots with tiny unreadable text, logos used as evidence, near-identical frames, generic stock, and unrelated decorative images.
+- Reject a sequence whose middle images can be shuffled without changing the story.
 - Never call an image model or video model unless the user explicitly changes the format contract.
 
 ## Provider rules

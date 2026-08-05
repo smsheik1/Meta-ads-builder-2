@@ -28,28 +28,36 @@
         "src": "/talking-fish-news-assets/wandering-black-hole-concept.jpg",
         "sourceUrl": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia22/pia22355/PIA22355.jpg",
         "description": "Artist concept of a star being torn apart beside a massive black hole.",
-        "credit": "NRAO/AUI/NSF/NASA"
+        "credit": "NRAO/AUI/NSF/NASA",
+        "focalSubject": "A star visibly stretching into a black hole",
+        "phoneReadable": true
       },
       {
         "id": "galaxy-before",
         "src": "/talking-fish-news-assets/wandering-black-hole-before.jpg",
         "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/Swift_off-kilter%20TDE.gif",
         "description": "The distant galaxy before the off-center flare appeared.",
-        "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein"
+        "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein",
+        "focalSubject": "A tiny unresolved galaxy point",
+        "phoneReadable": false
       },
       {
         "id": "galaxy-flare",
         "src": "/talking-fish-news-assets/wandering-black-hole-before-after.jpg",
         "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/Swift_off-kilter%20TDE.gif",
         "description": "The off-center blue flare after the tidal disruption event appeared.",
-        "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein"
+        "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein",
+        "focalSubject": "A tiny blue flare beside an unresolved galaxy point",
+        "phoneReadable": false
       },
       {
         "id": "star-stretched",
         "src": "/talking-fish-news-assets/wandering-black-hole-tidal-event.jpg",
         "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/TDE%20video.mp4",
         "description": "NASA visualization of tidal forces stretching a star near a massive black hole.",
-        "credit": "NASA, ESA, STScI, Ralf Crawford (STScI)"
+        "credit": "NASA, ESA, STScI, Ralf Crawford (STScI)",
+        "focalSubject": "A bright star being visibly pulled apart",
+        "phoneReadable": true
       }
     ]
   },
@@ -61,7 +69,13 @@
         "premise": "NASA catches a wandering black hole only when it lights up while destroying a star.",
         "whyItWorks": "The cosmic disaster is instantly clear, and the true location twist earns the deadpan payoff.",
         "punchline": "Apparently, the galaxy lost track of one.",
-        "assetIds": ["tidal-event-concept", "galaxy-before", "galaxy-flare", "star-stretched"]
+        "assetIds": ["tidal-event-concept", "galaxy-before", "galaxy-flare", "star-stretched"],
+        "storyMoves": [
+          "Open on the black hole visibly destroying a star.",
+          "Establish that it was wandering far from the expected galactic center.",
+          "Reveal that the destruction made the hidden black hole visible.",
+          "Resolve with the galaxy-lost-track-of-one punchline."
+        ]
       },
       {
         "id": "ten-billion-sun-flare",
@@ -69,7 +83,13 @@
         "premise": "A violent off-center flare exposes an otherwise invisible wandering black hole.",
         "whyItWorks": "The scale comparison creates an immediate visual and verbal escalation.",
         "punchline": "Subtle was no longer an option.",
-        "assetIds": ["galaxy-before", "galaxy-flare", "tidal-event-concept", "star-stretched"]
+        "assetIds": ["galaxy-before", "galaxy-flare", "tidal-event-concept", "star-stretched"],
+        "storyMoves": [
+          "Open on the sudden off-center flare.",
+          "Escalate to the impossible ten-billion-Suns brightness.",
+          "Reveal that a wandering black hole caused the flare by shredding a star.",
+          "Resolve with the understated subtlety joke."
+        ]
       },
       {
         "id": "caught-eating",
@@ -77,7 +97,13 @@
         "premise": "An invisible object reveals itself by shredding a star 30,000 light-years from the expected spot.",
         "whyItWorks": "It turns an abstract detection method into a familiar caught-in-the-act joke.",
         "punchline": "The quiet neighbor finally made noise.",
-        "assetIds": ["galaxy-before", "star-stretched", "galaxy-flare", "tidal-event-concept"]
+        "assetIds": ["galaxy-before", "star-stretched", "galaxy-flare", "tidal-event-concept"],
+        "storyMoves": [
+          "Begin with an apparently empty location in space.",
+          "Show a star being torn apart where no black hole was expected.",
+          "Reveal the flare as the signal that exposed the hidden object.",
+          "Resolve with the noisy-neighbor payoff."
+        ]
       },
       {
         "id": "wrong-side-of-galaxy",
@@ -85,7 +111,13 @@
         "premise": "Astronomers discover a massive black hole far outside the galactic center where they usually search.",
         "whyItWorks": "A simple location mismatch explains why the discovery changes how scientists hunt.",
         "punchline": "Astronomy checked the wrong neighborhood.",
-        "assetIds": ["galaxy-before", "galaxy-flare", "star-stretched", "tidal-event-concept"]
+        "assetIds": ["galaxy-before", "galaxy-flare", "star-stretched", "tidal-event-concept"],
+        "storyMoves": [
+          "Open on the flare far from the galaxy's center.",
+          "Establish where astronomers normally expect massive black holes.",
+          "Reveal the star-shredding event that exposed this off-center object.",
+          "Resolve with the wrong-neighborhood joke."
+        ]
       },
       {
         "id": "star-alarm-system",
@@ -93,7 +125,13 @@
         "premise": "The tidal disruption flare gives scientists a new way to find wandering black holes.",
         "whyItWorks": "The star's destruction becomes a clean mechanism reveal instead of a list of astronomy facts.",
         "punchline": "The alarm was unfortunately the star.",
-        "assetIds": ["star-stretched", "tidal-event-concept", "galaxy-before", "galaxy-flare"]
+        "assetIds": ["star-stretched", "tidal-event-concept", "galaxy-before", "galaxy-flare"],
+        "storyMoves": [
+          "Open on a star being violently stretched.",
+          "Escalate with the previously invisible black hole behind it.",
+          "Reveal the flare as an alarm astronomers can use to find wanderers.",
+          "Resolve by naming the destroyed star as the alarm."
+        ]
       }
     ]
   },
