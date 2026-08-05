@@ -1,0 +1,41 @@
+{
+  "progress": "Research -> Concepts -> Script -> Voice -> Render -> Deliver",
+  "stages": [
+    {
+      "id": "Research",
+      "output": "One trustworthy current source, three or more sourced facts, and three or more local official images",
+      "providerCall": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Concepts",
+      "output": "Five distinct evidence-backed story angles and one selection",
+      "providerCall": false,
+      "approvalRequired": true
+    },
+    {
+      "id": "Script",
+      "output": "Four short news beats mapped to four evidence visuals",
+      "providerCall": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Voice",
+      "output": "One Fish voice track with exact, timed captions",
+      "providerCall": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "Render",
+      "output": "One local 1080x1920 MP4 through AdRenderSurface",
+      "providerCall": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Deliver",
+      "output": "Playable MP4, contact sheet, hashes, quality report, and explicit user verdict",
+      "providerCall": false,
+      "approvalRequired": true
+    }
+  ]
+}

@@ -328,7 +328,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 11, "Current Discovery proof should organize into eleven useful shelves.");
+assert.equal(shelves.length, 12, "Current Discovery proof should organize into twelve useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -338,6 +338,11 @@ assert.equal(
   new Set(shelvedEntries.map((entry) => entry.id)).size,
   published.length,
   "Discovery shelves must not repeat finished ads.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "talking-fish-news")?.entries.map((entry) => entry.id),
+  ["talking-fish-news-mars-tiles"],
+  "Talking Fish News should appear once on its own shelf.",
 );
 assert.equal(
   shelves

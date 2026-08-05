@@ -2133,6 +2133,27 @@ const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
 
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
+    id: "talking-fish-news-mars-tiles",
+    status: "published",
+    order: 5.25,
+    brand: "NASA",
+    title: "Mars enters its floor-tile era",
+    curatorNote: "A real Mars discovery becomes a four-beat deadpan report without inventing the evidence or rebuilding the anchor.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/talking-fish-news-v1/goldens/nasa-curiosity.mp4",
+      poster: "/format-repositories/talking-fish-news-v1/goldens/nasa-curiosity-poster.jpg",
+      durationLabel: "19 sec",
+    },
+    format: {
+      slug: "talking-fish-news",
+      name: "Wiggly Talking Fish News",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
     id: "final-straw-pocket-problem",
     status: "published",
     order: 1,
@@ -2568,6 +2589,12 @@ const discoveryShelfDefinitions = [
     title: "Mugsy Explains",
     description: "Quick comparisons with one recurring host and proof you can see.",
     formats: ["mugsy-explains"],
+  },
+  {
+    id: "talking-fish-news",
+    title: "Talking Fish News",
+    description: "Real current stories delivered by one very serious fish.",
+    formats: ["talking-fish-news"],
   },
   {
     id: "brand-jingles",

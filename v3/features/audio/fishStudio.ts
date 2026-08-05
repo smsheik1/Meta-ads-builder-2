@@ -13,7 +13,9 @@ const FISH_TTS_URL = "https://api.fish.audio/v1/tts";
 export const FISH_STUDIO_TTS_MODEL = "s2.1-pro-free";
 export const FISH_STUDIO_BRAINROT_MODEL = `fish-audio/${FISH_STUDIO_TTS_MODEL}`;
 export const THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID = "0873499c22e24d13b074fa76d27562e5";
+export const TALKING_FISH_NEWS_VOICE_ID = "105a95c3aa3d4301b175ca1f7b3996ca";
 export const FISH_STUDIO_THREE_D_BREAKDOWN_MODEL = `fish-audio/${FISH_STUDIO_TTS_MODEL}:${THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID}`;
+export const FISH_STUDIO_TALKING_FISH_NEWS_MODEL = `fish-audio/${FISH_STUDIO_TTS_MODEL}:${TALKING_FISH_NEWS_VOICE_ID}`;
 const fishSampleRate = 44_100;
 const fishChannels = 1;
 const fishBitsPerSample = 16;
@@ -253,11 +255,11 @@ const generateFishWav = async ({
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`Fish Studio brainrot voice failed with ${response.status}${body ? `: ${body.slice(0, 240)}` : ""}`);
+    throw new Error(`Fish Studio voice failed with ${response.status}${body ? `: ${body.slice(0, 240)}` : ""}`);
   }
 
   const bytes = new Uint8Array(await response.arrayBuffer());
-  if (!bytes.length) throw new Error("Fish Studio brainrot voice returned empty audio.");
+  if (!bytes.length) throw new Error("Fish Studio voice returned empty audio.");
   return bytes;
 };
 
@@ -322,6 +324,34 @@ export async function generateFishThreeDBreakdownVoiceover({
     captions: createCaptionsForVoiceover(scene, parsed.durationMs),
     analysis: analyzeGeneratedWavAudio(bytes) || undefined,
     model: FISH_STUDIO_THREE_D_BREAKDOWN_MODEL,
+    provider: "fish-studio" as const,
+  };
+}
+
+export async function generateFishTalkingFishNewsVoiceover({
+  apiKey = process.env.FISH_STUDIO_APIKEY,
+  fetcher = fetch,
+  text,
+}: {
+  apiKey?: string;
+  fetcher?: typeof fetch;
+  text: string;
+}) {
+  if (!apiKey) throw new Error("Fish Studio Talking Fish News voice is not configured.");
+  const bytes = await generateFishWav({
+    apiKey,
+    fetcher,
+    speed: 1.08,
+    text,
+    voiceId: TALKING_FISH_NEWS_VOICE_ID,
+  });
+  const parsed = parsePcmWav(bytes);
+
+  return {
+    bytes,
+    mimeType: "audio/wav",
+    durationMs: parsed.durationMs,
+    model: FISH_STUDIO_TALKING_FISH_NEWS_MODEL,
     provider: "fish-studio" as const,
   };
 }

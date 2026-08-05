@@ -1,0 +1,65 @@
+{
+  "fixed": [
+    {
+      "path": "../../talking-fish-news-assets/fixed-fish-anchor-open.png",
+      "role": "fish anchor mouth-open sprite",
+      "provenance": "user-supplied fixed format asset",
+      "rightsNote": "Verify rights before commercial distribution."
+    },
+    {
+      "path": "../../talking-fish-news-assets/fixed-fish-anchor-closed.png",
+      "role": "fish anchor mouth-closed sprite",
+      "provenance": "user-supplied fixed format asset",
+      "rightsNote": "Verify rights before commercial distribution."
+    },
+    {
+      "path": "../../talking-fish-news-assets/underwater-studio-background.png",
+      "role": "vertical underwater studio",
+      "provenance": "user-supplied fixed format asset",
+      "rightsNote": "Verify rights before commercial distribution."
+    },
+    {
+      "path": "../../talking-fish-news-assets/bikini-bottom-news-theme.mp3",
+      "role": "background news theme",
+      "provenance": "user-supplied fixed format asset",
+      "rightsNote": "Verify rights before commercial distribution."
+    }
+  ],
+  "fixtureEvidence": [
+    {
+      "path": "../../talking-fish-news-assets/mars-polygons-panorama.jpg",
+      "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
+      "credit": "NASA/JPL-Caltech/MSSS"
+    },
+    {
+      "path": "../../talking-fish-news-assets/mars-polygons-closeup.png",
+      "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
+      "credit": "NASA/JPL-Caltech/MSSS"
+    },
+    {
+      "path": "../../talking-fish-news-assets/mars-miraflores-butte.png",
+      "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
+      "credit": "NASA/JPL-Caltech/MSSS"
+    },
+    {
+      "path": "../../talking-fish-news-assets/wandering-black-hole-concept.jpg",
+      "sourceUrl": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia22/pia22355/PIA22355.jpg",
+      "credit": "NRAO/AUI/NSF/NASA"
+    },
+    {
+      "path": "../../talking-fish-news-assets/wandering-black-hole-before.jpg",
+      "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/Swift_off-kilter%20TDE.gif",
+      "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein"
+    },
+    {
+      "path": "../../talking-fish-news-assets/wandering-black-hole-before-after.jpg",
+      "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/Swift_off-kilter%20TDE.gif",
+      "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein"
+    },
+    {
+      "path": "../../talking-fish-news-assets/wandering-black-hole-tidal-event.jpg",
+      "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/TDE%20video.mp4",
+      "credit": "NASA, ESA, STScI, Ralf Crawford (STScI)"
+    }
+  ]
+}

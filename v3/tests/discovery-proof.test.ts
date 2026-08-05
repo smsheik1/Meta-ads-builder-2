@@ -138,7 +138,8 @@ assert.ok(
     discoveryFormatSlugs.includes("2000s-effect") &&
     discoveryFormatSlugs.includes("80s-toon") &&
     discoveryFormatSlugs.includes("squilliam-news") &&
-    discoveryFormatSlugs.length === 46 &&
+    discoveryFormatSlugs.includes("talking-fish-news") &&
+    discoveryFormatSlugs.length === 47 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);
