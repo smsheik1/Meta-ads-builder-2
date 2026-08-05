@@ -32,6 +32,14 @@
       "rootCause": "Narration duration varies even when the prompt requests a particular delivery speed.",
       "smallestFix": "Probe the actual audio, tempo-fit speech to 29.1 seconds, and preserve an explicit final hold.",
       "evidence": "Inspection reports a 30.000-second output and a final silence hold of 0.885 seconds."
+    },
+    {
+      "status": "proven",
+      "scope": "package usability",
+      "friction": "A blind agent completed the Repo but had to infer that dependency installation precedes the SKILL's smoke command and that media should open in the host viewer.",
+      "rootCause": "README contained both facts, but the agent-facing ordered loop did not state them at the exact point of use.",
+      "smallestFix": "Put npm install before smoke and name the host viewer directly in the agent loop; clarify that Fish variables are optional when approved audio ships with an example.",
+      "evidence": "The blind run completed on attempt one with zero provider calls; its state, quality report, and finalization receipt are preserved under evidence/blind-handoff."
     }
   ],
   "sharedStandardChange": "None. The cross-Format lessons are already represented by proven Wiggly rules 6, 7, and 9; the remaining fixes are specific to this video Format."

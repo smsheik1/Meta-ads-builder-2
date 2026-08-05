@@ -15,7 +15,7 @@ The fixed Format is the rigged anchor, studio, camera, presenter-derived gesture
 ## Proof 2 — Wiggly Format Lab
 
 - Input: a software-format promotion with synthetic instruction, renderer, and evidence graphics; no event imagery or Indianapolis facts.
-- Output: generated and mechanically inspected in `agent-runs/wiggly-format-lab-proof`.
+- Output: `examples/wiggly-format-lab/evidence/review.mp4` while human review is pending.
 - Result: automatic checks pass; human creative review is still required before finalization.
 - Portability failure found: a longer monitor eyebrow clipped in attempt one. A shared measured-text fitting rule fixed it, and attempt two passed visual and automatic inspection without proof-specific renderer code.
 
@@ -29,3 +29,7 @@ The fixed Format is the rigged anchor, studio, camera, presenter-derived gesture
 ## Shared-standard decision
 
 No new universal Wiggly rule is proposed. The general lessons—separate content from runtime, inspect final media, and derive timing from actual audio—already exist in the shared standard. Text fitting and resumable browser-frame caches remain Format-specific evidence.
+
+## Blind-agent handoff
+
+A fresh agent received only the packaged ZIP and the desired We The Artists outcome. It installed dependencies, ran smoke and requirements checks, initialized the supplied example, validated, rendered, inspected, and finalized on attempt one of three without editing the renderer or calling a provider. Its final MP4 SHA-256 was `966b601ebc40e1fed8724fdcb7c843fb027c56d950eb8e4dabafe54d9757dcd8`, exactly matching `examples/we-the-artists/evidence/final.mp4`. Receipts are under `evidence/blind-handoff/`.

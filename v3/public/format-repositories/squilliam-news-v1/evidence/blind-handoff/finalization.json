@@ -1,11 +1,9 @@
 {
   "status": "pass",
-  "finalizedAt": "2026-08-05T01:44:59.504Z",
+  "finalizedAt": "2026-08-05T01:38:19.583Z",
   "formatVersion": "0.1.0-proof",
   "contentHash": "3b303c89ba68dc372e868aed2a38f898961d611a494efe8b8d92acf5930c243c",
-  "runtimeHash": "cc7fe1bfb8dd651063b247399f2103530bfe988f02a04149a8250c0fb2394558",
-  "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
-  "videoHash": "966b601ebc40e1fed8724fdcb7c843fb027c56d950eb8e4dabafe54d9757dcd8",
+  "runtimeHash": "c78d9ae53b96f8a0e8ba5e84d74d1bd1059a5466dc2e1e40c8e446ce534dfddd",
   "automaticReview": "pass",
   "humanReview": "pass",
   "finalVideo": "final.mp4",

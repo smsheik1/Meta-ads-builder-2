@@ -1,7 +1,7 @@
 {
   "localTools": ["node", "npm", "python3", "ffmpeg", "ffprobe", "Google Chrome"],
   "authoringTools": ["zip (only required to build the downloadable archive)"],
-  "nodeVersion": ">=20",
+  "nodeVersion": ">=20.12",
   "providers": [
     {
       "name": "Fish Audio",

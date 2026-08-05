@@ -1,11 +1,11 @@
 {
   "status": "pass",
-  "inspectedAt": "2026-08-05T01:44:43.246Z",
+  "inspectedAt": "2026-08-05T01:44:43.236Z",
   "attempt": 3,
-  "contentHash": "3b303c89ba68dc372e868aed2a38f898961d611a494efe8b8d92acf5930c243c",
+  "contentHash": "5a4e9a04a837d64eb8267a223ec9562535f32bd35da7ca5838046d2455abc983",
   "runtimeHash": "cc7fe1bfb8dd651063b247399f2103530bfe988f02a04149a8250c0fb2394558",
-  "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
-  "videoHash": "966b601ebc40e1fed8724fdcb7c843fb027c56d950eb8e4dabafe54d9757dcd8",
+  "audioHash": "726cb881088b7eb844862222639584ee5eefd3f755b4a310c1978ad8763e4449",
+  "videoHash": "07d870184c196fe59fcc36d501a5ceb1316ed116cd2549e29a87cb747c555c76",
   "video": "attempts/attempt-03/video.mp4",
   "contactSheet": "contact-sheet.png",
   "probe": {
@@ -31,30 +31,30 @@
     ],
     "format": {
       "duration": "30.000000",
-      "size": "2676266",
-      "bit_rate": "713670"
+      "size": "2468321",
+      "bit_rate": "658218"
     }
   },
   "silences": [
     {
-      "start": 13.7861,
-      "end": 14.106689,
-      "duration": 0.32059
+      "start": 11.363107,
+      "end": 11.6339,
+      "duration": 0.270794
     },
     {
-      "start": 26.270431,
-      "end": 26.620703,
-      "duration": 0.350272
+      "start": 24.268957,
+      "end": 24.622449,
+      "duration": 0.353492
     },
     {
-      "start": 29.101361,
+      "start": 29.115238,
       "end": 30.000181,
-      "duration": 0.898821
+      "duration": 0.884943
     }
   ],
   "volume": {
     "meanDb": -21,
-    "peakDb": -3.6
+    "peakDb": -3.4
   },
   "checks": {
     "duration": true,

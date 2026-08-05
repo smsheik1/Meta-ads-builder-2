@@ -6,7 +6,6 @@ const status = document.querySelector("#status");
 const playButton = document.querySelector("#play");
 const query = new URLSearchParams(location.search);
 const captureMode = query.has("capture");
-const restPoseMode = query.has("rest");
 const contentUrl = new URL(query.get("content") || "../../fixtures/smoke/content.json", location.href);
 const motionUrl = new URL(query.get("motion") || "../../fixtures/smoke/motion.json", location.href);
 const audioUrl = new URL(query.get("audio") || "../../fixtures/smoke/audio.wav", location.href);
@@ -414,7 +413,6 @@ await Promise.all([...characterTextures].map((texture) => {
 }));
 
 let bounds = new THREE.Box3().setFromObject(squilliam);
-const unscaledSize = bounds.getSize(new THREE.Vector3());
 // Keep the original game units at a comfortable seated-news-anchor scale.
 const modelScale = 0.86;
 squilliam.scale.setScalar(modelScale);
@@ -629,14 +627,12 @@ function applyFrame(index) {
   const handR = trackedHandDirection(points, "right");
   const bodyPose = trackedBodyPose(points);
 
-  if (!restPoseMode) {
-    aimBone("squilliam_bicep_L", "squilliam_elbow_L", upperL || deskSafeDirection(storyPose.upperL, 0.08), 0.92);
-    aimBone("squilliam_elbow_L", "squilliam_twist_L", foreL || deskSafeDirection(storyPose.foreL, 0.22), 0.94);
-    aimBone("squilliam_hand_L", "squilliam_fingers_L", handL, 0.72);
-    aimBone("squilliam_bicep_R", "squilliam_elbow_R", upperR || deskSafeDirection(storyPose.upperR, 0.08), 0.92);
-    aimBone("squilliam_elbow_R", "squilliam_twist_R", foreR || deskSafeDirection(storyPose.foreR, 0.22), 0.94);
-    aimBone("squilliam_hand_R", "squilliam_fingers_R", handR, 0.72);
-  }
+  aimBone("squilliam_bicep_L", "squilliam_elbow_L", upperL || deskSafeDirection(storyPose.upperL, 0.08), 0.92);
+  aimBone("squilliam_elbow_L", "squilliam_twist_L", foreL || deskSafeDirection(storyPose.foreL, 0.22), 0.94);
+  aimBone("squilliam_hand_L", "squilliam_fingers_L", handL, 0.72);
+  aimBone("squilliam_bicep_R", "squilliam_elbow_R", upperR || deskSafeDirection(storyPose.upperR, 0.08), 0.92);
+  aimBone("squilliam_elbow_R", "squilliam_twist_R", foreR || deskSafeDirection(storyPose.foreR, 0.22), 0.94);
+  aimBone("squilliam_hand_R", "squilliam_fingers_R", handR, 0.72);
 
   const chest = bones.squilliam_chest;
   if (chest) {
@@ -680,18 +676,6 @@ function applyFrame(index) {
 
 window.renderFrame = (index) => applyFrame(index);
 window.motionInfo = { fps: motion.fps, duration: motion.duration, frameCount: motion.frameCount };
-window.debugInfo = {
-  boneNames: Object.keys(bones),
-  unscaledSize: unscaledSize.toArray(),
-  modelScale,
-  rootPosition: characterRoot.position.toArray(),
-  bounds: {
-    min: bounds.min.toArray(),
-    max: bounds.max.toArray(),
-  },
-};
-document.body.dataset.modelDebug = JSON.stringify(window.debugInfo);
-
 applyFrame(initialFrame());
 window.__SNN_READY__ = true;
 document.body.dataset.ready = "true";

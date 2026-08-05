@@ -47,6 +47,18 @@ test("validation rejects content outside the contract", async () => {
   assert.match(`${result.stdout}${result.stderr}`, /Headline exceeds 58 characters/);
 });
 
+test("validation rejects a slide missing layout-required content", async () => {
+  await rm(testRun, { recursive: true, force: true });
+  assert.equal(run("init", "--run=contract-test", "--from=wiggly-format-lab").status, 0);
+  const contentFile = path.join(testRun, "content.json");
+  const content = JSON.parse(await readFile(contentFile, "utf8"));
+  delete content.slides[8].button;
+  await writeFile(contentFile, `${JSON.stringify(content, null, 2)}\n`);
+  const result = run("validate", "--run=contract-test");
+  assert.notEqual(result.status, 0);
+  assert.match(`${result.stdout}${result.stderr}`, /Slide 9 needs a non-empty button/);
+});
+
 test("validated narration-free run cannot contact a provider without approval", async () => {
   await rm(testRun, { recursive: true, force: true });
   assert.equal(run("init", "--run=contract-test", "--from=wiggly-format-lab").status, 0);
@@ -55,6 +67,8 @@ test("validated narration-free run cannot contact a provider without approval", 
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}${result.stderr}`, /Narration is missing/);
   assert.equal(await missing(path.join(testRun, "audio", "provider-receipt.json")), true);
+  const state = JSON.parse(await readFile(path.join(testRun, "state.json"), "utf8"));
+  assert.equal(state.attempts.length, 0, "an approval precondition must not consume a render attempt");
 });
 
 test("finalization requires explicit human review", async () => {

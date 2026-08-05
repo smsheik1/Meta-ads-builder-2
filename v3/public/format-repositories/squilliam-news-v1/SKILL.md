@@ -16,14 +16,14 @@ Ask one question at a time. If the user requests the packaged We The Artists pro
 ## Required loop
 
 1. Read `README.md`, `requirements.json`, `input-contract.json`, `output-contract.json`, `composition-contract.json`, `quality.json`, `assets.json`, and `prompts/script.md`.
-2. Run `npm run smoke`, then `npm run check`.
+2. Run `npm install`, then `npm run smoke`, then `npm run check`.
 3. Run `node runner.mjs init --run=<run-id> --from=we-the-artists` or `--from=smoke`.
 4. Change only the new run's `content.json`, `assets/story/*`, `asset-sources.json`, and optional approved `audio/source.wav`.
 5. Read the script aloud and inspect every story image at phone size.
 6. Run `node runner.mjs validate --run=<run-id>` before any provider call.
 7. If narration is missing, report the Fish model and current cost, then ask once when the call may charge or consume a limited quota.
 8. Run `node runner.mjs render --run=<run-id> --approve-provider` only after approval. Omit the flag when approved narration already exists.
-9. Run `node runner.mjs inspect --run=<run-id>` and show the contact sheet and playable video.
+9. Run `node runner.mjs inspect --run=<run-id>`, then use the host environment's media viewer to show the emitted contact-sheet and playable-video paths.
 10. Ask the user to confirm factual accuracy, voice identity, pronunciation, body language, lip sync, joke, and CTA.
 11. Run `node runner.mjs finalize --run=<run-id> --human-review=pass` only after approval.
 12. Return the final playable MP4.

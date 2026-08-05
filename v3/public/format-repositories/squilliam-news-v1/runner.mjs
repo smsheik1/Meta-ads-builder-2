@@ -22,6 +22,16 @@ const runtimeFiles = [
   "assets/character/tx8_0000_squideyes_128.PNG",
   "assets/motion/presenter-motion-reference.json",
 ];
+const requiredSlideFields = {
+  alert: { strings: ["eyebrow", "subhead"], pairs: ["titleLines"] },
+  poster: { strings: ["image", "caption"], pairs: [] },
+  photo: { strings: ["image", "label", "kicker"], pairs: [] },
+  jab: { strings: ["eyebrow", "subhead"], pairs: ["titleLines"] },
+  details: { strings: ["eyebrow", "footer"], pairs: ["primaryLines"] },
+  notice: { strings: ["eyebrow", "badge", "footer"], pairs: ["titleLines"] },
+  cta: { strings: ["image", "title", "button", "details", "footer"], pairs: [] },
+  signoff: { strings: ["eyebrow", "footer"], pairs: ["titleLines"] },
+};
 
 function parseArgs(values) {
   const result = {};
@@ -55,6 +65,10 @@ async function readJson(file) {
   return JSON.parse(await readFile(file, "utf8"));
 }
 
+async function sha256File(file) {
+  return createHash("sha256").update(await readFile(file)).digest("hex");
+}
+
 async function writeJson(file, value) {
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
@@ -83,13 +97,7 @@ function execute(program, values, options = {}) {
 async function loadLocalEnv() {
   for (const filename of [".env.local", ".env"]) {
     const file = path.join(root, filename);
-    if (!(await exists(file))) continue;
-    for (const rawLine of (await readFile(file, "utf8")).split(/\r?\n/)) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("#") || !line.includes("=")) continue;
-      const [name, ...parts] = line.split("=");
-      if (!process.env[name]) process.env[name] = parts.join("=").trim().replace(/^['"]|['"]$/g, "");
-    }
+    if (await exists(file)) process.loadEnvFile(file);
   }
 }
 
@@ -130,6 +138,8 @@ async function validateDirectory(baseDirectory, writeReceipt = true) {
     if (content[field] === undefined) errors.push(`Missing content.${field}.`);
   }
   if (content.schemaVersion !== 1) errors.push("content.schemaVersion must be 1.");
+  if (content.formatVersion !== "0.1.0-proof") errors.push("content.formatVersion must be 0.1.0-proof.");
+  if (typeof content.script !== "string") errors.push("content.script must be a string.");
   if (String(content.headline || "").length > 58) errors.push("Headline exceeds 58 characters.");
   if (String(content.locationBug || "").length > 24) errors.push("Location bug exceeds 24 characters.");
   if (!Array.isArray(content.tickerItems) || content.tickerItems.length < 3 || content.tickerItems.length > 8) {
@@ -149,6 +159,17 @@ async function validateDirectory(baseDirectory, writeReceipt = true) {
   } else {
     content.slides.forEach((slide, index) => {
       if (slide.type !== slideOrder[index]) errors.push(`Slide ${index + 1} must be ${slideOrder[index]}, got ${slide.type}.`);
+      const required = requiredSlideFields[slide.type];
+      if (required) {
+        for (const field of required.strings) {
+          if (typeof slide[field] !== "string" || !slide[field].trim()) errors.push(`Slide ${index + 1} needs a non-empty ${field}.`);
+        }
+        for (const field of required.pairs) {
+          if (!Array.isArray(slide[field]) || slide[field].length !== 2 || slide[field].some((line) => typeof line !== "string" || !line.trim())) {
+            errors.push(`Slide ${index + 1} needs exactly two non-empty ${field}.`);
+          }
+        }
+      }
       if (!Number.isFinite(slide.start) || !Number.isFinite(slide.end) || slide.end - slide.start < 1.5) {
         errors.push(`Slide ${index + 1} must have numeric timing and last at least 1.5 seconds.`);
       }
@@ -166,6 +187,14 @@ async function validateDirectory(baseDirectory, writeReceipt = true) {
         }
       }
     });
+  }
+  if (typeof sources.promotionSource !== "string" || !sources.promotionSource.trim()) errors.push("asset-sources.promotionSource is required.");
+  if (typeof sources.facts !== "string" || !sources.facts.trim()) errors.push("asset-sources.facts is required.");
+  if (!Array.isArray(sources.assets)) errors.push("asset-sources.assets must be an array.");
+  else for (const [index, asset] of sources.assets.entries()) {
+    if (typeof asset?.path !== "string" || typeof asset?.source !== "string" || !asset.path || !asset.source) {
+      errors.push(`asset-sources.assets[${index}] needs path and source.`);
+    }
   }
   const sourcePaths = new Set((sources.assets || []).map((asset) => asset.path));
   for (const image of [...new Set((content.slides || []).map((slide) => slide.image).filter(Boolean))]) {
@@ -275,8 +304,8 @@ async function commandCheck() {
   await loadLocalEnv();
   const provider = {
     model: "s2.1-pro-free",
-    FISH_STUDIO_APIKEY: Boolean(process.env.FISH_STUDIO_APIKEY || process.env.FISH_API_KEY) ? "configured" : "missing (needed only for new narration)",
-    SQUILLIAM_VOICE_ID: process.env.SQUILLIAM_VOICE_ID ? "configured" : "missing (needed only for new narration)",
+    FISH_STUDIO_APIKEY: Boolean(process.env.FISH_STUDIO_APIKEY || process.env.FISH_API_KEY) ? "configured" : "not configured (optional with approved narration)",
+    SQUILLIAM_VOICE_ID: process.env.SQUILLIAM_VOICE_ID ? "configured" : "not configured (optional with approved narration)",
   };
   console.log(JSON.stringify({ checks, provider }, null, 2));
   if (checks.some((check) => check.status === "missing")) throw new Error("Local requirement check failed.");
@@ -313,8 +342,11 @@ async function commandSmoke() {
   await rm(smokeDir, { recursive: true, force: true });
   await mkdir(smokeDir, { recursive: true });
   const output = path.join(smokeDir, "smoke.mp4");
+  const motion = path.join(smokeDir, "motion.json");
+  await execute("python3", [path.join(root, "runtime", "scripts", "build_motion.py"),
+    "--audio", path.join(fixture, "audio.wav"), "--output", motion]);
   await execute("node", [path.join(root, "runtime", "render.mjs"),
-    `--content=${path.join(fixture, "content.json")}`, `--motion=${path.join(fixture, "motion.json")}`,
+    `--content=${path.join(fixture, "content.json")}`, `--motion=${motion}`,
     `--audio=${path.join(fixture, "audio.wav")}`, `--output=${output}`, `--work-dir=${smokeDir}`, "--smoke"]);
   const probe = await execute("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "json", output], { capture: true });
   const contactSheet = path.join(smokeDir, "contact-sheet.png");
@@ -329,6 +361,12 @@ async function commandRender() {
   const { content, receipt } = await validateDirectory(runDir, false);
   const savedValidation = await readJson(validationFile);
   if (savedValidation.contentHash !== receipt.contentHash) throw new Error("Content changed after validation. Run validate again.");
+  let sourceAudio = path.join(runDir, "audio.wav");
+  if (!(await exists(sourceAudio))) sourceAudio = path.join(runDir, "audio", "source.wav");
+  const needsProvider = !(await exists(sourceAudio));
+  if (needsProvider && !args["approve-provider"]) {
+    throw new Error("Narration is missing. Validate, obtain provider approval when required, then rerun with --approve-provider.");
+  }
   const stateFile = path.join(runDir, "state.json");
   const state = await readJson(stateFile);
   const last = state.attempts.at(-1);
@@ -345,15 +383,13 @@ async function commandRender() {
   const attemptDir = path.join(runDir, "attempts", `attempt-${String(attempt.number).padStart(2, "0")}`);
   await mkdir(attemptDir, { recursive: true });
   try {
-    let sourceAudio = path.join(runDir, "audio.wav");
-    if (!(await exists(sourceAudio))) sourceAudio = path.join(runDir, "audio", "source.wav");
-    if (!(await exists(sourceAudio))) {
-      if (!args["approve-provider"]) throw new Error("Narration is missing. Validate, obtain provider approval when required, then rerun with --approve-provider.");
+    if (needsProvider) {
       sourceAudio = await generateFishAudio(runDir, content, receipt);
       attempt.providerCall = { provider: "Fish Audio", model: "s2.1-pro-free", approved: true };
     }
     const finalAudio = path.join(attemptDir, "audio.wav");
     attempt.audio = await prepareAudio(sourceAudio, finalAudio);
+    attempt.audioHash = await sha256File(finalAudio);
     const motion = path.join(attemptDir, "motion.json");
     await execute("python3", [path.join(root, "runtime", "scripts", "build_motion.py"), "--audio", finalAudio, "--output", motion]);
     const video = path.join(attemptDir, "video.mp4");
@@ -362,6 +398,7 @@ async function commandRender() {
     attempt.status = "rendered";
     attempt.completedAt = new Date().toISOString();
     attempt.video = path.relative(runDir, video);
+    attempt.videoHash = await sha256File(video);
     state.currentAttempt = attempt.number;
     await writeJson(stateFile, state);
     console.log(video);
@@ -387,6 +424,11 @@ async function commandInspect() {
   const attempt = state.attempts.find((item) => item.number === state.currentAttempt && item.status === "rendered");
   if (!attempt) throw new Error("No rendered attempt is available to inspect.");
   const video = path.join(runDir, attempt.video);
+  const videoHash = await sha256File(video);
+  if (attempt.videoHash && attempt.videoHash !== videoHash) throw new Error("Rendered video changed after the attempt completed.");
+  const renderedAudio = path.join(path.dirname(video), "audio.wav");
+  const audioHash = await sha256File(renderedAudio);
+  if (attempt.audioHash && attempt.audioHash !== audioHash) throw new Error("Rendered narration changed after the attempt completed.");
   const probeResult = await execute("ffprobe", ["-v", "error", "-show_entries", "format=duration,size,bit_rate", "-show_entries", "stream=index,codec_name,codec_type,width,height,r_frame_rate,sample_rate,channels", "-of", "json", video], { capture: true });
   const probe = JSON.parse(probeResult.output);
   const silenceOutput = (await execute("ffmpeg", ["-hide_banner", "-i", video, "-af", "silencedetect=noise=-42dB:d=0.25", "-f", "null", "-"], { capture: true })).output;
@@ -415,6 +457,8 @@ async function commandInspect() {
     attempt: attempt.number,
     contentHash: attempt.contentHash,
     runtimeHash: await runtimeHash(),
+    audioHash,
+    videoHash,
     video: attempt.video,
     contactSheet: path.relative(runDir, contactSheet),
     probe,
@@ -445,6 +489,9 @@ async function commandFinalize() {
     throw new Error("Renderer changed after inspection. Render and inspect again before finalizing.");
   }
   const source = path.join(runDir, report.video);
+  if (!report.videoHash || report.videoHash !== await sha256File(source)) {
+    throw new Error("Rendered video changed after inspection. Inspect again before finalizing.");
+  }
   const output = path.join(runDir, "final.mp4");
   await copyFile(source, output);
   const finalization = {
@@ -453,6 +500,8 @@ async function commandFinalize() {
     formatVersion: "0.1.0-proof",
     contentHash: receipt.contentHash,
     runtimeHash: currentRuntimeHash,
+    audioHash: report.audioHash,
+    videoHash: report.videoHash,
     automaticReview: "pass",
     humanReview: "pass",
     finalVideo: "final.mp4",

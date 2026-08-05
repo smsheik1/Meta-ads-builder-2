@@ -24,6 +24,7 @@
     "The automatic inspection must pass.",
     "The inspected content hash must still match the run.",
     "The inspected runtime hash must still match the official runtime.",
+    "The inspected audio and video hashes must still match the rendered attempt.",
     "A human must approve facts, voice, pronunciation, body language, lip sync, joke, and CTA."
   ]
 }

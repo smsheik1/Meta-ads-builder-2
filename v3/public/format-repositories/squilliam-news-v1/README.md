@@ -18,7 +18,7 @@ node runner.mjs finalize --run=my-promotion --human-review=pass
 npm run package
 ```
 
-If the run has no approved narration, copy `.env.example` to `.env.local`, supply the named Fish variables locally, validate first, obtain provider approval when required, and add `--approve-provider` to `render`.
+If the run has no approved narration, copy `.env.example` to `.env.local`, supply the named Fish variables locally, validate first, obtain provider approval when required, and add `--approve-provider` to `render`. Fish variables may appear as unconfigured during `check`; they are optional when the selected example already includes `audio.wav`.
 
 ## Fixed and replaceable boundaries
 
@@ -34,6 +34,8 @@ If the run has no approved narration, copy `.env.example` to `.env.local`, suppl
 ## Run outputs
 
 Each production lives under `agent-runs/<run-id>/`. Rendering never overwrites another run. Disposable PNG frames stay inside the run and are ignored by Git. A finalized run contains `final.mp4`, `contact-sheet.png`, `quality-report.json`, `finalization.json`, its exact `content.json`, and its asset provenance.
+
+The runner prints absolute paths for playable video and contact-sheet output. An operating agent should open those with the host environment's normal media/image viewer; the Repo deliberately does not ship a second preview renderer.
 
 `npm run package` creates `downloads/wiggly-squilliam-news-format-kit.zip` plus a SHA-256 sidecar. The archive includes the runtime, contracts, fixed assets, smoke fixture, and tracked proof evidence. It excludes API secrets, dependencies, temporary frames, run state, and older downloads.
 
