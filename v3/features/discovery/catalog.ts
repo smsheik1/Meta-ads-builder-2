@@ -2385,6 +2385,27 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "squilliam-news-artistic-emergency",
+    status: "published",
+    order: 11.5,
+    brand: "We The Artists",
+    title: "Squilliam declares an artistic emergency",
+    curatorNote: "A real Indianapolis art event becomes a thirty-second character-led breaking-news bulletin with presenter-driven body language and a sharp sign-off.",
+    goal: "story",
+    media: {
+      kind: "video",
+      src: "/format-repositories/squilliam-news-v1/examples/we-the-artists/evidence/final.mp4",
+      poster: "/format-repositories/squilliam-news-v1/examples/we-the-artists/evidence/poster.png",
+      durationLabel: "30 sec",
+    },
+    format: {
+      slug: "squilliam-news",
+      name: "Squilliam News",
+      version: "0.2.1-proof",
+      owner: "Shaz",
+    },
+  },
+  {
     id: "davids-cookies-this-is-fine",
     status: "published",
     order: 12,
@@ -2569,8 +2590,8 @@ const discoveryShelfDefinitions = [
   {
     id: "character-explainers",
     title: "Explain It With Characters",
-    description: "Familiar characters make hard ideas easy to follow.",
-    formats: ["otaku-explainer"],
+    description: "Familiar characters make hard ideas and real promotions easy to follow.",
+    formats: ["otaku-explainer", "squilliam-news"],
   },
   {
     id: "conversations",

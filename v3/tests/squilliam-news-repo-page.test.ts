@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+import {
+  getPublishedDiscoveryEntries,
+  groupDiscoveryEntriesByShelf,
+} from "../features/discovery/catalog";
+import { getDiscoveryFormatProfile } from "../features/discovery/formatProof.server";
+import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
 
 const route = readFileSync("app/format-lab/squilliam-news/page.tsx", "utf8");
 const repositoryRoot = "public/format-repositories/squilliam-news-v1";
@@ -30,5 +36,32 @@ assert.equal(
   createHash("sha256").update(readFileSync(finalVideoPath)).digest("hex"),
   finalization.videoHash,
 );
+
+const discoveryEntries = getPublishedDiscoveryEntries().filter(
+  (entry) => entry.format.slug === "squilliam-news",
+);
+assert.deepEqual(
+  discoveryEntries.map((entry) => entry.id),
+  ["squilliam-news-artistic-emergency"],
+  "The approved Squilliam final should appear as one card on Discover.",
+);
+assert.equal(discoveryEntries[0]?.media.src, `/${finalVideoPath.replace(/^public\//, "")}`);
+assert.equal(discoveryEntries[0]?.media.poster, `/${evidenceRoot.replace(/^public\//, "")}/poster.png`);
+assert.ok(
+  groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
+    .find((shelf) => shelf.id === "character-explainers")
+    ?.entries.some((entry) => entry.format.slug === "squilliam-news"),
+  "Squilliam News should appear on the character-led Discover shelf.",
+);
+
+const profile = getDiscoveryFormatProfile("squilliam-news");
+assert.ok(profile?.handoff, "Squilliam News should have a consumer Format page and runnable handoff.");
+assert.equal(profile.version, "0.2.1-proof");
+assert.equal(profile.technicalHref, "/format-lab/squilliam-news");
+assert.equal(profile.proofEntries.length, 1);
+const handoffPrompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
+assert.match(handoffPrompt, /Format: Squilliam News/);
+assert.match(handoffPrompt, /formats\/squilliam-news/);
+assert.match(handoffPrompt, /packaged runner, renderer, gestures, lip sync/);
 
 console.log("Squilliam News repo page tests passed.");
