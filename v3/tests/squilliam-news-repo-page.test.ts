@@ -47,11 +47,12 @@ assert.deepEqual(
 );
 assert.equal(discoveryEntries[0]?.media.src, `/${finalVideoPath.replace(/^public\//, "")}`);
 assert.equal(discoveryEntries[0]?.media.poster, `/${evidenceRoot.replace(/^public\//, "")}/poster.png`);
-assert.ok(
-  groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
-    .find((shelf) => shelf.id === "character-explainers")
-    ?.entries.some((entry) => entry.format.slug === "squilliam-news"),
-  "Squilliam News should appear on the character-led Discover shelf.",
+const characterShelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
+  .find((shelf) => shelf.id === "character-explainers");
+assert.equal(
+  characterShelf?.entries[0]?.format.slug,
+  "squilliam-news",
+  "Squilliam News should be the first visible card on the character-led Discover shelf.",
 );
 
 const profile = getDiscoveryFormatProfile("squilliam-news");

@@ -2591,7 +2591,7 @@ const discoveryShelfDefinitions = [
     id: "character-explainers",
     title: "Explain It With Characters",
     description: "Familiar characters make hard ideas and real promotions easy to follow.",
-    formats: ["otaku-explainer", "squilliam-news"],
+    formats: ["squilliam-news", "otaku-explainer"],
   },
   {
     id: "conversations",
