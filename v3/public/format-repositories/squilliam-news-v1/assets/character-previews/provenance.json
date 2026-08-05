@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-08-05T14:29:14Z",
-  "purpose": "Static vertical character-option portraits for the public Squilliam News Format page",
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-05T15:50:11.485Z",
+  "purpose": "Static posters and browser-ready interactive 3D models for the public Squilliam News character-option cards",
   "background": "#ffffff",
   "dimensions": {
     "width": 800,
@@ -9,25 +9,43 @@
   },
   "sourceFrame": 45,
   "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
-  "method": "Rendered from each verified model using the official runtime's Collada loader, scale, material-name transparency rules, and presenter pose; newsroom geometry and chrome were omitted from the static marketing capture",
+  "method": "Rendered and exported from each verified model using the official runtime's Collada loader, scale, material-name transparency rules, and presenter pose; newsroom geometry and chrome were omitted. Legacy black vertex-color channels were removed from GLB exports so embedded textures remain visible in standards-based viewers.",
   "previews": [
+    {
+      "characterId": "squilliam",
+      "image": "assets/character-previews/squilliam.png",
+      "bytes": 38008,
+      "sha256": "7629a021ad193c36bb8080099a702bd4ca0147702125eae3e49afb9ef228e351",
+      "model": "assets/character-previews/squilliam.glb",
+      "modelBytes": 421968,
+      "modelSha256": "cdaf5bf31dd82503362c625318cf8330c14a27200c7b0c877dce287cf22be889"
+    },
     {
       "characterId": "squidward",
       "image": "assets/character-previews/squidward.png",
       "bytes": 38400,
-      "sha256": "0c4ea2925b3cce9e599270bc6a26bb8b629905d7624a7c015f5b4ced35193b0e"
+      "sha256": "0c4ea2925b3cce9e599270bc6a26bb8b629905d7624a7c015f5b4ced35193b0e",
+      "model": "assets/character-previews/squidward.glb",
+      "modelBytes": 382840,
+      "modelSha256": "814d03f4276045c14eb97ea7d9d41b9b147186d41dc787b04f18d6239d5675cb"
     },
     {
       "characterId": "spongebob",
       "image": "assets/character-previews/spongebob.png",
       "bytes": 39660,
-      "sha256": "54f40021f43e67a092fcf505f93e6a1b9f7dab12a9eef4276be5fda5845f90d9"
+      "sha256": "54f40021f43e67a092fcf505f93e6a1b9f7dab12a9eef4276be5fda5845f90d9",
+      "model": "assets/character-previews/spongebob.glb",
+      "modelBytes": 495972,
+      "modelSha256": "d4a2f5bc95598daf1497479daff56a931273b1505906aee374ccff5ca83269ab"
     },
     {
       "characterId": "mr-krabs",
       "image": "assets/character-previews/mr-krabs.png",
       "bytes": 52777,
-      "sha256": "1679b1713f3fa4e24d7b5973814ef080dd08d8974bb3de1f784917505dbc5e51"
+      "sha256": "1679b1713f3fa4e24d7b5973814ef080dd08d8974bb3de1f784917505dbc5e51",
+      "model": "assets/character-previews/mr-krabs.glb",
+      "modelBytes": 371596,
+      "modelSha256": "b8f3281d61179679b42ee5eca7f95e376ef4d781004cb57247f3d595c5ac704c"
     }
   ]
 }

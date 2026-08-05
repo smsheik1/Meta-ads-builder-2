@@ -11,24 +11,54 @@
       "source": "reference IDs supplied by the user; the Fish API key and private Squilliam clone remain local-only"
     },
     {
-      "path": "assets/character-previews/squidward.png",
-      "role": "isolated vertical Squidward character-option portrait",
+      "path": "assets/character-previews/squilliam.png",
+      "role": "isolated vertical Squilliam character-option poster",
       "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
+    },
+    {
+      "path": "assets/character-previews/squilliam.glb",
+      "role": "browser-ready interactive Squilliam character-option model",
+      "source": "GLB export of the verified user-supplied model posed through the official runtime; see character-preview provenance"
+    },
+    {
+      "path": "assets/character-previews/squidward.png",
+      "role": "isolated vertical Squidward character-option poster",
+      "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
+    },
+    {
+      "path": "assets/character-previews/squidward.glb",
+      "role": "browser-ready interactive Squidward character-option model",
+      "source": "GLB export of the verified user-supplied model posed through the official runtime; see character-preview provenance"
     },
     {
       "path": "assets/character-previews/spongebob.png",
-      "role": "isolated vertical SpongeBob character-option portrait",
+      "role": "isolated vertical SpongeBob character-option poster",
       "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
+    },
+    {
+      "path": "assets/character-previews/spongebob.glb",
+      "role": "browser-ready interactive SpongeBob character-option model",
+      "source": "GLB export of the verified user-supplied model posed through the official runtime; see character-preview provenance"
     },
     {
       "path": "assets/character-previews/mr-krabs.png",
-      "role": "isolated vertical Mr. Krabs character-option portrait",
+      "role": "isolated vertical Mr. Krabs character-option poster",
       "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
     },
     {
+      "path": "assets/character-previews/mr-krabs.glb",
+      "role": "browser-ready interactive Mr. Krabs character-option model",
+      "source": "GLB export of the verified user-supplied model posed through the official runtime; see character-preview provenance"
+    },
+    {
       "path": "assets/character-previews/provenance.json",
-      "role": "generation method, dimensions, runtime fingerprint, and immutable hashes for character-option portraits",
+      "role": "generation method, dimensions, runtime fingerprint, and immutable hashes for character-option posters and interactive models",
       "source": "created during the public character-options update"
+    },
+    {
+      "path": "assets/voice-previews/squilliam.mp3",
+      "role": "short public Squilliam character-option voice audition",
+      "source": "lossless excerpt from the already-approved We The Artists narration; no new provider call and no private clone ID packaged"
     },
     {
       "path": "assets/voice-previews/squidward.mp3",

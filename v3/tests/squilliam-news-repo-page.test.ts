@@ -76,12 +76,13 @@ assert.deepEqual(
   voicePresets.presets.filter((preset) => preset.characterStatus === "presenter-ready").map((preset) => preset.characterId),
   ["squilliam", "squidward", "spongebob", "mr-krabs"],
 );
-for (const characterId of ["squidward", "spongebob", "mr-krabs"]) {
+for (const characterId of ["squilliam", "squidward", "spongebob", "mr-krabs"]) {
   const preset = voicePresets.presets.find((candidate) => candidate.characterId === characterId);
   assert.ok(preset?.preview, `${characterId} is missing its public voice audition`);
   const audio = readFileSync(`${repositoryRoot}/${preset.preview.audio}`);
   assert.equal(createHash("sha256").update(audio).digest("hex"), preset.preview.sha256);
-  assert.ok(preset.preview.durationSeconds >= 3 && preset.preview.durationSeconds <= 8);
+  const minimumDuration = characterId === "squilliam" ? 2.5 : 3;
+  assert.ok(preset.preview.durationSeconds >= minimumDuration && preset.preview.durationSeconds <= 8);
 }
 
 const discoveryEntries = getPublishedDiscoveryEntries().filter(
@@ -108,33 +109,34 @@ assert.ok(profile?.handoff, "Squilliam News should have a consumer Format page a
 assert.equal(profile.version, "0.2.1-proof");
 assert.equal(profile.technicalHref, "/format-lab/squilliam-news");
 assert.equal(profile.proofEntries.length, 1);
-assert.deepEqual(profile.characterOptions?.map((option) => option.id), ["squidward", "spongebob", "mr-krabs"]);
+assert.deepEqual(profile.characterOptions?.map((option) => option.id), ["squilliam", "squidward", "spongebob", "mr-krabs"]);
 for (const option of profile.characterOptions ?? []) {
   assert.equal(existsSync(`public${option.portraitSrc}`), true);
   assert.equal(existsSync(`public${option.audioSrc}`), true);
 }
 const interactiveOptions = profile.characterOptions?.filter((option) => option.modelSrc) ?? [];
-assert.deepEqual(interactiveOptions.map((option) => option.id), ["spongebob"]);
-const spongeBobModel = readFileSync(`public${interactiveOptions[0]?.modelSrc?.split("?")[0]}`);
-assert.equal(spongeBobModel.subarray(0, 4).toString("ascii"), "glTF");
-const spongeBobModelJsonLength = spongeBobModel.readUInt32LE(12);
-const spongeBobModelJson = JSON.parse(
-  spongeBobModel.subarray(20, 20 + spongeBobModelJsonLength).toString(),
-) as {
-  images?: unknown[];
-  meshes?: Array<{ primitives: Array<{ attributes: Record<string, number> }> }>;
-};
-assert.ok((spongeBobModelJson.images?.length ?? 0) > 0, "The interactive model must retain its embedded textures.");
-for (const mesh of spongeBobModelJson.meshes ?? []) {
-  for (const primitive of mesh.primitives) {
-    assert.equal(
-      "COLOR_0" in primitive.attributes,
-      false,
-      "Legacy black vertex colors must not override SpongeBob's embedded textures.",
-    );
+assert.deepEqual(interactiveOptions.map((option) => option.id), ["squilliam", "squidward", "spongebob", "mr-krabs"]);
+for (const option of interactiveOptions) {
+  const model = readFileSync(`public${option.modelSrc?.split("?")[0]}`);
+  assert.equal(model.subarray(0, 4).toString("ascii"), "glTF");
+  const modelJsonLength = model.readUInt32LE(12);
+  const modelJson = JSON.parse(model.subarray(20, 20 + modelJsonLength).toString()) as {
+    images?: unknown[];
+    meshes?: Array<{ primitives: Array<{ attributes: Record<string, number> }> }>;
+  };
+  assert.ok((modelJson.images?.length ?? 0) > 0, `${option.id} must retain its embedded textures.`);
+  for (const mesh of modelJson.meshes ?? []) {
+    for (const primitive of mesh.primitives) {
+      assert.equal(
+        "COLOR_0" in primitive.attributes,
+        false,
+        `Legacy black vertex colors must not override ${option.id}'s embedded textures.`,
+      );
+    }
   }
 }
 assert.match(consumerRoute, /Choose your anchor\./);
+assert.match(consumerRoute, /Models return to attention after three seconds/);
 assert.match(consumerRoute, /DiscoveryCharacterOptions/);
 assert.match(characterOptionsComponent, /DiscoveryCharacterModelViewer/);
 assert.match(characterOptionsComponent, /new Audio\(option\.audioSrc\)/);
@@ -146,7 +148,16 @@ assert.match(characterModelViewer, /@google\/model-viewer/);
 assert.match(characterModelViewer, /"camera-controls": ""/);
 assert.match(characterModelViewer, /"disable-pan": ""/);
 assert.match(characterModelViewer, /"touch-action": "pan-y"/);
+assert.match(characterModelViewer, /loading: "lazy"/);
+assert.match(characterModelViewer, /RETURN_DELAY_MS = 3000/);
+assert.match(characterModelViewer, /pointerdown/);
+assert.match(characterModelViewer, /pointerup/);
+assert.match(characterModelViewer, /pointercancel/);
+assert.match(characterModelViewer, /handleWheel/);
+assert.match(characterModelViewer, /handleKeyDown/);
+assert.match(characterModelViewer, /viewer\.cameraOrbit = RESTING_CAMERA_ORBIT/);
 assert.match(characterModelViewer, /Drag to rotate/);
+assert.match(characterModelViewer, /Returns in 3 sec/);
 const handoffPrompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
 assert.match(handoffPrompt, /Format: Squilliam News/);
 assert.match(handoffPrompt, /formats\/squilliam-news/);

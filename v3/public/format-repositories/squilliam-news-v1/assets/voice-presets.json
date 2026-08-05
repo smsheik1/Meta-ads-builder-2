@@ -10,7 +10,13 @@
       "referenceId": null,
       "voiceStatus": "operator-supplied",
       "characterStatus": "presenter-ready",
-      "note": "Use the operator's approved Squilliam clone in SQUILLIAM_VOICE_ID. The private clone is not packaged."
+      "note": "Use the operator's approved Squilliam clone in SQUILLIAM_VOICE_ID. The private clone is not packaged.",
+      "preview": {
+        "audio": "assets/voice-previews/squilliam.mp3",
+        "line": "See you there, Squiddy. Do leave the clarinet at home.",
+        "durationSeconds": 2.61,
+        "sha256": "d9daed8585947e77346b367bf7c9394864e45dac1ed79993a95771f1abf8ddfe"
+      }
     },
     {
       "characterId": "squidward",

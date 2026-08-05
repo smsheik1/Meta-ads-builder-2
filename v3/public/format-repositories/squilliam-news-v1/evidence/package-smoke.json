@@ -1,10 +1,10 @@
 {
   "status": "pass",
-  "testedAt": "2026-08-05T14:44:22Z",
+  "testedAt": "2026-08-05T16:09:29Z",
   "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
-  "testedArchiveSha256": "1c7ee0e6c3599c2e9307805c3dba4743c30d632225e42e6588cb51cbdf682bd6",
+  "testedArchiveSha256": "c4ef96473f0e929a6323b7aad746a2c91cf291cb5ac39e4a8adf901623bcde1e",
   "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
-  "cleanExtractionDirectory": "/private/tmp/wiggly-squilliam-character-options.szdYaJ/wiggly-squilliam-news-format-kit",
+  "cleanExtractionDirectory": "/private/tmp/wiggly-squilliam-interactive-package.fkCtzO/wiggly-squilliam-news-format-kit",
   "commands": [
     "npm install --ignore-scripts",
     "npm test",
@@ -30,10 +30,11 @@
     "height": 720,
     "contactSheetCreated": true,
     "zipIntegrity": "pass",
-    "manifestFiles": 158,
+    "manifestFiles": 164,
     "manifestIncludesVoicePresetRegistry": true,
-    "manifestIncludesCharacterOptionPortraits": 3,
-    "manifestIncludesVoicePreviewMp3s": 3,
+    "manifestIncludesCharacterOptionPortraits": 4,
+    "manifestIncludesInteractiveCharacterModels": 4,
+    "manifestIncludesVoicePreviewMp3s": 4,
     "dependencyAudit": "5 packages audited; zero known vulnerabilities"
   },
   "characterPackEvidence": {
@@ -45,33 +46,42 @@
   "voicePresetEvidence": {
     "userSuppliedFishPresets": 5,
     "presenterReadyModels": 4,
-    "packagedPresetAndModelPairs": 3,
+    "packagedPresetAndModelPairs": 4,
     "operatorSuppliedSquilliamVoiceSlot": true,
     "voiceReadyModelsPendingQa": ["patrick", "sandy"],
     "exactReferenceIdContractTest": "pass",
-    "publicVoicePreviews": 3,
+    "publicVoicePreviews": 4,
     "providerCallsForPublicVoicePreviews": 3,
+    "reusedApprovedSquilliamNarration": 1,
     "previewHashAndDurationTests": "pass"
   },
   "characterOptionEvidence": {
-    "isolatedVerticalPortraits": 3,
+    "isolatedVerticalPortraits": 4,
+    "interactiveModels": 4,
+    "interactiveModelBytes": 1672376,
+    "lazyLoaded": true,
     "portraitDimensions": "800 × 1000",
     "background": "white",
     "portraitRuntimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
-    "portraitHashTests": "pass"
+    "portraitHashTests": "pass",
+    "embeddedTextureAndBlackVertexColorTests": "pass"
   },
   "consumerAppEvidence": {
     "focusedPageTest": "pass",
     "typecheck": "pass",
     "productionBuild": "pass with the existing configured local Convex environment",
-    "desktopCharacterOptionCardsVisible": 3,
+    "desktopCharacterOptionCardsVisible": 4,
     "mobileCardsStackWithoutOverlap": true,
     "horizontalOverflow": false,
     "browserErrors": 0,
-    "voiceButtonsVisible": 3,
+    "voiceButtonsVisible": 4,
     "voiceButtonsMinimumSizePixels": 44,
-    "allThreePreviewsBeginPlayback": true,
+    "allFourPreviewsBeginPlayback": true,
     "switchingPreviewStopsPreviousAudio": true,
+    "automaticReturnMilliseconds": [3015, 3340],
+    "modelViewerSharedJsGzipBytes": 306398,
+    "interactiveModelBytes": 1672376,
+    "interactiveModelsLazyLoaded": true,
     "downloadLinkPresent": true
   },
   "currentPromotionEvidence": {
@@ -102,6 +112,6 @@
     "__pycache__",
     "*.pyc"
   ],
-  "secretValueScan": "pass; configured API key values are absent. Five user-approved public Fish reference presets and three generated public preview clips are intentionally packaged; the private Squilliam clone remains outside the kit.",
+  "secretValueScan": "pass; configured API key values are absent. Five user-approved public Fish reference presets and four public preview clips are intentionally packaged; Squilliam's clip reuses approved narration and its private clone remains outside the kit.",
   "note": "This receipt proves the evidence-bearing pre-receipt archive. Adding this receipt changes archive bytes without changing runtime or content; the SHA-256 sidecar beside the final ZIP is authoritative for download integrity."
 }

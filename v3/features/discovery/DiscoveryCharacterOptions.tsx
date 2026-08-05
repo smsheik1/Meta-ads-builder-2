@@ -77,7 +77,7 @@ export function DiscoveryCharacterOptions({
   }
 
   return (
-    <div className="mt-9 grid gap-5 md:grid-cols-3">
+    <div className="mt-9 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {options.map((option) => {
         const isPlaying = activeId === option.id;
         const hasError = errorId === option.id;
@@ -94,6 +94,7 @@ export function DiscoveryCharacterOptions({
                   src={option.modelSrc}
                   poster={option.portraitSrc}
                   alt={`${option.name} interactive 3D presenter model`}
+                  characterId={option.id}
                 />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
