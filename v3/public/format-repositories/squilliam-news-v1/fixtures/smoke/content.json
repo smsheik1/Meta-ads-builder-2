@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "formatVersion": "0.1.0-proof",
+  "formatVersion": "0.2.0-proof",
   "id": "smoke-goo-lagoon-expo",
+  "characterId": "squilliam",
   "headline": "Goo Lagoon declares innovation emergency",
   "locationBug": "Goo Lagoon",
   "tickerItems": ["Science Expo", "Saturday", "Doors 4 PM", "Free demo lab", "All ages"],
@@ -20,4 +21,3 @@
     {"start": 27.2, "end": 30, "type": "signoff", "eyebrow": "SQUILLIAM'S SIGN-OFF", "titleLines": ["SEE YOU THERE,", "SQUIDDY."], "footer": "PROTECTIVE EYEWEAR WON'T HELP."}
   ]
 }
-

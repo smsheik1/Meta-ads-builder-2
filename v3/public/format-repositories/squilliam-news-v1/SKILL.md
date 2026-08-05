@@ -1,6 +1,6 @@
 ---
 name: squilliam-news-format
-description: Turn a real event, launch, or promotion into a reusable thirty-second Squilliam News bulletin using the packaged renderer and runner.
+description: Turn a real event, launch, or promotion into a reusable thirty-second Squilliam News bulletin with a verified selectable presenter using the packaged renderer and runner.
 ---
 
 # Squilliam News agent loop
@@ -9,7 +9,9 @@ Operate this runnable Format Kit. Do not rebuild, imitate, or replace the render
 
 ## First question
 
-Ask: `What event, launch, or promotion should Squilliam declare an emergency over?`
+Ask: `What event, launch, or promotion should the Squilliam News desk declare an emergency over, and which verified presenter should anchor it?`
+
+Use only `squilliam`, `squidward`, `spongebob`, or `mr-krabs` as `content.characterId`. Squilliam remains the default. Do not add a model to this list until the same official renderer passes character-pack smoke QA.
 
 Ask one question at a time. If the user requests the packaged We The Artists proof, initialize from that example without additional creative questions.
 

@@ -1,6 +1,11 @@
 {
   "fixed": [
     {
+      "path": "assets/character-packs.json",
+      "role": "verified presenter registry, rig maps, and model calibration",
+      "source": "created for this private Wiggly Repo from render-tested user-supplied assets"
+    },
+    {
       "path": "assets/character/chr_squilliam_bindpose.dae",
       "role": "rigged anchor character",
       "source": "user-supplied game asset",
@@ -22,6 +27,64 @@
       "source": "user-supplied game asset"
     },
     {
+      "path": "assets/characters/squidward/chr_squid_bindpose.dae",
+      "role": "verified rigged Squidward presenter",
+      "source": "user-supplied game asset",
+      "distribution": "Review rights before distributing outside the user's private Repo."
+    },
+    {
+      "path": "assets/characters/squidward/tex_0000_squidward_128.PNG",
+      "role": "Squidward body texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/squidward/tx8_0000_squideyes_128.PNG",
+      "role": "Squidward eye texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/spongebob/chr_bob_bindpose.dae",
+      "role": "verified rigged SpongeBob presenter",
+      "source": "user-supplied game asset",
+      "distribution": "Review rights before distributing outside the user's private Repo."
+    },
+    {
+      "path": "assets/characters/spongebob/tex_0000_spongebob_128.PNG",
+      "role": "SpongeBob body texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/spongebob/tx1_0000_lashes.PNG",
+      "role": "SpongeBob lash texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/spongebob/tx8_0000_spongecheeks_32.PNG",
+      "role": "SpongeBob cheek texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/spongebob/tx8_0000_spongeeyes_128.PNG",
+      "role": "SpongeBob eye texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/mr-krabs/chr_krabs_bindpose.dae",
+      "role": "verified rigged Mr. Krabs presenter",
+      "source": "user-supplied game asset",
+      "distribution": "Review rights before distributing outside the user's private Repo."
+    },
+    {
+      "path": "assets/characters/mr-krabs/tex_0000_mrkrabs_128.PNG",
+      "role": "Mr. Krabs body texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/characters/mr-krabs/tx1_0000_krabslids_128.PNG",
+      "role": "Mr. Krabs eyelid texture",
+      "source": "user-supplied game asset"
+    },
+    {
       "path": "assets/motion/presenter-motion-reference.json",
       "role": "normalized presenter pose track",
       "source": "derived from the user-selected Mixkit green-screen presenter reference"
@@ -29,6 +92,7 @@
   ],
   "replaceable": [
     "promotion content.json",
+    "verified presenter characterId",
     "story images",
     "asset provenance",
     "narration script",
@@ -37,4 +101,3 @@
     "generated narration and run evidence"
   ]
 }
-

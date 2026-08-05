@@ -40,6 +40,14 @@
       "rootCause": "README contained both facts, but the agent-facing ordered loop did not state them at the exact point of use.",
       "smallestFix": "Put npm install before smoke and name the host viewer directly in the agent loop; clarify that Fish variables are optional when approved audio ships with an example.",
       "evidence": "The blind run completed on attempt one with zero provider calls; its state, quality report, and finalization receipt are preserved under evidence/blind-handoff."
+    },
+    {
+      "status": "proven",
+      "scope": "format-specific",
+      "friction": "Downloaded character models varied from equivalent semantic rigs to generic skeletons and completely static geometry.",
+      "rootCause": "A model file alone does not guarantee compatible arm chains, face controls, framing, transparency, or presenter-quality output.",
+      "smallestFix": "Register only characters with an explicit rig map and admit them after the same nine-pose visual smoke test; record and exclude failures.",
+      "evidence": "Squilliam, Squidward, SpongeBob, and Mr. Krabs pass hashed smoke evidence under evidence/character-packs; CHARACTER-AUDIT.md records six exclusions."
     }
   ],
   "sharedStandardChange": "None. The cross-Format lessons are already represented by proven Wiggly rules 6, 7, and 9; the remaining fixes are specific to this video Format."

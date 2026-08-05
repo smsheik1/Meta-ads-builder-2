@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { access, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { test } from "node:test";
 import path from "node:path";
@@ -16,6 +17,33 @@ async function missing(file) {
   try { await access(file); return false; } catch { return true; }
 }
 
+async function runtimeFilesUnder(relativeDirectory) {
+  const files = [];
+  for (const entry of await readdir(path.join(root, relativeDirectory), { withFileTypes: true })) {
+    const relative = path.join(relativeDirectory, entry.name);
+    if (entry.isDirectory()) files.push(...await runtimeFilesUnder(relative));
+    else if (entry.isFile()) files.push(relative);
+  }
+  return files;
+}
+
+async function currentRuntimeHash() {
+  const files = [
+    "runner.mjs",
+    "runtime/render.mjs",
+    "runtime/renderer/index.html",
+    "runtime/renderer/app.js",
+    "runtime/scripts/build_motion.py",
+    "assets/character-packs.json",
+    "assets/motion/presenter-motion-reference.json",
+    ...await runtimeFilesUnder("assets/character"),
+    ...await runtimeFilesUnder("assets/characters"),
+  ].sort();
+  const hash = createHash("sha256");
+  for (const relative of files) hash.update(await readFile(path.join(root, relative)));
+  return hash.digest("hex");
+}
+
 test("package exposes the complete semantic command loop and one official renderer", async () => {
   const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
   for (const command of ["smoke", "check", "init", "validate", "render", "inspect", "finalize", "package"]) {
@@ -28,6 +56,39 @@ test("package exposes the complete semantic command loop and one official render
   assert.equal(format.outputContract, "output-contract.json");
   assert.match(composition.rendererInvariant, /runtime\/renderer\/app\.js/);
   assert.deepEqual((await readdir(path.join(root, "runtime", "renderer"))).sort(), ["app.js", "index.html"]);
+});
+
+test("character catalog exposes only verified rigs as production presenters", async () => {
+  const catalog = JSON.parse(await readFile(path.join(root, "assets", "character-packs.json"), "utf8"));
+  const inventory = JSON.parse(await readFile(path.join(root, "assets.json"), "utf8"));
+  const documentedAssets = new Set(inventory.fixed.map((asset) => asset.path));
+  const byId = Object.fromEntries(catalog.packs.map((pack) => [pack.id, pack]));
+  assert.equal(catalog.defaultCharacterId, "squilliam");
+  assert.equal(byId.squilliam.status, "presenter-ready");
+  assert.equal(byId.squidward.status, "presenter-ready");
+  for (const pack of catalog.packs.filter((candidate) => candidate.status === "presenter-ready")) {
+    assert.equal(pack.format, "collada");
+    assert.ok(pack.rig?.leftArm && pack.rig?.rightArm && pack.rig?.mouth && pack.rig?.blink);
+    await access(path.join(root, pack.model));
+  }
+  for (const relative of await runtimeFilesUnder("assets/characters")) {
+    assert.ok(documentedAssets.has(relative), `undocumented character asset: ${relative}`);
+  }
+});
+
+test("every verified character has immutable visual smoke evidence", async () => {
+  const report = JSON.parse(await readFile(path.join(root, "evidence", "character-packs", "quality-report.json"), "utf8"));
+  const catalog = JSON.parse(await readFile(path.join(root, "assets", "character-packs.json"), "utf8"));
+  assert.equal(report.status, "pass");
+  assert.equal(report.runtimeHash, await currentRuntimeHash());
+  assert.deepEqual(report.characters.map((item) => item.characterId).sort(), catalog.packs.map((pack) => pack.id).sort());
+  for (const item of report.characters) {
+    assert.equal(item.status, "pass");
+    for (const [file, expected] of [[item.video, item.videoHash], [item.contactSheet, item.contactSheetHash]]) {
+      const bytes = await readFile(path.join(root, "evidence", "character-packs", file));
+      assert.equal(createHash("sha256").update(bytes).digest("hex"), expected);
+    }
+  }
 });
 
 test("renderer contains no We The Artists proof facts", async () => {
@@ -69,6 +130,18 @@ test("validation rejects a slide missing layout-required content", async () => {
   const result = run("validate", "--run=contract-test");
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}${result.stderr}`, /Slide 9 needs a non-empty button/);
+});
+
+test("validation rejects a character outside the verified catalog", async () => {
+  await rm(testRun, { recursive: true, force: true });
+  assert.equal(run("init", "--run=contract-test", "--from=wiggly-format-lab").status, 0);
+  const contentFile = path.join(testRun, "content.json");
+  const content = JSON.parse(await readFile(contentFile, "utf8"));
+  content.characterId = "patrick";
+  await writeFile(contentFile, `${JSON.stringify(content, null, 2)}\n`);
+  const result = run("validate", "--run=contract-test");
+  assert.notEqual(result.status, 0);
+  assert.match(`${result.stdout}${result.stderr}`, /Unknown characterId/);
 });
 
 test("validated narration-free run cannot contact a provider without approval", async () => {

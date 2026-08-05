@@ -2,7 +2,9 @@
 
 ## Format boundary
 
-The fixed Format is the rigged anchor, studio, camera, presenter-derived gesture system, desk-safe arm retargeting, mouth-bone lip sync, ten monitor layouts, 30-second timeline, renderer, and quality gates. Replaceable content is the promotion script, facts, ticker, slide copy, story images, pronunciation overrides, provenance, and approved narration.
+The fixed Format is the verified character-pack contract, studio, camera, presenter-derived gesture system, desk-safe arm retargeting, mouth/jaw-bone lip sync, ten monitor layouts, 30-second timeline, renderer, and quality gates. Replaceable content includes the verified `characterId`, promotion script, facts, ticker, slide copy, story images, pronunciation overrides, provenance, and approved narration.
+
+The two full promotional proofs below were produced under version `0.1.0-proof`. Version `0.2.0-proof` adds selectable character packs and therefore has a different runtime fingerprint. Current-runtime nine-pose visual evidence for all four verified presenters is stored under `evidence/character-packs/`; the historical full proofs remain useful creative references but cannot finalize a new v0.2 run.
 
 ## Proof 1 — We The Artists
 
@@ -29,6 +31,14 @@ The fixed Format is the rigged anchor, studio, camera, presenter-derived gesture
 ## Shared-standard decision
 
 No new universal Wiggly rule is proposed. The general lessons—separate content from runtime, inspect final media, and derive timing from actual audio—already exist in the shared standard. Text fitting and resumable browser-frame caches remain Format-specific evidence.
+
+## Character-pack proof — version 0.2
+
+- Verified selectors: `squilliam`, `squidward`, `spongebob`, and `mr-krabs`.
+- Every selector validated and rendered the same 900-frame motion plan through `runtime/renderer/app.js`.
+- Nine representative source frames per character were encoded into a smoke video and contact sheet.
+- Media hashes, content hashes, the current runtime hash, and admission checks are recorded in `evidence/character-packs/quality-report.json`.
+- Patrick, Sandy, Larry, Man Ray, Announcer Fish, and Gary were deliberately excluded; `CHARACTER-AUDIT.md` records the reason for each.
 
 ## Blind-agent handoff
 

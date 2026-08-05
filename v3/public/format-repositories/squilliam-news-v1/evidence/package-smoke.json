@@ -1,12 +1,13 @@
 {
   "status": "pass",
-  "testedAt": "2026-08-05T01:47:00Z",
+  "testedAt": "2026-08-05T02:28:30Z",
   "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
-  "testedArchiveSha256": "0abd07a9f8f9e12d7d28d66c449ca045223b50cdc95916882095b7af419b0e0b",
-  "runtimeHash": "cc7fe1bfb8dd651063b247399f2103530bfe988f02a04149a8250c0fb2394558",
-  "cleanExtractionDirectory": "/tmp/wiggly-squilliam-release.nQ48FS",
+  "testedArchiveSha256": "19fad6cc4066564024c179d3f531559c9020da061a5daf844510682c96709220",
+  "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
+  "cleanExtractionDirectory": "/tmp/wiggly-characters-release.xRnefA",
   "commands": [
     "npm ci --silent",
+    "npm test --silent",
     "npm run smoke --silent"
   ],
   "result": {
@@ -19,6 +20,12 @@
     "width": 1280,
     "height": 720,
     "contactSheetCreated": true
+  },
+  "characterPackEvidence": {
+    "verifiedPresenters": 4,
+    "hashedSmokeVideos": 4,
+    "hashedContactSheets": 4,
+    "catalogAndEvidenceTests": "pass"
   },
   "archiveExclusionsChecked": [
     "node_modules",

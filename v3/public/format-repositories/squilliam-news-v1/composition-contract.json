@@ -22,8 +22,7 @@
     "Adjacent slides have no gaps or overlaps.",
     "Every slide lasts at least 1.5 seconds.",
     "Only content fields and story assets vary between promotions.",
-    "The studio, character rig, presenter motion source, mouth deformation, desk occlusion, camera, and renderer remain fixed."
+    "The studio, verified character-pack contract, presenter motion source, mouth deformation modes, desk occlusion, camera, and renderer remain fixed."
   ],
   "rendererInvariant": "Preview, smoke frames, final video, and inspection evidence all originate from runtime/renderer/app.js through runtime/render.mjs."
 }
-

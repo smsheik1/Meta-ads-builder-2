@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "formatVersion": "0.1.0-proof",
+  "formatVersion": "0.2.0-proof",
   "id": "we-the-artists-august-2026",
+  "characterId": "squilliam",
   "headline": "Indianapolis declares artistic emergency",
   "locationBug": "Indianapolis",
   "tickerItems": [
@@ -31,4 +32,3 @@
     {"start": 27.2, "end": 30, "type": "signoff", "eyebrow": "SQUILLIAM'S SIGN-OFF", "titleLines": ["SEE YOU THERE,", "SQUIDDY."], "footer": "DO LEAVE THE CLARINET AT HOME."}
   ]
 }
-

@@ -1,6 +1,8 @@
 # Squilliam News Wiggly Format Repo
 
-This Repo turns a real promotion into a thirty-second breaking-news segment presented by a rigged Squilliam anchor. The studio, character, camera, presenter-derived gestures, desk collision behavior, real-mouth lip sync, screen layouts, and rendering pipeline are fixed. Promotion facts, story images, copy, timing labels, pronunciation overrides, and voice inputs are replaceable.
+This Repo turns a real promotion into a thirty-second breaking-news segment in the Squilliam News format. One official renderer drives a verified character pack, presenter-derived gestures, desk collision behavior, real-bone lip sync, the studio camera, screen layouts, and export. Promotion facts, story images, copy, timing labels, pronunciation overrides, voice inputs, and the verified `characterId` are replaceable.
+
+The verified presenter roster is `squilliam` (default), `squidward`, `spongebob`, and `mr-krabs`. Put one of those IDs in `content.json`. See `CHARACTER-AUDIT.md` for the downloaded models that were deliberately left out after render QA.
 
 The two supplied proofs intentionally differ: We The Artists promotes an Indianapolis event with photographs, while Wiggly Format Lab promotes a software workflow with synthetic diagrams. Their results and the portability bug found by the second proof are recorded in `PROOF-REPORT.md` and `lessons.json`.
 
@@ -25,7 +27,8 @@ If the run has no approved narration, copy `.env.example` to `.env.local`, suppl
 | Fixed Format mechanics | Replaceable promotion content |
 | --- | --- |
 | Three.js renderer and 1280×720 studio | Headline, location bug, ticker |
-| Rigged anchor and real mouth bones | 65–112 word narration |
+| Character-pack contract and rig retargeting | Verified `characterId` |
+| Calibrated real mouth/jaw bones | 65–112 word narration |
 | Presenter-derived pose source | Pronunciation overrides and approved voice |
 | Desk-safe arm retargeting | Poster and three story images |
 | Ten monitor layouts and 30-second output | Slide copy, facts, CTA, sign-off |
@@ -41,4 +44,4 @@ The runner prints absolute paths for playable video and contact-sheet output. An
 
 ## Provider and rights boundary
 
-API keys and private voice model IDs are environment values, never package data. The included character files were supplied by the user for this private proof. Review distribution rights before publishing a downloadable public kit; the runtime is designed so a compatible licensed character pack can replace the private pack as a whole.
+API keys and private voice model IDs are environment values, never package data. The included character files were supplied by the user for this private proof. Review distribution rights before publishing a downloadable public kit. Adding another character requires an entire registered pack plus render QA; it must not create another renderer.

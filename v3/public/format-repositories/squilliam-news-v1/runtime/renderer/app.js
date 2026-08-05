@@ -14,6 +14,16 @@ const content = await fetch(contentUrl).then((response) => {
   return response.json();
 });
 const contentAssetUrl = (path) => new URL(path, contentUrl).href;
+const characterCatalog = await fetch("../../assets/character-packs.json").then((response) => {
+  if (!response.ok) throw new Error(`Could not load character catalog: ${response.status}`);
+  return response.json();
+});
+const characterId = content.characterId || characterCatalog.defaultCharacterId;
+const characterPack = characterCatalog.packs.find((candidate) => candidate.id === characterId);
+if (!characterPack) throw new Error(`Unknown characterId: ${characterId}`);
+if (!characterPack.rig || characterPack.status !== "presenter-ready") {
+  throw new Error(`${characterPack.label} is ${characterPack.status} and cannot anchor the presenter rig yet.`);
+}
 
 document.title = `SNN — ${content.headline}`;
 document.querySelector("#headline").textContent = content.headline;
@@ -367,23 +377,24 @@ const motion = await fetch(motionUrl).then((response) => {
   return response.json();
 });
 const loader = new ColladaLoader();
-const collada = await loader.loadAsync("../../assets/character/chr_squilliam_bindpose.dae");
-const squilliam = collada.scene;
+const collada = await loader.loadAsync(new URL(`../../${characterPack.model}`, location.href).href);
+const character = collada.scene;
 const characterRoot = new THREE.Group();
 // The export declares Z-up. Keep the loader's axis correction explicit so the
 // character's authored Z dimension becomes vertical in the Three.js scene.
-squilliam.rotation.set(-Math.PI / 2, 0, 0);
-characterRoot.add(squilliam);
+character.rotation.set(-Math.PI / 2, 0, 0);
+characterRoot.add(character);
 scene.add(characterRoot);
 
 const characterTextures = new Set();
-squilliam.traverse((object) => {
+character.traverse((object) => {
   if (object.isMesh) {
     object.castShadow = true;
     object.receiveShadow = true;
     const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
     const materials = sourceMaterials.map((source) => {
-      const isEyeOverlay = source.name === "unnamed.012" || source.name === "unnamed.013";
+      const textureSource = source.map?.image?.currentSrc || source.map?.image?.src || "";
+      const isTransparentOverlay = characterPack.transparentTextures?.some((filename) => textureSource.endsWith(filename));
       if (source.map) {
         characterTextures.add(source.map);
         source.map.magFilter = THREE.NearestFilter;
@@ -394,8 +405,9 @@ squilliam.traverse((object) => {
         map: source.map || null,
         color: 0xffffff,
         side: THREE.DoubleSide,
-        transparent: isEyeOverlay,
-        alphaTest: isEyeOverlay ? 0.08 : 0,
+        transparent: isTransparentOverlay,
+        alphaTest: isTransparentOverlay ? 0.08 : 0,
+        depthWrite: !isTransparentOverlay,
         toneMapped: false,
       });
     });
@@ -412,23 +424,23 @@ await Promise.all([...characterTextures].map((texture) => {
   });
 }));
 
-let bounds = new THREE.Box3().setFromObject(squilliam);
+let bounds = new THREE.Box3().setFromObject(character);
 // Keep the original game units at a comfortable seated-news-anchor scale.
-const modelScale = 0.86;
-squilliam.scale.setScalar(modelScale);
-squilliam.updateMatrixWorld(true);
-bounds = new THREE.Box3().setFromObject(squilliam);
+const modelScale = characterPack.scale;
+character.scale.setScalar(modelScale);
+character.updateMatrixWorld(true);
+bounds = new THREE.Box3().setFromObject(character);
 const scaledCenter = bounds.getCenter(new THREE.Vector3());
-squilliam.position.x -= scaledCenter.x;
-squilliam.position.y -= bounds.min.y;
-squilliam.position.z -= scaledCenter.z;
+character.position.x -= scaledCenter.x;
+character.position.y -= bounds.min.y;
+character.position.z -= scaledCenter.z;
 characterRoot.position.z = -0.05;
-characterRoot.position.y = 0;
-characterRoot.rotation.y = 0;
-squilliam.updateMatrixWorld(true);
+characterRoot.position.y = characterPack.rootY || 0;
+characterRoot.rotation.y = characterPack.yaw || 0;
+character.updateMatrixWorld(true);
 
 const bones = {};
-squilliam.traverse((object) => {
+character.traverse((object) => {
   if (object.isBone) bones[object.name] = object;
 });
 const rest = new Map();
@@ -458,7 +470,7 @@ function resetBones() {
     bone.quaternion.copy(transform.quaternion);
     bone.scale.copy(transform.scale);
   }
-  squilliam.updateMatrixWorld(true);
+  character.updateMatrixWorld(true);
 }
 
 const gestureTemplates = {
@@ -587,18 +599,18 @@ function trackedBodyPose(points) {
 
 function offsetBoneInWorld(bone, x, y, z) {
   if (!bone?.parent) return;
-  squilliam.updateMatrixWorld(true);
+  character.updateMatrixWorld(true);
   bone.parent.getWorldQuaternion(temp.parent).invert();
   temp.localDelta.set(x, y, z).applyQuaternion(temp.parent);
   bone.position.copy(rest.get(bone).position).add(temp.localDelta);
-  squilliam.updateMatrixWorld(true);
+  character.updateMatrixWorld(true);
 }
 
 function aimBone(boneName, childName, targetDirection, blend = 0.82) {
   const bone = bones[boneName];
   const child = bones[childName];
   if (!bone || !child || !targetDirection) return;
-  squilliam.updateMatrixWorld(true);
+  character.updateMatrixWorld(true);
   bone.getWorldPosition(temp.a);
   child.getWorldPosition(temp.b);
   temp.current.copy(temp.b).sub(temp.a).normalize();
@@ -608,7 +620,7 @@ function aimBone(boneName, childName, targetDirection, blend = 0.82) {
   temp.desired.copy(temp.delta).multiply(temp.world);
   bone.parent.getWorldQuaternion(temp.parent).invert();
   bone.quaternion.copy(temp.parent.multiply(temp.desired));
-  squilliam.updateMatrixWorld(true);
+  character.updateMatrixWorld(true);
 }
 
 function applyFrame(index) {
@@ -627,14 +639,16 @@ function applyFrame(index) {
   const handR = trackedHandDirection(points, "right");
   const bodyPose = trackedBodyPose(points);
 
-  aimBone("squilliam_bicep_L", "squilliam_elbow_L", upperL || deskSafeDirection(storyPose.upperL, 0.08), 0.92);
-  aimBone("squilliam_elbow_L", "squilliam_twist_L", foreL || deskSafeDirection(storyPose.foreL, 0.22), 0.94);
-  aimBone("squilliam_hand_L", "squilliam_fingers_L", handL, 0.72);
-  aimBone("squilliam_bicep_R", "squilliam_elbow_R", upperR || deskSafeDirection(storyPose.upperR, 0.08), 0.92);
-  aimBone("squilliam_elbow_R", "squilliam_twist_R", foreR || deskSafeDirection(storyPose.foreR, 0.22), 0.94);
-  aimBone("squilliam_hand_R", "squilliam_fingers_R", handR, 0.72);
+  const leftArm = characterPack.rig.leftArm;
+  const rightArm = characterPack.rig.rightArm;
+  aimBone(leftArm.upper, leftArm.elbow, upperL || deskSafeDirection(storyPose.upperL, 0.08), 0.92);
+  aimBone(leftArm.forearm, leftArm.forearmTip, foreL || deskSafeDirection(storyPose.foreL, 0.22), 0.94);
+  aimBone(leftArm.hand, leftArm.handTip, handL, 0.72);
+  aimBone(rightArm.upper, rightArm.elbow, upperR || deskSafeDirection(storyPose.upperR, 0.08), 0.92);
+  aimBone(rightArm.forearm, rightArm.forearmTip, foreR || deskSafeDirection(storyPose.foreR, 0.22), 0.94);
+  aimBone(rightArm.hand, rightArm.handTip, handR, 0.72);
 
-  const chest = bones.squilliam_chest;
+  const chest = bones[characterPack.rig.chest];
   if (chest) {
     const base = rest.get(chest).quaternion;
     const trackedRoll = bodyPose?.roll ?? 0;
@@ -642,7 +656,7 @@ function applyFrame(index) {
     chest.quaternion.copy(base).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(emphasisLean, 0, trackedRoll)));
   }
 
-  const head = bones.squilliam_head;
+  const head = bones[characterPack.rig.head];
   if (head) {
     const base = rest.get(head).quaternion;
     const nod = Math.sin(time * 2.15) * 0.028 + frame.mouth * 0.045;
@@ -650,26 +664,38 @@ function applyFrame(index) {
     head.quaternion.copy(base).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(nod, turn, 0)));
   }
 
-  const mouth = bones.squilliam_mouth;
+  const mouthRig = characterPack.rig.mouth;
+  const mouth = bones[mouthRig.center];
   if (mouth) {
-    const base = rest.get(mouth).scale;
     const speechOpen = Math.pow(THREE.MathUtils.clamp((frame.mouth - 0.08) / 0.92, 0, 1), 0.85);
-    mouth.scale.set(base.x * (1 - speechOpen * 0.08), base.y, base.z * (0.92 + speechOpen * 1.35));
-    offsetBoneInWorld(mouth, 0, -0.052 * speechOpen, 0.006 * speechOpen);
-    offsetBoneInWorld(bones.squilliam_mouth_corner_L, -0.012 * speechOpen, -0.027 * speechOpen, 0.004 * speechOpen);
-    offsetBoneInWorld(bones.squilliam_mouth_corner_R, 0.012 * speechOpen, -0.027 * speechOpen, 0.004 * speechOpen);
+    if (mouthRig.mode === "octopus") {
+      const base = rest.get(mouth).scale;
+      mouth.scale.set(base.x * (1 - speechOpen * 0.08), base.y, base.z * (0.92 + speechOpen * 1.35));
+      offsetBoneInWorld(mouth, 0, -0.052 * speechOpen, 0.006 * speechOpen);
+      offsetBoneInWorld(bones[mouthRig.leftCorner], -0.012 * speechOpen, -0.027 * speechOpen, 0.004 * speechOpen);
+      offsetBoneInWorld(bones[mouthRig.rightCorner], 0.012 * speechOpen, -0.027 * speechOpen, 0.004 * speechOpen);
+    } else if (mouthRig.mode === "jaw") {
+      offsetBoneInWorld(mouth, 0, -0.045 * speechOpen, 0.004 * speechOpen);
+      offsetBoneInWorld(bones[mouthRig.lower], 0, -0.018 * speechOpen, 0.003 * speechOpen);
+    }
   }
 
   const blinkPhase = time % 4.15;
   const blink = blinkPhase > 3.94 ? Math.sin(((blinkPhase - 3.94) / 0.21) * Math.PI) : 0;
-  for (const name of ["squilliam_eye_scale_space_L", "squilliam_eye_scale_space_R"]) {
-    const eye = bones[name];
-    if (!eye) continue;
-    const base = rest.get(eye).scale;
-    eye.scale.set(base.x, base.y * (1 - blink * 0.82), base.z);
+  const blinkRig = characterPack.rig.blink;
+  if (blinkRig.mode === "scale") {
+    for (const name of blinkRig.bones) {
+      const eye = bones[name];
+      if (!eye) continue;
+      const base = rest.get(eye).scale;
+      eye.scale.set(base.x, base.y * (1 - blink * 0.82), base.z);
+    }
+  } else if (blinkRig.mode === "lids") {
+    for (const name of blinkRig.upper) offsetBoneInWorld(bones[name], 0, -0.018 * blink, 0);
+    for (const name of blinkRig.lower) offsetBoneInWorld(bones[name], 0, 0.018 * blink, 0);
   }
 
-  squilliam.updateMatrixWorld(true);
+  character.updateMatrixWorld(true);
   renderer.render(scene, camera);
   return frame;
 }
@@ -679,7 +705,7 @@ window.motionInfo = { fps: motion.fps, duration: motion.duration, frameCount: mo
 applyFrame(initialFrame());
 window.__SNN_READY__ = true;
 document.body.dataset.ready = "true";
-status.textContent = "Squilliam is ready";
+status.textContent = `${characterPack.label} is ready`;
 if (!captureMode) playButton.hidden = false;
 
 let animationHandle = null;

@@ -2,7 +2,7 @@
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { access, copyFile, cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { access, copyFile, cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,15 +11,13 @@ const command = process.argv[2];
 const args = parseArgs(process.argv.slice(3));
 const runIdPattern = /^[a-z0-9][a-z0-9-]{1,62}$/;
 const slideOrder = ["alert", "poster", "photo", "photo", "photo", "jab", "details", "notice", "cta", "signoff"];
-const runtimeFiles = [
+const runtimeStaticFiles = [
+  "runner.mjs",
   "runtime/render.mjs",
   "runtime/renderer/index.html",
   "runtime/renderer/app.js",
   "runtime/scripts/build_motion.py",
-  "assets/character/chr_squilliam_bindpose.dae",
-  "assets/character/tex_0000_squilliam_128.PNG",
-  "assets/character/tex_0000_squilliam_256.PNG",
-  "assets/character/tx8_0000_squideyes_128.PNG",
+  "assets/character-packs.json",
   "assets/motion/presenter-motion-reference.json",
 ];
 const requiredSlideFields = {
@@ -67,6 +65,17 @@ async function readJson(file) {
 
 async function sha256File(file) {
   return createHash("sha256").update(await readFile(file)).digest("hex");
+}
+
+async function filesUnder(relativeDirectory) {
+  const directory = path.join(root, relativeDirectory);
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const relative = path.join(relativeDirectory, entry.name);
+    if (entry.isDirectory()) files.push(...await filesUnder(relative));
+    else if (entry.isFile()) files.push(relative);
+  }
+  return files;
 }
 
 async function writeJson(file, value) {
@@ -121,6 +130,11 @@ async function contentHash(baseDirectory, content) {
 
 async function runtimeHash() {
   const hash = createHash("sha256");
+  const runtimeFiles = [
+    ...runtimeStaticFiles,
+    ...await filesUnder("assets/character"),
+    ...await filesUnder("assets/characters"),
+  ].sort();
   for (const relative of runtimeFiles) hash.update(await readFile(path.join(root, relative)));
   return hash.digest("hex");
 }
@@ -134,11 +148,19 @@ async function validateDirectory(baseDirectory, writeReceipt = true) {
   if (errors.length) throw new Error(errors.join("\n"));
   const content = await readJson(contentFile);
   const sources = await readJson(sourcesFile);
-  for (const field of ["id", "headline", "locationBug", "tickerItems", "script", "pronunciations", "slides"]) {
+  const characterCatalog = await readJson(path.join(root, "assets", "character-packs.json"));
+  for (const field of ["id", "characterId", "headline", "locationBug", "tickerItems", "script", "pronunciations", "slides"]) {
     if (content[field] === undefined) errors.push(`Missing content.${field}.`);
   }
   if (content.schemaVersion !== 1) errors.push("content.schemaVersion must be 1.");
-  if (content.formatVersion !== "0.1.0-proof") errors.push("content.formatVersion must be 0.1.0-proof.");
+  if (content.formatVersion !== "0.2.0-proof") errors.push("content.formatVersion must be 0.2.0-proof.");
+  const characterPack = characterCatalog.packs.find((pack) => pack.id === content.characterId);
+  if (!characterPack) errors.push(`Unknown characterId: ${content.characterId}`);
+  else if (characterPack.status !== "presenter-ready") {
+    errors.push(`${characterPack.label} is ${characterPack.status}; choose a presenter-ready character.`);
+  } else if (!(await exists(path.join(root, characterPack.model)))) {
+    errors.push(`Character model is missing: ${characterPack.model}`);
+  }
   if (typeof content.script !== "string") errors.push("content.script must be a string.");
   if (String(content.headline || "").length > 58) errors.push("Headline exceeds 58 characters.");
   if (String(content.locationBug || "").length > 24) errors.push("Location bug exceeds 24 characters.");
@@ -497,7 +519,7 @@ async function commandFinalize() {
   const finalization = {
     status: "pass",
     finalizedAt: new Date().toISOString(),
-    formatVersion: "0.1.0-proof",
+    formatVersion: "0.2.0-proof",
     contentHash: receipt.contentHash,
     runtimeHash: currentRuntimeHash,
     audioHash: report.audioHash,

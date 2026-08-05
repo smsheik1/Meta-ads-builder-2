@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, readFile, stat } from "node:fs/promises";
+import { mkdir, readFile, readdir, stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -74,6 +74,16 @@ function publicPath(file) {
   return `/${path.relative(formatRoot, withinRoot(file)).split(path.sep).join("/")}`;
 }
 
+async function filesUnder(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await filesUnder(file));
+    else if (entry.isFile()) files.push(file);
+  }
+  return files;
+}
+
 const args = parseArgs(process.argv.slice(2));
 for (const required of ["content", "motion", "audio", "output", "work-dir"]) {
   if (!args[required]) throw new Error(`Missing --${required}`);
@@ -85,6 +95,12 @@ const outputPath = withinRoot(args.output);
 const workDirectory = withinRoot(args["work-dir"]);
 const smoke = args.smoke === true;
 const chromePath = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const content = JSON.parse(await readFile(contentPath, "utf8"));
+const characterCatalogPath = path.join(formatRoot, "assets/character-packs.json");
+const characterCatalog = JSON.parse(await readFile(characterCatalogPath, "utf8"));
+const characterPack = characterCatalog.packs.find((candidate) => candidate.id === (content.characterId || characterCatalog.defaultCharacterId));
+if (!characterPack?.model) throw new Error(`No renderable character pack for ${content.characterId}`);
+const characterDirectory = path.dirname(path.join(formatRoot, characterPack.model));
 
 const fingerprint = createHash("sha256");
 for (const file of [
@@ -93,7 +109,8 @@ for (const file of [
   audioPath,
   path.join(formatRoot, "runtime/renderer/index.html"),
   path.join(formatRoot, "runtime/renderer/app.js"),
-  path.join(formatRoot, "assets/character/chr_squilliam_bindpose.dae"),
+  characterCatalogPath,
+  ...await filesUnder(characterDirectory),
 ]) {
   fingerprint.update(await readFile(file));
 }
