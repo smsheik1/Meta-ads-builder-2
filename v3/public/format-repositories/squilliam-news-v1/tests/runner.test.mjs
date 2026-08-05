@@ -85,6 +85,43 @@ test("character catalog exposes only verified rigs as production presenters", as
   }
 });
 
+test("Fish voice presets are registered without admitting unverified character models", async () => {
+  const catalog = JSON.parse(await readFile(path.join(root, "assets", "character-packs.json"), "utf8"));
+  const voiceCatalog = JSON.parse(await readFile(path.join(root, "assets", "voice-presets.json"), "utf8"));
+  const inventory = JSON.parse(await readFile(path.join(root, "assets.json"), "utf8"));
+  const requirements = JSON.parse(await readFile(path.join(root, "requirements.json"), "utf8"));
+  const references = Object.fromEntries(
+    voiceCatalog.presets
+      .filter((preset) => preset.referenceId)
+      .map((preset) => [preset.characterId, preset.referenceId]),
+  );
+
+  assert.equal(voiceCatalog.provider, "Fish Audio");
+  assert.equal(voiceCatalog.model, "s2.1-pro-free");
+  assert.equal(voiceCatalog.selectedReferenceEnvironmentVariable, "SQUILLIAM_VOICE_ID");
+  assert.deepEqual(references, {
+    squidward: "1b28ff723a204fe08c26d8695f796b84",
+    spongebob: "9845e056f37b470d9a1005e41c864e25",
+    "mr-krabs": "394d3112f0da41049c42177f3ca31c5a",
+    patrick: "d1520b60870b4e9aa01eab5bfefb1c45",
+    sandy: "783d32b03d0c4ff28dd66455364d8665",
+  });
+  assert.equal(new Set(Object.values(references)).size, Object.values(references).length);
+  for (const referenceId of Object.values(references)) assert.match(referenceId, /^[a-f0-9]{32}$/);
+
+  const presenterIds = catalog.packs.map((pack) => pack.id);
+  assert.deepEqual(
+    voiceCatalog.presets.filter((preset) => preset.characterStatus === "presenter-ready").map((preset) => preset.characterId),
+    presenterIds,
+  );
+  assert.equal(presenterIds.includes("patrick"), false);
+  assert.equal(presenterIds.includes("sandy"), false);
+  assert.equal(voiceCatalog.presets.find((preset) => preset.characterId === "patrick").characterStatus, "model-qa-pending");
+  assert.equal(voiceCatalog.presets.find((preset) => preset.characterId === "sandy").characterStatus, "material-adapter-needed");
+  assert.ok(inventory.fixed.some((asset) => asset.path === "assets/voice-presets.json"));
+  assert.equal(requirements.providers[0].voicePresetRegistry, "assets/voice-presets.json");
+});
+
 test("every verified character has immutable visual smoke evidence", async () => {
   const report = JSON.parse(await readFile(path.join(root, "evidence", "character-packs", "quality-report.json"), "utf8"));
   const catalog = JSON.parse(await readFile(path.join(root, "assets", "character-packs.json"), "utf8"));

@@ -2390,7 +2390,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     order: 11.5,
     brand: "We The Artists",
     title: "Squilliam declares an artistic emergency",
-    curatorNote: "A real Indianapolis art event becomes a thirty-second character-led breaking-news bulletin with presenter-driven body language and a sharp sign-off.",
+    curatorNote: "Choose Squilliam, Squidward, SpongeBob, or Mr. Krabs to turn a real promotion into a thirty-second bulletin with presenter-driven body language and a sharp sign-off.",
     goal: "story",
     media: {
       kind: "video",

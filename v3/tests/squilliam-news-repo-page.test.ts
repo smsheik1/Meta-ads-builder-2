@@ -17,12 +17,28 @@ const finalization = JSON.parse(readFileSync(`${evidenceRoot}/finalization.json`
   videoHash: string;
   finalVideo: string;
 };
+const voicePresets = JSON.parse(readFileSync(`${repositoryRoot}/assets/voice-presets.json`, "utf8")) as {
+  presets: Array<{
+    characterId: string;
+    referenceId: string | null;
+    characterStatus: string;
+  }>;
+};
 
 assert.match(route, /Wiggly \/ Format Lab/);
 assert.match(route, /squilliam-news-v1/);
 assert.match(route, /squilliam-final-video/);
 assert.match(route, /Download final MP4/);
+assert.match(route, /Download runnable kit/);
 assert.match(route, /View the promoted event/);
+assert.match(route, /Choose your anchor/);
+assert.match(route, /Four characters are presenter-ready now/);
+assert.match(route, /Fish voice ready/);
+assert.match(route, /model QA still in progress/);
+assert.match(route, /\$\{pack\.id\}-contact-sheet\.png/);
+for (const characterId of ["squilliam", "squidward", "spongebob", "mr-krabs"]) {
+  assert.equal(existsSync(`${repositoryRoot}/evidence/character-packs/${characterId}-contact-sheet.png`), true);
+}
 assert.match(route, /poster\.png/);
 assert.match(route, /blind-handoff\/v0\.2\.1/);
 assert.doesNotMatch(route, /AdRenderSurface|canvas|getContext\(/);
@@ -37,6 +53,21 @@ assert.equal(
   finalization.videoHash,
 );
 
+assert.deepEqual(
+  Object.fromEntries(voicePresets.presets.filter((preset) => preset.referenceId).map((preset) => [preset.characterId, preset.referenceId])),
+  {
+    squidward: "1b28ff723a204fe08c26d8695f796b84",
+    spongebob: "9845e056f37b470d9a1005e41c864e25",
+    "mr-krabs": "394d3112f0da41049c42177f3ca31c5a",
+    patrick: "d1520b60870b4e9aa01eab5bfefb1c45",
+    sandy: "783d32b03d0c4ff28dd66455364d8665",
+  },
+);
+assert.deepEqual(
+  voicePresets.presets.filter((preset) => preset.characterStatus === "presenter-ready").map((preset) => preset.characterId),
+  ["squilliam", "squidward", "spongebob", "mr-krabs"],
+);
+
 const discoveryEntries = getPublishedDiscoveryEntries().filter(
   (entry) => entry.format.slug === "squilliam-news",
 );
@@ -47,6 +78,7 @@ assert.deepEqual(
 );
 assert.equal(discoveryEntries[0]?.media.src, `/${finalVideoPath.replace(/^public\//, "")}`);
 assert.equal(discoveryEntries[0]?.media.poster, `/${evidenceRoot.replace(/^public\//, "")}/poster.png`);
+assert.match(discoveryEntries[0]?.curatorNote ?? "", /Squilliam, Squidward, SpongeBob, or Mr\. Krabs/);
 const characterShelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
   .find((shelf) => shelf.id === "character-explainers");
 assert.equal(
@@ -64,5 +96,7 @@ const handoffPrompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agent
 assert.match(handoffPrompt, /Format: Squilliam News/);
 assert.match(handoffPrompt, /formats\/squilliam-news/);
 assert.match(handoffPrompt, /packaged runner, renderer, gestures, lip sync/);
+assert.match(handoffPrompt, /SpongeBob, Squidward, and Mr\. Krabs presets are packaged/);
+assert.match(handoffPrompt, /Patrick and Sandy voices are registered but their models remain unavailable pending QA/);
 
 console.log("Squilliam News repo page tests passed.");

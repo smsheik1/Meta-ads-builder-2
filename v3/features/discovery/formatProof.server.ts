@@ -180,7 +180,7 @@ const formatConfigs: FormatProfileConfig[] = [
     manifestPath: "format-repositories/squilliam-news-v1/format.json",
     whatStays: [
       "One thirty-second breaking-news bulletin",
-      "A verified selectable character presenter",
+      "A verified selectable Squilliam, Squidward, SpongeBob, or Mr. Krabs presenter",
       "Presenter-derived body language and lip sync",
       "A retro story monitor, ticker, and sharp sign-off",
     ],
@@ -188,13 +188,13 @@ const formatConfigs: FormatProfileConfig[] = [
       "The real event, launch, or promotion",
       "The script, headline, ticker, and CTA",
       "The sourced story images",
-      "The verified presenter and approved narration",
+      "The verified presenter and matching packaged Fish voice preset or approved narration",
     ],
     handoff: {
       requiredInputs: [
         "One real event, launch, or promotion with an evidence URL",
         "A verified presenter: Squilliam, Squidward, SpongeBob, or Mr. Krabs",
-        "Approved narration or Fish Audio access when a new voice track is needed",
+        "Approved narration or Fish Audio access; SpongeBob, Squidward, and Mr. Krabs presets are packaged",
       ],
       deliverables: [
         "One validated sixty-five-to-112-word bulletin script",
@@ -206,6 +206,7 @@ const formatConfigs: FormatProfileConfig[] = [
         "Download the runnable kit and run its smoke and requirement checks before editing content",
         "Change only the new run's content, story images, sources, and optional approved narration",
         "Validate the script, presenter pack, timing, and assets before any provider call",
+        "Match the selected presenter to assets/voice-presets.json; Patrick and Sandy voices are registered but their models remain unavailable pending QA",
         "Use the packaged runner, renderer, gestures, lip sync, and inspection gates without rebuilding them",
         "Ask once before Fish narration when the call may charge or consume limited quota",
         "Inspect the contact sheet and playable MP4, then require factual and creative human approval before finalizing",

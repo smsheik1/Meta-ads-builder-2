@@ -13,11 +13,13 @@ Ask: `What event, launch, or promotion should the Squilliam News desk declare an
 
 Use only `squilliam`, `squidward`, `spongebob`, or `mr-krabs` as `content.characterId`. Squilliam remains the default. Do not add a model to this list until the same official renderer passes character-pack smoke QA.
 
+Read `assets/voice-presets.json` after the user chooses the presenter. For Squidward, SpongeBob, or Mr. Krabs, copy the matching packaged `referenceId` into the local `SQUILLIAM_VOICE_ID` environment variable when new Fish narration is needed. Squilliam still requires the operator's approved private clone. Patrick and Sandy are voice-ready only; never select their character IDs until their model status becomes `presenter-ready`.
+
 Ask one question at a time. If the user requests the packaged We The Artists proof, initialize from that example without additional creative questions.
 
 ## Required loop
 
-1. Read `README.md`, `requirements.json`, `input-contract.json`, `output-contract.json`, `composition-contract.json`, `quality.json`, `assets.json`, and `prompts/script.md`.
+1. Read `README.md`, `requirements.json`, `input-contract.json`, `output-contract.json`, `composition-contract.json`, `quality.json`, `assets.json`, `assets/character-packs.json`, `assets/voice-presets.json`, and `prompts/script.md`.
 2. Run `npm install`, then `npm run smoke`, then `npm run check`.
 3. Run `node runner.mjs init --run=<run-id> --from=we-the-artists` or `--from=smoke`.
 4. Change only the new run's `content.json`, `assets/story/*`, `asset-sources.json`, and optional approved `audio/source.wav`.

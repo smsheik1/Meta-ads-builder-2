@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "provider": "Fish Audio",
+  "model": "s2.1-pro-free",
+  "selectedReferenceEnvironmentVariable": "SQUILLIAM_VOICE_ID",
+  "presets": [
+    {
+      "characterId": "squilliam",
+      "label": "Squilliam Fancyson",
+      "referenceId": null,
+      "voiceStatus": "operator-supplied",
+      "characterStatus": "presenter-ready",
+      "note": "Use the operator's approved Squilliam clone in SQUILLIAM_VOICE_ID. The private clone is not packaged."
+    },
+    {
+      "characterId": "squidward",
+      "label": "Squidward Tentacles",
+      "referenceId": "1b28ff723a204fe08c26d8695f796b84",
+      "voiceStatus": "preset-ready",
+      "characterStatus": "presenter-ready"
+    },
+    {
+      "characterId": "spongebob",
+      "label": "SpongeBob SquarePants",
+      "referenceId": "9845e056f37b470d9a1005e41c864e25",
+      "voiceStatus": "preset-ready",
+      "characterStatus": "presenter-ready"
+    },
+    {
+      "characterId": "mr-krabs",
+      "label": "Mr. Krabs",
+      "referenceId": "394d3112f0da41049c42177f3ca31c5a",
+      "voiceStatus": "preset-ready",
+      "characterStatus": "presenter-ready"
+    },
+    {
+      "characterId": "patrick",
+      "label": "Patrick Star",
+      "referenceId": "d1520b60870b4e9aa01eab5bfefb1c45",
+      "voiceStatus": "preset-ready",
+      "characterStatus": "model-qa-pending",
+      "note": "Voice is registered, but Patrick is not selectable until framing and desk-placement QA passes."
+    },
+    {
+      "characterId": "sandy",
+      "label": "Sandy Cheeks",
+      "referenceId": "783d32b03d0c4ff28dd66455364d8665",
+      "voiceStatus": "preset-ready",
+      "characterStatus": "material-adapter-needed",
+      "note": "Voice is registered, but Sandy is not selectable until the helmet and glass material adapter passes render QA."
+    }
+  ]
+}
