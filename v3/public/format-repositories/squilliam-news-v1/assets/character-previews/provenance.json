@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-05T14:29:14Z",
+  "purpose": "Static vertical character-option portraits for the public Squilliam News Format page",
+  "background": "#ffffff",
+  "dimensions": {
+    "width": 800,
+    "height": 1000
+  },
+  "sourceFrame": 45,
+  "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
+  "method": "Rendered from each verified model using the official runtime's Collada loader, scale, material-name transparency rules, and presenter pose; newsroom geometry and chrome were omitted from the static marketing capture",
+  "previews": [
+    {
+      "characterId": "squidward",
+      "image": "assets/character-previews/squidward.png",
+      "bytes": 38400,
+      "sha256": "0c4ea2925b3cce9e599270bc6a26bb8b629905d7624a7c015f5b4ced35193b0e"
+    },
+    {
+      "characterId": "spongebob",
+      "image": "assets/character-previews/spongebob.png",
+      "bytes": 39660,
+      "sha256": "54f40021f43e67a092fcf505f93e6a1b9f7dab12a9eef4276be5fda5845f90d9"
+    },
+    {
+      "characterId": "mr-krabs",
+      "image": "assets/character-previews/mr-krabs.png",
+      "bytes": 52777,
+      "sha256": "1679b1713f3fa4e24d7b5973814ef080dd08d8974bb3de1f784917505dbc5e51"
+    }
+  ]
+}

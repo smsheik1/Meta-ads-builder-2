@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
 import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
+import { DiscoveryCharacterOptions } from "@/features/discovery/DiscoveryCharacterOptions";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
 import {
   discoveryFormatSlugs,
@@ -120,6 +121,28 @@ export default async function FormatPage({
           />
         </div>
       </section>
+
+      {format.characterOptions?.length ? (
+        <section id="anchors" className="border-y-2 border-[#080817] bg-[#52d6ff] px-4 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-[1180px]">
+            <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em]">Character options</p>
+                <h2 className="mt-3 text-5xl font-black leading-[0.88] sm:text-7xl">Choose your anchor.</h2>
+              </div>
+              <div>
+                <p className="max-w-2xl text-lg font-black leading-7 text-[#1e3850]">
+                  Squilliam runs the desk—but three more verified 3D presenters are ready to make your story sound completely different.
+                </p>
+                <p className="mt-3 text-sm font-bold text-[#31566e]">
+                  Tap a play button to audition each voice. Only one preview plays at a time.
+                </p>
+              </div>
+            </div>
+            <DiscoveryCharacterOptions options={format.characterOptions} />
+          </div>
+        </section>
+      ) : null}
 
       <section id="proof" className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-[1380px]">

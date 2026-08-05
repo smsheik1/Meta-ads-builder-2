@@ -11,6 +11,46 @@
       "source": "reference IDs supplied by the user; the Fish API key and private Squilliam clone remain local-only"
     },
     {
+      "path": "assets/character-previews/squidward.png",
+      "role": "isolated vertical Squidward character-option portrait",
+      "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
+    },
+    {
+      "path": "assets/character-previews/spongebob.png",
+      "role": "isolated vertical SpongeBob character-option portrait",
+      "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
+    },
+    {
+      "path": "assets/character-previews/mr-krabs.png",
+      "role": "isolated vertical Mr. Krabs character-option portrait",
+      "source": "static marketing capture from the verified user-supplied model using the official runtime's model loader and material rules"
+    },
+    {
+      "path": "assets/character-previews/provenance.json",
+      "role": "generation method, dimensions, runtime fingerprint, and immutable hashes for character-option portraits",
+      "source": "created during the public character-options update"
+    },
+    {
+      "path": "assets/voice-previews/squidward.mp3",
+      "role": "short public Squidward character-option voice audition",
+      "source": "Fish Audio s2.1-pro-free using the user-supplied public reference preset; see assets/voice-previews/provenance.json"
+    },
+    {
+      "path": "assets/voice-previews/spongebob.mp3",
+      "role": "short public SpongeBob character-option voice audition",
+      "source": "Fish Audio s2.1-pro-free using the user-supplied public reference preset; see assets/voice-previews/provenance.json"
+    },
+    {
+      "path": "assets/voice-previews/mr-krabs.mp3",
+      "role": "short public Mr. Krabs character-option voice audition",
+      "source": "Fish Audio s2.1-pro-free using the user-supplied public reference preset; see assets/voice-previews/provenance.json"
+    },
+    {
+      "path": "assets/voice-previews/provenance.json",
+      "role": "provider-call, script, duration, and immutable hash provenance for public voice auditions",
+      "source": "generated during the public character-options update; contains no API secret"
+    },
+    {
       "path": "assets/character/chr_squilliam_bindpose.dae",
       "role": "rigged anchor character",
       "source": "user-supplied game asset",
