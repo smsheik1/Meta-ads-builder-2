@@ -4,7 +4,7 @@
   "orientation": "vertical",
   "width": 1080,
   "height": 1920,
-  "durationMs": { "minimum": 14000, "maximum": 20000 },
+  "durationMs": { "minimum": 14000, "maximum": 24000 },
   "beats": [
     { "index": 1, "role": "hook", "mustStartWith": "Breaking news." },
     { "index": 2, "role": "what-happened" },

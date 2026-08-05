@@ -75,6 +75,29 @@ const invalid = validateTalkingFishNewsScene({
   },
 });
 assert.equal(invalid.valid, false);
-assert.ok(invalid.errors.some((error) => error.includes("14-20 seconds")));
+assert.ok(invalid.errors.some((error) => error.includes("14-24 seconds")));
+
+const naturalDeadpanDuration = validateTalkingFishNewsScene({
+  ...talkingFishNewsProofScene,
+  audio: {
+    ...talkingFishNewsProofScene.audio,
+    durationMs: 22902,
+    durationSeconds: 22.902,
+  },
+  layout: {
+    ...talkingFishNewsProofScene.layout,
+    durationMs: 22902,
+    speechSegments: talkingFishNewsProofScene.layout.speechSegments.map((segment, index, segments) => (
+      index === segments.length - 1 ? { ...segment, endMs: 22902 } : segment
+    )),
+    beats: [
+      talkingFishNewsProofScene.layout.beats[0],
+      talkingFishNewsProofScene.layout.beats[1],
+      talkingFishNewsProofScene.layout.beats[2],
+      { ...talkingFishNewsProofScene.layout.beats[3], endMs: 22902 },
+    ],
+  },
+});
+assert.equal(naturalDeadpanDuration.valid, true, naturalDeadpanDuration.errors.join(" "));
 
 console.log("talking fish news format tests passed");

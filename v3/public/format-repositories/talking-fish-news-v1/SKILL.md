@@ -117,5 +117,5 @@ Run commands from the downloaded kit's `v3` directory.
 - Each evidence frame is relevant and readable at phone size.
 - Captions match the approved script exactly and use at most six words per card.
 - Music stays below the voice.
-- The MP4 is 1080x1920, 14-20 seconds, with one video and one audio stream.
+- The MP4 is 1080x1920, 14-24 seconds, with one video and one audio stream.
 - The final artifact is not delivered until automated inspection passes and the user approves the complete video.

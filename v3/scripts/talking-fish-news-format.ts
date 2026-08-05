@@ -195,7 +195,7 @@ async function inspectArtifacts({
   const durationSeconds = Number(result.format?.duration || 0);
   return {
     durationSeconds,
-    durationWithinRange: durationSeconds >= 14 && durationSeconds <= 20,
+    durationWithinRange: durationSeconds >= 14 && durationSeconds <= 24,
     width: video?.width || 0,
     height: video?.height || 0,
     videoStreams: result.streams?.filter((stream) => stream.codec_type === "video").length || 0,

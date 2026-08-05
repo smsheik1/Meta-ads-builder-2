@@ -10,8 +10,8 @@ export function validateTalkingFishNewsScene(scene: TalkingFishNewsProofScene): 
 
   if (scene.format !== "talking-fish-news") errors.push("Talking Fish News format is invalid.");
   if (scene.layout.preset !== "talking-fish-news-report") errors.push("Talking Fish News preset is invalid.");
-  if (!Number.isFinite(durationMs) || durationMs < 14000 || durationMs > 20000) {
-    errors.push("Talking Fish News duration must be 14-20 seconds.");
+  if (!Number.isFinite(durationMs) || durationMs < 14000 || durationMs > 24000) {
+    errors.push("Talking Fish News duration must be 14-24 seconds.");
   }
   if (scene.layout.beats.length !== 4) errors.push("Talking Fish News requires four report beats.");
   if (!scene.layout.beats[0]?.line.startsWith("Breaking news.")) {
@@ -50,7 +50,7 @@ export function validateTalkingFishNewsScene(scene: TalkingFishNewsProofScene): 
     if (
       scene.audio.captions.length === 0
       || scene.audio.captions.some((caption) => (
-        wordCount(caption.text) > 7
+        wordCount(caption.text) > 6
         || caption.startMs < 0
         || caption.endMs <= caption.startMs
         || caption.endMs > durationMs

@@ -28,7 +28,7 @@
     "No automatic provider retry or fallback occurs."
   ],
   "render": [
-    "The output is 1080x1920 and 14-20 seconds long.",
+    "The output is 1080x1920 and 14-24 seconds long.",
     "The fish remains grounded behind the desk.",
     "Every beat displays a relevant image inside the fixed evidence frame.",
     "The final has exactly one video stream and one audio stream.",

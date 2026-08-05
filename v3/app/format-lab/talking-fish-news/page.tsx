@@ -92,7 +92,7 @@ export default function TalkingFishNewsFormatPage() {
                   <p className="text-xs font-bold uppercase tracking-wide text-violet-700">NASA source proof</p>
                   <h3 className="mt-1 text-2xl font-bold">{proof.title}</h3>
                 </div>
-                <Badge variant="outline">14-20 sec</Badge>
+                <Badge variant="outline">14-24 sec</Badge>
               </div>
               <ul className="mt-5 list-disc space-y-2 pl-5 text-sm text-slate-700">
                 {proof.whyItWorks.map((reason) => <li key={reason}>{reason}</li>)}

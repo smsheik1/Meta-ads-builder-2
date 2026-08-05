@@ -23,14 +23,73 @@ await mkdir(path.join(stagingV3, formatRelative), { recursive: true });
 await mkdir(outputDirectory, { recursive: true });
 
 for (const relativePath of [
-  "features/audio",
-  "features/formats",
+  "features/audio/audioAnalysis.ts",
+  "features/audio/deepgramTranscription.ts",
+  "features/audio/fishStudio.ts",
+  "features/audio/sceneAudio.ts",
+  "features/formats/brainrot/prompt.ts",
+  "features/formats/talking-fish-news",
+  "features/formats/three-d-breakdown/storySubject.ts",
+  "features/formats/types.ts",
   "features/render",
+  "features/research/types.ts",
   "features/scene",
-  "remotion-entry",
+  "remotion-entry/index.ts",
+  "remotion-entry/RemotionAdScene.tsx",
   "scripts/talking-fish-news-format.ts",
   "tests/talking-fish-news-repo.test.ts",
 ]) await copyFromV3(relativePath);
+
+await writeFile(
+  path.join(stagingV3, "features", "formats", "registry.ts"),
+  [
+    'import type { RenderableAdFormatId } from "../scene/types";',
+    'import type { AdFormatModule } from "./types";',
+    'import { talkingFishNewsFormatModule } from "./talking-fish-news";',
+    '',
+    'export const getFormatModule = (format: RenderableAdFormatId): AdFormatModule => {',
+    '  if (format !== "talking-fish-news") throw new Error(`Unknown ad format: ${format}`);',
+    '  return talkingFishNewsFormatModule as AdFormatModule;',
+    '};',
+    '',
+  ].join("\n"),
+);
+await writeFile(
+  path.join(stagingV3, "remotion-entry", "fixture.ts"),
+  'export { talkingFishNewsProofScene as defaultRenderScene } from "../features/formats/talking-fish-news/fixture";\n',
+);
+await writeFile(
+  path.join(stagingV3, "remotion-entry", "Root.tsx"),
+  [
+    'import { Composition } from "remotion";',
+    'import type { RenderableAdScene } from "../features/scene/types";',
+    'import { defaultRenderScene } from "./fixture";',
+    'import { RemotionAdScene } from "./RemotionAdScene";',
+    '',
+    'export const adSceneCompositionId = "AdSceneMp4";',
+    'export const adSceneFps = 60;',
+    '',
+    'export function RemotionRoot() {',
+    '  return (',
+    '    <Composition',
+    '      id={adSceneCompositionId}',
+    '      component={RemotionAdScene}',
+    '      width={1080}',
+    '      height={1920}',
+    '      fps={adSceneFps}',
+    '      durationInFrames={adSceneFps * 18}',
+    '      calculateMetadata={({ props }: { props: { scene: RenderableAdScene } }) => ({',
+    '        durationInFrames: Math.ceil((props.scene.layout.durationMs / 1000) * adSceneFps),',
+    '        width: 1080,',
+    '        height: 1920,',
+    '      })}',
+    '      defaultProps={{ scene: defaultRenderScene }}',
+    '    />',
+    '  );',
+    '}',
+    '',
+  ].join("\n"),
+);
 
 await copyFromV3("public/fonts");
 await copyFromV3("public/talking-fish-news-assets");

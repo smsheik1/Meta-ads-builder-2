@@ -57,7 +57,7 @@ const formatConfigs: FormatProfileConfig[] = [
         { label: "Local render + inspection", cost: "$0 provider cost", time: "about 2-5 min" },
       ],
       totalEstimate: "Usually $0 Fish provider cost plus minimal Deepgram usage, in 8-20 min",
-      output: "One vertical 1080 x 1920 MP4, 14-20 seconds",
+      output: "One vertical 1080 x 1920 MP4, 14-24 seconds",
       firstQuestion: "What should tonight's fish report cover? Send a topic or source link, or say pick for me.",
     },
   },
