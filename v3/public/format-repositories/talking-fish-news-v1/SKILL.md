@@ -62,7 +62,7 @@ Run commands from the downloaded kit's `v3` directory.
 4. Save only sourced facts in `research.json`.
 5. Download at least three official or source-owned images into `public/talking-fish-news-assets/`.
 6. Preview each image at roughly phone-card size. Reject tiny dots, dense screenshots, decorative logos, near-duplicates, or anything whose subject is not obvious in one second.
-7. Put the four candidate images in story order. If the middle images can trade places without weakening the story, choose a better sequence or a better story.
+7. Map the four story beats to the saved visuals in story order. Reuse an image only when its second appearance supports a different visible story move; never repeat it in adjacent beats. If the middle images can trade places without weakening the story, choose a better sequence or a better story.
 8. Record every image's source URL, credit, obvious focal subject, and `phoneReadable: true` in `research.json`.
 9. Run `concept-prompt --run=<id>`.
 10. Use the generated prompt yourself and save exactly five four-move arcs in `concepts.json`.
@@ -91,7 +91,8 @@ Run commands from the downloaded kit's `v3` directory.
 - Build a beginning, middle, and end: setup, escalation, reveal, payoff.
 - If removing or swapping a middle beat changes nothing, the arc is too flat.
 - A large number followed by a larger number is fact stacking, not escalation and reveal.
-- End with the exact approved deadpan punchline.
+- End with the exact approved factual takeaway, then the exact deadpan punchline.
+- Reject any ending where the joke replaces what happened or why it matters.
 - The report should feel like news, not an ad.
 - Never invent a fact, quote, result, number, source, or image credit.
 - Every beat uses a relevant saved visual asset.

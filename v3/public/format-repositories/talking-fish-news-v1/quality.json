@@ -23,7 +23,8 @@
     "A cold viewer can understand the beginning, middle, and end without prior context.",
     "Beat two creates a question or consequence; beat three answers it with a mechanism, discovery, or turn.",
     "Removing beat two or beat three breaks the story logic.",
-    "The final beat contains the approved punchline exactly.",
+    "The final beat contains the approved factual takeaway followed by the approved punchline exactly.",
+    "A cold viewer can explain what happened and why it matters before the final joke lands.",
     "No sales pitch, fake urgency, fake quote, or unsupported fact appears."
   ],
   "audio": [

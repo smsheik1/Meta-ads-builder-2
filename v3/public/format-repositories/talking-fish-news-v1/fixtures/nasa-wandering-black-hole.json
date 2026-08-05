@@ -68,6 +68,7 @@
         "headline": "A galaxy lost track of a million-sun black hole",
         "premise": "NASA catches a wandering black hole only when it lights up while destroying a star.",
         "whyItWorks": "The cosmic disaster is instantly clear, and the true location twist earns the deadpan payoff.",
+        "takeaway": "The flare exposed a massive black hole far from its galaxy's center.",
         "punchline": "Apparently, the galaxy lost track of one.",
         "assetIds": ["tidal-event-concept", "galaxy-before", "galaxy-flare", "star-stretched"],
         "storyMoves": [
@@ -82,6 +83,7 @@
         "headline": "One flare briefly shined like ten billion Suns",
         "premise": "A violent off-center flare exposes an otherwise invisible wandering black hole.",
         "whyItWorks": "The scale comparison creates an immediate visual and verbal escalation.",
+        "takeaway": "The flare exposed an otherwise invisible wandering black hole.",
         "punchline": "Subtle was no longer an option.",
         "assetIds": ["galaxy-before", "galaxy-flare", "tidal-event-concept", "star-stretched"],
         "storyMoves": [
@@ -96,6 +98,7 @@
         "headline": "NASA found a hidden black hole because it ate loudly",
         "premise": "An invisible object reveals itself by shredding a star 30,000 light-years from the expected spot.",
         "whyItWorks": "It turns an abstract detection method into a familiar caught-in-the-act joke.",
+        "takeaway": "The star's destruction revealed a black hole in an unexpected location.",
         "punchline": "The quiet neighbor finally made noise.",
         "assetIds": ["galaxy-before", "star-stretched", "galaxy-flare", "tidal-event-concept"],
         "storyMoves": [
@@ -110,6 +113,7 @@
         "headline": "This black hole was found on the wrong side of town",
         "premise": "Astronomers discover a massive black hole far outside the galactic center where they usually search.",
         "whyItWorks": "A simple location mismatch explains why the discovery changes how scientists hunt.",
+        "takeaway": "Scientists may need to search beyond galactic centers.",
         "punchline": "Astronomy checked the wrong neighborhood.",
         "assetIds": ["galaxy-before", "galaxy-flare", "star-stretched", "tidal-event-concept"],
         "storyMoves": [
@@ -124,6 +128,7 @@
         "headline": "A destroyed star became a black-hole alarm",
         "premise": "The tidal disruption flare gives scientists a new way to find wandering black holes.",
         "whyItWorks": "The star's destruction becomes a clean mechanism reveal instead of a list of astronomy facts.",
+        "takeaway": "Tidal flares can help astronomers find wandering black holes.",
         "punchline": "The alarm was unfortunately the star.",
         "assetIds": ["star-stretched", "tidal-event-concept", "galaxy-before", "galaxy-flare"],
         "storyMoves": [

@@ -24,6 +24,9 @@ type Fixture = {
 
 const root = path.resolve("public", "format-repositories", "talking-fish-news-v1");
 const readJson = <T,>(relative: string) => JSON.parse(readFileSync(path.join(root, relative), "utf8")) as T;
+const skill = readFileSync(path.join(root, "SKILL.md"), "utf8");
+
+assert.match(skill, /never repeat it in adjacent beats/i);
 
 for (const relative of [
   "SKILL.md",
@@ -57,12 +60,14 @@ for (const fixtureName of ["nasa-curiosity.json"]) {
   assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /setup, escalation, reveal, payoff/i);
   assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /shuffle test/i);
   assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /fact stacking/i);
+  assert.match(buildTalkingFishNewsConceptPrompt(fixture.research), /joke cannot replace the takeaway/i);
   assert.match(buildTalkingFishNewsScriptPrompt({ concept, research: fixture.research }), /38-60 words/);
   const scriptPrompt = buildTalkingFishNewsScriptPrompt({ concept, research: fixture.research });
   for (const storyStage of ["beginning", "escalation", "reveal", "ending"]) {
     assert.match(scriptPrompt, new RegExp(storyStage, "i"));
   }
   assert.match(scriptPrompt, /removal test/i);
+  assert.match(scriptPrompt, /cold-scroll test/i);
 }
 
 const rejectedVisualFixture = readJson<Fixture>("fixtures/nasa-wandering-black-hole.json");
@@ -116,6 +121,13 @@ assert.ok(validateTalkingFishNewsScript(
   getSelectedTalkingFishNewsConcept(mars.concepts, mars.selection),
 ).some((error) => error.includes("approved punchline")));
 
+const punchlineOnlyScript = structuredClone(mars.script);
+punchlineOnlyScript.beats[3] = getSelectedTalkingFishNewsConcept(mars.concepts, mars.selection).punchline;
+assert.ok(validateTalkingFishNewsScript(
+  punchlineOnlyScript,
+  getSelectedTalkingFishNewsConcept(mars.concepts, mars.selection),
+).some((error) => error.includes("approved takeaway")));
+
 const runner = readFileSync(path.resolve("scripts", "talking-fish-news-format.ts"), "utf8");
 assert.match(runner, /--approve-voice/);
 assert.doesNotMatch(runner, /from\s+["']replicate["']|generate.*(?:Image|Video|Music)/i);
@@ -125,6 +137,7 @@ assert.ok(
   "Fish narration must be saved before Deepgram timing starts.",
 );
 assert.match(runner, /reusing saved Fish narration; no new voice call was made/i);
+assert.match(runner, /Saved Fish narration belongs to a different script/i);
 assert.match(runner, /rerun voice to time captions from the saved narration; no new Fish call will be made/i);
 assert.match(runner, /process\.env\.REMOTION_BROWSER_EXECUTABLE/);
 assert.match(runner, /browserExecutable: executable/);

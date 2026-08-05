@@ -9,7 +9,7 @@
     { "index": 1, "role": "hook", "mustStartWith": "Breaking news." },
     { "index": 2, "role": "what-happened" },
     { "index": 3, "role": "why-it-matters" },
-    { "index": 4, "role": "punchline" }
+    { "index": 4, "role": "takeaway-and-punchline" }
   ],
   "fixedAssets": [
     "anchor mouth open",

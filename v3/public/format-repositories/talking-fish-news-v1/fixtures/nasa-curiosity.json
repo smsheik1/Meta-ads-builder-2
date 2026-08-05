@@ -55,6 +55,7 @@
         "headline": "Mars has a honeycomb floor",
         "premise": "Curiosity found a valley covered in tiny polygons with more than one possible origin.",
         "whyItWorks": "A huge alien valley is reduced to a familiar floor pattern.",
+        "takeaway": "Scientists are testing the chemistry now.",
         "punchline": "Mars has officially entered its floor-tile era.",
         "assetIds": ["panorama", "closeup", "closeup", "butte"],
         "storyMoves": [
@@ -69,6 +70,7 @@
         "headline": "Mars may have dried mud under its wheels",
         "premise": "Some tiny polygons could preserve ancient wet conditions.",
         "whyItWorks": "The visual starts ordinary and ends planetary.",
+        "takeaway": "The cracks may preserve evidence of ancient wet conditions.",
         "punchline": "Mars kept the receipt from mud season.",
         "assetIds": ["panorama", "closeup", "closeup", "butte"],
         "storyMoves": [
@@ -83,6 +85,7 @@
         "headline": "Buried water may have drawn shapes in Martian soil",
         "premise": "Mineral-rich water could have squeezed through buried sediment.",
         "whyItWorks": "Invisible movement becomes a visible pattern.",
+        "takeaway": "Buried water may have shaped the Martian soil.",
         "punchline": "Even Martian plumbing leaves a pattern.",
         "assetIds": ["panorama", "closeup", "closeup", "butte"],
         "storyMoves": [
@@ -97,6 +100,7 @@
         "headline": "A giant Martian field is made of tiny shapes",
         "premise": "The largest field of these textures seen by Curiosity contains inch-wide pieces.",
         "whyItWorks": "The scale reversal is instantly visual.",
+        "takeaway": "Curiosity found its largest field of these textures.",
         "punchline": "Mars went big by building very small.",
         "assetIds": ["panorama", "closeup", "closeup", "butte"],
         "storyMoves": [
@@ -111,6 +115,7 @@
         "headline": "NASA found the pattern before the explanation",
         "premise": "Scientists still need chemistry tests to separate two possible origins.",
         "whyItWorks": "The mystery stays open after the reveal.",
+        "takeaway": "Chemistry tests must distinguish between the two origins.",
         "punchline": "The floor is ready. The label is pending.",
         "assetIds": ["panorama", "closeup", "closeup", "butte"],
         "storyMoves": [

@@ -9,6 +9,7 @@ assert.match(source, /download-talking-fish-news-kit/);
 assert.match(source, /talking-fish-news-proof/);
 assert.match(source, /talking-fish-news-pipeline/);
 assert.match(source, /What should tonight&apos;s fish report cover/);
+assert.match(source, /four sourced evidence beats/);
 assert.doesNotMatch(source, /TalkingFishNewsProofClient|generate.*(?:Image|Video)/i);
 assert.equal(
   existsSync("public/format-repositories/talking-fish-news-v1/downloads/wiggly-talking-fish-news-format-kit.zip"),

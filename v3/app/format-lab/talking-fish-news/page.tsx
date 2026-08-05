@@ -127,7 +127,7 @@ export default function TalkingFishNewsFormatPage() {
             <ul className="mt-3 space-y-2 text-sm text-slate-700">
               <li>The 9:16 underwater studio, desk, fish sprites, evidence frame, captions, and theme.</li>
               <li>The mouth uses only open and closed sprites, driven by the approved narration.</li>
-              <li>Every report uses four sourced visuals and ends with a deadpan payoff.</li>
+              <li>Every report uses four sourced evidence beats and ends with a deadpan payoff.</li>
               <li>No image model, video model, music model, or Replicate call is part of the workflow.</li>
             </ul>
           </article>

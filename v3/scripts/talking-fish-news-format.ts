@@ -330,7 +330,7 @@ async function voice() {
   if (!hasFlag("approve-voice")) {
     throw new Error("Use --approve-voice only after showing the selected script and estimate to the user.");
   }
-  const { concepts, directory, research, script, selection, state } = await readRun(runId);
+  const { audio: savedAudio, concepts, directory, research, script, selection, state } = await readRun(runId);
   const errors = validateRun(research, concepts, selection, script);
   if (errors.length) throw new Error(`Validate the run first:\n${errors.join("\n")}`);
   if (!process.env.FISH_STUDIO_APIKEY) throw new Error("FISH_STUDIO_APIKEY is required for the approved voice call.");
@@ -340,6 +340,9 @@ async function voice() {
   let durationMs: number;
 
   if (existsSync(audioFile)) {
+    if (!savedAudio || savedAudio.transcript !== transcript) {
+      throw new Error("Saved Fish narration belongs to a different script. Start a new run for the revised script.");
+    }
     const existing = await probe(audioFile);
     durationMs = Math.round(Number(existing.format?.duration || 0) * 1_000);
     if (!durationMs) throw new Error("Saved Fish narration has no readable duration.");
