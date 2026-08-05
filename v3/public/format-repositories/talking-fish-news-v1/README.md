@@ -33,6 +33,8 @@ The agent researches one trustworthy source, rejects visuals that do not read cl
 
 No image generation, video generation, music generation, or Replicate call is used.
 
+If Deepgram rejects a key after Fish succeeds, fix the key and run the same voice command again. The runner reuses the saved narration and does not make another Fish call.
+
 ## Resume
 
 Every run is saved under `public/format-repositories/talking-fish-news-v1/agent-runs/<run-id>`.
@@ -42,3 +44,5 @@ npm run format:talking-fish-news -- resume --run=my-report
 ```
 
 Provider failures stop loudly. The runner never retries or changes providers. `smoke --run=<id>` renders only the bundled fixture locally and never calls a provider.
+
+The runner uses `REMOTION_BROWSER_EXECUTABLE` when set, then checks common Chrome and Chromium locations before Remotion attempts its normal browser setup.

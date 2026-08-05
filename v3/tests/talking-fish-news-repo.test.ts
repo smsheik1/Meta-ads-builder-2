@@ -119,6 +119,16 @@ assert.ok(validateTalkingFishNewsScript(
 const runner = readFileSync(path.resolve("scripts", "talking-fish-news-format.ts"), "utf8");
 assert.match(runner, /--approve-voice/);
 assert.doesNotMatch(runner, /from\s+["']replicate["']|generate.*(?:Image|Video|Music)/i);
+assert.ok(
+  runner.indexOf("await writeFile(audioFile, generated.bytes)")
+    < runner.indexOf("transcription = await transcribeAudioWithDeepgram"),
+  "Fish narration must be saved before Deepgram timing starts.",
+);
+assert.match(runner, /reusing saved Fish narration; no new voice call was made/i);
+assert.match(runner, /rerun voice to time captions from the saved narration; no new Fish call will be made/i);
+assert.match(runner, /process\.env\.REMOTION_BROWSER_EXECUTABLE/);
+assert.match(runner, /browserExecutable: executable/);
+assert.match(readFileSync(path.resolve("public", "format-repositories", "talking-fish-news-v1", ".env.example"), "utf8"), /REMOTION_BROWSER_EXECUTABLE=/);
 
 const blockedVoice = spawnSync(process.execPath, [
   "--import",

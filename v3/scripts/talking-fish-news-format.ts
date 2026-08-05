@@ -7,7 +7,10 @@ import { fileURLToPath } from "node:url";
 import { bundle } from "@remotion/bundler";
 import { getCompositions, renderMedia } from "@remotion/renderer";
 import { transcribeAudioWithDeepgram } from "../features/audio/deepgramTranscription";
-import { generateFishTalkingFishNewsVoiceover } from "../features/audio/fishStudio";
+import {
+  FISH_STUDIO_TALKING_FISH_NEWS_MODEL,
+  generateFishTalkingFishNewsVoiceover,
+} from "../features/audio/fishStudio";
 import {
   buildTalkingFishNewsConceptPrompt,
   buildTalkingFishNewsScriptPrompt,
@@ -31,6 +34,16 @@ const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
 const publicRoot = path.join(v3Root, "public");
 const packageRoot = path.join(publicRoot, "format-repositories", "talking-fish-news-v1");
+
+function browserExecutable() {
+  const candidates = [
+    process.env.REMOTION_BROWSER_EXECUTABLE,
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+  ];
+  return candidates.find((candidate): candidate is string => Boolean(candidate && existsSync(candidate)));
+}
 
 type Inspection = {
   durationSeconds: number;
@@ -320,31 +333,45 @@ async function voice() {
   const { concepts, directory, research, script, selection, state } = await readRun(runId);
   const errors = validateRun(research, concepts, selection, script);
   if (errors.length) throw new Error(`Validate the run first:\n${errors.join("\n")}`);
-  if (state.voiceAttemptedAt) throw new Error("This run already used its one voice attempt. Start a new run for another approved attempt.");
   if (!process.env.FISH_STUDIO_APIKEY) throw new Error("FISH_STUDIO_APIKEY is required for the approved voice call.");
   if (!process.env.DEEPGRAM_API_KEY) throw new Error("DEEPGRAM_API_KEY is required for timed caption alignment.");
-  state.voiceAttemptedAt = new Date().toISOString();
-  await writeJson(path.join(directory, "state.json"), state);
   const transcript = script.beats.join(" ");
-  const generated = await generateFishTalkingFishNewsVoiceover({ text: transcript });
+  const audioFile = path.join(directory, "narration.wav");
+  let durationMs: number;
+
+  if (existsSync(audioFile)) {
+    const existing = await probe(audioFile);
+    durationMs = Math.round(Number(existing.format?.duration || 0) * 1_000);
+    if (!durationMs) throw new Error("Saved Fish narration has no readable duration.");
+    console.log("Step 4 of 6: Voice - reusing saved Fish narration; no new voice call was made.");
+  } else {
+    if (state.voiceAttemptedAt) {
+      throw new Error("This run already used its one voice attempt without producing saved narration. Start a new run for another approved attempt.");
+    }
+    state.voiceAttemptedAt = new Date().toISOString();
+    await writeJson(path.join(directory, "state.json"), state);
+    const generated = await generateFishTalkingFishNewsVoiceover({ text: transcript });
+    durationMs = generated.durationMs;
+    await writeFile(audioFile, generated.bytes);
+  }
+
+  const savedBytes = Uint8Array.from(await readFile(audioFile));
   const transcription = await transcribeAudioWithDeepgram({
-    audioBlob: new Blob([generated.bytes], { type: generated.mimeType }),
-    mimeType: generated.mimeType,
+    audioBlob: new Blob([savedBytes], { type: "audio/wav" }),
+    mimeType: "audio/wav",
   });
   if (!transcription.captions.length) throw new Error("Deepgram returned no timed captions.");
   const captions = createExactTimedCaptions({ script, timingCaptions: transcription.captions });
-  const audioFile = path.join(directory, "narration.wav");
-  await writeFile(audioFile, generated.bytes);
   const audio: TalkingFishNewsAudioArtifact = {
     path: path.relative(publicRoot, audioFile).split(path.sep).join("/"),
     publicUrl: publicUrlFor(audioFile),
-    mimeType: generated.mimeType,
-    durationMs: generated.durationMs,
+    mimeType: "audio/wav",
+    durationMs,
     transcript,
     captions,
     speechSegments: transcription.captions.map((caption) => ({ startMs: caption.startMs, endMs: caption.endMs })),
     provider: "fish-studio",
-    model: generated.model,
+    model: FISH_STUDIO_TALKING_FISH_NEWS_MODEL,
   };
   state.status = "voiced";
   state.voicedAt = new Date().toISOString();
@@ -380,7 +407,11 @@ async function render() {
     outDir: path.join(v3Root, "tmp", "talking-fish-news-remotion"),
   });
   const inputProps = { scene };
-  const compositions = await getCompositions(serveUrl, { inputProps });
+  const executable = browserExecutable();
+  const compositions = await getCompositions(serveUrl, {
+    inputProps,
+    browserExecutable: executable,
+  });
   const composition = compositions.find((candidate) => candidate.id === adSceneCompositionId);
   if (!composition) throw new Error(`Missing ${adSceneCompositionId} composition.`);
   await renderMedia({
@@ -394,6 +425,7 @@ async function render() {
     outputLocation: output,
     overwrite: true,
     logLevel: "warn",
+    browserExecutable: executable,
   });
   state.status = "rendered";
   state.renderedAt = new Date().toISOString();
@@ -462,13 +494,16 @@ async function finalize() {
 
 async function resume() {
   const runId = requiredArgument("run");
-  const { state } = await readRun(runId);
+  const { directory, state } = await readRun(runId);
+  const savedNarration = existsSync(path.join(directory, "narration.wav"));
   const next = state.status === "draft"
     ? "Finish research.json, generate five concepts, select one, then run validate-concepts."
     : state.status === "concepts-ready"
       ? "Generate script-prompt, save the four-beat script, then validate."
       : state.status === "validated"
-        ? "Run estimate, show the script and cost, then ask for voice approval."
+        ? savedNarration
+          ? "Fix DEEPGRAM_API_KEY, then rerun voice to time captions from the saved narration; no new Fish call will be made."
+          : "Run estimate, show the script and cost, then ask for voice approval."
         : state.status === "voiced"
           ? "Run render."
           : state.status === "rendered"

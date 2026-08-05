@@ -110,6 +110,7 @@ Run commands from the downloaded kit's `v3` directory.
 
 - The only generation call is the fixed Fish S2.1 Pro Free voice.
 - Deepgram is used only to time captions to that approved voice.
+- Save Fish narration before requesting Deepgram timing. If timing fails, rerun the same voice step only after fixing the key; the runner reuses the saved narration.
 - Never call either service without a clear yes.
 - Never retry automatically or switch providers.
 - Never print a secret value. Only name a missing key.
