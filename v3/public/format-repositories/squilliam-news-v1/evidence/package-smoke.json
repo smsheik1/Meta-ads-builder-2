@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "testedAt": "2026-08-05T01:47:00Z",
+  "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
+  "testedArchiveSha256": "0abd07a9f8f9e12d7d28d66c449ca045223b50cdc95916882095b7af419b0e0b",
+  "runtimeHash": "cc7fe1bfb8dd651063b247399f2103530bfe988f02a04149a8250c0fb2394558",
+  "cleanExtractionDirectory": "/tmp/wiggly-squilliam-release.nQ48FS",
+  "commands": [
+    "npm ci --silent",
+    "npm run smoke --silent"
+  ],
+  "result": {
+    "dependenciesInstalled": 4,
+    "knownVulnerabilities": 0,
+    "motionFrames": 900,
+    "motionDurationSeconds": 30,
+    "smokeFrames": 9,
+    "smokeDurationSeconds": 9,
+    "width": 1280,
+    "height": 720,
+    "contactSheetCreated": true
+  },
+  "archiveExclusionsChecked": [
+    "node_modules",
+    "agent-runs",
+    ".env",
+    ".env.local",
+    "frames-*",
+    "__pycache__",
+    "*.pyc"
+  ],
+  "secretValueScan": "pass; only empty variable names in .env.example are packaged",
+  "note": "The SHA-256 sidecar beside the current ZIP is authoritative for download integrity. This receipt proves the same official runtime hash from a clean extraction; adding audit evidence can change archive bytes without changing the runtime."
+}
