@@ -4,7 +4,7 @@ This Repo turns a real promotion into a thirty-second breaking-news segment in t
 
 The verified presenter roster is `squilliam` (default), `squidward`, `spongebob`, and `mr-krabs`. Put one of those IDs in `content.json`. All four have immutable render evidence under `evidence/character-packs/`.
 
-Fish Audio presets are registered in `assets/voice-presets.json`: Squidward, SpongeBob, and Mr. Krabs are ready to pair with their verified models. Patrick and Sandy also have supplied voice presets, but their models remain unavailable until the failures recorded in `CHARACTER-AUDIT.md` are fixed and render-tested. Squilliam uses the operator's approved private clone through the same `SQUILLIAM_VOICE_ID` environment slot.
+Fish Audio presets are registered in `assets/voice-presets.json`: Squidward, SpongeBob, and Mr. Krabs are ready to pair with their verified models. Their isolated vertical portraits live in `assets/character-previews/`, and short public voice auditions with call provenance live in `assets/voice-previews/`. Those clips are marketing previews, not reusable production narration. Patrick and Sandy also have supplied voice presets, but their models remain unavailable until the failures recorded in `CHARACTER-AUDIT.md` are fixed and render-tested. Squilliam uses the operator's approved private clone through the same `SQUILLIAM_VOICE_ID` environment slot.
 
 The two supplied proofs intentionally differ: We The Artists promotes an Indianapolis event with photographs, while Wiggly Format Lab promotes a software workflow with synthetic diagrams. Their results and the portability bug found by the second proof are recorded in `PROOF-REPORT.md` and `lessons.json`.
 

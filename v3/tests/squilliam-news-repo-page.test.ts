@@ -9,6 +9,8 @@ import { getDiscoveryFormatProfile } from "../features/discovery/formatProof.ser
 import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
 
 const route = readFileSync("app/format-lab/squilliam-news/page.tsx", "utf8");
+const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
+const characterOptionsComponent = readFileSync("features/discovery/DiscoveryCharacterOptions.tsx", "utf8");
 const repositoryRoot = "public/format-repositories/squilliam-news-v1";
 const evidenceRoot = `${repositoryRoot}/examples/we-the-artists/evidence`;
 const finalization = JSON.parse(readFileSync(`${evidenceRoot}/finalization.json`, "utf8")) as {
@@ -22,6 +24,12 @@ const voicePresets = JSON.parse(readFileSync(`${repositoryRoot}/assets/voice-pre
     characterId: string;
     referenceId: string | null;
     characterStatus: string;
+    preview?: {
+      audio: string;
+      line: string;
+      durationSeconds: number;
+      sha256: string;
+    };
   }>;
 };
 
@@ -67,6 +75,13 @@ assert.deepEqual(
   voicePresets.presets.filter((preset) => preset.characterStatus === "presenter-ready").map((preset) => preset.characterId),
   ["squilliam", "squidward", "spongebob", "mr-krabs"],
 );
+for (const characterId of ["squidward", "spongebob", "mr-krabs"]) {
+  const preset = voicePresets.presets.find((candidate) => candidate.characterId === characterId);
+  assert.ok(preset?.preview, `${characterId} is missing its public voice audition`);
+  const audio = readFileSync(`${repositoryRoot}/${preset.preview.audio}`);
+  assert.equal(createHash("sha256").update(audio).digest("hex"), preset.preview.sha256);
+  assert.ok(preset.preview.durationSeconds >= 3 && preset.preview.durationSeconds <= 8);
+}
 
 const discoveryEntries = getPublishedDiscoveryEntries().filter(
   (entry) => entry.format.slug === "squilliam-news",
@@ -92,6 +107,18 @@ assert.ok(profile?.handoff, "Squilliam News should have a consumer Format page a
 assert.equal(profile.version, "0.2.1-proof");
 assert.equal(profile.technicalHref, "/format-lab/squilliam-news");
 assert.equal(profile.proofEntries.length, 1);
+assert.deepEqual(profile.characterOptions?.map((option) => option.id), ["squidward", "spongebob", "mr-krabs"]);
+for (const option of profile.characterOptions ?? []) {
+  assert.equal(existsSync(`public${option.portraitSrc}`), true);
+  assert.equal(existsSync(`public${option.audioSrc}`), true);
+}
+assert.match(consumerRoute, /Choose your anchor\./);
+assert.match(consumerRoute, /DiscoveryCharacterOptions/);
+assert.match(characterOptionsComponent, /new Audio\(option\.audioSrc\)/);
+assert.match(characterOptionsComponent, /current\.pause\(\)/);
+assert.match(characterOptionsComponent, /className="size-11/);
+assert.match(characterOptionsComponent, /aria-label=\{`\$\{isPlaying \? "Stop" : "Play"\}/);
+assert.doesNotMatch(characterOptionsComponent, /<audio/);
 const handoffPrompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
 assert.match(handoffPrompt, /Format: Squilliam News/);
 assert.match(handoffPrompt, /formats\/squilliam-news/);

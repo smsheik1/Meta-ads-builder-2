@@ -90,6 +90,7 @@ test("Fish voice presets are registered without admitting unverified character m
   const voiceCatalog = JSON.parse(await readFile(path.join(root, "assets", "voice-presets.json"), "utf8"));
   const inventory = JSON.parse(await readFile(path.join(root, "assets.json"), "utf8"));
   const requirements = JSON.parse(await readFile(path.join(root, "requirements.json"), "utf8"));
+  const previewProvenance = JSON.parse(await readFile(path.join(root, "assets", "voice-previews", "provenance.json"), "utf8"));
   const references = Object.fromEntries(
     voiceCatalog.presets
       .filter((preset) => preset.referenceId)
@@ -120,6 +121,44 @@ test("Fish voice presets are registered without admitting unverified character m
   assert.equal(voiceCatalog.presets.find((preset) => preset.characterId === "sandy").characterStatus, "material-adapter-needed");
   assert.ok(inventory.fixed.some((asset) => asset.path === "assets/voice-presets.json"));
   assert.equal(requirements.providers[0].voicePresetRegistry, "assets/voice-presets.json");
+  assert.equal(previewProvenance.provider, "Fish Audio");
+  assert.equal(previewProvenance.model, "s2.1-pro-free");
+  assert.equal(previewProvenance.providerCalls, 3);
+  assert.deepEqual(previewProvenance.previews.map((preview) => preview.characterId), ["squidward", "spongebob", "mr-krabs"]);
+  for (const preview of previewProvenance.previews) {
+    const preset = voiceCatalog.presets.find((candidate) => candidate.characterId === preview.characterId);
+    assert.deepEqual(preset.preview, {
+      audio: preview.audio,
+      line: preview.line,
+      durationSeconds: preview.durationSeconds,
+      sha256: preview.sha256,
+    });
+    const bytes = await readFile(path.join(root, preview.audio));
+    assert.equal(bytes.length, preview.bytes);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), preview.sha256);
+    assert.ok(preview.durationSeconds >= 3 && preview.durationSeconds <= 8);
+    assert.ok(inventory.fixed.some((asset) => asset.path === preview.audio));
+  }
+});
+
+test("character-option portraits are isolated vertical captures of verified models", async () => {
+  const catalog = JSON.parse(await readFile(path.join(root, "assets", "character-packs.json"), "utf8"));
+  const inventory = JSON.parse(await readFile(path.join(root, "assets.json"), "utf8"));
+  const provenance = JSON.parse(await readFile(path.join(root, "assets", "character-previews", "provenance.json"), "utf8"));
+  assert.equal(provenance.background, "#ffffff");
+  assert.deepEqual(provenance.dimensions, { width: 800, height: 1000 });
+  assert.equal(provenance.runtimeHash, await currentRuntimeHash());
+  assert.deepEqual(provenance.previews.map((preview) => preview.characterId), ["squidward", "spongebob", "mr-krabs"]);
+  for (const preview of provenance.previews) {
+    assert.equal(catalog.packs.find((pack) => pack.id === preview.characterId)?.status, "presenter-ready");
+    const bytes = await readFile(path.join(root, preview.image));
+    assert.equal(bytes.length, preview.bytes);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), preview.sha256);
+    assert.equal(bytes.readUInt32BE(16), provenance.dimensions.width);
+    assert.equal(bytes.readUInt32BE(20), provenance.dimensions.height);
+    assert.ok(inventory.fixed.some((asset) => asset.path === preview.image));
+  }
+  assert.ok(inventory.fixed.some((asset) => asset.path === "assets/character-previews/provenance.json"));
 });
 
 test("every verified character has immutable visual smoke evidence", async () => {

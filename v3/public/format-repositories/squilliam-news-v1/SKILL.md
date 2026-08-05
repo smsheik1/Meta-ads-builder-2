@@ -13,7 +13,7 @@ Ask: `What event, launch, or promotion should the Squilliam News desk declare an
 
 Use only `squilliam`, `squidward`, `spongebob`, or `mr-krabs` as `content.characterId`. Squilliam remains the default. Do not add a model to this list until the same official renderer passes character-pack smoke QA.
 
-Read `assets/voice-presets.json` after the user chooses the presenter. For Squidward, SpongeBob, or Mr. Krabs, copy the matching packaged `referenceId` into the local `SQUILLIAM_VOICE_ID` environment variable when new Fish narration is needed. Squilliam still requires the operator's approved private clone. Patrick and Sandy are voice-ready only; never select their character IDs until their model status becomes `presenter-ready`.
+Read `assets/voice-presets.json` after the user chooses the presenter. For Squidward, SpongeBob, or Mr. Krabs, copy the matching packaged `referenceId` into the local `SQUILLIAM_VOICE_ID` environment variable when new Fish narration is needed. The MP3s under `assets/voice-previews/` are short public auditions only; never splice them into a production bulletin. Squilliam still requires the operator's approved private clone. Patrick and Sandy are voice-ready only; never select their character IDs until their model status becomes `presenter-ready`.
 
 Ask one question at a time. If the user requests the packaged We The Artists proof, initialize from that example without additional creative questions.
 

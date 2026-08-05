@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { getDiscoveryEntriesByFormat } from "./catalog";
-import type { DiscoveryFormatHandoff, DiscoveryFormatProfile } from "./types";
+import type {
+  DiscoveryCharacterOption,
+  DiscoveryFormatHandoff,
+  DiscoveryFormatProfile,
+} from "./types";
 
 type FormatProfileConfig = {
   slug: string;
@@ -11,6 +15,7 @@ type FormatProfileConfig = {
   manifestPath?: string;
   whatStays: string[];
   whatChanges: string[];
+  characterOptions?: DiscoveryCharacterOption[];
   handoff?: DiscoveryFormatHandoff;
 };
 
@@ -178,6 +183,35 @@ const formatConfigs: FormatProfileConfig[] = [
     lastUpdated: "August 2026",
     technicalHref: "/format-lab/squilliam-news",
     manifestPath: "format-repositories/squilliam-news-v1/format.json",
+    characterOptions: [
+      {
+        id: "squidward",
+        name: "Squidward Tentacles",
+        personality: "Dry, skeptical, and reluctantly professional.",
+        portraitSrc: "/format-repositories/squilliam-news-v1/assets/character-previews/squidward.png",
+        audioSrc: "/format-repositories/squilliam-news-v1/assets/voice-previews/squidward.mp3",
+        previewLine: "Finally, a news desk with standards. Send me your story before SpongeBob calls it breaking news.",
+        accentColor: "#b8ead8",
+      },
+      {
+        id: "spongebob",
+        name: "SpongeBob SquarePants",
+        personality: "Bright, breathless, and thrilled by absolutely everything.",
+        portraitSrc: "/format-repositories/squilliam-news-v1/assets/character-previews/spongebob.png",
+        audioSrc: "/format-repositories/squilliam-news-v1/assets/voice-previews/spongebob.mp3",
+        previewLine: "Breaking news! Your big idea just got promoted to the front page!",
+        accentColor: "#ffe448",
+      },
+      {
+        id: "mr-krabs",
+        name: "Mr. Krabs",
+        personality: "Booming, shameless, and always watching the bottom line.",
+        portraitSrc: "/format-repositories/squilliam-news-v1/assets/character-previews/mr-krabs.png",
+        audioSrc: "/format-repositories/squilliam-news-v1/assets/voice-previews/mr-krabs.mp3",
+        previewLine: "Breaking news! Your promotion is about to make a splash—and maybe a few dollars!",
+        accentColor: "#ff7b73",
+      },
+    ],
     whatStays: [
       "One thirty-second breaking-news bulletin",
       "A verified selectable Squilliam, Squidward, SpongeBob, or Mr. Krabs presenter",
@@ -2031,6 +2065,7 @@ export function getDiscoveryFormatProfile(slug: string): DiscoveryFormatProfile 
     proofEntries,
     whatStays: config.whatStays,
     whatChanges: config.whatChanges,
+    characterOptions: config.characterOptions,
     handoff: config.handoff,
   };
 }

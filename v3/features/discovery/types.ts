@@ -36,7 +36,18 @@ export type DiscoveryFormatProfile = {
   proofEntries: DiscoveryEntry[];
   whatStays: string[];
   whatChanges: string[];
+  characterOptions?: DiscoveryCharacterOption[];
   handoff?: DiscoveryFormatHandoff;
+};
+
+export type DiscoveryCharacterOption = {
+  id: string;
+  name: string;
+  personality: string;
+  portraitSrc: string;
+  audioSrc: string;
+  previewLine: string;
+  accentColor: string;
 };
 
 export type DiscoveryRunEstimate = {

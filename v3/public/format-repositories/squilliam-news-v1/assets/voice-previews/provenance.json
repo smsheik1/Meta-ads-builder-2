@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "provider": "Fish Audio",
+  "model": "s2.1-pro-free",
+  "generatedAt": "2026-08-05T14:29:14Z",
+  "providerCalls": 3,
+  "providerCost": "$0 in the published fair-use window recorded by this Format; quota was consumed",
+  "purpose": "Short public character-option auditions; not production narration",
+  "previews": [
+    {
+      "characterId": "squidward",
+      "referenceId": "1b28ff723a204fe08c26d8695f796b84",
+      "audio": "assets/voice-previews/squidward.mp3",
+      "line": "Finally, a news desk with standards. Send me your story before SpongeBob calls it breaking news.",
+      "durationSeconds": 6.252,
+      "bytes": 101037,
+      "sha256": "78ba7dba72dde403ffbe19eb610b9cf346a25c708d1387ec6187094939204fc7"
+    },
+    {
+      "characterId": "spongebob",
+      "referenceId": "9845e056f37b470d9a1005e41c864e25",
+      "audio": "assets/voice-previews/spongebob.mp3",
+      "line": "Breaking news! Your big idea just got promoted to the front page!",
+      "durationSeconds": 4.527,
+      "bytes": 73389,
+      "sha256": "0f5aa4db63961222079a1f85e11a7f680d6b059e97856f37999d99a76fc7440e"
+    },
+    {
+      "characterId": "mr-krabs",
+      "referenceId": "394d3112f0da41049c42177f3ca31c5a",
+      "audio": "assets/voice-previews/mr-krabs.mp3",
+      "line": "Breaking news! Your promotion is about to make a splash—and maybe a few dollars!",
+      "durationSeconds": 5.633,
+      "bytes": 91053,
+      "sha256": "a228f1b8a50bcc7306f19e30b2d86aa996dba2d0ee14bf7f744299f28b03f388"
+    }
+  ]
+}
