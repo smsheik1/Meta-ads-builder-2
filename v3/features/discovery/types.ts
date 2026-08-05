@@ -16,6 +16,7 @@ export type DiscoveryEntry = {
     referenceSrc?: string;
     durationLabel: string;
     accentColor?: string;
+    aspectRatio?: "9:16" | "16:9";
   };
   format: {
     slug: string;

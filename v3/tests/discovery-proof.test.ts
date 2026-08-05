@@ -176,7 +176,10 @@ assert.ok(
     formatPageSource.includes('heroProof.media.kind === "image"') &&
     formatPageSource.includes('entry.media.kind === "image"') &&
     formatPageSource.includes("aspect-[3/4]") &&
-    formatPageSource.includes("aspect-[9/16]"),
+    formatPageSource.includes("aspect-[9/16]") &&
+    formatPageSource.includes('media.aspectRatio === "16:9"') &&
+    formatPageSource.includes("aspect-video") &&
+    formatPageSource.includes("object-contain"),
   "Format pages should be static consumer proof surfaces over existing media and technical pages.",
 );
 assert.equal(existsSync("app/ads"), false, "Discovery must not add a second /ads detail route.");

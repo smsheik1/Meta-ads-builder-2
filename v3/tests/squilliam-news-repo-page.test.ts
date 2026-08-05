@@ -10,6 +10,7 @@ import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
 
 const route = readFileSync("app/format-lab/squilliam-news/page.tsx", "utf8");
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
+const discoveryAdDetail = readFileSync("features/discovery/DiscoveryAdDetail.tsx", "utf8");
 const characterOptionsComponent = readFileSync("features/discovery/DiscoveryCharacterOptions.tsx", "utf8");
 const characterModelViewer = readFileSync("features/discovery/DiscoveryCharacterModelViewer.tsx", "utf8");
 const repositoryRoot = "public/format-repositories/squilliam-news-v1";
@@ -95,6 +96,7 @@ assert.deepEqual(
 );
 assert.equal(discoveryEntries[0]?.media.src, `/${finalVideoPath.replace(/^public\//, "")}`);
 assert.equal(discoveryEntries[0]?.media.poster, `/${evidenceRoot.replace(/^public\//, "")}/poster.png`);
+assert.equal(discoveryEntries[0]?.media.aspectRatio, "16:9");
 assert.match(discoveryEntries[0]?.curatorNote ?? "", /Squilliam, Squidward, SpongeBob, or Mr\. Krabs/);
 const characterShelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
   .find((shelf) => shelf.id === "character-explainers");
@@ -138,6 +140,13 @@ for (const option of interactiveOptions) {
 assert.match(consumerRoute, /Choose your anchor\./);
 assert.match(consumerRoute, /Models return to attention after three seconds/);
 assert.match(consumerRoute, /DiscoveryCharacterOptions/);
+assert.match(consumerRoute, /heroProof\.media\.aspectRatio === "16:9"/);
+assert.match(consumerRoute, /entry\.media\.aspectRatio === "16:9"/);
+assert.match(consumerRoute, /aspect-video/);
+assert.match(consumerRoute, /object-contain/);
+assert.match(discoveryAdDetail, /entry\.media\.aspectRatio === "16:9"/);
+assert.match(discoveryAdDetail, /aspect-video/);
+assert.match(discoveryAdDetail, /object-contain/);
 assert.match(characterOptionsComponent, /DiscoveryCharacterModelViewer/);
 assert.match(characterOptionsComponent, /new Audio\(option\.audioSrc\)/);
 assert.match(characterOptionsComponent, /current\.pause\(\)/);

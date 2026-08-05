@@ -2397,6 +2397,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       src: "/format-repositories/squilliam-news-v1/examples/we-the-artists/evidence/final.mp4",
       poster: "/format-repositories/squilliam-news-v1/examples/we-the-artists/evidence/poster.png",
       durationLabel: "30 sec",
+      aspectRatio: "16:9",
     },
     format: {
       slug: "squilliam-news",
