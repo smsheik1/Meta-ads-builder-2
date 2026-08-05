@@ -45,6 +45,7 @@ export type DiscoveryCharacterOption = {
   name: string;
   personality: string;
   portraitSrc: string;
+  modelSrc?: string;
   audioSrc: string;
   previewLine: string;
   accentColor: string;

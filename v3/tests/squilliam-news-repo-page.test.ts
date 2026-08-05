@@ -11,6 +11,7 @@ import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
 const route = readFileSync("app/format-lab/squilliam-news/page.tsx", "utf8");
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 const characterOptionsComponent = readFileSync("features/discovery/DiscoveryCharacterOptions.tsx", "utf8");
+const characterModelViewer = readFileSync("features/discovery/DiscoveryCharacterModelViewer.tsx", "utf8");
 const repositoryRoot = "public/format-repositories/squilliam-news-v1";
 const evidenceRoot = `${repositoryRoot}/examples/we-the-artists/evidence`;
 const finalization = JSON.parse(readFileSync(`${evidenceRoot}/finalization.json`, "utf8")) as {
@@ -112,13 +113,40 @@ for (const option of profile.characterOptions ?? []) {
   assert.equal(existsSync(`public${option.portraitSrc}`), true);
   assert.equal(existsSync(`public${option.audioSrc}`), true);
 }
+const interactiveOptions = profile.characterOptions?.filter((option) => option.modelSrc) ?? [];
+assert.deepEqual(interactiveOptions.map((option) => option.id), ["spongebob"]);
+const spongeBobModel = readFileSync(`public${interactiveOptions[0]?.modelSrc?.split("?")[0]}`);
+assert.equal(spongeBobModel.subarray(0, 4).toString("ascii"), "glTF");
+const spongeBobModelJsonLength = spongeBobModel.readUInt32LE(12);
+const spongeBobModelJson = JSON.parse(
+  spongeBobModel.subarray(20, 20 + spongeBobModelJsonLength).toString(),
+) as {
+  images?: unknown[];
+  meshes?: Array<{ primitives: Array<{ attributes: Record<string, number> }> }>;
+};
+assert.ok((spongeBobModelJson.images?.length ?? 0) > 0, "The interactive model must retain its embedded textures.");
+for (const mesh of spongeBobModelJson.meshes ?? []) {
+  for (const primitive of mesh.primitives) {
+    assert.equal(
+      "COLOR_0" in primitive.attributes,
+      false,
+      "Legacy black vertex colors must not override SpongeBob's embedded textures.",
+    );
+  }
+}
 assert.match(consumerRoute, /Choose your anchor\./);
 assert.match(consumerRoute, /DiscoveryCharacterOptions/);
+assert.match(characterOptionsComponent, /DiscoveryCharacterModelViewer/);
 assert.match(characterOptionsComponent, /new Audio\(option\.audioSrc\)/);
 assert.match(characterOptionsComponent, /current\.pause\(\)/);
 assert.match(characterOptionsComponent, /className="size-11/);
 assert.match(characterOptionsComponent, /aria-label=\{`\$\{isPlaying \? "Stop" : "Play"\}/);
 assert.doesNotMatch(characterOptionsComponent, /<audio/);
+assert.match(characterModelViewer, /@google\/model-viewer/);
+assert.match(characterModelViewer, /"camera-controls": ""/);
+assert.match(characterModelViewer, /"disable-pan": ""/);
+assert.match(characterModelViewer, /"touch-action": "pan-y"/);
+assert.match(characterModelViewer, /Drag to rotate/);
 const handoffPrompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
 assert.match(handoffPrompt, /Format: Squilliam News/);
 assert.match(handoffPrompt, /formats\/squilliam-news/);

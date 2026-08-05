@@ -198,6 +198,7 @@ const formatConfigs: FormatProfileConfig[] = [
         name: "SpongeBob SquarePants",
         personality: "Bright, breathless, and thrilled by absolutely everything.",
         portraitSrc: "/format-repositories/squilliam-news-v1/assets/character-previews/spongebob.png",
+        modelSrc: "/format-repositories/squilliam-news-v1/assets/character-previews/spongebob.glb?v=2",
         audioSrc: "/format-repositories/squilliam-news-v1/assets/voice-previews/spongebob.mp3",
         previewLine: "Breaking news! Your big idea just got promoted to the front page!",
         accentColor: "#ffe448",
