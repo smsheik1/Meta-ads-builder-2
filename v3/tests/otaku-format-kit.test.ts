@@ -62,6 +62,7 @@ try {
   const entryList = readZipEntries(archive);
   const entries = entryList.join("\n");
   for (const required of [
+    "START-HERE.md",
     "v3/package.json",
     "v3/kit-smoke.mjs",
     "v3/scripts/otaku-format.ts",

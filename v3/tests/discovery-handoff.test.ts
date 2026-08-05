@@ -42,7 +42,16 @@ assert.ok(
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon?.handoff, "Cartoon Explainer should offer its packaged agent run.");
 assert.equal(cartoon.handoff.firstQuestion, "What topic should the video explain?");
-assert.match(buildDiscoveryHandoffPrompt(cartoon, origin), /Exact public version: 1\.2\.0-experiment/);
+const cartoonPrompt = buildDiscoveryHandoffPrompt(cartoon, origin);
+assert.match(cartoonPrompt, /Exact public version: 1\.2\.0-experiment/);
+assert.match(
+  cartoonPrompt,
+  /https:\/\/wiggly\.agentenamel\.com\/format-repositories\/otaku-explainer-v1\/downloads\/wiggly-cartoon-explainer-format-kit\.zip/,
+);
+assert.match(cartoonPrompt, /not a Wiggly connector, MCP server, plugin, or registry tool/);
+assert.match(cartoonPrompt, /Codex, Claude Code, or Cursor/);
+assert.match(cartoonPrompt, /read START-HERE\.md/);
+assert.match(cartoonPrompt, /Do not ask how to proceed/);
 
 const meme = getDiscoveryFormatProfile("meme");
 assert.ok(meme?.handoff, "Meme should offer its packaged agent run.");
@@ -79,6 +88,7 @@ assert.ok(
   "Saved ads should reuse the existing anonymous browser storage.",
 );
 assert.ok(handoffSource.includes("<Sheet") && handoffSource.includes("Start with Codex"));
+assert.ok(handoffSource.includes("not a Claude connector"));
 assert.ok(handoffSource.includes('window.location.href = "codex://"'));
 assert.equal(/fetch\(|Replicate|Seedance|Fish Audio/.test(handoffSource), false);
 assert.ok(formatPageSource.includes("You provide") && formatPageSource.includes("Typical run"));
