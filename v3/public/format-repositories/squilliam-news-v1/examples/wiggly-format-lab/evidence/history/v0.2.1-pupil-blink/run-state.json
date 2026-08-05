@@ -1,0 +1,23 @@
+{
+  "runId": "v021-wiggly-format-lab",
+  "createdAt": "2026-08-05T03:31:39.943Z",
+  "source": "wiggly-format-lab",
+  "attempts": [
+    {
+      "number": 1,
+      "status": "rendered",
+      "startedAt": "2026-08-05T03:31:59.533Z",
+      "contentHash": "e6db294e4e038ed611ff69626a5d7c4ba4550f12f97ea40a4aa686c94351c180",
+      "audio": {
+        "sourceDuration": 30.000181,
+        "finalDuration": 30,
+        "tempo": "anull"
+      },
+      "audioHash": "fdffd65b096bb66a42039592fa1e7dffe0ce46a474b2f2b70555717476e7b8c0",
+      "completedAt": "2026-08-05T03:34:27.634Z",
+      "video": "attempts/attempt-01/video.mp4",
+      "videoHash": "8308f15185863d5a1f6cd6f97ced87d88c1c17af253a05a30657af686e090958"
+    }
+  ],
+  "currentAttempt": 1
+}

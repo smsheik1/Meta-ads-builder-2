@@ -1,0 +1,23 @@
+{
+  "runId": "eye-fix-we-the-artists",
+  "createdAt": "2026-08-05T03:50:31.435Z",
+  "source": "we-the-artists",
+  "attempts": [
+    {
+      "number": 1,
+      "status": "rendered",
+      "startedAt": "2026-08-05T03:50:57.727Z",
+      "contentHash": "c96df7bd469b48874b64d2a7a59a0e7319011f94fed8601db3196cf59b608030",
+      "audio": {
+        "sourceDuration": 30,
+        "finalDuration": 30,
+        "tempo": "anull"
+      },
+      "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+      "completedAt": "2026-08-05T03:53:28.634Z",
+      "video": "attempts/attempt-01/video.mp4",
+      "videoHash": "4225ac87c1d6db293579502c2ffe5b660a6351aa8b74e16b471060f7e80657db"
+    }
+  ],
+  "currentAttempt": 1
+}

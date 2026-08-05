@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "defaultCharacterId": "squilliam",
+  "packs": [
+    {
+      "id": "squilliam",
+      "label": "Squilliam Fancyson",
+      "status": "presenter-ready",
+      "format": "collada",
+      "model": "assets/character/chr_squilliam_bindpose.dae",
+      "scale": 0.86,
+      "transparentTextures": ["tx8_0000_squideyes_128.PNG"],
+      "transparentMaterials": ["unnamed.012", "unnamed.013"],
+      "rig": {
+        "chest": "squilliam_chest",
+        "head": "squilliam_head",
+        "leftArm": {"upper": "squilliam_bicep_L", "elbow": "squilliam_elbow_L", "forearm": "squilliam_elbow_L", "forearmTip": "squilliam_twist_L", "hand": "squilliam_hand_L", "handTip": "squilliam_fingers_L"},
+        "rightArm": {"upper": "squilliam_bicep_R", "elbow": "squilliam_elbow_R", "forearm": "squilliam_elbow_R", "forearmTip": "squilliam_twist_R", "hand": "squilliam_hand_R", "handTip": "squilliam_fingers_R"},
+        "mouth": {"mode": "octopus", "center": "squilliam_mouth", "leftCorner": "squilliam_mouth_corner_L", "rightCorner": "squilliam_mouth_corner_R"},
+        "blink": {"mode": "none", "reason": "The source rig's eye-scale joints affect only the pupils, so synthetic blinking is disabled instead of making the pupils disappear."}
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Non-Playable Characters - Squilliam Fancyson.zip"
+    },
+    {
+      "id": "squidward",
+      "label": "Squidward Tentacles",
+      "status": "presenter-ready",
+      "format": "collada",
+      "model": "assets/characters/squidward/chr_squid_bindpose.dae",
+      "scale": 0.86,
+      "transparentTextures": ["tx8_0000_squideyes_128.PNG"],
+      "transparentMaterials": ["unnamed.0", "unnamed.001"],
+      "rig": {
+        "chest": "squidward_chest",
+        "head": "squidward_head",
+        "leftArm": {"upper": "squidward_bicep_L", "elbow": "squidward_elbow_L", "forearm": "squidward_elbow_L", "forearmTip": "squidward_twist_L", "hand": "squidward_hand_L", "handTip": "squidward_fingers_L"},
+        "rightArm": {"upper": "squidward_bicep_R", "elbow": "squidward_elbow_R", "forearm": "squidward_elbow_R", "forearmTip": "squidward_twist_R", "hand": "squidward_hand_R", "handTip": "squidward_fingers_R"},
+        "mouth": {"mode": "octopus", "center": "squidward_mouth", "leftCorner": "squidward_mouth_corner_L", "rightCorner": "squidward_mouth_corner_R"},
+        "blink": {"mode": "none", "reason": "The source rig's eye-scale joints affect only the pupils, so synthetic blinking is disabled instead of making the pupils disappear."}
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip"
+    },
+    {
+      "id": "spongebob",
+      "label": "SpongeBob SquarePants",
+      "status": "presenter-ready",
+      "format": "collada",
+      "model": "assets/characters/spongebob/chr_bob_bindpose.dae",
+      "scale": 1.08,
+      "transparentTextures": ["tx1_0000_lashes.PNG", "tx8_0000_spongecheeks_32.PNG", "tx8_0000_spongeeyes_128.PNG"],
+      "transparentMaterials": ["unnamed.003", "unnamed.004", "unnamed.006", "unnamed.007", "unnamed.008"],
+      "rig": {
+        "chest": "bob_chest",
+        "head": "bob_head",
+        "leftArm": {"upper": "bob_bicep_L", "elbow": "bob_elbow_L", "forearm": "bob_elbow_L", "forearmTip": "bob_twist_L", "hand": "bob_wrist_L", "handTip": "bob_index_base_L"},
+        "rightArm": {"upper": "bob_bicep_R", "elbow": "bob_elbow_R", "forearm": "bob_elbow_R", "forearmTip": "bob_twist_R", "hand": "bob_wrist_R", "handTip": "bob_index_base_R"},
+        "mouth": {"mode": "jaw", "center": "bob_jaw", "lower": "bob_lip_lower"},
+        "blink": {"mode": "lids", "upper": ["bob_lid_upper_L", "bob_lid_upper_R"], "lower": ["bob_lid_lower_L", "bob_lid_lower_R"]}
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - SpongeBob SquarePants.zip"
+    },
+    {
+      "id": "mr-krabs",
+      "label": "Mr. Krabs",
+      "status": "presenter-ready",
+      "format": "collada",
+      "model": "assets/characters/mr-krabs/chr_krabs_bindpose.dae",
+      "scale": 0.92,
+      "transparentTextures": ["tx1_0000_krabslids_128.PNG"],
+      "transparentMaterials": ["unnamed.001", "unnamed.002"],
+      "rig": {
+        "chest": "krabs_waist",
+        "head": "krabs_head",
+        "leftArm": {"upper": "krabs_bicep_L", "elbow": "krabs_elbow_L", "forearm": "krabs_elbow_L", "forearmTip": "krabs_wrist_L", "hand": "krabs_wrist_L", "handTip": "krabs_claw_upper_L"},
+        "rightArm": {"upper": "krabs_bicep_R", "elbow": "krabs_elbow_R", "forearm": "krabs_elbow_R", "forearmTip": "krabs_wrist_R", "hand": "krabs_wrist_R", "handTip": "krabs_claw_upper_R"},
+        "mouth": {"mode": "jaw", "center": "krabs_jaw", "lower": "krabs_mouth_lower"},
+        "blink": {"mode": "lids", "upper": ["krabs_upper_lid_L", "krabs_upper_lid_R"], "lower": ["krabs_lower_lid_L", "krabs_lower_lid_R"]}
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Mr. Krabs.zip"
+    }
+  ]
+}

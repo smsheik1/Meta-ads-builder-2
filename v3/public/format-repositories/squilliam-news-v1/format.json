@@ -1,0 +1,30 @@
+{
+  "id": "squilliam-news",
+  "version": "0.2.1-proof",
+  "title": "Squilliam News",
+  "description": "Turn a real promotion into a thirty-second, character-led breaking-news bulletin with presenter-derived body language, a retro story monitor, and a sharp final sign-off.",
+  "status": "proof",
+  "output": {
+    "type": "video/mp4",
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "durationSeconds": 30
+  },
+  "runtime": "runner.mjs",
+  "renderer": "runtime/renderer/app.js",
+  "inputContract": "input-contract.json",
+  "outputContract": "output-contract.json",
+  "compositionContract": "composition-contract.json",
+  "components": [
+    "instructions",
+    "user-inputs",
+    "verified-character-packs",
+    "replaceable-promotion-pack",
+    "voice-and-pronunciations",
+    "timeline-slots",
+    "official-renderer",
+    "quality-checks",
+    "final-output"
+  ]
+}

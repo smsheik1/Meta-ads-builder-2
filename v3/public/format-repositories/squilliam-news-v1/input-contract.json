@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "required": [
+    "id",
+    "characterId",
+    "headline",
+    "locationBug",
+    "tickerItems",
+    "script",
+    "pronunciations",
+    "slides"
+  ],
+  "limits": {
+    "headlineCharacters": 58,
+    "locationBugCharacters": 24,
+    "tickerItems": {"min": 3, "max": 8, "charactersPerItem": 54},
+    "scriptWords": {"min": 65, "max": 112},
+    "slides": 10,
+    "attempts": 3
+  },
+  "assetPolicy": {
+    "storyImages": "Every referenced image must exist inside the run or source example and have a recorded source or user-supplied note.",
+    "character": "characterId must name a presenter-ready entry in assets/character-packs.json. Candidate, adapter-needed, and static-cutaway packs cannot be selected by a validated production run.",
+    "voice": "A run may supply approved narration audio, or Fish Audio may generate it after validation and explicit provider approval."
+  }
+}

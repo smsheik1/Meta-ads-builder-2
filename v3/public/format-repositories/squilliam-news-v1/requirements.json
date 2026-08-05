@@ -1,0 +1,19 @@
+{
+  "localTools": ["node", "npm", "python3", "ffmpeg", "ffprobe", "Google Chrome"],
+  "authoringTools": ["zip (only required to build the downloadable archive)"],
+  "nodeVersion": ">=20.12",
+  "providers": [
+    {
+      "name": "Fish Audio",
+      "purpose": "production narration when a run has no approved audio.wav",
+      "environmentVariables": ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"],
+      "model": "s2.1-pro-free",
+      "estimatedCost": "$0 through August 31, 2026 under Fish Audio's published fair-use window; recheck before later use",
+      "pricingCheckedAt": "2026-08-04",
+      "pricingSource": "https://fish.audio/blog/s2-1-pro-free-api/",
+      "approval": "Validate first. Ask once before any provider call that may charge or consume a limited quota. Pass --approve-provider to record approval."
+    }
+  ],
+  "paidImageOrVideoProviders": [],
+  "secretsPolicy": "Environment variable names may be committed. Values must never be stored, printed, or added to run evidence."
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#173d76"/><stop offset="1" stop-color="#9c5fd1"/></linearGradient></defs>
+  <rect width="1280" height="720" fill="url(#g)"/><circle cx="180" cy="150" r="90" fill="#44d6e8" opacity=".45"/><circle cx="1080" cy="590" r="170" fill="#f0c755" opacity=".35"/>
+  <text x="640" y="270" text-anchor="middle" fill="#fff4c8" font-family="Arial Black,Arial" font-size="86" font-weight="900">GOO LAGOON</text>
+  <text x="640" y="380" text-anchor="middle" fill="white" font-family="Arial Black,Arial" font-size="96" font-weight="900">SCIENCE EXPO</text>
+  <text x="640" y="480" text-anchor="middle" fill="#73edff" font-family="Arial" font-size="42" font-weight="800">PACKAGED SMOKE FIXTURE</text>
+</svg>
+

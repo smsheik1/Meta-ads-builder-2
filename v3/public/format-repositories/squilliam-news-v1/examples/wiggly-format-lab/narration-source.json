@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "formatVersion": "0.2.1-proof",
+  "source": "Audio recovered locally from the historical v0.1 review output produced by the recorded Fish Audio job.",
+  "sourceAudio": "audio.wav",
+  "sourceAudioSha256": "1ec21b8276bc0797371a001bac30a1e5f1a8f7f54f292ce50a56c8426182603b",
+  "historicalReview": "evidence/history/v0.1/review.mp4",
+  "historicalReviewSha256": "07d870184c196fe59fcc36d501a5ceb1316ed116cd2549e29a87cb747c555c76",
+  "historicalProviderReceipt": "evidence/history/v0.1/provider-receipt.json",
+  "renderAudioSha256": "fdffd65b096bb66a42039592fa1e7dffe0ce46a474b2f2b70555717476e7b8c0",
+  "providerCallsInCurrentRun": 0,
+  "notes": "The current runner normalized the recovered track to its exact 30-second output contract. No paid or rate-limited provider call was made during the v0.2 run."
+}

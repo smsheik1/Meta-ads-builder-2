@@ -1,0 +1,69 @@
+{
+  "status": "pass",
+  "inspectedAt": "2026-08-05T01:44:43.236Z",
+  "attempt": 3,
+  "contentHash": "5a4e9a04a837d64eb8267a223ec9562535f32bd35da7ca5838046d2455abc983",
+  "runtimeHash": "cc7fe1bfb8dd651063b247399f2103530bfe988f02a04149a8250c0fb2394558",
+  "audioHash": "726cb881088b7eb844862222639584ee5eefd3f755b4a310c1978ad8763e4449",
+  "videoHash": "07d870184c196fe59fcc36d501a5ceb1316ed116cd2549e29a87cb747c555c76",
+  "video": "attempts/attempt-03/video.mp4",
+  "contactSheet": "contact-sheet.png",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1"
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "44100",
+        "channels": 1,
+        "r_frame_rate": "0/0"
+      }
+    ],
+    "format": {
+      "duration": "30.000000",
+      "size": "2468321",
+      "bit_rate": "658218"
+    }
+  },
+  "silences": [
+    {
+      "start": 11.363107,
+      "end": 11.6339,
+      "duration": 0.270794
+    },
+    {
+      "start": 24.268957,
+      "end": 24.622449,
+      "duration": 0.353492
+    },
+    {
+      "start": 29.115238,
+      "end": 30.000181,
+      "duration": 0.884943
+    }
+  ],
+  "volume": {
+    "meanDb": -21,
+    "peakDb": -3.4
+  },
+  "checks": {
+    "duration": true,
+    "dimensions": true,
+    "fps": true,
+    "audioStream": true,
+    "noBlackSegments": true,
+    "interiorSilence": true,
+    "finalHold": true
+  },
+  "humanReviewRequired": true
+}

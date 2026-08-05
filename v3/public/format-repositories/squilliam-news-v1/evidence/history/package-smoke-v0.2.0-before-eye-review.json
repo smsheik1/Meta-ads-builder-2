@@ -1,0 +1,53 @@
+{
+  "status": "pass",
+  "testedAt": "2026-08-05T03:00:21Z",
+  "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
+  "testedArchiveSha256": "49b8aed82350d6942e3db50754ab632f4025cf3caae78d97bf40d982b2d277a6",
+  "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
+  "cleanExtractionDirectory": "/private/tmp/squilliam-v02-package-audit.Z9jv05/wiggly-squilliam-news-format-kit",
+  "commands": [
+    "npm ci --silent",
+    "npm test --silent",
+    "npm run check --silent",
+    "npm run smoke --silent",
+    "npm audit --json",
+    "secret-value scan"
+  ],
+  "result": {
+    "dependenciesInstalled": 4,
+    "knownVulnerabilities": 0,
+    "motionFrames": 900,
+    "motionDurationSeconds": 30,
+    "smokeFrames": 9,
+    "smokeDurationSeconds": 9,
+    "width": 1280,
+    "height": 720,
+    "contactSheetCreated": true
+  },
+  "characterPackEvidence": {
+    "verifiedPresenters": 4,
+    "hashedSmokeVideos": 4,
+    "hashedContactSheets": 4,
+    "catalogAndEvidenceTests": "pass"
+  },
+  "currentPromotionEvidence": {
+    "formatVersion": "0.2.0-proof",
+    "fullLengthProofs": 2,
+    "sharedRuntimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
+    "distinctContentHashes": true,
+    "distinctVideoHashes": true,
+    "automaticInspection": "pass",
+    "humanReview": "pending"
+  },
+  "archiveExclusionsChecked": [
+    "node_modules",
+    "agent-runs",
+    ".env",
+    ".env.local",
+    "frames-*",
+    "__pycache__",
+    "*.pyc"
+  ],
+  "secretValueScan": "pass; only empty variable names in .env.example are packaged",
+  "note": "The SHA-256 sidecar beside the current ZIP is authoritative for download integrity. This receipt proves the same official runtime hash from a clean extraction; adding audit evidence can change archive bytes without changing the runtime."
+}

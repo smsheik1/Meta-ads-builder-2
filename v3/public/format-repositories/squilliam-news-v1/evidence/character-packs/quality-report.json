@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "formatVersion": "0.2.1-proof",
+  "status": "pass",
+  "reviewedAt": "2026-08-05T03:54:00Z",
+  "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
+  "renderer": "runtime/renderer/app.js",
+  "fixture": "fixtures/smoke/content.json",
+  "motionFramesAvailable": 900,
+  "sampledSourceFrames": [45, 135, 225, 300, 375, 465, 585, 705, 825],
+  "checks": [
+    "All four character IDs load through the one official renderer.",
+    "Every facial cutout uses an explicit material-name mapping that exists in its Collada model.",
+    "Squilliam and Squidward retain visible yellow eyes and red pupils in all nine samples; their pupil-only scale joints are not used as fake eyelids.",
+    "SpongeBob retains visible white, blue, and black eyes plus eyelashes in all nine samples.",
+    "Mr. Krabs retains visible yellow eyes, black pupils, and eyelid details in all nine samples.",
+    "All four characters remain framed above the desk without clipping.",
+    "The nine sampled presenter poses retain visible, non-melting arm or hand silhouettes.",
+    "Squilliam and Squidward use their native mouth and mouth-corner bones.",
+    "SpongeBob and Mr. Krabs use their native jaw and lower-mouth bones.",
+    "Story monitor, ticker, lower thirds, and slide layouts remain unchanged."
+  ],
+  "characters": [
+    {
+      "characterId": "squilliam",
+      "status": "pass",
+      "contentHash": "59509f2330d21f9ab92770f62207b2110af1e833633fe57d5b9495d175493052",
+      "video": "squilliam-smoke.mp4",
+      "videoHash": "93659de12a1b53a2c5268349bb445824b88fd9d76f559908a4f87082a807f478",
+      "contactSheet": "squilliam-contact-sheet.png",
+      "contactSheetHash": "09e5be9e52a0d1f93810680508fd01dbfd5ef2771a38053b13d252f8de5079a1"
+    },
+    {
+      "characterId": "squidward",
+      "status": "pass",
+      "contentHash": "8a578739d70a3d1548166f9effdb5f470d1c38fcf2db08effac017425fdab228",
+      "video": "squidward-smoke.mp4",
+      "videoHash": "22c3fbaa2ac21490b973102a51596c571633c2a32c059139032e8cffd6808645",
+      "contactSheet": "squidward-contact-sheet.png",
+      "contactSheetHash": "c87d908350c709fc84d52a65773943a5036b7ead1e052d5d2fd3c1a146fd1075"
+    },
+    {
+      "characterId": "spongebob",
+      "status": "pass",
+      "contentHash": "a43cb94c63bbe91b49f3d4adbcea776ee9208844b323cae8bf91c51bb9183656",
+      "video": "spongebob-smoke.mp4",
+      "videoHash": "cc927c50f2bbb0820a7e717765a49a6186ac879bf10253e539415031e790ce5e",
+      "contactSheet": "spongebob-contact-sheet.png",
+      "contactSheetHash": "be716b5d5de058bd410b0bba0912421df64ddfb67292ceb589c4f963257d4cb6"
+    },
+    {
+      "characterId": "mr-krabs",
+      "status": "pass",
+      "contentHash": "f69c3707334be296743a924f2b01b98d6e5c800f7005bdd2fc7ac24f79ce2bfb",
+      "video": "mr-krabs-smoke.mp4",
+      "videoHash": "5e7aead13e6614961da7799cd7ce2d9f41f8a9ef4c97a80ff8bf1f56ae4a1841",
+      "contactSheet": "mr-krabs-contact-sheet.png",
+      "contactSheetHash": "3ad1c5f3b2b857edf233bcfc5b3fa5914c5b8a0c108e4d1b6c98468349daab21"
+    }
+  ],
+  "regression": {
+    "reportedBy": "user",
+    "failure": "v0.2.0 rendered opaque facial cutout backgrounds, hiding Squilliam, Squidward, and SpongeBob eye art and Mr. Krabs eye details.",
+    "rootCause": "Transparent overlays were detected only by browser-resolved texture URLs instead of the Collada models' stable material names.",
+    "fix": "Each admitted pack now declares explicit transparent material names; alpha-tested cutouts retain normal depth writes. Squilliam and Squidward also disable the source rigs' pupil-only scale gesture instead of presenting it as a blink.",
+    "historicalEvidence": "history/v0.2.0-broken-eyes"
+  },
+  "humanReview": "pending after the v0.2.0 eye regression; this does not finalize any promotion proof"
+}

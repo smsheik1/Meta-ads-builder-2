@@ -1,0 +1,11 @@
+{
+  "promotionSource": "local fictional smoke fixture",
+  "facts": "All names and claims are fictional and exist only to exercise the runtime.",
+  "assets": [
+    {"path": "assets/story/poster.svg", "source": "packaged synthetic fixture"},
+    {"path": "assets/story/ocean-lab.svg", "source": "packaged synthetic fixture"},
+    {"path": "assets/story/inventions.svg", "source": "packaged synthetic fixture"},
+    {"path": "assets/story/talks.svg", "source": "packaged synthetic fixture"}
+  ]
+}
+

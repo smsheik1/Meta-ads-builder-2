@@ -1,0 +1,23 @@
+{
+  "runId": "eye-fix-wiggly-format-lab",
+  "createdAt": "2026-08-05T03:50:31.543Z",
+  "source": "wiggly-format-lab",
+  "attempts": [
+    {
+      "number": 1,
+      "status": "rendered",
+      "startedAt": "2026-08-05T03:50:57.771Z",
+      "contentHash": "e6db294e4e038ed611ff69626a5d7c4ba4550f12f97ea40a4aa686c94351c180",
+      "audio": {
+        "sourceDuration": 30.000181,
+        "finalDuration": 30,
+        "tempo": "anull"
+      },
+      "audioHash": "fdffd65b096bb66a42039592fa1e7dffe0ce46a474b2f2b70555717476e7b8c0",
+      "completedAt": "2026-08-05T03:53:23.677Z",
+      "video": "attempts/attempt-01/video.mp4",
+      "videoHash": "42508b8c74d2bfcd9db08d8708d6f3c374388899fc956922aa77f1aa53147b65"
+    }
+  ],
+  "currentAttempt": 1
+}

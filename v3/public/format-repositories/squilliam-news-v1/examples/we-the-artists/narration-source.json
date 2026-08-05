@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "formatVersion": "0.2.1-proof",
+  "source": "Previously approved Fish Audio narration generated from the user's authorized private voice reference and supplied as packaged example media.",
+  "sourceAudio": "audio.wav",
+  "sourceAudioSha256": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+  "renderAudioSha256": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+  "providerCallsInCurrentRun": 0,
+  "notes": "The v0.2 proof reused existing approved audio. No paid or rate-limited provider call was made to validate, render, inspect, or package it."
+}

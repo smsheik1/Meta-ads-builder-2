@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "formatVersion": "0.2.1-proof",
+  "id": "we-the-artists-august-2026",
+  "characterId": "squilliam",
+  "headline": "Indianapolis declares artistic emergency",
+  "locationBug": "Indianapolis",
+  "tickerItems": [
+    "We The Artists",
+    "Sun, Aug 23",
+    "Doors 5 PM",
+    "6–10 PM",
+    "21+",
+    "Bicentennial Plaza at Gainbridge Fieldhouse"
+  ],
+  "script": "This is Squilliam Fancy Son, declaring an artistic emergency in Indianapolis. On August twenty-third, We The Artists returns with live music, visual art, spoken word, creative vendors, and people who actually understand culture. Even Squidward submitted a piece. Authorities are still deciding whether it qualifies as art. Doors open at five. The declaration runs from six until ten. You must be twenty-one or older. Find us at Bicentennial Plaza at Gainbridge Fieldhouse. Secure your ticket on Eventbrite. See you there, Squiddy. Do leave the clarinet at home.",
+  "pronunciations": [
+    {"text": "Fancy Son", "arpabet": "F AE1 N S IY0 | S AH1 N"},
+    {"text": "Bicentennial Plaza", "arpabet": "B AY2 S EH0 N T EH1 N IY0 AH0 L | P L AA1 Z AH0"},
+    {"text": "Gainbridge Fieldhouse", "arpabet": "G EY1 N B R IH2 JH | F IY1 L D HH AW2 S"}
+  ],
+  "slides": [
+    {"start": 0, "end": 3.55, "type": "alert", "eyebrow": "SPECIAL BULLETIN", "titleLines": ["ARTISTIC", "EMERGENCY"], "subhead": "INDIANAPOLIS TALENT LEVEL: CRITICAL"},
+    {"start": 3.55, "end": 6.85, "type": "poster", "image": "assets/story/poster.jpg", "caption": "AUGUST 23 • INDIANAPOLIS"},
+    {"start": 6.85, "end": 9.25, "type": "photo", "image": "assets/story/live-music.jpg", "label": "LIVE MUSIC", "kicker": "ARTISTS IN AUGUST • INDIANAPOLIS"},
+    {"start": 9.25, "end": 11.6, "type": "photo", "image": "assets/story/visual-art.jpg", "label": "VISUAL ART", "kicker": "ARTISTS IN AUGUST • INDIANAPOLIS"},
+    {"start": 11.6, "end": 13.7, "type": "photo", "image": "assets/story/spoken-word.jpg", "label": "SPOKEN WORD", "kicker": "ARTISTS IN AUGUST • INDIANAPOLIS"},
+    {"start": 13.7, "end": 17.65, "type": "jab", "eyebrow": "SUBMISSION ALERT", "titleLines": ["UNDER", "REVIEW"], "subhead": "QUALIFIES AS ART? PENDING."},
+    {"start": 17.65, "end": 22.05, "type": "details", "eyebrow": "SUNDAY • AUGUST 23, 2026", "primaryLines": ["DOORS 5 PM", "6 PM — 10 PM"], "footer": "INDIANAPOLIS"},
+    {"start": 22.05, "end": 25.35, "type": "notice", "eyebrow": "LOCATION CONFIRMED", "badge": "21+", "titleLines": ["BICENTENNIAL", "PLAZA"], "footer": "AT GAINBRIDGE FIELDHOUSE"},
+    {"start": 25.35, "end": 27.2, "type": "cta", "image": "assets/story/poster.jpg", "title": "GET TICKETS", "button": "ON EVENTBRITE", "details": "AUG 23 • 6—10 PM • 21+", "footer": "THE ARTISTIC EMERGENCY BEGINS AUGUST 23."},
+    {"start": 27.2, "end": 30, "type": "signoff", "eyebrow": "SQUILLIAM'S SIGN-OFF", "titleLines": ["SEE YOU THERE,", "SQUIDDY."], "footer": "DO LEAVE THE CLARINET AT HOME."}
+  ]
+}

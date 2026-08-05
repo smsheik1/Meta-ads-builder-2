@@ -1,0 +1,23 @@
+{
+  "runId": "we-the-artists-v02-blind",
+  "createdAt": "2026-08-05T03:00:25.383Z",
+  "source": "we-the-artists",
+  "attempts": [
+    {
+      "number": 1,
+      "status": "rendered",
+      "startedAt": "2026-08-05T03:01:25.086Z",
+      "contentHash": "e4a55060d266b4152a0fd0fd8f6d8711c63c1a0f4725366798153441139a0a93",
+      "audio": {
+        "sourceDuration": 30,
+        "finalDuration": 30,
+        "tempo": "anull"
+      },
+      "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+      "completedAt": "2026-08-05T03:03:23.671Z",
+      "video": "attempts/attempt-01/video.mp4",
+      "videoHash": "75bdafa54f867ed1ce4e62de955f84b96b083c39384b89561aeea7265fcd138d"
+    }
+  ],
+  "currentAttempt": 1
+}
