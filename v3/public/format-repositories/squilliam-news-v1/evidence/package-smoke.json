@@ -1,14 +1,17 @@
 {
   "status": "pass",
-  "testedAt": "2026-08-05T02:28:30Z",
+  "testedAt": "2026-08-05T03:00:21Z",
   "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
-  "testedArchiveSha256": "19fad6cc4066564024c179d3f531559c9020da061a5daf844510682c96709220",
+  "testedArchiveSha256": "49b8aed82350d6942e3db50754ab632f4025cf3caae78d97bf40d982b2d277a6",
   "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
-  "cleanExtractionDirectory": "/tmp/wiggly-characters-release.xRnefA",
+  "cleanExtractionDirectory": "/private/tmp/squilliam-v02-package-audit.Z9jv05/wiggly-squilliam-news-format-kit",
   "commands": [
     "npm ci --silent",
     "npm test --silent",
-    "npm run smoke --silent"
+    "npm run check --silent",
+    "npm run smoke --silent",
+    "npm audit --json",
+    "secret-value scan"
   ],
   "result": {
     "dependenciesInstalled": 4,
@@ -26,6 +29,15 @@
     "hashedSmokeVideos": 4,
     "hashedContactSheets": 4,
     "catalogAndEvidenceTests": "pass"
+  },
+  "currentPromotionEvidence": {
+    "formatVersion": "0.2.0-proof",
+    "fullLengthProofs": 2,
+    "sharedRuntimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
+    "distinctContentHashes": true,
+    "distinctVideoHashes": true,
+    "automaticInspection": "pass",
+    "humanReview": "pending"
   },
   "archiveExclusionsChecked": [
     "node_modules",

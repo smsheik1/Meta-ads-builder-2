@@ -1,12 +1,12 @@
 {
   "status": "pass",
-  "inspectedAt": "2026-08-05T02:48:00.896Z",
+  "inspectedAt": "2026-08-05T03:03:30.421Z",
   "attempt": 1,
-  "contentHash": "86e5865078aa563c29b660bb2d787c863f4f4f7fc95d023b2a49dab18751f7c3",
+  "contentHash": "e4a55060d266b4152a0fd0fd8f6d8711c63c1a0f4725366798153441139a0a93",
   "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
-  "audioHash": "fdffd65b096bb66a42039592fa1e7dffe0ce46a474b2f2b70555717476e7b8c0",
-  "videoHash": "ff8da3a172c6fadc54fa4f8bec258a73d7d4accdf0fe866d79495f1f22500a55",
-  "video": "review.mp4",
+  "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+  "videoHash": "75bdafa54f867ed1ce4e62de955f84b96b083c39384b89561aeea7265fcd138d",
+  "video": "attempts/attempt-01/video.mp4",
   "contactSheet": "contact-sheet.png",
   "probe": {
     "programs": [],
@@ -31,30 +31,30 @@
     ],
     "format": {
       "duration": "30.000000",
-      "size": "2380946",
-      "bit_rate": "634918"
+      "size": "2585832",
+      "bit_rate": "689555"
     }
   },
   "silences": [
     {
-      "start": 11.363107,
-      "end": 11.6339,
-      "duration": 0.270794
+      "start": 13.7861,
+      "end": 14.106689,
+      "duration": 0.32059
     },
     {
-      "start": 24.268957,
-      "end": 24.622449,
-      "duration": 0.353492
+      "start": 26.270431,
+      "end": 26.620703,
+      "duration": 0.350272
     },
     {
-      "start": 29.115238,
+      "start": 29.101361,
       "end": 30.000181,
-      "duration": 0.884943
+      "duration": 0.898821
     }
   ],
   "volume": {
     "meanDb": -21,
-    "peakDb": -3.4
+    "peakDb": -3.6
   },
   "checks": {
     "duration": true,

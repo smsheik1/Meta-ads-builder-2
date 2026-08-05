@@ -1,12 +1,12 @@
 {
   "status": "pass",
-  "inspectedAt": "2026-08-05T02:48:00.896Z",
-  "attempt": 1,
-  "contentHash": "86e5865078aa563c29b660bb2d787c863f4f4f7fc95d023b2a49dab18751f7c3",
-  "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
-  "audioHash": "fdffd65b096bb66a42039592fa1e7dffe0ce46a474b2f2b70555717476e7b8c0",
-  "videoHash": "ff8da3a172c6fadc54fa4f8bec258a73d7d4accdf0fe866d79495f1f22500a55",
-  "video": "review.mp4",
+  "inspectedAt": "2026-08-05T01:44:43.246Z",
+  "attempt": 3,
+  "contentHash": "3b303c89ba68dc372e868aed2a38f898961d611a494efe8b8d92acf5930c243c",
+  "runtimeHash": "cc7fe1bfb8dd651063b247399f2103530bfe988f02a04149a8250c0fb2394558",
+  "audioHash": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+  "videoHash": "966b601ebc40e1fed8724fdcb7c843fb027c56d950eb8e4dabafe54d9757dcd8",
+  "video": "attempts/attempt-03/video.mp4",
   "contactSheet": "contact-sheet.png",
   "probe": {
     "programs": [],
@@ -31,30 +31,30 @@
     ],
     "format": {
       "duration": "30.000000",
-      "size": "2380946",
-      "bit_rate": "634918"
+      "size": "2676266",
+      "bit_rate": "713670"
     }
   },
   "silences": [
     {
-      "start": 11.363107,
-      "end": 11.6339,
-      "duration": 0.270794
+      "start": 13.7861,
+      "end": 14.106689,
+      "duration": 0.32059
     },
     {
-      "start": 24.268957,
-      "end": 24.622449,
-      "duration": 0.353492
+      "start": 26.270431,
+      "end": 26.620703,
+      "duration": 0.350272
     },
     {
-      "start": 29.115238,
+      "start": 29.101361,
       "end": 30.000181,
-      "duration": 0.884943
+      "duration": 0.898821
     }
   ],
   "volume": {
     "meanDb": -21,
-    "peakDb": -3.4
+    "peakDb": -3.6
   },
   "checks": {
     "duration": true,

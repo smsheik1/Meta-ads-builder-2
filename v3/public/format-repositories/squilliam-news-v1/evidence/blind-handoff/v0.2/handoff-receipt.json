@@ -1,0 +1,31 @@
+{
+  "status": "pass-at-human-gate",
+  "recordedAt": "2026-08-05T03:07:15Z",
+  "formatVersion": "0.2.0-proof",
+  "inputBoundary": "Fresh agent received only the packaged ZIP path and desired outcome; it was forbidden from using the source repository.",
+  "archiveSha256": "49b8aed82350d6942e3db50754ab632f4025cf3caae78d97bf40d982b2d277a6",
+  "runId": "we-the-artists-v02-blind",
+  "attempt": 1,
+  "attemptLimit": 3,
+  "providerCalls": 0,
+  "providerApprovalUsed": false,
+  "rendererEdited": false,
+  "rendererAppSha256Before": "1954c8e1a0b4f7f18d226979db247974eca3b00d1914b95847637b169b9b90bc",
+  "rendererAppSha256After": "1954c8e1a0b4f7f18d226979db247974eca3b00d1914b95847637b169b9b90bc",
+  "runtimeHash": "6cfbc7b5fd32608dd4fe9afbc10bbc957f58a21d4c059c2788e2f53f25497dea",
+  "contentHash": "e4a55060d266b4152a0fd0fd8f6d8711c63c1a0f4725366798153441139a0a93",
+  "videoSha256": "75bdafa54f867ed1ce4e62de955f84b96b083c39384b89561aeea7265fcd138d",
+  "packagedEquivalentVideo": "../../../examples/we-the-artists/evidence/review.mp4",
+  "contactSheetSha256": "7d384b64c5c99e031c3eed933bdf586bfe2f48ef48d1919a6e72446a7fcad09e",
+  "packagedEquivalentContactSheet": "../../../examples/we-the-artists/evidence/contact-sheet.png",
+  "automaticInspection": "pass",
+  "actualVideoPlayback": {
+    "engine": "packaged Playwright and installed Google Chrome",
+    "readyState": 4,
+    "playbackAdvanced": true,
+    "sampledPlaybackFrames": 9
+  },
+  "humanReviewRequired": true,
+  "finalizeRan": false,
+  "finalMediaPresent": false
+}

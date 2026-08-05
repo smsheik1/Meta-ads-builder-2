@@ -99,13 +99,48 @@ test("renderer contains no We The Artists proof facts", async () => {
 });
 
 test("the two promotional proofs use one runtime but different content and outputs", async () => {
-  const first = JSON.parse(await readFile(path.join(root, "examples", "we-the-artists", "evidence", "quality-report.json"), "utf8"));
-  const second = JSON.parse(await readFile(path.join(root, "examples", "wiggly-format-lab", "evidence", "quality-report.json"), "utf8"));
+  const firstRoot = path.join(root, "examples", "we-the-artists");
+  const secondRoot = path.join(root, "examples", "wiggly-format-lab");
+  const first = JSON.parse(await readFile(path.join(firstRoot, "evidence", "quality-report.json"), "utf8"));
+  const second = JSON.parse(await readFile(path.join(secondRoot, "evidence", "quality-report.json"), "utf8"));
   assert.equal(first.status, "pass");
   assert.equal(second.status, "pass");
   assert.equal(first.runtimeHash, second.runtimeHash);
+  assert.equal(first.runtimeHash, await currentRuntimeHash());
   assert.notEqual(first.contentHash, second.contentHash);
   assert.notEqual(first.videoHash, second.videoHash);
+  assert.equal(first.video, "review.mp4");
+  assert.equal(second.video, "review.mp4");
+  for (const [exampleRoot, report] of [[firstRoot, first], [secondRoot, second]]) {
+    const video = await readFile(path.join(exampleRoot, "evidence", report.video));
+    assert.equal(createHash("sha256").update(video).digest("hex"), report.videoHash);
+    const provenance = JSON.parse(await readFile(path.join(exampleRoot, "narration-source.json"), "utf8"));
+    assert.equal(provenance.providerCallsInCurrentRun, 0);
+    await access(path.join(exampleRoot, provenance.sourceAudio));
+    await access(path.join(exampleRoot, "evidence", "history", "v0.1"));
+  }
+});
+
+test("the current blind handoff used only the package and stopped at human review", async () => {
+  const evidenceRoot = path.join(root, "evidence", "blind-handoff", "v0.2");
+  const receipt = JSON.parse(await readFile(path.join(evidenceRoot, "handoff-receipt.json"), "utf8"));
+  const report = JSON.parse(await readFile(path.join(evidenceRoot, "quality-report.json"), "utf8"));
+  const state = JSON.parse(await readFile(path.join(evidenceRoot, "state.json"), "utf8"));
+  assert.equal(receipt.status, "pass-at-human-gate");
+  assert.equal(receipt.providerCalls, 0);
+  assert.equal(receipt.rendererEdited, false);
+  assert.equal(receipt.rendererAppSha256Before, receipt.rendererAppSha256After);
+  assert.equal(receipt.finalizeRan, false);
+  assert.equal(receipt.humanReviewRequired, true);
+  assert.equal(report.status, "pass");
+  assert.equal(report.runtimeHash, await currentRuntimeHash());
+  assert.equal(report.videoHash, receipt.videoSha256);
+  assert.equal(state.attempts.length, 1);
+  assert.equal(state.attempts[0].providerCall, undefined);
+  const packagedVideo = await readFile(path.resolve(evidenceRoot, receipt.packagedEquivalentVideo));
+  assert.equal(createHash("sha256").update(packagedVideo).digest("hex"), receipt.videoSha256);
+  const renderer = await readFile(path.join(root, "runtime", "renderer", "app.js"));
+  assert.equal(createHash("sha256").update(renderer).digest("hex"), receipt.rendererAppSha256After);
 });
 
 test("validation rejects content outside the contract", async () => {
@@ -147,6 +182,7 @@ test("validation rejects a character outside the verified catalog", async () => 
 test("validated narration-free run cannot contact a provider without approval", async () => {
   await rm(testRun, { recursive: true, force: true });
   assert.equal(run("init", "--run=contract-test", "--from=wiggly-format-lab").status, 0);
+  await rm(path.join(testRun, "audio.wav"));
   assert.equal(run("validate", "--run=contract-test").status, 0);
   const result = run("render", "--run=contract-test");
   assert.notEqual(result.status, 0);
