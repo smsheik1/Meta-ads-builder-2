@@ -258,6 +258,7 @@ const generatedFormatSlugs = [
   "dark-aesthetic-filter",
   "2000s-effect",
   "80s-toon",
+  "squilliam-news",
   "jingle",
   "newsletter-writer",
 ];
