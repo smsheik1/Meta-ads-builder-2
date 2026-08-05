@@ -12,6 +12,8 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
   const format = getDiscoveryFormatProfile(entry.format.slug);
   const related = getRelatedDiscoveryEntries(entry);
   const creator = getDiscoveryCreatorByName(entry.format.owner);
+  const isLandscapeVideo =
+    entry.media.kind === "video" && entry.media.aspectRatio === "16:9";
 
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-[#080817]">
@@ -29,11 +31,19 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
       </header>
 
       <section className="mx-auto grid w-[min(100%-32px,1240px)] gap-8 py-8 lg:grid-cols-[minmax(360px,0.8fr)_minmax(0,1.2fr)] lg:items-center lg:gap-14 lg:py-12">
-        <div className="mx-auto w-full max-w-[520px] overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817]">
+        <div
+          className={`mx-auto w-full overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817] ${
+            isLandscapeVideo ? "max-w-[760px]" : "max-w-[520px]"
+          }`}
+        >
           <DiscoveryProofMedia
             entry={entry}
             autoPlay={entry.media.kind === "video"}
-            className="block aspect-[9/16] w-full object-cover"
+            className={
+              isLandscapeVideo
+                ? "block aspect-video w-full bg-[#080817] object-contain"
+                : "block aspect-[9/16] w-full object-cover"
+            }
           />
         </div>
 

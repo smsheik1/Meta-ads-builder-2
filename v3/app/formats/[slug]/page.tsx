@@ -42,6 +42,8 @@ export default async function FormatPage({
   const heroProof = format.proofEntries[0];
   if (!heroProof) notFound();
   const creator = getDiscoveryCreatorByName(format.creator);
+  const heroIsLandscapeVideo =
+    heroProof.media.kind === "video" && heroProof.media.aspectRatio === "16:9";
 
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-[#080817]">
@@ -109,13 +111,19 @@ export default async function FormatPage({
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[440px] overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817]">
+        <div
+          className={`mx-auto w-full overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817] ${
+            heroIsLandscapeVideo ? "max-w-[760px]" : "max-w-[440px]"
+          }`}
+        >
           <DiscoveryProofMedia
             entry={heroProof}
             autoPlay={heroProof.media.kind === "video"}
             className={
               heroProof.media.kind === "image"
                 ? "block aspect-[3/4] w-full object-cover"
+                : heroIsLandscapeVideo
+                  ? "block aspect-video w-full bg-[#080817] object-contain"
                 : "block aspect-[9/16] w-full object-cover"
             }
           />
@@ -169,6 +177,8 @@ export default async function FormatPage({
                   className={
                     entry.media.kind === "image"
                       ? "block aspect-[3/4] w-full bg-[#080817] object-cover"
+                      : entry.media.aspectRatio === "16:9"
+                        ? "block aspect-video w-full bg-[#080817] object-contain"
                       : "block aspect-[9/16] w-full bg-[#080817] object-cover"
                   }
                 />
