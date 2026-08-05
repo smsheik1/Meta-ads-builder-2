@@ -1,0 +1,25 @@
+{
+  "automatic": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "durationSeconds": 30,
+    "frameCount": 900,
+    "audioStreams": 1,
+    "maxInteriorSilenceSeconds": 0.6,
+    "finalHoldSeconds": {"min": 0.75, "max": 1.1},
+    "blackSegmentSeconds": 0.1
+  },
+  "human": [
+    "The opening earns attention immediately and clearly frames a real promotion.",
+    "Every factual claim matches the supplied event or campaign source.",
+    "The monitor sequence sells the story instead of behaving like decorative filler.",
+    "The single Squidward jab is funny without burying the promotion.",
+    "The presenter-derived gestures look intentional and remain desk-safe.",
+    "The original model mouth remains intact and opens naturally with the narration.",
+    "Voice identity, pronunciation overrides, and the final sign-off are approved by a human.",
+    "All monitor, ticker, and lower-third text is readable at 1280 by 720.",
+    "The final CTA tells a viewer what to do next."
+  ]
+}
+

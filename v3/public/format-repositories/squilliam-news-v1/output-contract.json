@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "media": {
+    "path": "final.mp4",
+    "mimeType": "video/mp4",
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "durationSeconds": 30,
+    "audioStreams": 1
+  },
+  "evidence": [
+    "content.json",
+    "asset-sources.json",
+    ".validation.json",
+    "state.json",
+    "contact-sheet.png",
+    "quality-report.json",
+    "finalization.json"
+  ],
+  "finalizationRules": [
+    "The automatic inspection must pass.",
+    "The inspected content hash must still match the run.",
+    "The inspected runtime hash must still match the official runtime.",
+    "A human must approve facts, voice, pronunciation, body language, lip sync, joke, and CTA."
+  ]
+}

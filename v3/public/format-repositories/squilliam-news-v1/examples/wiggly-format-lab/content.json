@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "formatVersion": "0.1.0-proof",
+  "id": "wiggly-format-lab-launch",
+  "headline": "Creative systems emergency declared",
+  "locationBug": "Format Lab",
+  "tickerItems": ["Wiggly Format Lab", "Runnable Repo", "One renderer", "Validated inputs", "Inspectable output"],
+  "script": "This is Squilliam Fancy Son, declaring a creative systems emergency. Wiggly Format Lab turns one great AI video into a reusable format with instructions, fixed assets, validation, rendering, and actual quality checks. Even Squidward could repeat it, provided someone labels every button. Squilliam News is available now as a runnable repo. Bring a promotion, add approved images and facts, validate before spending, then let the packaged renderer work. Inspect the result, approve the voice, and finalize. Open Format Lab and build something repeatable. See you there, Squiddy. Try not to rebuild the renderer.",
+  "pronunciations": [
+    {"text": "Fancy Son", "arpabet": "F AE1 N S IY0 | S AH1 N"}
+  ],
+  "slides": [
+    {"start": 0, "end": 3.55, "type": "alert", "eyebrow": "SPECIAL BULLETIN", "titleLines": ["CREATIVE", "EMERGENCY"], "subhead": "ONE-OFF CONTENT LEVEL: CRITICAL"},
+    {"start": 3.55, "end": 6.85, "type": "poster", "image": "assets/story/format-lab.svg", "caption": "WIGGLY • RUNNABLE FORMAT REPOS"},
+    {"start": 6.85, "end": 9.25, "type": "photo", "image": "assets/story/instructions.svg", "label": "INSTRUCTIONS", "kicker": "WHAT TO MAKE • HOW TO JUDGE IT"},
+    {"start": 9.25, "end": 11.6, "type": "photo", "image": "assets/story/renderer.svg", "label": "ONE RENDERER", "kicker": "PREVIEW • EXPORT • SAME PATH"},
+    {"start": 11.6, "end": 13.7, "type": "photo", "image": "assets/story/evidence.svg", "label": "REAL EVIDENCE", "kicker": "VIDEO • CONTACT SHEET • REPORT"},
+    {"start": 13.7, "end": 17.65, "type": "jab", "eyebrow": "SQUIDWARD ALERT", "titleLines": ["BUTTONS", "LABELLED"], "subhead": "REPEATABILITY: POSSIBLE."},
+    {"start": 17.65, "end": 22.05, "type": "details", "eyebrow": "RUNNABLE REPO • AVAILABLE NOW", "primaryLines": ["VALIDATE FIRST", "RENDER ONCE"], "footer": "WIGGLY FORMAT LAB"},
+    {"start": 22.05, "end": 25.35, "type": "notice", "eyebrow": "QUALITY CONFIRMED", "badge": "QA", "titleLines": ["INSPECT", "OUTPUT"], "footer": "AUTOMATIC + HUMAN REVIEW"},
+    {"start": 25.35, "end": 27.2, "type": "cta", "image": "assets/story/format-lab.svg", "title": "BUILD A FORMAT", "button": "OPEN FORMAT LAB", "details": "INPUT • RENDER • EVIDENCE", "footer": "TURN ONE GREAT IDEA INTO A SYSTEM."},
+    {"start": 27.2, "end": 30, "type": "signoff", "eyebrow": "SQUILLIAM'S SIGN-OFF", "titleLines": ["SEE YOU THERE,", "SQUIDDY."], "footer": "DON'T REBUILD THE RENDERER."}
+  ]
+}

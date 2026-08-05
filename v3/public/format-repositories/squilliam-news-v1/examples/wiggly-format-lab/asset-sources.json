@@ -1,0 +1,11 @@
+{
+  "promotionSource": "Wiggly's packaged Format Repo workflow",
+  "facts": "This product-launch proof describes capabilities exercised by the local package and its validation, rendering, inspection, and finalization commands.",
+  "assets": [
+    {"path": "assets/story/format-lab.svg", "source": "packaged synthetic Wiggly proof graphic"},
+    {"path": "assets/story/instructions.svg", "source": "packaged synthetic Wiggly proof graphic"},
+    {"path": "assets/story/renderer.svg", "source": "packaged synthetic Wiggly proof graphic"},
+    {"path": "assets/story/evidence.svg", "source": "packaged synthetic Wiggly proof graphic"}
+  ]
+}
+

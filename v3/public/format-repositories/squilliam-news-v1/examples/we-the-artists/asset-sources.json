@@ -1,0 +1,12 @@
+{
+  "promotionSource": "https://www.eventbrite.com/e/we-the-artists-artists-in-august-2026-tickets-1992231315494",
+  "facts": "Event facts were supplied and approved by the user; the venue announcement superseded the public listing's earlier TBA text.",
+  "assets": [
+    {"path": "assets/story/poster.jpg", "source": "official Eventbrite event hero", "documentary": true},
+    {"path": "assets/story/live-music.jpg", "source": "https://unsplash.com/photos/kdw8rHPGXsc", "documentary": false, "represents": "live music"},
+    {"path": "assets/story/visual-art.jpg", "source": "https://unsplash.com/photos/kq2PK5xjD90", "documentary": false, "represents": "visual art"},
+    {"path": "assets/story/spoken-word.jpg", "source": "https://unsplash.com/photos/hQf5S42jIjQ", "documentary": false, "represents": "spoken word"},
+    {"path": "audio.wav", "source": "Fish Audio narration generated from the user's authorized private reference model", "documentary": false}
+  ]
+}
+

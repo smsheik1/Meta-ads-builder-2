@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "finalizedAt": "2026-08-05T01:34:09.447Z",
+  "formatVersion": "0.1.0-proof",
+  "contentHash": "3b303c89ba68dc372e868aed2a38f898961d611a494efe8b8d92acf5930c243c",
+  "runtimeHash": "d03578cfc9501eaf41b90d43f38622e8acbc544d44887eafe7faad74be4f4da3",
+  "automaticReview": "pass",
+  "humanReview": "pass",
+  "finalVideo": "final.mp4",
+  "contactSheet": "contact-sheet.png",
+  "qualityReport": "quality-report.json"
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "formatVersion": "0.1.0-proof",
+  "id": "smoke-goo-lagoon-expo",
+  "headline": "Goo Lagoon declares innovation emergency",
+  "locationBug": "Goo Lagoon",
+  "tickerItems": ["Science Expo", "Saturday", "Doors 4 PM", "Free demo lab", "All ages"],
+  "script": "This is a local smoke-test narration used only to prove the packaged Squilliam News renderer, character assets, monitor layouts, audio pipeline, and frame capture without contacting a provider. The fictional Goo Lagoon Science Expo includes demonstrations, inventions, short talks, and a public showcase. Even Squidward submitted an automatic clarinet tuner. Reviewers remain unconvinced. Doors open at four, the showcase begins at five, and all ages may attend. Reserve a test ticket online. See you there, Squiddy. Protective eyewear will not improve the clarinet.",
+  "pronunciations": [],
+  "slides": [
+    {"start": 0, "end": 3.5, "type": "alert", "eyebrow": "LOCAL TEST", "titleLines": ["INNOVATION", "EMERGENCY"], "subhead": "RENDERER STATUS: CRITICAL"},
+    {"start": 3.5, "end": 6.8, "type": "poster", "image": "assets/story/poster.svg", "caption": "SATURDAY • GOO LAGOON"},
+    {"start": 6.8, "end": 9.2, "type": "photo", "image": "assets/story/ocean-lab.svg", "label": "DEMO LAB", "kicker": "SCIENCE EXPO • GOO LAGOON"},
+    {"start": 9.2, "end": 11.6, "type": "photo", "image": "assets/story/inventions.svg", "label": "INVENTIONS", "kicker": "SCIENCE EXPO • GOO LAGOON"},
+    {"start": 11.6, "end": 13.7, "type": "photo", "image": "assets/story/talks.svg", "label": "SHORT TALKS", "kicker": "SCIENCE EXPO • GOO LAGOON"},
+    {"start": 13.7, "end": 17.6, "type": "jab", "eyebrow": "CLARINET ALERT", "titleLines": ["UNDER", "REVIEW"], "subhead": "AUTOMATIC TUNER? PENDING."},
+    {"start": 17.6, "end": 22, "type": "details", "eyebrow": "SATURDAY • TEST FIXTURE", "primaryLines": ["DOORS 4 PM", "SHOWCASE 5 PM"], "footer": "GOO LAGOON"},
+    {"start": 22, "end": 25.3, "type": "notice", "eyebrow": "ACCESS CONFIRMED", "badge": "ALL", "titleLines": ["DEMO", "LAB"], "footer": "ALL AGES • FIXTURE ONLY"},
+    {"start": 25.3, "end": 27.2, "type": "cta", "image": "assets/story/poster.svg", "title": "TEST CTA", "button": "RESERVE ONLINE", "details": "SATURDAY • ALL AGES", "footer": "NO PROVIDER CALL WAS MADE."},
+    {"start": 27.2, "end": 30, "type": "signoff", "eyebrow": "SQUILLIAM'S SIGN-OFF", "titleLines": ["SEE YOU THERE,", "SQUIDDY."], "footer": "PROTECTIVE EYEWEAR WON'T HELP."}
+  ]
+}
+

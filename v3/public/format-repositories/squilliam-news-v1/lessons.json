@@ -1,0 +1,38 @@
+{
+  "format": "squilliam-news",
+  "lessons": [
+    {
+      "status": "proven",
+      "scope": "format-specific",
+      "friction": "The prototype occupied more than a gigabyte because full-resolution PNG frame caches sat beside the reusable source.",
+      "rootCause": "Disposable renders and reusable Format files had no explicit boundary.",
+      "smallestFix": "Keep content-hashed resumable frames inside ignored run directories and exclude all run state from the downloadable kit.",
+      "evidence": "The source can resume interrupted captures, while KIT-MANIFEST.json contains no agent-runs or frame cache paths."
+    },
+    {
+      "status": "proven",
+      "scope": "covered by existing Wiggly rules 7 and 9",
+      "friction": "The original renderer contained event-specific slide art and facts.",
+      "rootCause": "The first polished proof blurred Format mechanics with story content.",
+      "smallestFix": "Move all facts, display copy, timing slots, story images, and pronunciation overrides into a validated content pack.",
+      "evidence": "We The Artists and Wiggly Format Lab render through the same runtime without event facts in runtime/renderer/app.js."
+    },
+    {
+      "status": "proven",
+      "scope": "format-specific",
+      "friction": "The second proof clipped a longer monitor eyebrow even though it passed the original character-count validation.",
+      "rootCause": "Character limits did not account for font metrics and per-layout width.",
+      "smallestFix": "Measure every variable monitor string in the renderer and reduce font size to the layout's declared minimum when needed.",
+      "evidence": "The first Wiggly Format Lab contact sheet exposed the clipping; attempt two and the smoke contact sheet show the same copy fitted inside the monitor."
+    },
+    {
+      "status": "proven",
+      "scope": "covered by existing Wiggly rule 6",
+      "friction": "The second narration provider output was 39.72 seconds for a fixed 30-second composition.",
+      "rootCause": "Narration duration varies even when the prompt requests a particular delivery speed.",
+      "smallestFix": "Probe the actual audio, tempo-fit speech to 29.1 seconds, and preserve an explicit final hold.",
+      "evidence": "Inspection reports a 30.000-second output and a final silence hold of 0.885 seconds."
+    }
+  ],
+  "sharedStandardChange": "None. The cross-Format lessons are already represented by proven Wiggly rules 6, 7, and 9; the remaining fixes are specific to this video Format."
+}

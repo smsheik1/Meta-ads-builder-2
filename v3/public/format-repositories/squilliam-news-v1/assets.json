@@ -1,0 +1,40 @@
+{
+  "fixed": [
+    {
+      "path": "assets/character/chr_squilliam_bindpose.dae",
+      "role": "rigged anchor character",
+      "source": "user-supplied game asset",
+      "distribution": "Review rights before distributing outside the user's private Repo."
+    },
+    {
+      "path": "assets/character/tex_0000_squilliam_128.PNG",
+      "role": "character texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/character/tex_0000_squilliam_256.PNG",
+      "role": "character texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/character/tx8_0000_squideyes_128.PNG",
+      "role": "eye texture",
+      "source": "user-supplied game asset"
+    },
+    {
+      "path": "assets/motion/presenter-motion-reference.json",
+      "role": "normalized presenter pose track",
+      "source": "derived from the user-selected Mixkit green-screen presenter reference"
+    }
+  ],
+  "replaceable": [
+    "promotion content.json",
+    "story images",
+    "asset provenance",
+    "narration script",
+    "pronunciation overrides",
+    "approved voice reference environment variable",
+    "generated narration and run evidence"
+  ]
+}
+
