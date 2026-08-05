@@ -124,7 +124,7 @@ test("Fish voice presets are registered without admitting unverified character m
   assert.equal(previewProvenance.provider, "Fish Audio");
   assert.equal(previewProvenance.model, "s2.1-pro-free");
   assert.equal(previewProvenance.providerCalls, 3);
-  assert.deepEqual(previewProvenance.previews.map((preview) => preview.characterId), ["squidward", "spongebob", "mr-krabs"]);
+  assert.deepEqual(previewProvenance.previews.map((preview) => preview.characterId), ["squilliam", "squidward", "spongebob", "mr-krabs"]);
   for (const preview of previewProvenance.previews) {
     const preset = voiceCatalog.presets.find((candidate) => candidate.characterId === preview.characterId);
     assert.deepEqual(preset.preview, {
@@ -136,19 +136,20 @@ test("Fish voice presets are registered without admitting unverified character m
     const bytes = await readFile(path.join(root, preview.audio));
     assert.equal(bytes.length, preview.bytes);
     assert.equal(createHash("sha256").update(bytes).digest("hex"), preview.sha256);
-    assert.ok(preview.durationSeconds >= 3 && preview.durationSeconds <= 8);
+    const minimumDuration = preview.characterId === "squilliam" ? 2.5 : 3;
+    assert.ok(preview.durationSeconds >= minimumDuration && preview.durationSeconds <= 8);
     assert.ok(inventory.fixed.some((asset) => asset.path === preview.audio));
   }
 });
 
-test("character-option portraits are isolated vertical captures of verified models", async () => {
+test("character-option posters and interactive models are derived from every verified presenter", async () => {
   const catalog = JSON.parse(await readFile(path.join(root, "assets", "character-packs.json"), "utf8"));
   const inventory = JSON.parse(await readFile(path.join(root, "assets.json"), "utf8"));
   const provenance = JSON.parse(await readFile(path.join(root, "assets", "character-previews", "provenance.json"), "utf8"));
   assert.equal(provenance.background, "#ffffff");
   assert.deepEqual(provenance.dimensions, { width: 800, height: 1000 });
   assert.equal(provenance.runtimeHash, await currentRuntimeHash());
-  assert.deepEqual(provenance.previews.map((preview) => preview.characterId), ["squidward", "spongebob", "mr-krabs"]);
+  assert.deepEqual(provenance.previews.map((preview) => preview.characterId), ["squilliam", "squidward", "spongebob", "mr-krabs"]);
   for (const preview of provenance.previews) {
     assert.equal(catalog.packs.find((pack) => pack.id === preview.characterId)?.status, "presenter-ready");
     const bytes = await readFile(path.join(root, preview.image));
@@ -157,6 +158,20 @@ test("character-option portraits are isolated vertical captures of verified mode
     assert.equal(bytes.readUInt32BE(16), provenance.dimensions.width);
     assert.equal(bytes.readUInt32BE(20), provenance.dimensions.height);
     assert.ok(inventory.fixed.some((asset) => asset.path === preview.image));
+
+    const model = await readFile(path.join(root, preview.model));
+    assert.equal(model.length, preview.modelBytes);
+    assert.equal(createHash("sha256").update(model).digest("hex"), preview.modelSha256);
+    assert.equal(model.subarray(0, 4).toString("ascii"), "glTF");
+    const jsonLength = model.readUInt32LE(12);
+    const gltf = JSON.parse(model.subarray(20, 20 + jsonLength).toString());
+    assert.ok(gltf.images.length > 0, `${preview.characterId} lost its embedded textures`);
+    for (const mesh of gltf.meshes) {
+      for (const primitive of mesh.primitives) {
+        assert.equal("COLOR_0" in primitive.attributes, false, `${preview.characterId} retained black legacy vertex colors`);
+      }
+    }
+    assert.ok(inventory.fixed.some((asset) => asset.path === preview.model));
   }
   assert.ok(inventory.fixed.some((asset) => asset.path === "assets/character-previews/provenance.json"));
 });

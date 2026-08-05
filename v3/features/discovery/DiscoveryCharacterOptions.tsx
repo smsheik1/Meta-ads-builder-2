@@ -3,6 +3,7 @@
 import { Pause, Play, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
+import { DiscoveryCharacterModelViewer } from "./DiscoveryCharacterModelViewer";
 import type { DiscoveryCharacterOption } from "./types";
 
 export function DiscoveryCharacterOptions({
@@ -76,7 +77,7 @@ export function DiscoveryCharacterOptions({
   }
 
   return (
-    <div className="mt-9 grid gap-5 md:grid-cols-3">
+    <div className="mt-9 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {options.map((option) => {
         const isPlaying = activeId === option.id;
         const hasError = errorId === option.id;
@@ -88,12 +89,21 @@ export function DiscoveryCharacterOptions({
             style={{ borderTopColor: option.accentColor, borderTopWidth: 10 }}
           >
             <div className="aspect-[4/5] overflow-hidden bg-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={option.portraitSrc}
-                alt={`${option.name} verified 3D presenter model`}
-                className="h-full w-full object-cover"
-              />
+              {option.modelSrc ? (
+                <DiscoveryCharacterModelViewer
+                  src={option.modelSrc}
+                  poster={option.portraitSrc}
+                  alt={`${option.name} interactive 3D presenter model`}
+                  characterId={option.id}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={option.portraitSrc}
+                  alt={`${option.name} verified 3D presenter model`}
+                  className="h-full w-full object-cover"
+                />
+              )}
             </div>
             <div className="border-t-2 border-[#080817] p-5">
               <div className="flex items-start justify-between gap-3">

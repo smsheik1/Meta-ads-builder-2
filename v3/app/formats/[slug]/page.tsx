@@ -132,10 +132,10 @@ export default async function FormatPage({
               </div>
               <div>
                 <p className="max-w-2xl text-lg font-black leading-7 text-[#1e3850]">
-                  Squilliam runs the desk—but three more verified 3D presenters are ready to make your story sound completely different.
+                  Squilliam and three more verified 3D presenters are ready to make your story sound completely different.
                 </p>
                 <p className="mt-3 text-sm font-bold text-[#31566e]">
-                  Tap a play button to audition each voice. Only one preview plays at a time.
+                  Drag a model to inspect it, or tap play to audition its voice. Models return to attention after three seconds.
                 </p>
               </div>
             </div>

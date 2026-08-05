@@ -2,11 +2,23 @@
   "schemaVersion": 1,
   "provider": "Fish Audio",
   "model": "s2.1-pro-free",
-  "generatedAt": "2026-08-05T14:29:14Z",
+  "generatedAt": "2026-08-05T15:52:17Z",
   "providerCalls": 3,
   "providerCost": "$0 in the published fair-use window recorded by this Format; quota was consumed",
   "purpose": "Short public character-option auditions; not production narration",
   "previews": [
+    {
+      "characterId": "squilliam",
+      "referenceId": null,
+      "audio": "assets/voice-previews/squilliam.mp3",
+      "line": "See you there, Squiddy. Do leave the clarinet at home.",
+      "durationSeconds": 2.61,
+      "bytes": 33036,
+      "sha256": "d9daed8585947e77346b367bf7c9394864e45dac1ed79993a95771f1abf8ddfe",
+      "source": "Lossless excerpt from the approved We The Artists Squilliam narration; no new provider call",
+      "sourceAudioSha256": "2f676c8face2aa7aad7058ec33bebe5ab9fd6a83dfd0c874914636d44eddf904",
+      "sourceRangeSeconds": [26.55, 29.16]
+    },
     {
       "characterId": "squidward",
       "referenceId": "1b28ff723a204fe08c26d8695f796b84",
