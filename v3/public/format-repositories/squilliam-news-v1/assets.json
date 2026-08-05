@@ -6,6 +6,11 @@
       "source": "created for this private Wiggly Repo from render-tested user-supplied assets"
     },
     {
+      "path": "assets/voice-presets.json",
+      "role": "Fish Audio reference presets and character readiness boundaries",
+      "source": "reference IDs supplied by the user; the Fish API key and private Squilliam clone remain local-only"
+    },
+    {
       "path": "assets/character/chr_squilliam_bindpose.dae",
       "role": "rigged anchor character",
       "source": "user-supplied game asset",
@@ -97,7 +102,7 @@
     "asset provenance",
     "narration script",
     "pronunciation overrides",
-    "approved voice reference environment variable",
+    "selected packaged voice preset or approved local voice reference",
     "generated narration and run evidence"
   ]
 }

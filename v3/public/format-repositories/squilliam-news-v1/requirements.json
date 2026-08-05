@@ -7,6 +7,7 @@
       "name": "Fish Audio",
       "purpose": "production narration when a run has no approved audio.wav",
       "environmentVariables": ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"],
+      "voicePresetRegistry": "assets/voice-presets.json",
       "model": "s2.1-pro-free",
       "estimatedCost": "$0 through August 31, 2026 under Fish Audio's published fair-use window; recheck before later use",
       "pricingCheckedAt": "2026-08-04",
@@ -15,5 +16,5 @@
     }
   ],
   "paidImageOrVideoProviders": [],
-  "secretsPolicy": "Environment variable names may be committed. Values must never be stored, printed, or added to run evidence."
+  "secretsPolicy": "API keys and operator-private voice clones must never be stored, printed, or added to run evidence. User-approved public Fish reference presets may be committed in assets/voice-presets.json; the provider receipt fingerprints the selected reference ID without printing it."
 }

@@ -21,6 +21,6 @@
   "assetPolicy": {
     "storyImages": "Every referenced image must exist inside the run or source example and have a recorded source or user-supplied note.",
     "character": "characterId must name a presenter-ready entry in assets/character-packs.json. Candidate, adapter-needed, and static-cutaway packs cannot be selected by a validated production run.",
-    "voice": "A run may supply approved narration audio, or Fish Audio may generate it after validation and explicit provider approval."
+    "voice": "A run may supply approved narration audio, or Fish Audio may generate it after validation and explicit provider approval. For a packaged voice, copy the matching referenceId from assets/voice-presets.json into SQUILLIAM_VOICE_ID. A voice-ready preset does not make an unverified character model selectable."
   }
 }

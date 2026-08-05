@@ -1,25 +1,27 @@
 {
   "status": "pass",
-  "testedAt": "2026-08-05T04:58:02Z",
+  "testedAt": "2026-08-05T06:52:45Z",
   "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
-  "testedArchiveSha256": "81b9d6882f66f6aa4708ddc11b2667c03d0a9f95f53e3762dd096403f15e44ac",
+  "testedArchiveSha256": "de691f52ee0c88e8acf871680d04b163f44c41a22d17c61d5755f1e4bea9d8f4",
   "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
-  "cleanExtractionDirectory": "/private/tmp/squilliam-kit-final-audit.yjOTb3/wiggly-squilliam-news-format-kit",
+  "cleanExtractionDirectory": "/private/tmp/wiggly-squilliam-voices.pEVHH5/wiggly-squilliam-news-format-kit",
   "commands": [
     "npm ci",
     "npm test",
     "npm run check",
     "npm run smoke",
-    "npm audit --omit=dev",
     "unzip -t",
-    "manifest byte verification",
     "archive exclusion scan",
-    "secret-value scan"
+    "secret-value scan",
+    "consumer Format page test",
+    "TypeScript check",
+    "production Next.js build",
+    "desktop and mobile browser QA"
   ],
   "result": {
     "dependenciesInstalled": 4,
     "knownVulnerabilities": 0,
-    "contractTests": 15,
+    "contractTests": 16,
     "motionFrames": 900,
     "motionDurationSeconds": 30,
     "smokeFrames": 9,
@@ -28,14 +30,33 @@
     "height": 720,
     "contactSheetCreated": true,
     "zipIntegrity": "pass",
-    "manifestFiles": 147,
-    "manifestBytesVerified": true
+    "manifestFiles": 151,
+    "manifestIncludesVoicePresetRegistry": true,
+    "dependencyAudit": "not rerun; package-lock.json is unchanged from the prior zero-vulnerability receipt"
   },
   "characterPackEvidence": {
     "verifiedPresenters": 4,
     "hashedSmokeVideos": 4,
     "hashedContactSheets": 4,
     "catalogAndEvidenceTests": "pass"
+  },
+  "voicePresetEvidence": {
+    "userSuppliedFishPresets": 5,
+    "presenterReadyModels": 4,
+    "packagedPresetAndModelPairs": 3,
+    "operatorSuppliedSquilliamVoiceSlot": true,
+    "voiceReadyModelsPendingQa": ["patrick", "sandy"],
+    "exactReferenceIdContractTest": "pass"
+  },
+  "consumerAppEvidence": {
+    "focusedPageTest": "pass",
+    "typecheck": "pass",
+    "productionBuild": "pass with a non-secret placeholder Convex URL",
+    "desktopCardsVisible": 4,
+    "mobileCardsStackWithoutOverlap": true,
+    "horizontalOverflow": false,
+    "browserErrors": 0,
+    "downloadLinkPresent": true
   },
   "currentPromotionEvidence": {
     "formatVersion": "0.2.1-proof",
@@ -65,6 +86,6 @@
     "__pycache__",
     "*.pyc"
   ],
-  "secretValueScan": "pass; only empty variable names in .env.example are packaged",
+  "secretValueScan": "pass; API key values and private Squilliam clone IDs are absent. Five user-approved public Fish reference presets are intentionally packaged.",
   "note": "This receipt proves the evidence-bearing pre-receipt archive. Adding this receipt changes archive bytes without changing runtime or content; the SHA-256 sidecar beside the final ZIP is authoritative for download integrity."
 }
