@@ -130,6 +130,12 @@ test("the two promotional proofs use one runtime but different content and outpu
     await access(path.join(exampleRoot, provenance.sourceAudio));
     await access(path.join(exampleRoot, "evidence", "history", "v0.1"));
   }
+  const finalization = JSON.parse(await readFile(path.join(firstRoot, "evidence", "finalization.json"), "utf8"));
+  assert.equal(finalization.automaticReview, "pass");
+  assert.equal(finalization.humanReview, "pass");
+  assert.equal(finalization.runtimeHash, await currentRuntimeHash());
+  const finalVideo = await readFile(path.join(firstRoot, "evidence", finalization.finalVideo));
+  assert.equal(createHash("sha256").update(finalVideo).digest("hex"), finalization.videoHash);
 });
 
 test("the eye-regressed blind handoff is archived and cannot authorize the current runtime", async () => {
@@ -152,6 +158,36 @@ test("the eye-regressed blind handoff is archived and cannot authorize the curre
   assert.notEqual(createHash("sha256").update(correctedVideo).digest("hex"), receipt.videoSha256);
   const renderer = await readFile(path.join(root, "runtime", "renderer", "app.js"));
   assert.notEqual(createHash("sha256").update(renderer).digest("hex"), receipt.rendererAppSha256After);
+});
+
+test("the current blind handoff reproduces the eye-safe proof and stops before finalization", async () => {
+  const evidenceRoot = path.join(root, "evidence", "blind-handoff", "v0.2.1");
+  const receipt = JSON.parse(await readFile(path.join(evidenceRoot, "handoff-receipt.json"), "utf8"));
+  const report = JSON.parse(await readFile(path.join(evidenceRoot, "quality-report.json"), "utf8"));
+  const state = JSON.parse(await readFile(path.join(evidenceRoot, "state.json"), "utf8"));
+  assert.equal(receipt.status, "pass-at-human-gate");
+  assert.equal(receipt.providerCalls, 0);
+  assert.equal(receipt.retries, 0);
+  assert.equal(receipt.rendererEdited, false);
+  assert.equal(receipt.rendererAppSha256Before, receipt.rendererAppSha256After);
+  assert.equal(receipt.finalizeRan, false);
+  assert.equal(receipt.humanReviewRequired, true);
+  assert.equal(receipt.visualReview.yellowEyeFieldsVisible, true);
+  assert.equal(receipt.visualReview.redPupilsVisible, true);
+  assert.equal(receipt.visualReview.opaqueFaceCutout, false);
+  assert.equal(receipt.visualReview.oneSecondEyeSheetSamples, 30);
+  assert.equal(report.status, "pass");
+  assert.equal(report.runtimeHash, await currentRuntimeHash());
+  assert.equal(report.videoHash, receipt.videoSha256);
+  assert.equal(state.attempts.length, 1);
+  assert.equal(state.attempts[0].providerCall, undefined);
+  const packagedVideo = await readFile(path.resolve(evidenceRoot, receipt.packagedEquivalentVideo));
+  assert.equal(createHash("sha256").update(packagedVideo).digest("hex"), receipt.videoSha256);
+  const packagedSheet = await readFile(path.resolve(evidenceRoot, receipt.packagedEquivalentContactSheet));
+  assert.equal(createHash("sha256").update(packagedSheet).digest("hex"), receipt.contactSheetSha256);
+  const renderer = await readFile(path.join(root, "runtime", "renderer", "app.js"));
+  assert.equal(createHash("sha256").update(renderer).digest("hex"), receipt.rendererAppSha256After);
+  assert.equal(await missing(path.join(evidenceRoot, "finalization.json")), true);
 });
 
 test("validation rejects content outside the contract", async () => {

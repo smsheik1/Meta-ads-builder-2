@@ -1,0 +1,70 @@
+{
+  "status": "pass",
+  "testedAt": "2026-08-05T04:58:02Z",
+  "archive": "downloads/wiggly-squilliam-news-format-kit.zip",
+  "testedArchiveSha256": "81b9d6882f66f6aa4708ddc11b2667c03d0a9f95f53e3762dd096403f15e44ac",
+  "runtimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
+  "cleanExtractionDirectory": "/private/tmp/squilliam-kit-final-audit.yjOTb3/wiggly-squilliam-news-format-kit",
+  "commands": [
+    "npm ci",
+    "npm test",
+    "npm run check",
+    "npm run smoke",
+    "npm audit --omit=dev",
+    "unzip -t",
+    "manifest byte verification",
+    "archive exclusion scan",
+    "secret-value scan"
+  ],
+  "result": {
+    "dependenciesInstalled": 4,
+    "knownVulnerabilities": 0,
+    "contractTests": 15,
+    "motionFrames": 900,
+    "motionDurationSeconds": 30,
+    "smokeFrames": 9,
+    "smokeDurationSeconds": 9,
+    "width": 1280,
+    "height": 720,
+    "contactSheetCreated": true,
+    "zipIntegrity": "pass",
+    "manifestFiles": 147,
+    "manifestBytesVerified": true
+  },
+  "characterPackEvidence": {
+    "verifiedPresenters": 4,
+    "hashedSmokeVideos": 4,
+    "hashedContactSheets": 4,
+    "catalogAndEvidenceTests": "pass"
+  },
+  "currentPromotionEvidence": {
+    "formatVersion": "0.2.1-proof",
+    "fullLengthProofs": 2,
+    "sharedRuntimeHash": "6da1f48982614b10baeb4a11ca63ad4aa4594c9945d32f2b15275bb8e3e27538",
+    "distinctContentHashes": true,
+    "distinctVideoHashes": true,
+    "automaticInspection": "pass",
+    "weTheArtistsHumanReview": "pass",
+    "weTheArtistsFinalized": true
+  },
+  "blindHandoff": {
+    "candidateArchiveSha256": "d6526546e1cbdc95f26c3268419ca643f2c3d3bba5eaec68a93551138016fdfa",
+    "attempt": 1,
+    "providerCalls": 0,
+    "rendererUnchanged": true,
+    "videoAndContactHashesReproduced": true,
+    "eyeCriticalVisualReview": "pass",
+    "stoppedBeforeFinalize": true
+  },
+  "archiveExclusionsChecked": [
+    "node_modules",
+    "agent-runs",
+    ".env",
+    ".env.local",
+    "frames-*",
+    "__pycache__",
+    "*.pyc"
+  ],
+  "secretValueScan": "pass; only empty variable names in .env.example are packaged",
+  "note": "This receipt proves the evidence-bearing pre-receipt archive. Adding this receipt changes archive bytes without changing runtime or content; the SHA-256 sidecar beside the final ZIP is authoritative for download integrity."
+}

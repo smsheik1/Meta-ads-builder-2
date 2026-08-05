@@ -9,10 +9,11 @@ The two full promotional proofs below were freshly rendered and automatically in
 ## Proof 1 — We The Artists
 
 - Input: a live-art, music, visual-art, and spoken-word event in Indianapolis.
-- Current output: `examples/we-the-artists/evidence/review.mp4`.
-- Result: current automatic checks pass on attempt one; Squilliam's yellow eyes and red pupils remain visible through close samples around both former blink moments. Video hash: `4225ac87c1d6db293579502c2ffe5b660a6351aa8b74e16b471060f7e80657db`. Fresh human creative approval is required before v0.2.1 finalization.
+- Final output: `examples/we-the-artists/evidence/final.mp4`.
+- Result: current automatic checks pass on attempt one; Squilliam's yellow eyes and red pupils remain visible through close samples around both former blink moments. The user approved the corrected review and it was finalized with video hash `4225ac87c1d6db293579502c2ffe5b660a6351aa8b74e16b471060f7e80657db`.
 - Automatic evidence: exact 30.000 seconds, 1280×720, 30 fps, one AAC stream, no detected black segment, no interior silence over 0.6 seconds, and a 0.899-second intentional final hold.
 - Runtime, content, audio, and video fingerprints are recorded in `examples/we-the-artists/evidence/quality-report.json`.
+- Human and automatic approval are bound to the same runtime/content/video hashes in `examples/we-the-artists/evidence/finalization.json`.
 
 ## Proof 2 — Wiggly Format Lab
 
@@ -50,4 +51,10 @@ A fresh agent received only the packaged v0.1 ZIP and the desired We The Artists
 
 A second fresh agent received only the v0.2.0 ZIP and operationally completed smoke, checks, validation, rendering, automatic inspection, and actual MP4 playback with zero provider calls. The user then rejected the output because Squilliam's eye cutout was opaque and hid the intended eye art. That handoff is invalid as creative proof even though automatic checks passed; its receipts are archived under `evidence/blind-handoff/history/v0.2.0-broken-eyes/`.
 
-The root cause was reliance on a browser-resolved texture URL instead of stable Collada material names. Version 0.2.1 fixes that shared character-pack rule, adds contract regression coverage, and archives every stale v0.2.0 proof. A close pass on the first corrected package then found a separate pupil-only fake blink; that intermediate proof is also archived. A fresh archive-only handoff is still required for the current no-fake-blink runtime.
+The root cause was reliance on a browser-resolved texture URL instead of stable Collada material names. Version 0.2.1 fixes that shared character-pack rule, adds contract regression coverage, and archives every stale v0.2.0 proof. A close pass on the first corrected package then found a separate pupil-only fake blink; that intermediate proof is also archived.
+
+## Current blind-agent handoff — version 0.2.1
+
+A fresh agent received only candidate archive `d6526546e1cbdc95f26c3268419ca643f2c3d3bba5eaec68a93551138016fdfa`. It clean-installed the kit, passed all 14 tests, smoke, check, validation, render, automatic inspection, and actual Chrome playback on attempt one of three with zero provider calls and no renderer edits. It stopped before finalization.
+
+The returned video and contact sheet are byte-identical to the current We The Artists evidence. Six close samples around the two former pupil-disappearance moments plus thirty one-second samples retained both yellow eye fields and both red pupils, with no opaque facial cutout. Current receipts are under `evidence/blind-handoff/v0.2.1/`.
