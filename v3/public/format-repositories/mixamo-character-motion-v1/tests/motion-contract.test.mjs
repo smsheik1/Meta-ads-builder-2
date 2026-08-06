@@ -14,7 +14,9 @@ test("all normalized Mixamo clips preserve manifest timing and provenance", asyn
   for (const record of manifest.motions) {
     const bytes = await readFile(path.join(root, record.file));
     const clip = JSON.parse(bytes);
-    assert.equal(clip.kind, "mixamo-world-delta-v1");
+    assert.equal(clip.schemaVersion, 2);
+    assert.equal(clip.kind, "mixamo-world-delta-v2");
+    assert.equal(clip.source.referencePose, "inverse-bind-matrices");
     assert.equal(clip.fps, 30);
     assert.equal(clip.frameCount, record.frameCount);
     assert.equal(clip.durationSeconds, record.durationSeconds);
@@ -24,10 +26,17 @@ test("all normalized Mixamo clips preserve manifest timing and provenance", asyn
     assert.equal(clip.feet.right.contacts.length, clip.frameCount);
     assert.equal(clip.feet.left.upperLegToFootVectors.length, clip.frameCount * 3);
     assert.equal(clip.feet.right.upperLegToFootVectors.length, clip.frameCount * 3);
+    assert.equal(clip.feet.left.bindUpperLegToFootVector.length, 3);
+    assert.equal(clip.feet.right.bindUpperLegToFootVector.length, 3);
     assert.ok(Number.isFinite(clip.feet.left.floorOffsetFromRestMeters));
     assert.ok(Number.isFinite(clip.feet.right.floorOffsetFromRestMeters));
     assert.ok(clip.metrics.sourceLegLengthsMeters.left > 0);
     assert.ok(clip.metrics.sourceLegLengthsMeters.right > 0);
+    const firstFramePoseEnergy = Object.values(clip.bones).reduce((sum, bone) => {
+      const w = Math.min(1, Math.abs(bone.worldDeltaQuaternions[3]));
+      return sum + 2 * Math.acos(w);
+    }, 0) / Object.keys(clip.bones).length;
+    assert.ok(firstFramePoseEnergy > 0.05, `${clip.id} must not collapse its first or matching final frame to the target bind pose`);
     assert.equal(createHash("sha256").update(bytes).digest("hex"), record.normalizedSha256);
     assert.equal(clip.source.sha256, record.sourceSha256);
   }
@@ -46,10 +55,15 @@ test("every character profile maps its available full body while excluding prote
     assert.ok((pack.motionProfile.maximumMappedPoseErrorRadians || 0.001) <= 0.002);
     assert.equal(new Set(targets).size, targets.length);
     for (const name of pack.motionProfile.protectedBones) assert.equal(map[name], undefined, `${pack.id}:${name} must stay protected`);
+    for (const pair of pack.motionProfile.pairedBoneChains || []) {
+      assert.equal(pair.driver.length, pair.follower.length, `${pack.id} paired chains must be the same length`);
+      for (const name of pair.follower) assert.equal(map[name], undefined, `${pack.id}:${name} must follow its paired visible leg instead of being retargeted independently`);
+    }
     const model = await readFile(path.join(root, pack.model), "utf8");
     const declaredBones = new Set([
       ...targets,
       ...pack.motionProfile.protectedBones,
+      ...(pack.motionProfile.pairedBoneChains || []).flatMap((pair) => [...pair.driver, ...pair.follower]),
       pack.motionProfile.rootBone,
       ...Object.values(pack.motionProfile.feet),
       ...Object.values(pack.motionProfile.legChains).flat(),

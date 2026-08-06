@@ -27,14 +27,15 @@ function syntheticFixture() {
     worldDeltaQuaternions: [0, 0, 0, 1, turn.x, turn.y, turn.z, turn.w],
   }]));
   const clip = {
-    kind: "mixamo-world-delta-v1",
+    kind: "mixamo-world-delta-v2",
+    source: { referencePose: "inverse-bind-matrices" },
     fps: 30,
     frameCount: 2,
     metrics: { sourceLegLengthMeters: 2, sourceLegLengthsMeters: { left: 2, right: 2 } },
     root: { positions: [0, 0, 0, 1, 2, 3] },
     feet: {
-      left: { positions: [0, 0, 0, 1, 2, 3], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
-      right: { positions: [0, 0, 0, 1, 2, 3], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
+      left: { positions: [0, 0, 0, 1, 2, 3], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], bindUpperLegToFootVector: [0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
+      right: { positions: [0, 0, 0, 1, 2, 3], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], bindUpperLegToFootVector: [0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
     },
     bones,
   };
@@ -47,6 +48,7 @@ function syntheticFixture() {
       rootBone: "root",
       feet: { left: "left-foot", right: "right-foot" },
       legChains: { left: ["body-0", "body-1"], right: ["body-2", "body-3"] },
+      pairedBoneChains: [{ driver: ["body-0", "body-1"], follower: ["body-4", "body-5"] }],
       rootMotionGain: [1, 1, 1],
       boneMap,
       protectedBones: ["protected-eye"],
@@ -76,6 +78,13 @@ test("random-access frames are deterministic, preserve planar root travel, and p
   assert.ok(fixture.face.position.equals(eyeRest.position));
   assert.ok(fixture.face.quaternion.equals(eyeRest.quaternion));
   assert.ok(fixture.face.scale.equals(eyeRest.scale));
+  for (const [driverName, followerName] of [["body-0", "body-4"], ["body-1", "body-5"]]) {
+    const driver = fixture.character.getObjectByName(driverName);
+    const follower = fixture.character.getObjectByName(followerName);
+    assert.ok(follower.position.equals(driver.position));
+    assert.ok(follower.quaternion.equals(driver.quaternion));
+    assert.ok(follower.scale.equals(driver.scale));
+  }
 });
 
 test("vertical root grounding is bounded when a planted short leg becomes unreachable", () => {
@@ -105,14 +114,15 @@ test("vertical root grounding is bounded when a planted short leg becomes unreac
   const right = buildLeg("right", -0.2);
   const turn = new Quaternion().setFromAxisAngle({ x: 0, y: 0, z: 1 }, Math.PI / 2);
   const clip = {
-    kind: "mixamo-world-delta-v1",
+    kind: "mixamo-world-delta-v2",
+    source: { referencePose: "inverse-bind-matrices" },
     fps: 30,
     frameCount: 2,
     metrics: { sourceLegLengthMeters: 2, sourceLegLengthsMeters: { left: 2, right: 2 } },
     root: { positions: [0, 0, 0, 0, 0, 0] },
     feet: {
-      left: { positions: [0, 0, 0, 0, 0, 0], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
-      right: { positions: [0, 0, 0, 0, 0, 0], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 0] },
+      left: { positions: [0, 0, 0, 0, 0, 0], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], bindUpperLegToFootVector: [0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
+      right: { positions: [0, 0, 0, 0, 0, 0], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], bindUpperLegToFootVector: [0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 0] },
     },
     bones: { hips: { worldDeltaQuaternions: [0, 0, 0, 1, turn.x, turn.y, turn.z, turn.w] } },
   };

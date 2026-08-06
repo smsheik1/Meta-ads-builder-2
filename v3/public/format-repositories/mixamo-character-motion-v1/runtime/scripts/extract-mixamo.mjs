@@ -26,6 +26,11 @@ function floatArray(sourceBlock) {
   return value ? value.trim().split(/\s+/).map(Number) : [];
 }
 
+function nameArray(sourceBlock) {
+  const value = sourceBlock?.match(/<Name_array[^>]*>([\s\S]*?)<\/Name_array>/)?.[1];
+  return value ? value.trim().split(/\s+/) : [];
+}
+
 function sourceBlock(xml, id) {
   return xml.match(new RegExp(`<source id="${escapeRegex(id)}">([\\s\\S]*?)<\\/source>`))?.[1];
 }
@@ -62,6 +67,26 @@ function readHierarchy(xml, animatedBones) {
   return parentByBone;
 }
 
+function readBindWorldMatrices(xml, animatedBones) {
+  const bindWorldByBone = {};
+  for (const match of xml.matchAll(/<skin\b[^>]*>([\s\S]*?)<\/skin>/g)) {
+    const skin = match[1];
+    const jointSourceId = skin.match(/<input\s+semantic="JOINT"\s+source="#([^"]+)"/)?.[1];
+    const inverseBindSourceId = skin.match(/<input\s+semantic="INV_BIND_MATRIX"\s+source="#([^"]+)"/)?.[1];
+    if (!jointSourceId || !inverseBindSourceId) continue;
+    const names = nameArray(sourceBlock(xml, jointSourceId));
+    const values = floatArray(sourceBlock(xml, inverseBindSourceId));
+    if (values.length !== names.length * 16) throw new Error(`${inverseBindSourceId} has invalid matrix data`);
+    for (const [index, name] of names.entries()) {
+      if (!animatedBones.has(name) || bindWorldByBone[name]) continue;
+      bindWorldByBone[name] = new Matrix4().fromArray(values, index * 16).transpose().invert();
+    }
+  }
+  const missing = [...animatedBones].filter((bone) => !bindWorldByBone[bone]);
+  if (missing.length) throw new Error(`Mixamo inverse bind matrices are missing: ${missing.join(", ")}`);
+  return bindWorldByBone;
+}
+
 const args = parseArgs(process.argv.slice(2));
 for (const required of ["source", "output", "id", "label"]) {
   if (!args[required]) throw new Error(`Missing --${required}`);
@@ -96,6 +121,7 @@ const fps = Math.round(1 / medianDelta);
 if (fps !== 30) throw new Error(`Expected a 30 fps Mixamo clip; got ${fps}`);
 
 const parentByBone = readHierarchy(xml, new Set(boneNames));
+const bindWorldByBone = readBindWorldMatrices(xml, new Set(boneNames));
 const worldByFrame = [];
 for (let frame = 0; frame < frameCount; frame += 1) {
   const memo = new Map();
@@ -112,23 +138,24 @@ for (let frame = 0; frame < frameCount; frame += 1) {
   worldByFrame.push(memo);
 }
 
-const firstWorldQuaternions = Object.fromEntries(boneNames.map((bone) => {
-  const quaternion = new Quaternion().setFromRotationMatrix(worldByFrame[0].get(bone)).normalize();
+const bindWorldQuaternions = Object.fromEntries(boneNames.map((bone) => {
+  const quaternion = new Quaternion().setFromRotationMatrix(bindWorldByBone[bone]).normalize();
   return [bone, quaternion];
 }));
 const bones = {};
 for (const bone of boneNames) {
-  const inverseRest = firstWorldQuaternions[bone].clone().invert();
+  const inverseBind = bindWorldQuaternions[bone].clone().invert();
   const values = [];
   for (let frame = 0; frame < frameCount; frame += 1) {
     const current = new Quaternion().setFromRotationMatrix(worldByFrame[frame].get(bone)).normalize();
-    const delta = current.multiply(inverseRest).normalize();
+    const delta = current.multiply(inverseBind).normalize();
     values.push(round(delta.x), round(delta.y), round(delta.z), round(delta.w));
   }
   bones[bone] = { worldDeltaQuaternions: values };
 }
 
 const positionAt = (bone, frame) => new Vector3().setFromMatrixPosition(worldByFrame[frame].get(bone)).multiplyScalar(unitMeter);
+const bindPositionAt = (bone) => new Vector3().setFromMatrixPosition(bindWorldByBone[bone]).multiplyScalar(unitMeter);
 const rootName = "mixamorig_Hips";
 const leftFootName = boneNames.includes("mixamorig_LeftToeBase") ? "mixamorig_LeftToeBase" : "mixamorig_LeftFoot";
 const rightFootName = boneNames.includes("mixamorig_RightToeBase") ? "mixamorig_RightToeBase" : "mixamorig_RightFoot";
@@ -152,12 +179,12 @@ const contactsFor = (absoluteY) => absoluteY.map((value, index) => {
   const verticalSpeed = Math.abs(after - before) * fps * 0.5;
   return value <= floorY + contactThreshold && verticalSpeed <= 0.45 ? 1 : 0;
 });
-const legLengthAtRest = (names) => names.slice(1).reduce((total, name, index) => (
-  total + positionAt(names[index], 0).distanceTo(positionAt(name, 0))
+const legLengthAtBind = (names) => names.slice(1).reduce((total, name, index) => (
+  total + bindPositionAt(names[index]).distanceTo(bindPositionAt(name))
 ), 0);
 const sourceLegLengthsMeters = {
-  left: round(legLengthAtRest([leftUpperLegName, "mixamorig_LeftLeg", "mixamorig_LeftFoot", leftFootName])),
-  right: round(legLengthAtRest([rightUpperLegName, "mixamorig_RightLeg", "mixamorig_RightFoot", rightFootName])),
+  left: round(legLengthAtBind([leftUpperLegName, "mixamorig_LeftLeg", "mixamorig_LeftFoot", leftFootName])),
+  right: round(legLengthAtBind([rightUpperLegName, "mixamorig_RightLeg", "mixamorig_RightFoot", rightFootName])),
 };
 const sourceLegLengthMeters = round((sourceLegLengthsMeters.left + sourceLegLengthsMeters.right) * 0.5);
 const rootRanges = {
@@ -167,8 +194,8 @@ const rootRanges = {
 };
 
 const output = {
-  schemaVersion: 1,
-  kind: "mixamo-world-delta-v1",
+  schemaVersion: 2,
+  kind: "mixamo-world-delta-v2",
   id: args.id,
   label: args.label,
   fps,
@@ -179,6 +206,7 @@ const output = {
     fileName: path.basename(sourcePath),
     sha256: createHash("sha256").update(sourceBytes).digest("hex"),
     unitMeter,
+    referencePose: "inverse-bind-matrices",
     importedAt: new Date().toISOString(),
   },
   metrics: { sourceLegLengthMeters, sourceLegLengthsMeters, rootRangesMeters: rootRanges },
@@ -189,6 +217,7 @@ const output = {
       positions: flattenVectors(leftFeet),
       upperLegBone: leftUpperLegName,
       upperLegToFootVectors: flattenVectors(leftUpperLegToFoot),
+      bindUpperLegToFootVector: flattenVectors([bindPositionAt(leftFootName).sub(bindPositionAt(leftUpperLegName))]),
       floorOffsetFromRestMeters: round(floorY - positionAt(leftFootName, 0).y),
       contacts: contactsFor(absoluteLeftY),
     },
@@ -197,6 +226,7 @@ const output = {
       positions: flattenVectors(rightFeet),
       upperLegBone: rightUpperLegName,
       upperLegToFootVectors: flattenVectors(rightUpperLegToFoot),
+      bindUpperLegToFootVector: flattenVectors([bindPositionAt(rightFootName).sub(bindPositionAt(rightUpperLegName))]),
       floorOffsetFromRestMeters: round(floorY - positionAt(rightFootName, 0).y),
       contacts: contactsFor(absoluteRightY),
     },

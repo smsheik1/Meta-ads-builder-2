@@ -30,13 +30,16 @@ function maxComponentDelta(a, b) {
 }
 
 function assertClip(clip) {
-  if (clip?.kind !== "mixamo-world-delta-v1") throw new Error("Unsupported normalized motion schema");
+  if (clip?.kind !== "mixamo-world-delta-v2" || clip?.source?.referencePose !== "inverse-bind-matrices") {
+    throw new Error("Unsupported normalized motion schema");
+  }
   if (!Number.isInteger(clip.frameCount) || clip.frameCount < 2) throw new Error("Motion needs at least two frames");
   if (clip.fps !== 30) throw new Error(`Motion must be 30 fps; received ${clip.fps}`);
   if (clip.root?.positions?.length !== clip.frameCount * 3) throw new Error("Root position data is incomplete");
   for (const side of ["left", "right"]) {
     if (clip.feet?.[side]?.positions?.length !== clip.frameCount * 3) throw new Error(`${side} foot position data is incomplete`);
     if (clip.feet?.[side]?.upperLegToFootVectors?.length !== clip.frameCount * 3) throw new Error(`${side} upper-leg-to-foot data is incomplete`);
+    if (clip.feet?.[side]?.bindUpperLegToFootVector?.length !== 3) throw new Error(`${side} bind-pose leg vector is incomplete`);
     if (!Number.isFinite(clip.feet?.[side]?.floorOffsetFromRestMeters)) throw new Error(`${side} floor offset is missing`);
     if (clip.feet?.[side]?.contacts?.length !== clip.frameCount) throw new Error(`${side} foot contact data is incomplete`);
   }
@@ -95,6 +98,17 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
       scale: object.scale.clone(),
     });
   });
+  const pairedBoneChains = (profile.pairedBoneChains || []).map(({ driver, follower }) => {
+    if (!Array.isArray(driver) || !Array.isArray(follower) || driver.length !== follower.length || !driver.length) {
+      throw new Error("Paired bone chains must declare equally sized driver and follower arrays");
+    }
+    return driver.map((driverName, index) => {
+      const driverBone = bones[driverName];
+      const followerBone = bones[follower[index]];
+      if (!driverBone || !followerBone) throw new Error(`Paired bone is missing: ${driverName} -> ${follower[index]}`);
+      return { driverBone, followerBone };
+    });
+  });
 
   characterRoot.updateMatrixWorld(true);
   const rootOrigin = characterRoot.position.clone();
@@ -134,7 +148,7 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
   const sourceRestExtensionRatios = {};
   const targetRestExtensionRatios = {};
   for (const side of ["left", "right"]) {
-    const sourceRestVector = vectorAt(clip.feet[side].upperLegToFootVectors, 0);
+    const sourceRestVector = new Vector3(...clip.feet[side].bindUpperLegToFootVector);
     restDirectionAlignments[side] = new Quaternion().setFromUnitVectors(
       sourceRestVector.clone().normalize(),
       targetRestLegVectors[side].clone().normalize(),
@@ -151,6 +165,16 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     }
     characterRoot.position.copy(rootOrigin);
     characterRoot.updateMatrixWorld(true);
+  }
+
+  function joinPairedBoneChains() {
+    for (const chain of pairedBoneChains) {
+      for (const { driverBone, followerBone } of chain) {
+        followerBone.position.copy(driverBone.position);
+        followerBone.quaternion.copy(driverBone.quaternion);
+        followerBone.scale.copy(driverBone.scale);
+      }
+    }
   }
 
   function sourceMotion(side, frame) {
@@ -314,6 +338,7 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     };
     solveLeg("left", desiredFeet.left);
     solveLeg("right", desiredFeet.right);
+    joinPairedBoneChains();
     characterRoot.updateMatrixWorld(true);
 
     const currentFeet = {

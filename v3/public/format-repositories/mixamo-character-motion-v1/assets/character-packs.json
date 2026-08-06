@@ -83,7 +83,7 @@
       ],
       "motionProfile": {
         "profile": "mixamo-humanoid-world-delta-v1",
-        "minimumMappedBones": 31,
+        "minimumMappedBones": 23,
         "maximumMappedPoseErrorRadians": 0.002,
         "rootBone": "squilliam_sub_root",
         "feet": {
@@ -102,6 +102,36 @@
             "squilliam_front_ankle_R"
           ]
         },
+        "pairedBoneChains": [
+          {
+            "driver": [
+              "squilliam_front_thigh_L",
+              "squilliam_front_knee_L",
+              "squilliam_front_ankle_L",
+              "squilliam_front_toe_L"
+            ],
+            "follower": [
+              "squilliam_rear_thigh_L",
+              "squilliam_rear_knee_L",
+              "squilliam_rear_ankle_L",
+              "squilliam_rear_toe_L"
+            ]
+          },
+          {
+            "driver": [
+              "squilliam_front_thigh_R",
+              "squilliam_front_knee_R",
+              "squilliam_front_ankle_R",
+              "squilliam_front_toe_R"
+            ],
+            "follower": [
+              "squilliam_rear_thigh_R",
+              "squilliam_rear_knee_R",
+              "squilliam_rear_ankle_R",
+              "squilliam_rear_toe_R"
+            ]
+          }
+        ],
         "maximumVerticalRootCorrection": 0.12,
         "rootMotionGain": [1, 1, 1],
         "boneMap": {
@@ -127,15 +157,7 @@
           "squilliam_front_thigh_R": "mixamorig_RightUpLeg",
           "squilliam_front_knee_R": "mixamorig_RightLeg",
           "squilliam_front_ankle_R": "mixamorig_RightFoot",
-          "squilliam_front_toe_R": "mixamorig_RightToeBase",
-          "squilliam_rear_thigh_L": "mixamorig_LeftUpLeg",
-          "squilliam_rear_knee_L": "mixamorig_LeftLeg",
-          "squilliam_rear_ankle_L": "mixamorig_LeftFoot",
-          "squilliam_rear_toe_L": "mixamorig_LeftToeBase",
-          "squilliam_rear_thigh_R": "mixamorig_RightUpLeg",
-          "squilliam_rear_knee_R": "mixamorig_RightLeg",
-          "squilliam_rear_ankle_R": "mixamorig_RightFoot",
-          "squilliam_rear_toe_R": "mixamorig_RightToeBase"
+          "squilliam_front_toe_R": "mixamorig_RightToeBase"
         },
         "protectedBones": [
           "squilliam_eye_rotate_space_L",
@@ -170,6 +192,7 @@
       "motionProfile": {
         "profile": "mixamo-humanoid-world-delta-v1",
         "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.0015,
         "rootBone": "krabs_sub_root",
         "feet": {
           "left": "krabs_ankle_L",

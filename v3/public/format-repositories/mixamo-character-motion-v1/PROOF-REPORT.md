@@ -1,6 +1,6 @@
 # Mixamo retargeting proof
 
-Verified August 5, 2026 against four user-downloaded Mixamo Collada clips and the user-provided SpongeBob game model.
+The v0.1 baseline was verified August 5, 2026 against four user-downloaded Mixamo Collada clips and the user-provided SpongeBob game model. Version 0.2 re-normalizes those same source clips against Mixamo's inverse-bind matrices and adds current cross-character acceptance proofs for Squilliam and Mr. Krabs.
 
 | Motion | Original frames | Exact duration | Mapped bones | Planar root retained | Automatic quality |
 |---|---:|---:|---:|---:|---|
@@ -13,7 +13,7 @@ Every official clip is 1280×720 H.264 at 30 fps with no audio. Each consumes ev
 
 Root translation is scaled from actual source and target thigh→knee→ankle→toe chain lengths with zero measured scale error. Foot direction and extension are normalized to the target chain before deterministic FABRIK solving; measured reach never exceeds 100%, so an unusually proportioned character is never assigned an unreachable foot target.
 
-The automatic results are complete. Human review of the combined motion reel was approved August 5, 2026, and all four proof runs were finalized.
+The v0.1 automatic results are complete. Human review of the combined SpongeBob motion reel was approved August 5, 2026, and all four baseline proof runs were finalized.
 
 ## Cross-character Hip Hop proof
 
@@ -21,15 +21,17 @@ The identical 135-frame Hip Hop Dancing motion was rendered on two additional ri
 
 | Character | Rig challenge | Mapped bones | Planar root retained | Maximum contact clearance | Face deviation | Automatic quality |
 |---|---|---:|---:|---:|---:|---|
-| Squilliam Fancyson | Four legs and authored non-unit rest quaternions | 31 | 100% | `0.029462` | `0` | Pass |
-| Mr. Krabs | Short ankle-ended legs and claws | 23 | 100% | `0.015565` | `0` | Pass |
+| Squilliam Fancyson | Paired tentacles, authored non-unit rest quaternions | 23 | 100% | `0.029453` | `0` | Pass |
+| Mr. Krabs | Short ankle-ended legs and claws | 23 | 100% | `0.015799` | `0` | Pass |
 
-The first Squilliam render reported false face drift because its Collada rest quaternions were not normalized; normalizing every captured rest quaternion reduced protected-face deviation from `0.000517` to zero. Its worst mapped-pose discrepancy is a measured `0.001824` radians at `squilliam_elbow_R`, below the rig's bounded `0.002`-radian tolerance.
+The first cross-character reel visibly returned both characters to a T-pose at the clip boundary. The importer had measured animation deltas against frame 1 rather than the Mixamo skeleton's true inverse-bind pose, so frame 1 and the matching final sample became identity rotations on every target. Version 0.2 uses the Collada inverse-bind matrices as the reference and keeps all 135 original frames. A contract test now rejects normalized clips whose known first pose collapses back to bind.
 
-The first Mr. Krabs render exposed an unreachable planted ankle when a Mixamo hip rotation raised his very short leg base. A profile-bounded vertical root correction now lowers only as much as physical reach requires, while preserving 100% of planar source travel and reporting both required and applied correction. The maximum correction in this clip was `0.086473`, below the declared `0.12` limit.
+Squilliam initially moved four tentacles independently, which was technically faithful to the model but visually wrong for the character. His profile now pairs the rear and front chain on each side after the two visible driver legs are grounded, so he reads as a normal two-legged performer throughout the clip. The paired-chain behavior has a runtime regression test. His worst mapped-pose discrepancy is `0.001836` radians at `squilliam_fingers_R`, below the rig's bounded `0.002`-radian tolerance; protected-face deviation is zero.
 
-Both automatic reports await human review of the combined cross-character reel before finalization.
+Mr. Krabs's short legs require at most `0.048914` units of the declared `0.12` vertical correction while preserving 100% of planar source travel. His worst mapped-pose discrepancy is `0.001218` radians at `krabs_ankle_L`, below his measured `0.0015`-radian tolerance; protected-face deviation is zero.
+
+The v0.2 Squilliam and Mr. Krabs reports pass every automatic gate. Full playback of the combined 135-frame reel confirmed joined Squilliam legs, stable eyes, readable motion, and no T-pose bookend; both runs were finalized August 5, 2026.
 
 ## Reuse boundary
 
-Future formats import the normalized motion and character profile through the repo runtime. They do not duplicate the retargeting math. A new character needs a verified semantic bone map and its own visual proof; a new Mixamo clip needs only local normalization and validation.
+Future formats import the normalized motion and character profile through the repo runtime. They do not duplicate the retargeting math. For a motion-ready character, a new standard Mixamo Collada clip needs local import, selection, validation, render, and inspection—no Blender or manual keyframing. A new character still needs a verified semantic bone map and its own visual proof.
