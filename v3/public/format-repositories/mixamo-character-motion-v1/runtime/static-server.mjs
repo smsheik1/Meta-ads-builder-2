@@ -12,11 +12,12 @@ const mimeTypes = {
   ".png": "image/png",
 };
 
-export async function startStaticServer(root, port = 0) {
+export async function startStaticServer(root, port = 0, interceptRequest) {
   const resolvedRoot = path.resolve(root);
   const server = createServer(async (request, response) => {
     try {
       const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+      if (interceptRequest && await interceptRequest({ request, response, pathname })) return;
       if (pathname === "/favicon.ico") {
         response.writeHead(204);
         return response.end();

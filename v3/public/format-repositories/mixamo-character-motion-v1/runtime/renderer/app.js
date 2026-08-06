@@ -199,6 +199,69 @@ function bindLabControls() {
     updatePlaybackButtons();
   });
   document.querySelector("#restart").addEventListener("click", restart);
+  const toggle = document.querySelector("#download-toggle");
+  const menu = document.querySelector("#download-menu");
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = menu.hidden;
+    menu.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+  });
+  menu.addEventListener("click", (event) => event.stopPropagation());
+  for (const button of menu.querySelectorAll("[data-export-format]")) {
+    button.addEventListener("click", () => downloadSelection(button.dataset.exportFormat));
+  }
+  document.addEventListener("click", closeDownloadMenu);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDownloadMenu();
+  });
+}
+
+function closeDownloadMenu() {
+  document.querySelector("#download-menu").hidden = true;
+  document.querySelector("#download-toggle").setAttribute("aria-expanded", "false");
+}
+
+async function downloadSelection(format) {
+  const toggle = document.querySelector("#download-toggle");
+  const status = document.querySelector("#export-status");
+  const characterId = state.characterId;
+  const motionId = state.motionId;
+  closeDownloadMenu();
+  toggle.disabled = true;
+  toggle.textContent = "Rendering…";
+  status.textContent = `Rendering ${format.toUpperCase()} for ${state.characterPack.label}.`;
+  try {
+    const response = await fetch("/api/format-lab/character-dance-lab/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ characterId, motionId, format }),
+    });
+    if (!response.ok) {
+      const problem = await response.json().catch(() => ({}));
+      throw new Error(problem.error || `Export failed with ${response.status}`);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${characterId}-${motionId}.${format}`;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toggle.textContent = "Downloaded ✓";
+    status.textContent = `${format.toUpperCase()} downloaded.`;
+  } catch (error) {
+    console.error(error);
+    toggle.textContent = "Export failed";
+    status.textContent = error instanceof Error ? error.message : String(error);
+  } finally {
+    setTimeout(() => {
+      toggle.disabled = false;
+      toggle.textContent = "Download ↑";
+    }, 1800);
+  }
 }
 
 function setBusy(busy) {

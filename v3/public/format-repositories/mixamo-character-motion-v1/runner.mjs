@@ -183,6 +183,7 @@ async function checkRepo() {
   for (const tool of ["ffmpeg", "ffprobe"]) await execute(tool, ["-version"], { capture: true });
   for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json"]) await readJson(path.join(root, file));
   for (const file of [
+    "runtime/export.mjs",
     "runtime/serve-lab.mjs",
     "runtime/static-server.mjs",
     "runtime/vendor/three.module.js",

@@ -43,3 +43,9 @@ Future formats import the normalized motion and character profile through the re
 Browser verification at 1440×900 confirmed a responsive 5×5 selector with all 25 motions and all three verified characters. Startup loaded one character and one motion. Selecting Chicken Dance and Mr. Krabs increased the caches to two characters and two motions; selecting Northern Soul Spin Combo and Squilliam increased them to three and three. This demonstrates manifest-first lazy loading rather than downloading all motion payloads on entry.
 
 The same browser pass confirmed colored textures, visible eyes, Squilliam's joined two-leg reading, motion switching, character switching, pause, and restart. The renderer waits for each Collada loading manager—including textures—before exposing a character. Music, beat analysis, scoring, and transition choreography remain outside this proof.
+
+## MP4 and GIF download proof
+
+Version 0.3.1 adds one visible Download ↑ control immediately after Restart. Its two-item menu opens upward while the character name occupies a separate non-intersecting region; a 1440×900 Playwright geometry assertion protects the Squilliam layout.
+
+An end-to-end browser run selected Squilliam and Rumba Dancing, then downloaded both outputs through the Wiggly page. The MP4 was a `266,014`-byte, 1280×720 H.264 file at 30 fps; the GIF was a `403,549`-byte, 640×360 looping file at 15 fps. Both were exactly `2.400` seconds. Visual inspection confirmed stable eyes, joined legs, intact textures, the selected motion, and the correct Squilliam Fancyson title. The same two-download browser run passed again from a fresh ZIP through its packaged `npm run lab` server. Both exports use `runtime/renderer/app.js` through the existing deterministic frame runner; there is no capture-stream or fallback renderer.

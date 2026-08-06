@@ -38,6 +38,21 @@ try {
   });
   assert.equal(await page.locator("#error").isVisible(), false);
 
+  await page.locator('[data-character-id="squilliam"]').click();
+  await page.waitForFunction(() => document.querySelector("#lab-shell")?.dataset.characterId === "squilliam");
+  const restartBox = await page.locator("#restart").boundingBox();
+  const downloadBox = await page.locator("#download-toggle").boundingBox();
+  assert.ok(restartBox && downloadBox && downloadBox.x >= restartBox.x + restartBox.width, "Download must sit to the right of Restart");
+  await page.locator("#download-toggle").click();
+  assert.equal(await page.locator("#download-menu").isVisible(), true);
+  assert.equal(await page.locator("[data-export-format]").count(), 2);
+  const titleBox = await page.locator("#title").boundingBox();
+  const menuBox = await page.locator("#download-menu").boundingBox();
+  const overlaps = titleBox && menuBox
+    && titleBox.x < menuBox.x + menuBox.width && titleBox.x + titleBox.width > menuBox.x
+    && titleBox.y < menuBox.y + menuBox.height && titleBox.y + titleBox.height > menuBox.y;
+  assert.equal(Boolean(overlaps), false, `The open download menu must not cover Squilliam's name: ${JSON.stringify({ titleBox, menuBox })}`);
+
   const screenshot = path.join(evidenceDirectory, "character-dance-lab.png");
   await page.screenshot({ path: screenshot, fullPage: true });
   console.log(JSON.stringify({ status: "pass", motions: 25, characters: 3, screenshot }, null, 2));

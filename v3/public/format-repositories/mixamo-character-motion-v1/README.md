@@ -1,6 +1,6 @@
 # Character Dance Lab
 
-This Wiggly Repo is an interactive audition room for 25 real Mixamo motions and three verified character rigs: SpongeBob, Squilliam Fancyson, and Mr. Krabs. Pick a character, click a motion, and the shared Three.js renderer plays it immediately. Only the active character and motion are loaded; visited assets are cached for fast replay.
+This Wiggly Repo is an interactive audition room for 25 real Mixamo motions and three verified character rigs: SpongeBob, Squilliam Fancyson, and Mr. Krabs. Pick a character, click a motion, and the shared Three.js renderer plays it immediately. Download the current pairing as an exact-frame MP4 or a smaller 640-pixel, 15 fps looping GIF. Only the active character and motion are loaded; visited assets are cached for fast replay.
 
 The same renderer also produces deterministic 1280×720 clips. It keeps every source frame, scales root travel from actual leg-chain lengths, grounds feet with deterministic constraints, maps fingers where supported, and restores protected face and eye bones every frame. Squilliam's tentacles are paired into two readable screen legs. Character differences live in semantic motion profiles, not motion-specific animation code.
 
@@ -13,6 +13,8 @@ npm run lab
 ```
 
 Open the printed local URL. `npm run smoke` verifies both deterministic video output and the interactive selector, including its lazy-loading contract.
+
+The Download control sits immediately after Restart. Its menu opens upward and uses the same deterministic renderer as the command-line export; MP4 preserves the source frame rate and GIF uses a web-friendly 640-pixel width at 15 fps.
 
 ## Render a selected clip
 
@@ -38,13 +40,14 @@ This version is deliberately a playground, not a rating system or music editor. 
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|
-| Shared renderer, retargeter, lazy asset loading, timing, root scaling, grounding, quality gates | Verified character ID, normalized motion ID, title, background |
+| Shared renderer, retargeter, MP4/GIF export, lazy asset loading, timing, root scaling, grounding, quality gates | Verified character ID, normalized motion ID, title, background |
 
 ## What good means
 
 - The lab exposes exactly 25 motions and three motion-ready characters.
 - Startup fetches one character and one motion—not all 25 motion payloads.
 - Selecting a motion restarts it immediately; selecting a character preserves the current motion.
+- Downloading snapshots the selected character and motion and uses the official renderer.
 - Video output contains every source frame exactly once.
 - Eye, lid, mouth, and facial overlay bones retain their authored transforms.
 - Squilliam's paired limb chains stay joined throughout the clip.

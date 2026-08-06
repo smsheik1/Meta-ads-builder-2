@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "fixed": [
     "One shared Three.js renderer for the interactive lab and video output",
+    "MP4 and GIF downloads generated from the selected character and motion through the shared renderer",
     "Responsive selector with three verified characters and 25 normalized motions",
     "Manifest-first startup with only the active character and motion payload loaded",
     "Mixamo inverse-bind world-delta motion schema",
@@ -11,5 +12,5 @@
   ],
   "replaceable": ["verified characterId", "normalized motionId", "title", "background"],
   "outOfScope": ["music upload", "beat detection", "beat-synced sequencing", "motion ratings", "automatic transitions"],
-  "rendererInvariant": "The interactive lab and deterministic video output both render through runtime/renderer/app.js. Do not rebuild or substitute the retargeter."
+  "rendererInvariant": "The interactive lab, MP4 download, GIF download, and deterministic proof output all render through runtime/renderer/app.js. Do not rebuild or substitute the retargeter."
 }

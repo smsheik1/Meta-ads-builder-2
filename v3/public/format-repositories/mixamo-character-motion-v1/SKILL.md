@@ -6,11 +6,11 @@ description: "Audition 25 normalized Mixamo motions on verified Wiggly character
 # Character Dance Lab
 
 1. Run `npm run check` and `npm run smoke` before real work.
-2. Run `npm run lab`, audition the catalog, and note the chosen character and motion IDs.
+2. Run `npm run lab`, audition the catalog, and use Download ↑ for an immediate MP4 or GIF, or note the chosen IDs for the full inspect/finalize workflow.
 3. Use an existing ID from `assets/motions/manifest.json`, or import a user-downloaded Mixamo `.dae` with `node runner.mjs import-motion`; preserve the inverse-bind reference pose.
 4. Run `init`, edit only the run's `input.json`, and run `validate` before rendering.
 5. Use `render` and `inspect`; do not substitute the shared renderer or retargeter.
 6. Inspect the MP4 and contact sheet. Fix only observed profile/runtime problems, with at most three render attempts.
 7. Run `finalize --human-review=pass` only after a person approves motion identity, feet, eyes, intersections, and usefulness.
 
-Do not copy Mixamo source `.dae` files into the package. Do not eagerly load the 25 motion payloads. Do not truncate or loop clips to fit an arbitrary duration.
+Do not copy Mixamo source `.dae` files into the package. Do not eagerly load the 25 motion payloads. Do not build a separate renderer for downloads. Do not truncate or loop clips to fit an arbitrary duration.
