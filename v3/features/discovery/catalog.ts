@@ -2259,6 +2259,27 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "scrub-daddy-two-personalities",
+    status: "published",
+    order: 5.5,
+    brand: "Scrub Daddy",
+    title: "The sponge with two personalities",
+    curatorNote: "Temperature becomes a visible personality switch between tough scrubbing and gentle flexibility.",
+    goal: "explain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/three-d-breakdown-v1/agent-runs/scrub-daddy-day-6-character-locked-revision/final.mp4",
+      poster: "/discovery/scrub-daddy.jpg",
+      durationLabel: "20 sec",
+    },
+    format: {
+      slug: "three-d-breakdown",
+      name: "3D Breakdown",
+      version: "1.5.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
     id: "wiggly-prompt-vs-format",
     status: "published",
     order: 5.5,

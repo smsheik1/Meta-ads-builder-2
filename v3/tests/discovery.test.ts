@@ -296,8 +296,9 @@ assert.deepEqual(
     "theragun-heat-and-motion",
     "kiala-supplement-journey",
     "lego-origin-story",
+    "scrub-daddy-two-personalities",
   ],
-  "All five 3D Breakdown videos should remain separate Discovery cards.",
+  "All six 3D Breakdown videos should remain separate Discovery cards.",
 );
 
 const draftEntry: DiscoveryEntry = {
