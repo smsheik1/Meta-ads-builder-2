@@ -201,6 +201,9 @@ await execute("ffmpeg", [
 
 const requestedExtent = extent(diagnostics.map((frame) => frame.requestedRoot));
 const appliedExtent = extent(diagnostics.map((frame) => frame.appliedRoot));
+const maximumPoseErrorFrame = diagnostics.reduce((maximum, frame) => (
+  frame.preConstraintMappedWorldAngularError > maximum.preConstraintMappedWorldAngularError ? frame : maximum
+));
 const requestedPlanarTravel = planarMagnitude(requestedExtent);
 const appliedPlanarTravel = planarMagnitude(appliedExtent);
 const rootGain = characterPack.motionProfile.rootMotionGain || [1, 1, 1];
@@ -235,6 +238,7 @@ const report = {
   },
   retarget: {
     mappedBoneCount: Math.min(...diagnostics.map((frame) => frame.mappedBoneCount)),
+    minimumMappedBones: characterPack.motionProfile.minimumMappedBones,
     motionScale: diagnostics[0].motionScale,
     requestedRootExtent: requestedExtent,
     appliedRootExtent: appliedExtent,
@@ -244,6 +248,8 @@ const report = {
     maximumProtectedTransformDeviation: Math.max(...diagnostics.map((frame) => frame.protectedTransformDeviation)),
     maximumProtectedScaleDeviation: Math.max(...diagnostics.map((frame) => frame.protectedScaleDeviation)),
     maximumPreConstraintMappedWorldAngularError: Math.max(...diagnostics.map((frame) => frame.preConstraintMappedWorldAngularError)),
+    maximumAllowedPreConstraintMappedWorldAngularError: characterPack.motionProfile.maximumMappedPoseErrorRadians,
+    maximumPreConstraintMappedWorldAngularErrorBone: maximumPoseErrorFrame.preConstraintMappedWorldAngularErrorBone,
     maximumContactVerticalError: Math.max(...diagnostics.flatMap((frame) => [
       frame.contactVerticalErrors.left,
       frame.contactVerticalErrors.right,
@@ -260,6 +266,12 @@ const report = {
       frame.footReachRatios.left,
       frame.footReachRatios.right,
     ])),
+    verticalRootGrounding: {
+      enabled: (characterPack.motionProfile.maximumVerticalRootCorrection || 0) > 0,
+      maximumAllowed: characterPack.motionProfile.maximumVerticalRootCorrection || 0,
+      maximumRequired: Math.max(...diagnostics.map((frame) => frame.requiredVerticalRootCorrection)),
+      maximumApplied: Math.max(...diagnostics.map((frame) => frame.verticalRootCorrection)),
+    },
     contactFrames: {
       left: diagnostics.filter((frame) => frame.contacts.left).length,
       right: diagnostics.filter((frame) => frame.contacts.right).length,

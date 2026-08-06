@@ -91,7 +91,7 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     if (!object.isBone) return;
     allRest.set(object, {
       position: object.position.clone(),
-      quaternion: object.quaternion.clone(),
+      quaternion: object.quaternion.clone().normalize(),
       scale: object.scale.clone(),
     });
   });
@@ -157,8 +157,12 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     return vectorAt(clip.feet[side].positions, frame).multiplyScalar(motionScale);
   }
 
+  function authoritativeFootY(side, frame) {
+    const sourceFloorOffset = clip.feet[side].floorOffsetFromRestMeters * motionScale;
+    return groundY + sourceMotion(side, frame).y - sourceFloorOffset;
+  }
+
   function desiredFootPosition(side, frame) {
-    const footDelta = sourceMotion(side, frame);
     const sourceLegVector = vectorAt(clip.feet[side].upperLegToFootVectors, frame);
     const sourceExtensionRatio = sourceLegVector.length() / sourceLegLengths[side];
     const targetExtensionRatio = Math.max(0.08, Math.min(
@@ -168,8 +172,7 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     let targetLength = targetLegLengths[side] * targetExtensionRatio;
     const alignedDirection = sourceLegVector.normalize().applyQuaternion(restDirectionAlignments[side]);
     const thighPosition = legChains[side][0].getWorldPosition(new Vector3());
-    const sourceFloorOffset = clip.feet[side].floorOffsetFromRestMeters * motionScale;
-    const desiredY = groundY + footDelta.y - sourceFloorOffset;
+    const desiredY = authoritativeFootY(side, frame);
     targetLength = Math.min(targetLegLengths[side], Math.max(targetLength, Math.abs(desiredY - thighPosition.y)));
     const relativeY = Math.max(-targetLength, Math.min(targetLength, desiredY - thighPosition.y));
     const horizontalDirection = new Vector3(alignedDirection.x, 0, alignedDirection.z);
@@ -264,12 +267,14 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     }
 
     let maximumPreConstraintMappedWorldAngularError = 0;
+    let maximumPreConstraintMappedWorldAngularErrorBone = null;
     for (const entry of mapped) {
       const actualWorld = entry.bone.getWorldQuaternion(new Quaternion());
-      maximumPreConstraintMappedWorldAngularError = Math.max(
-        maximumPreConstraintMappedWorldAngularError,
-        actualWorld.angleTo(desiredWorldByBone.get(entry.bone)),
-      );
+      const angularError = actualWorld.angleTo(desiredWorldByBone.get(entry.bone));
+      if (angularError > maximumPreConstraintMappedWorldAngularError) {
+        maximumPreConstraintMappedWorldAngularError = angularError;
+        maximumPreConstraintMappedWorldAngularErrorBone = entry.targetName;
+      }
     }
 
     const requestedRoot = vectorAt(clip.root.positions, frame)
@@ -277,6 +282,27 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
       .multiply(gain);
     characterRoot.position.copy(rootOrigin).add(requestedRoot);
     characterRoot.updateMatrixWorld(true);
+
+    const contacts = {
+      left: Boolean(clip.feet.left.contacts[frame]),
+      right: Boolean(clip.feet.right.contacts[frame]),
+    };
+    let requiredVerticalRootCorrection = 0;
+    for (const side of ["left", "right"]) {
+      if (!contacts[side]) continue;
+      const thighY = legChains[side][0].getWorldPosition(new Vector3()).y;
+      requiredVerticalRootCorrection = Math.max(
+        requiredVerticalRootCorrection,
+        thighY - authoritativeFootY(side, frame) - targetLegLengths[side],
+      );
+    }
+    requiredVerticalRootCorrection = Math.max(0, requiredVerticalRootCorrection);
+    const maximumVerticalRootCorrection = Math.max(0, profile.maximumVerticalRootCorrection || 0);
+    const verticalRootCorrection = Math.min(requiredVerticalRootCorrection, maximumVerticalRootCorrection);
+    if (verticalRootCorrection > 0) {
+      characterRoot.position.y -= verticalRootCorrection;
+      characterRoot.updateMatrixWorld(true);
+    }
 
     const desiredFeet = {
       left: desiredFootPosition("left", frame),
@@ -290,10 +316,6 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     solveLeg("right", desiredFeet.right);
     characterRoot.updateMatrixWorld(true);
 
-    const contacts = {
-      left: Boolean(clip.feet.left.contacts[frame]),
-      right: Boolean(clip.feet.right.contacts[frame]),
-    };
     const currentFeet = {
       left: feet.left.getWorldPosition(new Vector3()),
       right: feet.right.getWorldPosition(new Vector3()),
@@ -321,6 +343,8 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
       motionScale,
       requestedRoot: requestedRoot.toArray(),
       appliedRoot: appliedRoot.toArray(),
+      requiredVerticalRootCorrection,
+      verticalRootCorrection,
       contacts,
       contactVerticalErrors,
       contactGroundClearances,
@@ -335,6 +359,7 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
       protectedTransformDeviation: protectedLocal.maximum,
       protectedScaleDeviation: protectedLocal.maximumScale,
       preConstraintMappedWorldAngularError: maximumPreConstraintMappedWorldAngularError,
+      preConstraintMappedWorldAngularErrorBone: maximumPreConstraintMappedWorldAngularErrorBone,
     };
   }
 

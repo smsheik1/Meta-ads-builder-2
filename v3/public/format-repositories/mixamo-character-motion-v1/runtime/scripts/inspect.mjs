@@ -46,6 +46,9 @@ const audio = probe.streams.find((stream) => stream.codec_type === "audio");
 const duration = Number(probe.format.duration);
 const frameCount = Number(video?.nb_read_frames);
 const expectedDuration = motionReport.timing.sourceDurationSeconds;
+const minimumMappedBones = motionReport.retarget.minimumMappedBones ?? automatic.minimumMappedBones;
+const maximumMappedPoseError = motionReport.retarget.maximumAllowedPreConstraintMappedWorldAngularError
+  ?? automatic.maximumPreConstraintMappedWorldAngularError;
 const checks = {
   width: { pass: video?.width === 1280, actual: video?.width, expected: 1280 },
   height: { pass: video?.height === 720, actual: video?.height, expected: 720 },
@@ -63,9 +66,9 @@ const checks = {
     expected: expectedDuration,
   },
   mappedBones: {
-    pass: motionReport.retarget.mappedBoneCount >= automatic.minimumMappedBones,
+    pass: motionReport.retarget.mappedBoneCount >= minimumMappedBones,
     actual: motionReport.retarget.mappedBoneCount,
-    minimum: automatic.minimumMappedBones,
+    minimum: minimumMappedBones,
   },
   footPenetration: {
     pass: motionReport.retarget.maximumFootPenetration <= automatic.maximumFootPenetration,
@@ -83,9 +86,10 @@ const checks = {
     maximum: automatic.maximumProtectedScaleDeviation,
   },
   mappedPoseFidelity: {
-    pass: motionReport.retarget.maximumPreConstraintMappedWorldAngularError <= automatic.maximumPreConstraintMappedWorldAngularError,
+    pass: motionReport.retarget.maximumPreConstraintMappedWorldAngularError <= maximumMappedPoseError,
     actual: motionReport.retarget.maximumPreConstraintMappedWorldAngularError,
-    maximum: automatic.maximumPreConstraintMappedWorldAngularError,
+    maximum: maximumMappedPoseError,
+    worstBone: motionReport.retarget.maximumPreConstraintMappedWorldAngularErrorBone,
   },
   contactFootVerticalError: {
     pass: motionReport.retarget.maximumContactVerticalError <= automatic.maximumContactVerticalError,
@@ -106,6 +110,12 @@ const checks = {
     pass: motionReport.retarget.maximumFootReachRatio <= automatic.maximumFootReachRatio,
     actual: motionReport.retarget.maximumFootReachRatio,
     maximum: automatic.maximumFootReachRatio,
+  },
+  verticalRootGrounding: {
+    pass: !motionReport.retarget.verticalRootGrounding?.enabled
+      || motionReport.retarget.verticalRootGrounding.maximumRequired <= motionReport.retarget.verticalRootGrounding.maximumAllowed + 1e-6,
+    actual: motionReport.retarget.verticalRootGrounding?.maximumRequired || 0,
+    maximum: motionReport.retarget.verticalRootGrounding?.maximumAllowed || 0,
   },
   rootScale: {
     pass: motionReport.retarget.maximumRootScaleError <= automatic.maximumRootScaleError,

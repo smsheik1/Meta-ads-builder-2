@@ -77,3 +77,61 @@ test("random-access frames are deterministic, preserve planar root travel, and p
   assert.ok(fixture.face.quaternion.equals(eyeRest.quaternion));
   assert.ok(fixture.face.scale.equals(eyeRest.scale));
 });
+
+test("vertical root grounding is bounded when a planted short leg becomes unreachable", () => {
+  const characterRoot = new Group();
+  const character = new Group();
+  characterRoot.add(character);
+  const root = new Bone();
+  root.name = "root";
+  root.position.y = 0.4;
+  character.add(root);
+  const buildLeg = (side, x) => {
+    const thigh = new Bone();
+    const knee = new Bone();
+    const foot = new Bone();
+    thigh.name = `${side}-thigh`;
+    knee.name = `${side}-knee`;
+    foot.name = `${side}-foot`;
+    thigh.position.x = x;
+    knee.position.y = -0.2;
+    foot.position.y = -0.2;
+    root.add(thigh);
+    thigh.add(knee);
+    knee.add(foot);
+    return { thigh, knee, foot };
+  };
+  const left = buildLeg("left", 0.2);
+  const right = buildLeg("right", -0.2);
+  const turn = new Quaternion().setFromAxisAngle({ x: 0, y: 0, z: 1 }, Math.PI / 2);
+  const clip = {
+    kind: "mixamo-world-delta-v1",
+    fps: 30,
+    frameCount: 2,
+    metrics: { sourceLegLengthMeters: 2, sourceLegLengthsMeters: { left: 2, right: 2 } },
+    root: { positions: [0, 0, 0, 0, 0, 0] },
+    feet: {
+      left: { positions: [0, 0, 0, 0, 0, 0], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
+      right: { positions: [0, 0, 0, 0, 0, 0], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 0] },
+    },
+    bones: { hips: { worldDeltaQuaternions: [0, 0, 0, 1, turn.x, turn.y, turn.z, turn.w] } },
+  };
+  const retargeter = createMixamoRetargeter({
+    characterRoot,
+    character,
+    clip,
+    profile: {
+      rootBone: "root",
+      feet: { left: left.foot.name, right: right.foot.name },
+      legChains: { left: [left.thigh.name, left.knee.name], right: [right.thigh.name, right.knee.name] },
+      rootMotionGain: [1, 1, 1],
+      maximumVerticalRootCorrection: 0.1,
+      boneMap: { root: "hips" },
+      protectedBones: [],
+    },
+  });
+  const result = retargeter.applyFrame(1);
+  assert.ok(result.requiredVerticalRootCorrection > 0.19);
+  assert.ok(Math.abs(result.verticalRootCorrection - 0.1) <= 1e-9);
+  assert.ok(Math.abs(result.appliedRoot[1] + 0.1) <= 1e-9);
+});

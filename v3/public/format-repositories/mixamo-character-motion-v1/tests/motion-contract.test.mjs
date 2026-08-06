@@ -33,17 +33,31 @@ test("all normalized Mixamo clips preserve manifest timing and provenance", asyn
   }
 });
 
-test("the SpongeBob profile maps the full body while excluding every protected face bone", async () => {
+test("every character profile maps its available full body while excluding protected face bones", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const manifest = await readJson("assets/motions/manifest.json");
-  const pack = catalog.packs.find((candidate) => candidate.id === "spongebob");
-  const map = pack.motionProfile.boneMap;
-  const targets = Object.keys(map);
-  assert.equal(targets.length, 35);
-  assert.equal(new Set(targets).size, targets.length);
-  for (const name of pack.motionProfile.protectedBones) assert.equal(map[name], undefined, `${name} must stay protected`);
-  for (const motion of manifest.motions) {
-    const clip = await readJson(motion.file);
-    for (const source of Object.values(map)) assert.ok(clip.bones[source], `${motion.id} is missing ${source}`);
+  const inputContract = await readJson("input-contract.json");
+  assert.deepEqual(catalog.packs.map((pack) => pack.id), ["spongebob", "squilliam", "mr-krabs"]);
+  assert.deepEqual(inputContract.properties.characterId.enum, catalog.packs.map((pack) => pack.id));
+  for (const pack of catalog.packs) {
+    const map = pack.motionProfile.boneMap;
+    const targets = Object.keys(map);
+    assert.ok(targets.length >= pack.motionProfile.minimumMappedBones);
+    assert.ok((pack.motionProfile.maximumMappedPoseErrorRadians || 0.001) <= 0.002);
+    assert.equal(new Set(targets).size, targets.length);
+    for (const name of pack.motionProfile.protectedBones) assert.equal(map[name], undefined, `${pack.id}:${name} must stay protected`);
+    const model = await readFile(path.join(root, pack.model), "utf8");
+    const declaredBones = new Set([
+      ...targets,
+      ...pack.motionProfile.protectedBones,
+      pack.motionProfile.rootBone,
+      ...Object.values(pack.motionProfile.feet),
+      ...Object.values(pack.motionProfile.legChains).flat(),
+    ]);
+    for (const name of declaredBones) assert.ok(model.includes(`name="${name}"`), `${pack.id} model is missing ${name}`);
+    for (const motion of manifest.motions) {
+      const clip = await readJson(motion.file);
+      for (const source of Object.values(map)) assert.ok(clip.bones[source], `${pack.id}:${motion.id} is missing ${source}`);
+    }
   }
 });

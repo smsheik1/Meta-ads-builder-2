@@ -15,6 +15,21 @@ Root translation is scaled from actual source and target thigh→knee→ankle→
 
 The automatic results are complete. Human review of the combined motion reel was approved August 5, 2026, and all four proof runs were finalized.
 
+## Cross-character Hip Hop proof
+
+The identical 135-frame Hip Hop Dancing motion was rendered on two additional rigs without character-specific renderer code.
+
+| Character | Rig challenge | Mapped bones | Planar root retained | Maximum contact clearance | Face deviation | Automatic quality |
+|---|---|---:|---:|---:|---:|---|
+| Squilliam Fancyson | Four legs and authored non-unit rest quaternions | 31 | 100% | `0.029462` | `0` | Pass |
+| Mr. Krabs | Short ankle-ended legs and claws | 23 | 100% | `0.015565` | `0` | Pass |
+
+The first Squilliam render reported false face drift because its Collada rest quaternions were not normalized; normalizing every captured rest quaternion reduced protected-face deviation from `0.000517` to zero. Its worst mapped-pose discrepancy is a measured `0.001824` radians at `squilliam_elbow_R`, below the rig's bounded `0.002`-radian tolerance.
+
+The first Mr. Krabs render exposed an unreachable planted ankle when a Mixamo hip rotation raised his very short leg base. A profile-bounded vertical root correction now lowers only as much as physical reach requires, while preserving 100% of planar source travel and reporting both required and applied correction. The maximum correction in this clip was `0.086473`, below the declared `0.12` limit.
+
+Both automatic reports await human review of the combined cross-character reel before finalization.
+
 ## Reuse boundary
 
 Future formats import the normalized motion and character profile through the repo runtime. They do not duplicate the retargeting math. A new character needs a verified semantic bone map and its own visual proof; a new Mixamo clip needs only local normalization and validation.

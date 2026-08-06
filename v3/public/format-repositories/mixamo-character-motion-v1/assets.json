@@ -11,7 +11,14 @@
     {"path": "assets/characters/spongebob/tex_0000_spongebob_128.PNG", "role": "character texture"},
     {"path": "assets/characters/spongebob/tx1_0000_lashes.PNG", "role": "transparent facial overlay"},
     {"path": "assets/characters/spongebob/tx8_0000_spongecheeks_32.PNG", "role": "transparent facial overlay"},
-    {"path": "assets/characters/spongebob/tx8_0000_spongeeyes_128.PNG", "role": "transparent eye overlay"}
+    {"path": "assets/characters/spongebob/tx8_0000_spongeeyes_128.PNG", "role": "transparent eye overlay"},
+    {"path": "assets/characters/squilliam/chr_squilliam_bindpose.dae", "role": "four-legged proof character model"},
+    {"path": "assets/characters/squilliam/tex_0000_squilliam_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/squilliam/tex_0000_squilliam_256.PNG", "role": "character texture"},
+    {"path": "assets/characters/squilliam/tx8_0000_squideyes_128.PNG", "role": "transparent eye overlay"},
+    {"path": "assets/characters/mr-krabs/chr_krabs_bindpose.dae", "role": "clawed proof character model"},
+    {"path": "assets/characters/mr-krabs/tex_0000_mrkrabs_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/mr-krabs/tx1_0000_krabslids_128.PNG", "role": "transparent eyelid overlay"}
   ],
   "generated": ["newly imported normalized Mixamo motion JSON", "rendered MP4", "motion report", "contact sheet", "quality report"],
   "sourceNotes": "Character assets come from the user-provided game archive. Motion JSON files are locally normalized from user-downloaded Mixamo Collada clips; source DAE files are not packaged."
