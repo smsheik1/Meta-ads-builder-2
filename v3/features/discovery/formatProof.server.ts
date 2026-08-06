@@ -199,6 +199,7 @@ const formatConfigs: FormatProfileConfig[] = [
       "The examples inside the lesson",
     ],
     handoff: {
+      packagePath: "/format-repositories/otaku-explainer-v1/downloads/wiggly-cartoon-explainer-format-kit.zip",
       requiredInputs: [
         "The topic to explain",
         "A packaged story world",

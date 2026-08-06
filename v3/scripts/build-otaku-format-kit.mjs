@@ -63,6 +63,10 @@ for (const name of await readdir(audioDirectory)) {
 }
 
 await writeFile(path.join(stagingV3, "package.json"), await readFile(path.join(formatRoot, "kit.package.json")));
+await writeFile(
+  path.join(stagingRoot, "START-HERE.md"),
+  `# Start Here\n\nThis is a local runnable Format Kit, not a Wiggly connector, MCP server, or registry tool.\n\nFrom this folder:\n\n\`\`\`bash\ncd v3\nnpm install\nnpm run smoke\n\`\`\`\n\nAfter the free smoke test passes, read \`v3/public/format-repositories/otaku-explainer-v1/SKILL.md\` and follow its agent loop. Never rebuild the packaged renderer.\n`,
+);
 
 const fixedDate = new Date("2026-01-01T00:00:00.000Z");
 const normalizeTimes = async (directory) => {

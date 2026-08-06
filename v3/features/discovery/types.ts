@@ -59,6 +59,7 @@ export type DiscoveryRunEstimate = {
 };
 
 export type DiscoveryFormatHandoff = {
+  packagePath?: string;
   requiredInputs: string[];
   deliverables: string[];
   instructions: string[];

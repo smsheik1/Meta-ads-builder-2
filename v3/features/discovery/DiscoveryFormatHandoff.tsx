@@ -48,16 +48,21 @@ export function DiscoveryFormatHandoff({
         className="flex h-full w-full max-w-[560px] flex-col overflow-y-auto border-l-2 border-[#080817] bg-[#fffdf8] p-0 sm:max-w-[560px]"
       >
         <SheetHeader className="border-b-2 border-[#080817] p-6 pr-14 text-left sm:p-8 sm:pr-14">
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">Use with Codex</p>
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">Use with a coding agent</p>
           <SheetTitle className="text-4xl font-black leading-none text-[#080817]">
             {format.name} <span className="text-[#667087]">v{format.version}</span>
           </SheetTitle>
           <SheetDescription className="text-base font-bold leading-6 text-[#596176]">
-            Wiggly will copy the exact task. Codex will guide the run one short question at a time.
+            Wiggly copies the exact task. Codex, Claude Code, or Cursor can guide the run one short question at a time.
           </SheetDescription>
         </SheetHeader>
 
         <div className="grid gap-7 p-6 sm:p-8">
+          {format.handoff.packagePath ? (
+            <p className="rounded-md border-2 border-[#080817] bg-[#c9ff55] px-4 py-3 text-sm font-black leading-5 text-[#080817]">
+              Requires a coding agent with terminal and file access. This is a runnable download, not a Claude connector.
+            </p>
+          ) : null}
           <section>
             <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">You provide</h3>
             <ul className="mt-3 grid gap-2">
