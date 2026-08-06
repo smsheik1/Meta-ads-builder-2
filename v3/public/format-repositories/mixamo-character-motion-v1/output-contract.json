@@ -1,5 +1,12 @@
 {
   "schemaVersion": 1,
+  "interactiveLab": {
+    "entry": "runtime/renderer/index.html?mode=lab",
+    "characters": 3,
+    "motions": 25,
+    "startupPayload": "manifest plus one active character and one active motion",
+    "controls": ["character selector", "motion selector", "pause", "restart"]
+  },
   "video": {"container": "mp4", "videoCodec": "h264", "width": 1280, "height": 720, "fps": 30, "audio": false},
   "duration": "Exactly one pass over every normalized source frame; no implicit truncation, padding, or looping.",
   "evidence": ["motion-report.json", "contact-sheet.png", "quality-report.json", "state.json"]

@@ -67,6 +67,9 @@ test("random-access frames are deterministic, preserve planar root travel, and p
   const first = retargeter.applyFrame(1);
   const second = retargeter.applyFrame(1);
   assert.deepEqual(second, first);
+  retargeter.resetPose();
+  const afterClipSwitch = createMixamoRetargeter(fixture).applyFrame(1);
+  assert.deepEqual(afterClipSwitch, first);
   assert.equal(first.mappedBoneCount, 35);
   assert.equal(first.appliedRoot[0], first.requestedRoot[0]);
   assert.equal(first.appliedRoot[2], first.requestedRoot[2]);

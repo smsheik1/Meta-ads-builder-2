@@ -10,7 +10,7 @@ const readJson = async (relative) => JSON.parse(await readFile(path.join(root, r
 
 test("all normalized Mixamo clips preserve manifest timing and provenance", async () => {
   const manifest = await readJson("assets/motions/manifest.json");
-  assert.equal(manifest.motions.length, 4);
+  assert.equal(manifest.motions.length, 25);
   for (const record of manifest.motions) {
     const bytes = await readFile(path.join(root, record.file));
     const clip = JSON.parse(bytes);

@@ -3,7 +3,8 @@
   "providers": [],
   "environmentVariables": [],
   "notes": [
-    "Rendering and inspection are free local operations.",
+    "The interactive lab runs locally with npm run lab.",
+    "Rendering, browser smoke testing, and inspection are free local operations.",
     "Importing another motion requires a Mixamo Collada (.dae) download with skin; the source DAE is normalized locally and is not packaged."
   ]
 }

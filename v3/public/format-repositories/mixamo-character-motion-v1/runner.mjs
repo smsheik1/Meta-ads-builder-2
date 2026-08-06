@@ -182,6 +182,12 @@ async function checkRepo() {
   for (const tool of ["node", "npm"]) await execute(tool, ["--version"], { capture: true });
   for (const tool of ["ffmpeg", "ffprobe"]) await execute(tool, ["-version"], { capture: true });
   for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json"]) await readJson(path.join(root, file));
+  for (const file of [
+    "runtime/serve-lab.mjs",
+    "runtime/static-server.mjs",
+    "runtime/vendor/three.module.js",
+    "runtime/vendor/loaders/ColladaLoader.js",
+  ]) await access(path.join(root, file));
   const { manifest, characters } = await catalogs();
   if (manifest.motions.length < 2) throw new Error("Format needs at least two normalized proof motions.");
   if (!characters.packs.some((pack) => pack.status === "motion-ready")) throw new Error("Format needs a motion-ready character.");
@@ -208,6 +214,7 @@ async function smoke() {
     "--report=agent-runs/_smoke/motion-report.json",
     "--smoke",
   ]);
+  await execute("node", ["runtime/scripts/smoke-lab.mjs"]);
   console.log(path.join(directory, "smoke.mp4"));
 }
 

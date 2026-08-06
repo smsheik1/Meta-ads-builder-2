@@ -2,6 +2,8 @@
 
 The v0.1 baseline was verified August 5, 2026 against four user-downloaded Mixamo Collada clips and the user-provided SpongeBob game model. Version 0.2 re-normalizes those same source clips against Mixamo's inverse-bind matrices and adds current cross-character acceptance proofs for Squilliam and Mr. Krabs.
 
+Version 0.3 adds 21 user-downloaded Mixamo clips for a 25-motion catalog and exposes the three accepted rigs in an interactive audition lab. The catalog is exploratory: the original four and cross-character Hip Hop proofs retain their acceptance status, while the 21 new motions are available for rapid visual triage rather than pre-labeled as perfect.
+
 | Motion | Original frames | Exact duration | Mapped bones | Planar root retained | Automatic quality |
 |---|---:|---:|---:|---:|---|
 | Hip Hop Dancing | 135 | 4.500 s | 35 | 100% | Pass |
@@ -35,3 +37,9 @@ The v0.2 Squilliam and Mr. Krabs reports pass every automatic gate. Full playbac
 ## Reuse boundary
 
 Future formats import the normalized motion and character profile through the repo runtime. They do not duplicate the retargeting math. For a motion-ready character, a new standard Mixamo Collada clip needs local import, selection, validation, render, and inspection—no Blender or manual keyframing. A new character still needs a verified semantic bone map and its own visual proof.
+
+## Interactive lab proof
+
+Browser verification at 1440×900 confirmed a responsive 5×5 selector with all 25 motions and all three verified characters. Startup loaded one character and one motion. Selecting Chicken Dance and Mr. Krabs increased the caches to two characters and two motions; selecting Northern Soul Spin Combo and Squilliam increased them to three and three. This demonstrates manifest-first lazy loading rather than downloading all motion payloads on entry.
+
+The same browser pass confirmed colored textures, visible eyes, Squilliam's joined two-leg reading, motion switching, character switching, pause, and restart. The renderer waits for each Collada loading manager—including textures—before exposing a character. Music, beat analysis, scoring, and transition choreography remain outside this proof.

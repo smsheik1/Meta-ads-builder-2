@@ -1,16 +1,15 @@
 {
   "schemaVersion": 1,
   "fixed": [
-    "One official Three.js renderer and Playwright frame runner",
+    "One shared Three.js renderer for the interactive lab and video output",
+    "Responsive selector with three verified characters and 25 normalized motions",
+    "Manifest-first startup with only the active character and motion payload loaded",
     "Mixamo inverse-bind world-delta motion schema",
-    "Character-specific semantic bone map",
-    "Character-profile pairing for extra limbs that should read as one leg",
-    "Exact source frame count and frame rate",
-    "Leg-length-scaled root translation",
-    "Deterministic source-foot grounding",
-    "Protected facial and eye transforms",
-    "1280x720 full-body stage"
+    "Character semantic bone maps and paired-limb profiles",
+    "Exact source timing, scaled root travel, deterministic foot grounding, and protected facial transforms",
+    "1280x720 full-body video stage"
   ],
   "replaceable": ["verified characterId", "normalized motionId", "title", "background"],
-  "rendererInvariant": "Preview, proof, and final output render through runtime/renderer/app.js and runtime/render.mjs. Do not rebuild or substitute the retargeter."
+  "outOfScope": ["music upload", "beat detection", "beat-synced sequencing", "motion ratings", "automatic transitions"],
+  "rendererInvariant": "The interactive lab and deterministic video output both render through runtime/renderer/app.js. Do not rebuild or substitute the retargeter."
 }

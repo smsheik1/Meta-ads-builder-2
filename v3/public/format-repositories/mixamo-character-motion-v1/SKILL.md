@@ -1,15 +1,16 @@
 ---
-name: mixamo-character-motion
-description: "Import a Mixamo Collada motion, retarget it onto a verified Wiggly character, render the exact clip, inspect grounding and facial stability, and finalize only after human motion review."
+name: character-dance-lab
+description: "Audition 25 normalized Mixamo motions on verified Wiggly characters, render selected clips, inspect grounding and facial stability, and finalize only after human review."
 ---
 
-# Mixamo Character Motion
+# Character Dance Lab
 
 1. Run `npm run check` and `npm run smoke` before real work.
-2. Use an existing ID from `assets/motions/manifest.json`, or import a user-downloaded Mixamo `.dae` with `node runner.mjs import-motion`; the importer must preserve the inverse-bind reference pose.
-3. Run `init`, edit only the run's `input.json`, then run `validate` before rendering.
-4. Use `render` and `inspect`; never replace `runtime/renderer/app.js`, `runtime/renderer/mixamo-retarget.js`, or `runtime/render.mjs`.
-5. Inspect the actual MP4 and contact sheet. Fix only observed character-profile or runtime problems, with at most three render attempts.
-6. Run `finalize --human-review=pass` only after a person approves the motion identity, feet, eyes, intersections, and usefulness.
+2. Run `npm run lab`, audition the catalog, and note the chosen character and motion IDs.
+3. Use an existing ID from `assets/motions/manifest.json`, or import a user-downloaded Mixamo `.dae` with `node runner.mjs import-motion`; preserve the inverse-bind reference pose.
+4. Run `init`, edit only the run's `input.json`, and run `validate` before rendering.
+5. Use `render` and `inspect`; do not substitute the shared renderer or retargeter.
+6. Inspect the MP4 and contact sheet. Fix only observed profile/runtime problems, with at most three render attempts.
+7. Run `finalize --human-review=pass` only after a person approves motion identity, feet, eyes, intersections, and usefulness.
 
-Do not copy Mixamo source `.dae` files into the package. Do not truncate or loop clips to fit an arbitrary duration.
+Do not copy Mixamo source `.dae` files into the package. Do not eagerly load the 25 motion payloads. Do not truncate or loop clips to fit an arbitrary duration.

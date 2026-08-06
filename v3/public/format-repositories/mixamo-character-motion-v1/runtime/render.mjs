@@ -1,11 +1,10 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
 import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
-import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { startStaticServer } from "./static-server.mjs";
 
 const formatRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -33,43 +32,6 @@ function insideRoot(file) {
     throw new Error(`Path must stay inside the Format Repo: ${file}`);
   }
   return resolved;
-}
-
-function mimeType(file) {
-  return ({
-    ".html": "text/html; charset=utf-8",
-    ".js": "text/javascript; charset=utf-8",
-    ".mjs": "text/javascript; charset=utf-8",
-    ".json": "application/json; charset=utf-8",
-    ".png": "image/png",
-    ".dae": "model/vnd.collada+xml",
-  })[path.extname(file).toLowerCase()] || "application/octet-stream";
-}
-
-async function startServer() {
-  const server = createServer(async (request, response) => {
-    try {
-      const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
-      if (pathname === "/favicon.ico") {
-        response.writeHead(204);
-        response.end();
-        return;
-      }
-      const file = insideRoot(path.join(formatRoot, pathname));
-      const info = await stat(file);
-      if (!info.isFile()) throw new Error("Not a file");
-      response.writeHead(200, { "Content-Type": mimeType(file), "Cache-Control": "no-store" });
-      createReadStream(file).pipe(response);
-    } catch {
-      response.writeHead(404, { "Content-Type": "text/plain" });
-      response.end("Not found");
-    }
-  });
-  await new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
-  });
-  return server;
 }
 
 function publicPath(file) {
@@ -139,7 +101,7 @@ const frameDirectory = path.join(workDirectory, `frames-${fingerprint.digest("he
 await mkdir(frameDirectory, { recursive: true });
 await mkdir(path.dirname(outputPath), { recursive: true });
 
-const server = await startServer();
+const server = await startStaticServer(formatRoot);
 const diagnostics = [];
 let info;
 let browser;

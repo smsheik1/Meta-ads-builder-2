@@ -394,6 +394,7 @@ export function createMixamoRetargeter({ characterRoot, character, profile, clip
     fps: clip.fps,
     mappedBoneCount: mapped.length,
     motionScale,
+    resetPose,
     targetLegLength,
     sourceLegLength,
   };
