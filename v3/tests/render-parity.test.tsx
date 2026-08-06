@@ -425,7 +425,8 @@ assert.ok(
 assert.ok(
   remotionSource.includes("@remotion/media") &&
     remotionSource.includes("<Audio") &&
-    remotionSource.includes("motionStoryMusicSrc") &&
+    remotionSource.includes("getRenderMusicBed") &&
+    remotionSource.includes("musicBedSrc") &&
     remotionSource.includes("RemotionImageAsset") &&
     remotionSource.includes("resolveRenderAssetSrc") &&
     remotionSource.includes("OffthreadVideo") &&
