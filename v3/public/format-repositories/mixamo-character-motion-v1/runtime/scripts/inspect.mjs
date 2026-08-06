@@ -82,6 +82,36 @@ const checks = {
     actual: motionReport.retarget.maximumProtectedScaleDeviation,
     maximum: automatic.maximumProtectedScaleDeviation,
   },
+  mappedPoseFidelity: {
+    pass: motionReport.retarget.maximumPreConstraintMappedWorldAngularError <= automatic.maximumPreConstraintMappedWorldAngularError,
+    actual: motionReport.retarget.maximumPreConstraintMappedWorldAngularError,
+    maximum: automatic.maximumPreConstraintMappedWorldAngularError,
+  },
+  contactFootVerticalError: {
+    pass: motionReport.retarget.maximumContactVerticalError <= automatic.maximumContactVerticalError,
+    actual: motionReport.retarget.maximumContactVerticalError,
+    maximum: automatic.maximumContactVerticalError,
+  },
+  contactFootGroundClearance: {
+    pass: motionReport.retarget.maximumContactGroundClearance <= automatic.maximumContactGroundClearance,
+    actual: motionReport.retarget.maximumContactGroundClearance,
+    maximum: automatic.maximumContactGroundClearance,
+  },
+  footTargetError: {
+    pass: motionReport.retarget.maximumFootTargetError <= automatic.maximumFootTargetError,
+    actual: motionReport.retarget.maximumFootTargetError,
+    maximum: automatic.maximumFootTargetError,
+  },
+  physicalFootReach: {
+    pass: motionReport.retarget.maximumFootReachRatio <= automatic.maximumFootReachRatio,
+    actual: motionReport.retarget.maximumFootReachRatio,
+    maximum: automatic.maximumFootReachRatio,
+  },
+  rootScale: {
+    pass: motionReport.retarget.maximumRootScaleError <= automatic.maximumRootScaleError,
+    actual: motionReport.retarget.maximumRootScaleError,
+    maximum: automatic.maximumRootScaleError,
+  },
   rootTravel: {
     pass: motionReport.retarget.rootTravelRetention >= automatic.minimumRootTravelRetention
       && motionReport.retarget.rootTravelRetention <= automatic.maximumRootTravelRetention,

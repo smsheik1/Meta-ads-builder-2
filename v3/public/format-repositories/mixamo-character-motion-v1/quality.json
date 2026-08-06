@@ -6,6 +6,12 @@
     "maximumFootPenetration": 0.015,
     "maximumProtectedTransformDeviation": 0.000001,
     "maximumProtectedScaleDeviation": 0.000001,
+    "maximumPreConstraintMappedWorldAngularError": 0.001,
+    "maximumContactVerticalError": 0.05,
+    "maximumContactGroundClearance": 0.05,
+    "maximumFootTargetError": 0.075,
+    "maximumFootReachRatio": 1.000001,
+    "maximumRootScaleError": 0.000001,
     "minimumRootTravelRetention": 0.6,
     "maximumRootTravelRetention": 1.4,
     "maximumAttempts": 3

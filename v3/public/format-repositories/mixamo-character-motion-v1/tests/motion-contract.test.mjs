@@ -22,6 +22,12 @@ test("all normalized Mixamo clips preserve manifest timing and provenance", asyn
     assert.equal(clip.root.positions.length, clip.frameCount * 3);
     assert.equal(clip.feet.left.contacts.length, clip.frameCount);
     assert.equal(clip.feet.right.contacts.length, clip.frameCount);
+    assert.equal(clip.feet.left.upperLegToFootVectors.length, clip.frameCount * 3);
+    assert.equal(clip.feet.right.upperLegToFootVectors.length, clip.frameCount * 3);
+    assert.ok(Number.isFinite(clip.feet.left.floorOffsetFromRestMeters));
+    assert.ok(Number.isFinite(clip.feet.right.floorOffsetFromRestMeters));
+    assert.ok(clip.metrics.sourceLegLengthsMeters.left > 0);
+    assert.ok(clip.metrics.sourceLegLengthsMeters.right > 0);
     assert.equal(createHash("sha256").update(bytes).digest("hex"), record.normalizedSha256);
     assert.equal(clip.source.sha256, record.sourceSha256);
   }

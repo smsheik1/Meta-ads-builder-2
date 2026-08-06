@@ -118,6 +118,7 @@ const manifest = JSON.parse(await readFile(path.join(formatRoot, "assets/motions
 const motionRecord = manifest.motions.find((motion) => motion.id === input.motionId);
 if (!motionRecord) throw new Error(`Unknown motion: ${input.motionId}`);
 const motionPath = insideRoot(path.join(formatRoot, motionRecord.file));
+const normalizedMotion = JSON.parse(await readFile(motionPath, "utf8"));
 const characterCatalogPath = path.join(formatRoot, "assets/character-packs.json");
 const catalog = JSON.parse(await readFile(characterCatalogPath, "utf8"));
 const characterPack = catalog.packs.find((candidate) => candidate.id === input.characterId);
@@ -202,6 +203,14 @@ const requestedExtent = extent(diagnostics.map((frame) => frame.requestedRoot));
 const appliedExtent = extent(diagnostics.map((frame) => frame.appliedRoot));
 const requestedPlanarTravel = planarMagnitude(requestedExtent);
 const appliedPlanarTravel = planarMagnitude(appliedExtent);
+const rootGain = characterPack.motionProfile.rootMotionGain || [1, 1, 1];
+const maximumRootScaleError = Math.max(...diagnostics.flatMap((frame) => {
+  const offset = frame.frame * 3;
+  return [0, 1, 2].map((axis) => Math.abs(
+    frame.requestedRoot[axis]
+    - normalizedMotion.root.positions[offset + axis] * frame.motionScale * rootGain[axis]
+  ));
+}));
 const report = {
   schemaVersion: 1,
   renderer: "runtime/renderer/app.js",
@@ -230,10 +239,27 @@ const report = {
     requestedRootExtent: requestedExtent,
     appliedRootExtent: appliedExtent,
     rootTravelRetention: requestedPlanarTravel > 1e-9 ? appliedPlanarTravel / requestedPlanarTravel : 1,
+    maximumRootScaleError,
     maximumFootPenetration: Math.max(...diagnostics.map((frame) => frame.feet.penetration)),
-    maximumFootPenetrationBeforeClamp: Math.max(...diagnostics.map((frame) => frame.feet.penetrationBeforeClamp)),
     maximumProtectedTransformDeviation: Math.max(...diagnostics.map((frame) => frame.protectedTransformDeviation)),
     maximumProtectedScaleDeviation: Math.max(...diagnostics.map((frame) => frame.protectedScaleDeviation)),
+    maximumPreConstraintMappedWorldAngularError: Math.max(...diagnostics.map((frame) => frame.preConstraintMappedWorldAngularError)),
+    maximumContactVerticalError: Math.max(...diagnostics.flatMap((frame) => [
+      frame.contactVerticalErrors.left,
+      frame.contactVerticalErrors.right,
+    ])),
+    maximumContactGroundClearance: Math.max(...diagnostics.flatMap((frame) => [
+      frame.contactGroundClearances.left,
+      frame.contactGroundClearances.right,
+    ])),
+    maximumFootTargetError: Math.max(...diagnostics.flatMap((frame) => [
+      frame.footTargetErrors.left,
+      frame.footTargetErrors.right,
+    ])),
+    maximumFootReachRatio: Math.max(...diagnostics.flatMap((frame) => [
+      frame.footReachRatios.left,
+      frame.footReachRatios.right,
+    ])),
     contactFrames: {
       left: diagnostics.filter((frame) => frame.contacts.left).length,
       right: diagnostics.filter((frame) => frame.contacts.right).length,

@@ -10,7 +10,7 @@
       "durationSeconds": 4.5,
       "sourceFileName": "Hip Hop Dancing.dae",
       "sourceSha256": "1082323b497715865555afda684ad97b88a688ecf20a177f96d80fb04d6dd10a",
-      "normalizedSha256": "49bf8fc79caf5b1bf339f1420f474754dae769263f393193476545b425c3f1dd"
+      "normalizedSha256": "0266de23db5fdf5e16e4a1d50ed1e7f8f5b837ff3a4c793dba31a10dab4d7544"
     },
     {
       "id": "joyful-jump",
@@ -21,7 +21,7 @@
       "durationSeconds": 1.9,
       "sourceFileName": "Joyful Jump.dae",
       "sourceSha256": "fc1fededcef692ee56b3f9f6bea45d6fef49079cc7a9cdbf0beddf4f0c362bc7",
-      "normalizedSha256": "c55e20fc7fd433c604672b8a9b7c54d4a11c673d1097e98c9b2370d14bdae808"
+      "normalizedSha256": "d2ab0fc9f9f143a61f9d7e04ecadc8d259b8ba189c2ebe77361254941427ba66"
     },
     {
       "id": "taunt",
@@ -32,7 +32,7 @@
       "durationSeconds": 2.866667,
       "sourceFileName": "Taunt.dae",
       "sourceSha256": "601896850120d26a6b92978afc185bbc433e3f3964a50c59d51afd07a6213571",
-      "normalizedSha256": "c2541ba0dfaf1c9d7772e8d96db229f7bab1695719c79be81acc4a0e59c18d26"
+      "normalizedSha256": "70d1d83a5dfc5f7770a726dd4406a1768944230acd30a30faeefc023de5adc06"
     },
     {
       "id": "silly-dancing",
@@ -43,7 +43,7 @@
       "durationSeconds": 3.866667,
       "sourceFileName": "Silly Dancing.dae",
       "sourceSha256": "e37784500f71b61aa2df6e3c353fca3b5aeceb10c0c6346f663e2280bf6b13bd",
-      "normalizedSha256": "2e5d67b3c40752b04767e4b29c79ea7d16f6fa2193c0f0c0bf9616ec4f6981ed"
+      "normalizedSha256": "2eb9d6ea1e79100de49b9f29fbdd4451e712bef0bdeeb05f16bfa5227cacb411"
     }
   ]
 }

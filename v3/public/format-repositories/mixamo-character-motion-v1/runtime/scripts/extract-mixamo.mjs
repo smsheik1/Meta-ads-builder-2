@@ -132,12 +132,16 @@ const positionAt = (bone, frame) => new Vector3().setFromMatrixPosition(worldByF
 const rootName = "mixamorig_Hips";
 const leftFootName = boneNames.includes("mixamorig_LeftToeBase") ? "mixamorig_LeftToeBase" : "mixamorig_LeftFoot";
 const rightFootName = boneNames.includes("mixamorig_RightToeBase") ? "mixamorig_RightToeBase" : "mixamorig_RightFoot";
+const leftUpperLegName = "mixamorig_LeftUpLeg";
+const rightUpperLegName = "mixamorig_RightUpLeg";
 const rootRest = positionAt(rootName, 0);
 const leftRest = positionAt(leftFootName, 0);
 const rightRest = positionAt(rightFootName, 0);
 const roots = Array.from({ length: frameCount }, (_, frame) => positionAt(rootName, frame).sub(rootRest));
 const leftFeet = Array.from({ length: frameCount }, (_, frame) => positionAt(leftFootName, frame).sub(leftRest));
 const rightFeet = Array.from({ length: frameCount }, (_, frame) => positionAt(rightFootName, frame).sub(rightRest));
+const leftUpperLegToFoot = Array.from({ length: frameCount }, (_, frame) => positionAt(leftFootName, frame).sub(positionAt(leftUpperLegName, frame)));
+const rightUpperLegToFoot = Array.from({ length: frameCount }, (_, frame) => positionAt(rightFootName, frame).sub(positionAt(rightUpperLegName, frame)));
 const absoluteLeftY = Array.from({ length: frameCount }, (_, frame) => positionAt(leftFootName, frame).y);
 const absoluteRightY = Array.from({ length: frameCount }, (_, frame) => positionAt(rightFootName, frame).y);
 const floorY = Math.min(...absoluteLeftY, ...absoluteRightY);
@@ -148,7 +152,14 @@ const contactsFor = (absoluteY) => absoluteY.map((value, index) => {
   const verticalSpeed = Math.abs(after - before) * fps * 0.5;
   return value <= floorY + contactThreshold && verticalSpeed <= 0.45 ? 1 : 0;
 });
-const sourceLegLengthMeters = round((rootRest.distanceTo(leftRest) + rootRest.distanceTo(rightRest)) * 0.5);
+const legLengthAtRest = (names) => names.slice(1).reduce((total, name, index) => (
+  total + positionAt(names[index], 0).distanceTo(positionAt(name, 0))
+), 0);
+const sourceLegLengthsMeters = {
+  left: round(legLengthAtRest([leftUpperLegName, "mixamorig_LeftLeg", "mixamorig_LeftFoot", leftFootName])),
+  right: round(legLengthAtRest([rightUpperLegName, "mixamorig_RightLeg", "mixamorig_RightFoot", rightFootName])),
+};
+const sourceLegLengthMeters = round((sourceLegLengthsMeters.left + sourceLegLengthsMeters.right) * 0.5);
 const rootRanges = {
   x: range(roots.map((value) => value.x)),
   y: range(roots.map((value) => value.y)),
@@ -170,11 +181,25 @@ const output = {
     unitMeter,
     importedAt: new Date().toISOString(),
   },
-  metrics: { sourceLegLengthMeters, rootRangesMeters: rootRanges },
+  metrics: { sourceLegLengthMeters, sourceLegLengthsMeters, rootRangesMeters: rootRanges },
   root: { bone: rootName, positions: flattenVectors(roots) },
   feet: {
-    left: { bone: leftFootName, positions: flattenVectors(leftFeet), contacts: contactsFor(absoluteLeftY) },
-    right: { bone: rightFootName, positions: flattenVectors(rightFeet), contacts: contactsFor(absoluteRightY) },
+    left: {
+      bone: leftFootName,
+      positions: flattenVectors(leftFeet),
+      upperLegBone: leftUpperLegName,
+      upperLegToFootVectors: flattenVectors(leftUpperLegToFoot),
+      floorOffsetFromRestMeters: round(floorY - positionAt(leftFootName, 0).y),
+      contacts: contactsFor(absoluteLeftY),
+    },
+    right: {
+      bone: rightFootName,
+      positions: flattenVectors(rightFeet),
+      upperLegBone: rightUpperLegName,
+      upperLegToFootVectors: flattenVectors(rightUpperLegToFoot),
+      floorOffsetFromRestMeters: round(floorY - positionAt(rightFootName, 0).y),
+      contacts: contactsFor(absoluteRightY),
+    },
   },
   bones,
 };

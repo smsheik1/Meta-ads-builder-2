@@ -15,6 +15,10 @@
         "profile": "mixamo-humanoid-world-delta-v1",
         "rootBone": "bob_sub_root",
         "feet": {"left": "bob_toe_L", "right": "bob_toe_R"},
+        "legChains": {
+          "left": ["bob_thigh_L", "bob_knee_L", "bob_ankle_L"],
+          "right": ["bob_thigh_R", "bob_knee_R", "bob_ankle_R"]
+        },
         "rootMotionGain": [1, 1, 1],
         "boneMap": {
           "bob_sub_root": "mixamorig_Hips",

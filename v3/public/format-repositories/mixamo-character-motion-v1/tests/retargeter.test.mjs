@@ -30,11 +30,11 @@ function syntheticFixture() {
     kind: "mixamo-world-delta-v1",
     fps: 30,
     frameCount: 2,
-    metrics: { sourceLegLengthMeters: 2 },
+    metrics: { sourceLegLengthMeters: 2, sourceLegLengthsMeters: { left: 2, right: 2 } },
     root: { positions: [0, 0, 0, 1, 2, 3] },
     feet: {
-      left: { positions: [0, 0, 0, 1, 2, 3], contacts: [1, 1] },
-      right: { positions: [0, 0, 0, 1, 2, 3], contacts: [1, 1] },
+      left: { positions: [0, 0, 0, 1, 2, 3], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
+      right: { positions: [0, 0, 0, 1, 2, 3], upperLegToFootVectors: [0, -2, 0, 0, -2, 0], floorOffsetFromRestMeters: 0, contacts: [1, 1] },
     },
     bones,
   };
@@ -46,6 +46,7 @@ function syntheticFixture() {
     profile: {
       rootBone: "root",
       feet: { left: "left-foot", right: "right-foot" },
+      legChains: { left: ["body-0", "body-1"], right: ["body-2", "body-3"] },
       rootMotionGain: [1, 1, 1],
       boneMap,
       protectedBones: ["protected-eye"],
@@ -67,8 +68,11 @@ test("random-access frames are deterministic, preserve planar root travel, and p
   assert.equal(first.mappedBoneCount, 35);
   assert.equal(first.appliedRoot[0], first.requestedRoot[0]);
   assert.equal(first.appliedRoot[2], first.requestedRoot[2]);
+  assert.ok(first.footReachRatios.left <= 1 + 1e-6);
+  assert.ok(first.footReachRatios.right <= 1 + 1e-6);
   assert.ok(first.feet.penetration <= 1e-12);
   assert.ok(first.protectedTransformDeviation <= 1e-6);
+  assert.ok(first.preConstraintMappedWorldAngularError <= 1e-6);
   assert.ok(fixture.face.position.equals(eyeRest.position));
   assert.ok(fixture.face.quaternion.equals(eyeRest.quaternion));
   assert.ok(fixture.face.scale.equals(eyeRest.scale));
