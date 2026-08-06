@@ -13,7 +13,7 @@ Every official clip is 1280×720 H.264 at 30 fps with no audio. Each consumes ev
 
 Root translation is scaled from actual source and target thigh→knee→ankle→toe chain lengths with zero measured scale error. Foot direction and extension are normalized to the target chain before deterministic FABRIK solving; measured reach never exceeds 100%, so an unusually proportioned character is never assigned an unreachable foot target.
 
-The automatic results are complete. Human review of the combined motion reel remains the finalization gate.
+The automatic results are complete. Human review of the combined motion reel was approved August 5, 2026, and all four proof runs were finalized.
 
 ## Reuse boundary
 
