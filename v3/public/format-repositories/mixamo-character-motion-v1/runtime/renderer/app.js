@@ -157,4 +157,3 @@ window.addEventListener("error", (event) => {
   error.style.display = "grid";
   error.textContent = event.error?.stack || event.message;
 });
-

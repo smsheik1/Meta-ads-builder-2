@@ -73,4 +73,3 @@ test("random-access frames are deterministic, preserve planar root travel, and p
   assert.ok(fixture.face.quaternion.equals(eyeRest.quaternion));
   assert.ok(fixture.face.scale.equals(eyeRest.scale));
 });
-

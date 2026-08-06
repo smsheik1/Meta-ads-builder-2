@@ -63,4 +63,3 @@ try {
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }
-
