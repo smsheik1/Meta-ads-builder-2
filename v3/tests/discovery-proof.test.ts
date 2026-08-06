@@ -21,7 +21,7 @@ for (const entry of discoveryCatalog) {
 const threeD = getDiscoveryFormatProfile("three-d-breakdown");
 assert.ok(threeD, "3D Breakdown should have a consumer Format proof.");
 assert.equal(threeD.version, "1.5.0");
-assert.equal(threeD.proofEntries.length, 5, "3D Breakdown should show all five real proof outputs separately.");
+assert.equal(threeD.proofEntries.length, 6, "3D Breakdown should show all six real proof outputs separately.");
 assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 
 const mugsyExplains = getDiscoveryFormatProfile("mugsy-explains");
