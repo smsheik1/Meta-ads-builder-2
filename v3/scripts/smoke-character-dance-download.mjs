@@ -5,6 +5,8 @@ import path from "node:path";
 import { chromium } from "playwright";
 
 const pageUrl = process.env.DANCE_LAB_URL || "http://localhost:3020/format-lab/character-dance-lab";
+const characterId = process.env.DANCE_CHARACTER || "squilliam";
+const motionId = process.env.DANCE_MOTION || "rumba-dancing";
 const outputDirectory = path.join(tmpdir(), "wiggly-character-dance-download-smoke");
 await rm(outputDirectory, { recursive: true, force: true });
 await mkdir(outputDirectory, { recursive: true });
@@ -20,10 +22,10 @@ try {
   const lab = await page.locator('iframe[title="Interactive Character Dance Lab"]').count()
     ? page.frameLocator('iframe[title="Interactive Character Dance Lab"]')
     : page;
-  await lab.locator('[data-character-id="squilliam"]').click();
-  await lab.locator('[data-motion-id="rumba-dancing"]').click();
-  await lab.locator("#lab-shell").evaluate((element) => new Promise((resolve) => {
-    const ready = () => element.dataset.characterId === "squilliam" && element.dataset.motionId === "rumba-dancing";
+  await lab.locator(`#character-selector [data-character-id="${characterId}"]`).click();
+  await lab.locator(`#motion-grid [data-motion-id="${motionId}"]`).click();
+  await lab.locator("#lab-shell").evaluate((element, selection) => new Promise((resolve) => {
+    const ready = () => element.dataset.characterId === selection.characterId && element.dataset.motionId === selection.motionId;
     if (ready()) return resolve();
     const observer = new MutationObserver(() => {
       if (!ready()) return;
@@ -31,7 +33,7 @@ try {
       resolve();
     });
     observer.observe(element, { attributes: true });
-  }));
+  }), { characterId, motionId });
 
   const outputs = {};
   for (const format of ["mp4", "gif"]) {
@@ -40,10 +42,10 @@ try {
       page.waitForEvent("download", { timeout: 300_000 }),
       lab.locator(`[data-export-format="${format}"]`).click(),
     ]);
-    const output = path.join(outputDirectory, `squilliam-rumba-dancing.${format}`);
+    const output = path.join(outputDirectory, `${characterId}-${motionId}.${format}`);
     await download.saveAs(output);
     assert.equal(await download.failure(), null);
-    assert.equal(download.suggestedFilename(), `squilliam-rumba-dancing.${format}`);
+    assert.equal(download.suggestedFilename(), `${characterId}-${motionId}.${format}`);
     outputs[format] = output;
     await lab.locator("#download-toggle").waitFor({ state: "visible" });
     await lab.locator("#download-toggle").evaluate((button) => new Promise((resolve) => {
@@ -62,7 +64,7 @@ try {
   assert.match(gif.subarray(0, 6).toString("ascii"), /^GIF8[79]a$/);
   assert.ok(mp4.length > 50_000);
   assert.ok(gif.length > 50_000);
-  console.log(JSON.stringify({ status: "pass", character: "squilliam", motion: "rumba-dancing", outputs, bytes: { mp4: mp4.length, gif: gif.length } }, null, 2));
+  console.log(JSON.stringify({ status: "pass", character: characterId, motion: motionId, outputs, bytes: { mp4: mp4.length, gif: gif.length } }, null, 2));
 } finally {
   await browser.close();
 }

@@ -6,7 +6,7 @@ const repository = "/format-repositories/mixamo-character-motion-v1";
 
 export const metadata: Metadata = {
   title: "Character Dance Lab — Wiggly",
-  description: "Audition 25 Mixamo motions on SpongeBob, Squilliam Fancyson, and Mr. Krabs.",
+  description: "Audition 25 Mixamo motions on SpongeBob, Squilliam Fancyson, Mr. Krabs, and Patrick Star.",
 };
 
 export default function CharacterDanceLabPage() {

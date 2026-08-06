@@ -261,6 +261,70 @@
         ]
       },
       "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Mr. Krabs.zip"
+    },
+    {
+      "id": "patrick",
+      "label": "Patrick Star",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/patrick/chr_pat_bindpose.dae",
+      "scale": 2.1,
+      "transparentTextures": [
+        "tx1_0000_lidpatrick.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed_001",
+        "unnamed_002"
+      ],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 13,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "pat_root_joint",
+        "feet": {
+          "left": "pat_foot_L",
+          "right": "pat_foot_R"
+        },
+        "legChains": {
+          "left": [
+            "pat_thigh_L",
+            "pat_calf_L"
+          ],
+          "right": [
+            "pat_thigh_R",
+            "pat_calf_R"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.14,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "pat_root_joint": "mixamorig_Hips",
+          "pat_chest": "mixamorig_Spine2",
+          "pat_head": "mixamorig_Head",
+          "pat_clavicle_L": "mixamorig_LeftShoulder",
+          "pat_bicep_L": "mixamorig_LeftArm",
+          "pat_elbow_L": "mixamorig_LeftForeArm",
+          "pat_wrist_L": "mixamorig_LeftHand",
+          "pat_clavicle_R": "mixamorig_RightShoulder",
+          "pat_bicep_R": "mixamorig_RightArm",
+          "pat_elbow_R": "mixamorig_RightForeArm",
+          "pat_wrist_R": "mixamorig_RightHand",
+          "pat_thigh_L": "mixamorig_LeftUpLeg",
+          "pat_thigh_R": "mixamorig_RightUpLeg"
+        },
+        "protectedBones": [
+          "pat_eye_L",
+          "pat_eye_R",
+          "pat_forehead",
+          "pat_brow_L",
+          "pat_brow_R",
+          "pat_whippy_bit",
+          "pat_jaw",
+          "pat_lip_lower",
+          "pat_lip_upper"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Patrick.zip"
     }
   ]
 }

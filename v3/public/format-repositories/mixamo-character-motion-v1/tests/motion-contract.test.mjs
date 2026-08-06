@@ -46,7 +46,7 @@ test("every character profile maps its available full body while excluding prote
   const catalog = await readJson("assets/character-packs.json");
   const manifest = await readJson("assets/motions/manifest.json");
   const inputContract = await readJson("input-contract.json");
-  assert.deepEqual(catalog.packs.map((pack) => pack.id), ["spongebob", "squilliam", "mr-krabs"]);
+  assert.deepEqual(catalog.packs.map((pack) => pack.id), ["spongebob", "squilliam", "mr-krabs", "patrick"]);
   assert.deepEqual(inputContract.properties.characterId.enum, catalog.packs.map((pack) => pack.id));
   for (const pack of catalog.packs) {
     const map = pack.motionProfile.boneMap;
@@ -74,4 +74,21 @@ test("every character profile maps its available full body while excluding prote
       for (const source of Object.values(map)) assert.ok(clip.bones[source], `${pack.id}:${motion.id} is missing ${source}`);
     }
   }
+});
+
+test("Patrick delegates authored scale-helper legs to shared IK and protects his face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const patrick = catalog.packs.find((pack) => pack.id === "patrick");
+  assert.ok(patrick);
+  assert.deepEqual(patrick.motionProfile.legChains, {
+    left: ["pat_thigh_L", "pat_calf_L"],
+    right: ["pat_thigh_R", "pat_calf_R"],
+  });
+  for (const bone of ["pat_calf_L", "pat_foot_L", "pat_calf_R", "pat_foot_R"]) {
+    assert.equal(patrick.motionProfile.boneMap[bone], undefined, `${bone} must be driven by the shared foot IK`);
+  }
+  for (const bone of ["pat_eye_L", "pat_eye_R", "pat_brow_L", "pat_brow_R", "pat_jaw", "pat_lip_lower", "pat_lip_upper"]) {
+    assert.ok(patrick.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  assert.equal(patrick.motionProfile.maximumVerticalRootCorrection, 0.14);
 });
