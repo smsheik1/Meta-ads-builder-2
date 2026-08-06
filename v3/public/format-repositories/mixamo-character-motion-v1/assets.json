@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    {"path": "assets/character-packs.json", "role": "verified character rig profiles"},
+    {"path": "assets/motions/manifest.json", "role": "normalized motion registry"},
+    {"path": "assets/motions/hip-hop-dancing.json", "role": "normalized exact-frame Mixamo proof motion"},
+    {"path": "assets/motions/joyful-jump.json", "role": "normalized exact-frame Mixamo proof motion"},
+    {"path": "assets/motions/taunt.json", "role": "normalized exact-frame Mixamo proof motion"},
+    {"path": "assets/motions/silly-dancing.json", "role": "normalized exact-frame Mixamo proof motion"},
+    {"path": "assets/characters/spongebob/chr_bob_bindpose.dae", "role": "proof character model"},
+    {"path": "assets/characters/spongebob/tex_0000_spongebob_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/spongebob/tx1_0000_lashes.PNG", "role": "transparent facial overlay"},
+    {"path": "assets/characters/spongebob/tx8_0000_spongecheeks_32.PNG", "role": "transparent facial overlay"},
+    {"path": "assets/characters/spongebob/tx8_0000_spongeeyes_128.PNG", "role": "transparent eye overlay"}
+  ],
+  "generated": ["newly imported normalized Mixamo motion JSON", "rendered MP4", "motion report", "contact sheet", "quality report"],
+  "sourceNotes": "Character assets come from the user-provided game archive. Motion JSON files are locally normalized from user-downloaded Mixamo Collada clips; source DAE files are not packaged."
+}

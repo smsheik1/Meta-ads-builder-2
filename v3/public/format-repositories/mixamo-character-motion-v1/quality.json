@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "automatic": {
+    "exactFrameTiming": true,
+    "minimumMappedBones": 35,
+    "maximumFootPenetration": 0.015,
+    "maximumProtectedTransformDeviation": 0.000001,
+    "maximumProtectedScaleDeviation": 0.000001,
+    "minimumRootTravelRetention": 0.6,
+    "maximumRootTravelRetention": 1.4,
+    "maximumAttempts": 3
+  },
+  "human": [
+    "The motion identity matches the named Mixamo source.",
+    "Feet look planted during contact and leave the floor during jumps.",
+    "Eyes and facial overlays remain intact.",
+    "Unusual character proportions do not create unacceptable limb intersections."
+  ]
+}

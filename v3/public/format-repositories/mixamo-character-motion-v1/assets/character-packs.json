@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "defaultCharacterId": "spongebob",
+  "packs": [
+    {
+      "id": "spongebob",
+      "label": "SpongeBob SquarePants",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/spongebob/chr_bob_bindpose.dae",
+      "scale": 2.1,
+      "transparentTextures": ["tx1_0000_lashes.PNG", "tx8_0000_spongecheeks_32.PNG", "tx8_0000_spongeeyes_128.PNG"],
+      "transparentMaterials": ["unnamed.003", "unnamed.004", "unnamed.006", "unnamed.007", "unnamed.008"],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "rootBone": "bob_sub_root",
+        "feet": {"left": "bob_toe_L", "right": "bob_toe_R"},
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "bob_sub_root": "mixamorig_Hips",
+          "bob_chest": "mixamorig_Spine2",
+          "bob_head": "mixamorig_Head",
+          "bob_clavicle_L": "mixamorig_LeftShoulder",
+          "bob_bicep_L": "mixamorig_LeftArm",
+          "bob_elbow_L": "mixamorig_LeftForeArm",
+          "bob_wrist_L": "mixamorig_LeftHand",
+          "bob_index_base_L": "mixamorig_LeftHandIndex1",
+          "bob_index_tip_L": "mixamorig_LeftHandIndex3",
+          "bob_mid_base_L": "mixamorig_LeftHandMiddle1",
+          "bob_mid_tp_L": "mixamorig_LeftHandMiddle3",
+          "bob_pinky_base_L": "mixamorig_LeftHandPinky1",
+          "bob_pinky_tip_L": "mixamorig_LeftHandPinky3",
+          "bob_thumb_base_L": "mixamorig_LeftHandThumb1",
+          "bob_thumb_tip_L": "mixamorig_LeftHandThumb3",
+          "bob_clavicle_R": "mixamorig_RightShoulder",
+          "bob_bicep_R": "mixamorig_RightArm",
+          "bob_elbow_R": "mixamorig_RightForeArm",
+          "bob_wrist_R": "mixamorig_RightHand",
+          "bob_index_base_R": "mixamorig_RightHandIndex1",
+          "bob_index_tip_R": "mixamorig_RightHandIndex3",
+          "bob_mid_base_R": "mixamorig_RightHandMiddle1",
+          "bob_mid_tip_R": "mixamorig_RightHandMiddle3",
+          "bob_pinky_base_R": "mixamorig_RightHandPinky1",
+          "bob_pinky_tip_R": "mixamorig_RightHandPinky3",
+          "bob_thumb_base_R": "mixamorig_RightHandThumb1",
+          "bob_thumb_tip_R": "mixamorig_RightHandThumb3",
+          "bob_thigh_L": "mixamorig_LeftUpLeg",
+          "bob_knee_L": "mixamorig_LeftLeg",
+          "bob_ankle_L": "mixamorig_LeftFoot",
+          "bob_toe_L": "mixamorig_LeftToeBase",
+          "bob_thigh_R": "mixamorig_RightUpLeg",
+          "bob_knee_R": "mixamorig_RightLeg",
+          "bob_ankle_R": "mixamorig_RightFoot",
+          "bob_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "bob_eye_socket_shrink_L", "bob_eye_L", "bob_eye_stretch_L", "bob_lid_lower_L", "bob_lid_upper_L",
+          "bob_eye_socket_shrink_R", "bob_eye_R", "bob_eye_stretch_R", "bob_lid_lower_R", "bob_lid_upper_R",
+          "bob_forehead", "bob_lip_upper", "bob_teeth", "bob_mouth_L", "bob_mouth_R", "bob_nose", "bob_jaw",
+          "bob_lip_lower", "bob_lip_lower_L", "bob_lip_lower_R", "bob_tongue_base", "bob_tongue_end"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - SpongeBob SquarePants.zip"
+    }
+  ]
+}

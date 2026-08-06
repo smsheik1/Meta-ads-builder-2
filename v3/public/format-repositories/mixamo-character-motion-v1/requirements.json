@@ -1,0 +1,9 @@
+{
+  "localTools": ["node", "npm", "ffmpeg", "ffprobe", "Google Chrome"],
+  "providers": [],
+  "environmentVariables": [],
+  "notes": [
+    "Rendering and inspection are free local operations.",
+    "Importing another motion requires a Mixamo Collada (.dae) download with skin; the source DAE is normalized locally and is not packaged."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    "One official Three.js renderer and Playwright frame runner",
+    "Mixamo world-delta motion schema",
+    "Character-specific semantic bone map",
+    "Exact source frame count and frame rate",
+    "Leg-length-scaled root translation",
+    "Deterministic source-foot grounding",
+    "Protected facial and eye transforms",
+    "1280x720 full-body stage"
+  ],
+  "replaceable": ["verified characterId", "normalized motionId", "title", "background"],
+  "rendererInvariant": "Preview, proof, and final output render through runtime/renderer/app.js and runtime/render.mjs. Do not rebuild or substitute the retargeter."
+}

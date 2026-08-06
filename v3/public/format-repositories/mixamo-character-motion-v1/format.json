@@ -1,0 +1,11 @@
+{
+  "id": "mixamo-character-motion-v1",
+  "name": "Mixamo Character Motion",
+  "version": "0.1.0",
+  "description": "Retarget a normalized Mixamo motion onto a verified Wiggly character with exact timing, scaled root travel, deterministic foot grounding, and protected facial bones.",
+  "runtime": "runner.mjs",
+  "renderer": "runtime/renderer/app.js",
+  "inputContract": "input-contract.json",
+  "outputContract": "output-contract.json",
+  "qualityContract": "quality.json"
+}

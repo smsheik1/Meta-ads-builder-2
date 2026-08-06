@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "video": {"container": "mp4", "videoCodec": "h264", "width": 1280, "height": 720, "fps": 30, "audio": false},
+  "duration": "Exactly one pass over every normalized source frame; no implicit truncation, padding, or looping.",
+  "evidence": ["motion-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
+}
