@@ -2296,7 +2296,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "mugsy-explains",
       name: "Mugsy Explains",
-      version: "0.1.1-proof",
+      version: "0.3.1-proof",
       owner: "Wiggly Studio",
     },
   },

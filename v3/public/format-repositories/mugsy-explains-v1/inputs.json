@@ -1,7 +1,12 @@
 {
-  "required": [
-    "three clear A-versus-B lessons",
-    "one proof image for each side",
+  "required": ["one topic, company, product, or question to explain"],
+  "agentProduces": [
+    "one evidence-backed beginner brief",
+    "one approved image-only audition of 6-12 sourced visual assets",
+    "exactly five teaching concepts",
+    "one approved concept with setup, mechanism, and payoff comparisons",
+    "one approved fifteen-sentence script with a subject-specific final takeaway",
+    "one approved proof image for each side",
     "five short narration sentences per lesson"
   ],
   "defaults": {

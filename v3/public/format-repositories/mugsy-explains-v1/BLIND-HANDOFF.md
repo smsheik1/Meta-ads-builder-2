@@ -65,3 +65,61 @@ The smallest general fixes were to require natural read-aloud copy, A/B sides th
 ## Scope Of This Pass
 
 This proves a fresh agent can reproduce the bundled Wiggly example without hidden project context. The Recall.ai run proved that BYOK, research, rendering, inspection, and failure behavior transfer to a second brand, but its creative did not pass human review. A second meaningfully different approved output is still required before calling the Format broadly reusable across brands.
+
+## Recall.ai Root-Cause Correction
+
+The failed run exposed that the first package preserved the rendering grammar but skipped the creative discovery process used to make the Wiggly proof. Version 0.2.0 adds two required, hash-bound checkpoints before narration:
+
+- an evidence-backed beginner brief followed by exactly five teaching concepts and explicit concept approval;
+- a six-image visual plan and phone-size proof board with explicit image approval.
+
+The runner now rejects stale approvals after any brief, concept, script, visual-plan, or proof-image change. This correction still needs a second Recall.ai cold run and human creative pass before the Format can be called broadly reusable.
+
+## Recall.ai Second Cold Run: Clear But Forgettable
+
+A new agent received only the sealed version 0.2.0 package plus `Make this for https://www.recall.ai/`. It independently researched Recall, produced five concepts, followed the approval gates, built six readable local proof images, generated free Fish narration, and rendered a mechanically valid MP4 without image or video provider calls.
+
+The second run fixed beginner comprehension and visual proof, but human review still rejected it because all three comparisons restated product surface versus infrastructure and the video never landed a memorable Recall-specific conclusion.
+
+The root cause was the story contract, not the renderer or research. It validated three comparisons independently, forced the same spoken scaffold three times, and prohibited sales language without distinguishing a teaching payoff from a CTA.
+
+Version 0.2.1 keeps the source format's repeated A-versus-B grammar but requires one escalating arc:
+
+- `setup` corrects the beginner's assumption;
+- `mechanism` reveals how the subject works;
+- `payoff` applies that mechanism and lands the approved subject-specific takeaway.
+
+The complete script now has its own hash-bound approval before proof-image work. A fresh script-only Recall handoff must pass this gate before another narration render is justified.
+
+## Recall.ai Script-Only Cold Run: Passed
+
+The first fresh 0.2.1 handoff produced a clear setup, mechanism, and payoff, but its final line still used forgettable product language: `supplies the meeting-recording layer`. Human review rejected that line before proof-image or narration work.
+
+The package now limits `finalTakeaway` to 16 words and requires a concrete line a viewer can repeat after one listen. A second fresh agent received only the newly sealed ZIP plus `Make this for https://www.recall.ai/`. It independently produced five valid concepts and the approved direction's complete 15-sentence script with zero provider calls.
+
+The final arc was:
+
+- setup: AI notetaker versus Recall.ai;
+- mechanism: meeting link versus bot participant;
+- payoff: capture versus decide.
+
+It ended with: `Recall.ai captures the meeting; your product decides what happens next.` The runner passed the 96-word script, and the agent stopped at script approval before sourcing images. This verifies the creative system now fixes comprehension, progression, and the missing memorable payoff without another paid render.
+
+## Recall.ai Visual Cold Run: Script Passed, Proof Failed
+
+A fresh agent continued the approved Recall.ai story through the six-image proof board and final local render. The MP4 passed duration, dimensions, audio-stream, silence, and cache checks, but human creative review rejected it.
+
+Five of six proof images were homemade diagrams even though Recall.ai's official pages contained real meeting screenshots, UI examples, and product comparisons. The old prompt allowed `simple diagrams`, concepts were approved before checking visual feasibility, and validation checked only fields, file dimensions, and readability.
+
+Version 0.3.1 moves an image-only phone-size audition before concepts. Every selected asset must work without fine print, every A/B pair must use different scene families, and the six-image proof board hides explanatory notes so weak pictures cannot borrow meaning from captions. Browser access is required for official-source research; domain-filtered image search remains an optional supplement rather than a new provider dependency.
+
+## Four-Vertical Visual Proof: Passed
+
+Four fresh agents received isolated kits and completed visual research, image-only asset audition, concepts, script, and six-image proof review without image, video, voice, or MP4 provider calls.
+
+- Recall.ai (SaaS) replaced tiny interface copy with visible meeting, bot, participant, and product-output states.
+- FinalStraw (ecommerce) replaced an ambiguous elastic-core patent image with disposal, carry, assembly, and cleaning actions.
+- MasterClass (information business) replaced course-page screenshots with experts demonstrating, teaching, and practicing alongside a learner artifact. A direct-download 403 exposed and verified the timeboxed visible-browser screenshot fallback.
+- Orangetheory (brick and mortar) replaced two similar orange class photos and an unrelated machine readout with room versus floor plan, treadmill versus station loop, and coach versus heart-zone visuals.
+
+Human review passed all four image-only boards at phone size. The result proves the visual gate across four business models; it does not claim that final narrated videos were rendered in this pass.

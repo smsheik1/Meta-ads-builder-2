@@ -1,6 +1,10 @@
 {
   "localTools": ["python3", "ffmpeg", "ffprobe"],
   "pythonPackages": ["Pillow", "numpy", "ormsgpack"],
+  "agentCapabilities": [
+    "Browser or web access for official visual research",
+    "Ability to save direct images, tight webpage screenshots, or frames from official videos"
+  ],
   "providers": [
     {
       "name": "Fish Audio",

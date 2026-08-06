@@ -19,13 +19,23 @@ assert.doesNotMatch(source, /CreateResearchClient|AdRenderSurface|generateThreeD
 for (const file of [
   "SKILL.md",
   "README.md",
+  "brief.json",
+  "visual-assets.json",
+  "concepts.json",
   "format.json",
   "inputs.json",
   "pipeline.json",
+  "prompts/research.md",
+  "prompts/visual-research.md",
+  "prompts/concepts.md",
+  "prompts/story.md",
+  "prompts/visual-plan.md",
+  "visual-plan.json",
   "quality.json",
   "requirements.json",
   "runner.py",
   "runtime/build_proof.py",
+  "tests/test_contracts.py",
   "goldens/wiggly-format-explainer.mp4",
   "goldens/wiggly-format-explainer-contact.jpg",
   "references/original/mugsyclips_Da5cRx2sKhl.mp4",
@@ -39,16 +49,40 @@ for (const file of [
 const format = JSON.parse(readFileSync(`${packageRoot}/format.json`, "utf8"));
 assert.equal(format.id, "mugsy-explains");
 assert.equal(format.name, "Mugsy Explains");
-assert.equal(format.version, "0.1.1-proof");
+assert.equal(format.version, "0.3.1-proof");
 
 const storyPrompt = readFileSync(`${packageRoot}/prompts/story.md`, "utf8");
 assert.match(storyPrompt, /answer the same viewer question/i);
 assert.match(storyPrompt, /tight crop/i);
 assert.match(storyPrompt, /natural spoken English/i);
+assert.match(storyPrompt, /Teach; do not pitch/i);
+assert.match(storyPrompt, /setup.*mechanism.*payoff/i);
+assert.match(storyPrompt, /approve-script/i);
+
+const conceptsPrompt = readFileSync(`${packageRoot}/prompts/concepts.md`, "utf8");
+assert.match(conceptsPrompt, /exactly five/i);
+assert.match(conceptsPrompt, /why it does not feel like an advertisement/i);
+assert.match(conceptsPrompt, /six unique.*visualAssetIds/i);
+
+const visualResearchPrompt = readFileSync(`${packageRoot}/prompts/visual-research.md`, "utf8");
+assert.match(visualResearchPrompt, /official website/i);
+assert.match(visualResearchPrompt, /domain-filtered image search/i);
+assert.match(visualResearchPrompt, /five minutes fighting one download method/i);
+assert.match(visualResearchPrompt, /Do not use `pageAssets\.bundle`/i);
+assert.match(visualResearchPrompt, /at most two constructed visuals/i);
+
+const visualPrompt = readFileSync(`${packageRoot}/prompts/visual-plan.md`, "utf8");
+assert.match(visualPrompt, /six-image board/i);
+assert.match(visualPrompt, /Never use a whole webpage/i);
 
 const runner = readFileSync(`${packageRoot}/runner.py`, "utf8");
 assert.match(runner, /minimum 400x200/);
 assert.match(runner, /question must be exactly/);
+assert.match(runner, /concept approval is stale/i);
+assert.match(runner, /script approval is stale/i);
+assert.match(runner, /proof-board approval is stale/i);
+assert.match(runner, /6-12 strong visual assets/i);
+assert.match(runner, /at most two constructed visuals/i);
 
 const profile = getDiscoveryFormatProfile("mugsy-explains");
 assert.ok(profile?.handoff);
@@ -57,8 +91,10 @@ assert.equal(profile?.handoff?.firstQuestion, "What should this video explain or
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 0\.1\.1-proof/);
+assert.match(prompt, /Exact public version: 0\.3\.1-proof/);
 assert.match(prompt, /Use the bundled host, renderer, and pose pack/);
+assert.match(prompt, /show five concepts/i);
+assert.match(prompt, /show the complete script/i);
 assert.ok(prompt.trim().endsWith('"What should this video explain or compare?"'));
 
 console.log("Mugsy Explains repo page tests passed.");

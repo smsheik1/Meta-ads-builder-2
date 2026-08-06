@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 try:
-    from PIL import Image, ImageFont, ImageOps
+    from PIL import Image, ImageDraw, ImageFont, ImageOps
 except ModuleNotFoundError as error:
     raise SystemExit("Missing Python packages. Run: python3 -m pip install -r requirements.txt") from error
 
@@ -19,8 +19,29 @@ ROOT = Path(__file__).resolve().parent
 RUNTIME = ROOT / "runtime"
 RUN = ROOT / "run"
 CONTENT_PATH = ROOT / "content.json"
+BRIEF_PATH = ROOT / "brief.json"
+CONCEPTS_PATH = ROOT / "concepts.json"
+VISUAL_ASSETS_PATH = ROOT / "visual-assets.json"
+VISUAL_PLAN_PATH = ROOT / "visual-plan.json"
+APPROVALS = RUN / "approvals"
 ROLES = ("a", "b", "question", "explain_a", "explain_b")
+STORY_BEATS = ("setup", "mechanism", "payoff")
 FONT_PATH = ROOT / "assets" / "fonts" / "PatrickHand-Regular.ttf"
+VISUAL_TYPES = ("object", "person", "action", "place", "diagram", "number", "product", "icon", "interface")
+VISUAL_FORMS = ("object", "person", "action", "place", "simple-graphic", "interface")
+TEXT_DEPENDENCIES = ("none", "large-label")
+VISUAL_SOURCE_KINDS = ("official-image", "official-screenshot", "licensed-reference", "constructed")
+MAX_CONSTRUCTED_VISUALS = 2
+AD_PHRASES = (
+    "book a demo",
+    "buy now",
+    "click the link",
+    "get started",
+    "learn more",
+    "sign up",
+    "shop now",
+    "try today",
+)
 
 sys.path.insert(0, str(RUNTIME))
 try:
@@ -33,6 +54,15 @@ def fail(message: str) -> None:
     raise SystemExit(message)
 
 
+def require_render_dependencies() -> None:
+    try:
+        __import__("ormsgpack")
+    except ModuleNotFoundError as error:
+        raise SystemExit(
+            "Missing Python packages: ormsgpack. Run: python3 -m pip install -r requirements.txt"
+        ) from error
+
+
 def load_json(path: Path):
     return json.loads(path.read_text())
 
@@ -41,17 +71,338 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_content() -> dict:
+def paths_hash(paths: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def write_json(path: Path, value: dict) -> None:
+    path.write_text(json.dumps(value, indent=2) + "\n")
+
+
+def validate_brief() -> dict:
+    brief = load_json(BRIEF_PATH)
+    for field in ("topic", "plainEnglish", "audience", "problemBefore", "mechanism", "surprisingTruth"):
+        if not isinstance(brief.get(field), str) or not brief[field].strip():
+            fail(f"brief.json is missing {field}.")
+    evidence = brief.get("evidence")
+    if not isinstance(evidence, list) or len(evidence) < 3:
+        fail("brief.json must contain at least three evidence records.")
+    evidence_ids: set[str] = set()
+    for index, item in enumerate(evidence, start=1):
+        if not all(isinstance(item.get(field), str) and item[field].strip() for field in ("id", "claim", "source")):
+            fail(f"brief.json evidence {index} must include id, claim, and source.")
+        if item["id"] in evidence_ids:
+            fail(f"brief.json repeats evidence id: {item['id']}")
+        evidence_ids.add(item["id"])
+    return brief
+
+
+def validate_visual_assets() -> dict:
+    inventory = load_json(VISUAL_ASSETS_PATH)
+    assets = inventory.get("assets")
+    if not isinstance(assets, list) or not 6 <= len(assets) <= 12:
+        fail("visual-assets.json must contain 6-12 strong visual assets before concepts are generated.")
+    asset_ids: set[str] = set()
+    local_paths: set[str] = set()
+    for index, asset in enumerate(assets, start=1):
+        required = (
+            "id",
+            "localPath",
+            "description",
+            "recognizableObject",
+            "glanceMeaning",
+            "sceneFamily",
+            "sourcePageUrl",
+            "assetSourceUrl",
+        )
+        if not all(isinstance(asset.get(field), str) and asset[field].strip() for field in required):
+            fail(f"Visual asset {index} is missing required source or recognition metadata.")
+        if asset["id"] in asset_ids:
+            fail(f"visual-assets.json repeats asset id: {asset['id']}")
+        if asset["localPath"] in local_paths:
+            fail(f"visual-assets.json repeats local image path: {asset['localPath']}")
+        asset_ids.add(asset["id"])
+        local_paths.add(asset["localPath"])
+        if asset.get("sourceKind") not in VISUAL_SOURCE_KINDS:
+            fail(f"Visual asset {asset['id']} has an unsupported sourceKind.")
+        if asset.get("visualForm") not in VISUAL_FORMS:
+            fail(f"Visual asset {asset['id']} has an unsupported visualForm.")
+        if asset.get("textDependency") not in TEXT_DEPENDENCIES:
+            fail(
+                f"Visual asset {asset['id']} depends on fine text or has an unsupported textDependency. "
+                "Use a picture that works without reading small copy."
+            )
+        glance_word_count = len(asset["glanceMeaning"].split())
+        if not 2 <= glance_word_count <= 8:
+            fail(f"Visual asset {asset['id']} glanceMeaning must be 2-8 concrete words.")
+        if not isinstance(asset.get("subjectSpecific"), bool):
+            fail(f"Visual asset {asset['id']} must declare subjectSpecific as true or false.")
+        for source_field in ("sourcePageUrl", "assetSourceUrl"):
+            if not asset[source_field].startswith(("https://", "http://", "bundled://")):
+                fail(f"Visual asset {asset['id']} must use a reviewable URL for {source_field}.")
+        if asset["sourceKind"] == "constructed" and not str(asset.get("whyConstructed", "")).strip():
+            fail(f"Constructed visual asset {asset['id']} must explain why a sourced visual could not be used.")
+        relative_path = Path(asset["localPath"])
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            fail(f"Visual asset {asset['id']} must use a package-relative localPath.")
+        image_path = ROOT / relative_path
+        if not image_path.is_file():
+            fail(f"Visual asset {asset['id']} is missing its local image: {asset['localPath']}")
+        try:
+            with Image.open(image_path) as image:
+                if image.width < 400 or image.height < 200:
+                    fail(
+                        f"Visual asset {asset['id']} is too small for phone-size evidence: "
+                        f"{asset['localPath']} ({image.width}x{image.height}; minimum 400x200)."
+                    )
+                image.verify()
+        except Exception as error:
+            fail(f"Visual asset {asset['id']} is unreadable: {asset['localPath']} ({error})")
+    return inventory
+
+
+def asset_approval_hash() -> str:
+    inventory = validate_visual_assets()
+    asset_paths = [ROOT / item["localPath"] for item in inventory["assets"]]
+    return paths_hash([VISUAL_ASSETS_PATH, *asset_paths])
+
+
+def require_asset_approval() -> dict:
+    path = APPROVALS / "assets.json"
+    if not path.is_file():
+        fail("The visual inventory is not approved. Run asset-board, inspect it at phone size, then run approve-assets.")
+    receipt = load_json(path)
+    if receipt.get("status") != "approved" or receipt.get("inputHash") != asset_approval_hash():
+        fail("The visual-inventory approval is stale. Review the current asset board and approve it again.")
+    return receipt
+
+
+def validate_concepts(require_selected: bool = False) -> dict:
+    brief = validate_brief()
+    inventory = validate_visual_assets()
+    evidence_ids = {item["id"] for item in brief["evidence"]}
+    visual_assets = {item["id"]: item for item in inventory["assets"]}
+    data = load_json(CONCEPTS_PATH)
+    concepts = data.get("concepts")
+    if not isinstance(concepts, list) or len(concepts) != 5:
+        fail("concepts.json must contain exactly five teaching concepts.")
+    concept_ids: set[str] = set()
+    for index, concept in enumerate(concepts, start=1):
+        fields = (
+            "id",
+            "title",
+            "viewerQuestion",
+            "viewerLearns",
+            "whyInteresting",
+            "whyNotAnAd",
+            "finalTakeaway",
+        )
+        if not all(isinstance(concept.get(field), str) and concept[field].strip() for field in fields):
+            fail(f"Concept {index} is missing a required teaching field.")
+        if len(concept["finalTakeaway"].split()) > 16:
+            fail(f"Concept {concept['id']} finalTakeaway must be 16 words or fewer.")
+        if concept["id"] in concept_ids:
+            fail(f"concepts.json repeats concept id: {concept['id']}")
+        concept_ids.add(concept["id"])
+        refs = concept.get("evidenceIds")
+        if not isinstance(refs, list) or not refs or any(ref not in evidence_ids for ref in refs):
+            fail(f"Concept {concept['id']} must reference evidence from brief.json.")
+        visual_asset_ids = concept.get("visualAssetIds")
+        if (
+            not isinstance(visual_asset_ids, list)
+            or len(visual_asset_ids) != 6
+            or len(set(visual_asset_ids)) != 6
+            or any(asset_id not in visual_assets for asset_id in visual_asset_ids)
+        ):
+            fail(f"Concept {concept['id']} must reference six unique assets from visual-assets.json.")
+        chosen_assets = [visual_assets[asset_id] for asset_id in visual_asset_ids]
+        constructed_count = sum(asset["sourceKind"] == "constructed" for asset in chosen_assets)
+        if constructed_count > MAX_CONSTRUCTED_VISUALS:
+            fail(f"Concept {concept['id']} may use at most two constructed visuals.")
+        if sum(bool(asset["subjectSpecific"]) for asset in chosen_assets) < 4:
+            fail(f"Concept {concept['id']} must use at least four subject-specific visuals.")
+        if len({asset["visualForm"] for asset in chosen_assets}) < 3:
+            fail(f"Concept {concept['id']} must use at least three different visual forms.")
+        if len({asset["sceneFamily"] for asset in chosen_assets}) < 5:
+            fail(f"Concept {concept['id']} must use at least five visibly different scene families.")
+        if sum(asset["visualForm"] == "interface" for asset in chosen_assets) > 2:
+            fail(f"Concept {concept['id']} may use at most two interface visuals.")
+        comparisons = concept.get("comparisonPlan")
+        if not isinstance(comparisons, list) or len(comparisons) != 3:
+            fail(f"Concept {concept['id']} must plan exactly three comparisons.")
+        if tuple(comparison.get("beat") for comparison in comparisons) != STORY_BEATS:
+            fail(f"Concept {concept['id']} must escalate through {STORY_BEATS} in order.")
+        for comparison in comparisons:
+            if not all(
+                isinstance(comparison.get(field), str) and comparison[field].strip()
+                for field in ("beat", "leftLabel", "rightLabel", "difference", "visualContrast")
+            ):
+                fail(f"Concept {concept['id']} has an incomplete comparison plan.")
+            if comparison["leftLabel"].strip().lower() == comparison["rightLabel"].strip().lower():
+                fail(f"Concept {concept['id']} compares identical labels.")
+        for pair_index in range(3):
+            left_asset, right_asset = chosen_assets[pair_index * 2 : pair_index * 2 + 2]
+            if left_asset["sceneFamily"] == right_asset["sceneFamily"]:
+                fail(
+                    f"Concept {concept['id']} comparison {pair_index + 1} uses two images from the same scene family."
+                )
+            if left_asset["glanceMeaning"].strip().lower() == right_asset["glanceMeaning"].strip().lower():
+                fail(f"Concept {concept['id']} comparison {pair_index + 1} does not have a visible A/B difference.")
+    selected = data.get("selectedConceptId")
+    if require_selected and selected not in concept_ids:
+        fail("concepts.json must select one of its five concept IDs.")
+    return data
+
+
+def concept_approval_hash() -> str:
+    inventory = validate_visual_assets()
+    asset_paths = [ROOT / item["localPath"] for item in inventory["assets"]]
+    return paths_hash([BRIEF_PATH, VISUAL_ASSETS_PATH, CONCEPTS_PATH, *asset_paths])
+
+
+def require_concept_approval() -> dict:
+    concepts = validate_concepts(require_selected=True)
+    path = APPROVALS / "concept.json"
+    if not path.is_file():
+        fail("The selected concept is not approved. Show all five concepts, then run approve-concept.")
+    receipt = load_json(path)
+    if (
+        receipt.get("status") != "approved"
+        or receipt.get("conceptId") != concepts["selectedConceptId"]
+        or receipt.get("inputHash") != concept_approval_hash()
+    ):
+        fail("The concept approval is stale. Show the current five concepts and approve one again.")
+    return receipt
+
+
+def selected_concept(concepts: dict) -> dict:
+    return next(item for item in concepts["concepts"] if item["id"] == concepts["selectedConceptId"])
+
+
+def script_approval_hash() -> str:
+    return paths_hash([BRIEF_PATH, CONCEPTS_PATH, CONTENT_PATH])
+
+
+def require_script_approval() -> dict:
+    path = APPROVALS / "script.json"
+    if not path.is_file():
+        fail("The script is not approved. Show all fifteen sentences, then run approve-script.")
+    receipt = load_json(path)
+    if receipt.get("status") != "approved" or receipt.get("inputHash") != script_approval_hash():
+        fail("The script approval is stale. Show and approve the current fifteen sentences again.")
+    return receipt
+
+
+def validate_visual_plan(content: dict, concepts: dict) -> dict:
+    inventory = validate_visual_assets()
+    visual_assets = {item["id"]: item for item in inventory["assets"]}
+    approved_asset_ids = selected_concept(concepts)["visualAssetIds"]
+    approved_asset_id_set = set(approved_asset_ids)
+    plan = load_json(VISUAL_PLAN_PATH)
+    if plan.get("selectedConceptId") != concepts["selectedConceptId"]:
+        fail("visual-plan.json must use the approved selected concept.")
+    proofs = plan.get("proofs")
+    if not isinstance(proofs, list) or len(proofs) != 6:
+        fail("visual-plan.json must contain exactly six proof-image plans.")
+    expected = {
+        (lesson, side): content["lessons"][lesson - 1][f"{side}Image"]
+        for lesson in (1, 2, 3)
+        for side in ("left", "right")
+    }
+    seen: set[tuple[int, str]] = set()
+    used_asset_ids: list[str] = []
+    for proof in proofs:
+        key = (proof.get("lesson"), proof.get("side"))
+        if key not in expected or key in seen:
+            fail("visual-plan.json must plan each lesson side exactly once.")
+        seen.add(key)
+        for field in ("assetId", "image", "proves", "recognizableObject", "cropInstruction"):
+            if not isinstance(proof.get(field), str) or not proof[field].strip():
+                fail(f"Visual plan for lesson {key[0]} {key[1]} is missing {field}.")
+        asset_id = proof["assetId"]
+        if asset_id not in approved_asset_id_set or asset_id not in visual_assets:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} uses an asset outside the approved concept.")
+        if asset_id in used_asset_ids:
+            fail("visual-plan.json must use six different approved visual assets.")
+        used_asset_ids.append(asset_id)
+        if proof.get("visualType") not in VISUAL_TYPES:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} has an unsupported visualType.")
+        if proof["image"] != expected[key]:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} does not match content.json.")
+        if proof["image"] != visual_assets[asset_id]["localPath"]:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} does not use its inventoried asset file.")
+    if used_asset_ids != approved_asset_ids:
+        fail("visual-plan.json must preserve the approved concept's six visual assets in comparison order.")
+    return plan
+
+
+def proof_approval_hash(content: dict, plan: dict) -> str:
+    image_paths = [ROOT / proof["image"] for proof in plan["proofs"]]
+    return paths_hash([CONTENT_PATH, VISUAL_ASSETS_PATH, VISUAL_PLAN_PATH, *image_paths])
+
+
+def require_proof_approval(content: dict, plan: dict) -> dict:
+    path = APPROVALS / "proofs.json"
+    if not path.is_file():
+        fail("The six-image proof board is not approved. Run proof-board, show it, then run approve-proofs.")
+    receipt = load_json(path)
+    if receipt.get("status") != "approved" or receipt.get("inputHash") != proof_approval_hash(content, plan):
+        fail("The proof-board approval is stale. Show and approve the current six images again.")
+    return receipt
+
+
+def validate_script() -> dict:
     engine.NOTES_FONT = str(FONT_PATH)
+    concepts = validate_concepts(require_selected=True)
     content = load_json(CONTENT_PATH)
     lessons = content.get("lessons")
     if not isinstance(lessons, list) or len(lessons) != 3:
         fail("content.json must contain exactly three lessons.")
-    for lesson_index, lesson in enumerate(lessons, start=1):
-        for field in ("leftLabel", "rightLabel", "leftImage", "rightImage", "sentences"):
+    for lesson_index, lesson in enumerate(content["lessons"], start=1):
+        for field in ("leftLabel", "rightLabel", "sentences"):
             if not lesson.get(field):
                 fail(f"Lesson {lesson_index} is missing {field}.")
+        sentences = lesson["sentences"]
+        if len(sentences) != 5 or tuple(item.get("role") for item in sentences) != ROLES:
+            fail(f"Lesson {lesson_index} must use roles {ROLES} in order.")
+        if not sentences[0].get("text", "").startswith("This is "):
+            fail(f"Lesson {lesson_index} first sentence must start with 'This is '.")
+        if not sentences[1].get("text", "").startswith("This is "):
+            fail(f"Lesson {lesson_index} second sentence must start with 'This is '.")
+        if sentences[2].get("text") != "What's the difference?":
+            fail(f"Lesson {lesson_index} question must be exactly: What's the difference?")
+        for sentence in sentences:
+            if not sentence.get("text") or not sentence.get("chunks"):
+                fail(f"Lesson {lesson_index} has an empty sentence or caption chunk.")
+            lowered = sentence["text"].lower()
+            if any(phrase in lowered for phrase in AD_PHRASES):
+                fail(f"Lesson {lesson_index} contains ad-like CTA language: {sentence['text']}")
+            if any(len(chunk) > 42 for chunk in sentence["chunks"]):
+                fail(f"Lesson {lesson_index} has a caption chunk over 42 characters.")
+    comparison_plan = selected_concept(concepts)["comparisonPlan"]
+    for lesson_index, (lesson, planned) in enumerate(zip(lessons, comparison_plan), start=1):
+        if lesson["leftLabel"] != planned["leftLabel"] or lesson["rightLabel"] != planned["rightLabel"]:
+            fail(f"Lesson {lesson_index} labels do not match the approved concept plan.")
+    final_takeaway = selected_concept(concepts)["finalTakeaway"].strip()
+    if lessons[-1]["sentences"][-1]["text"].strip() != final_takeaway:
+        fail("The final sentence must exactly match the approved concept's finalTakeaway.")
+    word_count = sum(len(sentence["text"].split()) for lesson in lessons for sentence in lesson["sentences"])
+    if not 55 <= word_count <= 100:
+        fail(f"Narration must contain 55-100 words for the 25-35 second contract; found {word_count}.")
+    return content
+
+
+def validate_content() -> dict:
+    content = validate_script()
+    concepts = validate_concepts(require_selected=True)
+    for lesson_index, lesson in enumerate(content["lessons"], start=1):
         for field in ("leftImage", "rightImage"):
+            if not lesson.get(field):
+                fail(f"Lesson {lesson_index} is missing {field}.")
             image_path = ROOT / lesson[field]
             if not image_path.is_file():
                 fail(f"Lesson {lesson_index} references a missing image: {lesson[field]}")
@@ -65,24 +416,11 @@ def validate_content() -> dict:
                     image.verify()
             except Exception as error:
                 fail(f"Lesson {lesson_index} has an unreadable image: {lesson[field]} ({error})")
-        sentences = lesson["sentences"]
-        if len(sentences) != 5 or tuple(item.get("role") for item in sentences) != ROLES:
-            fail(f"Lesson {lesson_index} must use roles {ROLES} in order.")
-        if not sentences[0].get("text", "").startswith("This is "):
-            fail(f"Lesson {lesson_index} first sentence must start with 'This is '.")
-        if not sentences[1].get("text", "").startswith("This is "):
-            fail(f"Lesson {lesson_index} second sentence must start with 'This is '.")
-        if sentences[2].get("text") != "What's the difference?":
-            fail(f"Lesson {lesson_index} question must be exactly: What's the difference?")
-        for sentence in sentences:
-            if not sentence.get("text") or not sentence.get("chunks"):
-                fail(f"Lesson {lesson_index} has an empty sentence or caption chunk.")
-            if any(len(chunk) > 42 for chunk in sentence["chunks"]):
-                fail(f"Lesson {lesson_index} has a caption chunk over 42 characters.")
+    validate_visual_plan(content, concepts)
     if not FONT_PATH.is_file():
         fail("Missing bundled Patrick Hand font.")
     label_font = ImageFont.truetype(str(FONT_PATH), 53)
-    for lesson_index, lesson in enumerate(lessons, start=1):
+    for lesson_index, lesson in enumerate(content["lessons"], start=1):
         for label in (lesson["leftLabel"], lesson["rightLabel"]):
             box = label_font.getbbox(label.title())
             if box[2] - box[0] > 400:
@@ -108,9 +446,6 @@ def validate_content() -> dict:
                     fail(f"Fixed pose has no visible pixels: {pose}")
         except Exception as error:
             fail(f"Fixed pose is unreadable: {pose} ({error})")
-    word_count = sum(len(sentence["text"].split()) for lesson in lessons for sentence in lesson["sentences"])
-    if not 55 <= word_count <= 100:
-        fail(f"Narration must contain 55-100 words for the 25-35 second contract; found {word_count}.")
     return content
 
 
@@ -121,9 +456,20 @@ def visual_factory(path: Path):
     return load
 
 
-def configure_engine() -> None:
+def require_creative_approvals(content: dict) -> None:
+    concepts = validate_concepts(require_selected=True)
+    require_asset_approval()
+    require_concept_approval()
+    require_script_approval()
+    plan = validate_visual_plan(content, concepts)
+    require_proof_approval(content, plan)
+
+
+def configure_engine(require_approvals: bool = False) -> None:
     engine.NOTES_FONT = str(FONT_PATH)
     content = validate_content()
+    if require_approvals:
+        require_creative_approvals(content)
     engine.ROOT = ROOT
     engine.RUN = RUN
     engine.FRAMES = RUN / "frames"
@@ -156,7 +502,185 @@ def configure_engine() -> None:
     engine.build_source_voice_references = voice_references
 
 
+def show_concepts() -> None:
+    require_asset_approval()
+    data = validate_concepts()
+    inventory = validate_visual_assets()
+    visual_assets = {item["id"]: item for item in inventory["assets"]}
+    rows = [
+        {
+            "id": concept["id"],
+            "title": concept["title"],
+            "viewerQuestion": concept["viewerQuestion"],
+            "viewerLearns": concept["viewerLearns"],
+            "whyInteresting": concept["whyInteresting"],
+            "whyNotAnAd": concept["whyNotAnAd"],
+            "storyArc": concept["comparisonPlan"],
+            "finalTakeaway": concept["finalTakeaway"],
+            "visualAssets": [
+                {
+                    "id": asset_id,
+                    "description": visual_assets[asset_id]["description"],
+                    "sourceKind": visual_assets[asset_id]["sourceKind"],
+                }
+                for asset_id in concept["visualAssetIds"]
+            ],
+        }
+        for concept in data["concepts"]
+    ]
+    print(json.dumps({"status": "review-required", "concepts": rows, "providerCalls": 0}, indent=2))
+
+
+def show_assets() -> None:
+    inventory = validate_visual_assets()
+    print(json.dumps({"status": "review-required", **inventory, "providerCalls": 0}, indent=2))
+
+
+def asset_board() -> Path:
+    inventory = validate_visual_assets()
+    assets = inventory["assets"]
+    rows = (len(assets) + 1) // 2
+    canvas = Image.new("RGB", (1080, 1920), (246, 248, 250))
+    draw = ImageDraw.Draw(canvas)
+    title_font = ImageFont.truetype(str(FONT_PATH), 54)
+    number_font = ImageFont.truetype(str(FONT_PATH), 34)
+    draw.text((40, 30), "Visual audition", font=title_font, fill=(12, 12, 24))
+    draw.text((40, 91), "At phone size, can you identify every picture without reading fine print?", font=number_font, fill=(65, 75, 90))
+    card_width = 498
+    card_height = min(560, 1710 // rows)
+    for index, asset in enumerate(assets):
+        column, row = index % 2, index // 2
+        x = 30 + column * 522
+        y = 160 + row * card_height
+        draw.rounded_rectangle(
+            (x, y, x + card_width, y + card_height - 14),
+            radius=14,
+            fill="white",
+            outline=(190, 198, 210),
+            width=2,
+        )
+        draw.text((x + 18, y + 10), str(index + 1), font=number_font, fill=(12, 12, 24))
+        image_box = (x + 18, y + 54, x + card_width - 18, y + card_height - 32)
+        with Image.open(ROOT / asset["localPath"]) as image:
+            visual = ImageOps.contain(
+                image.convert("RGB"),
+                (image_box[2] - image_box[0], image_box[3] - image_box[1]),
+                Image.Resampling.LANCZOS,
+            )
+        visual_x = image_box[0] + (image_box[2] - image_box[0] - visual.width) // 2
+        visual_y = image_box[1] + (image_box[3] - image_box[1] - visual.height) // 2
+        canvas.paste(visual, (visual_x, visual_y))
+    review_dir = RUN / "review"
+    review_dir.mkdir(parents=True, exist_ok=True)
+    path = review_dir / "asset-audition.jpg"
+    canvas.save(path, quality=94)
+    print(json.dumps({"status": "review-required", "artifact": str(path), "providerCalls": 0}, indent=2))
+    return path
+
+
+def approve_assets(human_review: str) -> None:
+    if human_review != "pass":
+        fail("Asset approval requires --human-review pass after viewing the image-only audition at phone size.")
+    board = asset_board()
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "status": "approved",
+        "inputHash": asset_approval_hash(),
+        "assetBoard": str(board.relative_to(ROOT)),
+    }
+    write_json(APPROVALS / "assets.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
+def approve_concept(concept_id: str | None, human_review: str) -> None:
+    if human_review != "pass":
+        fail("Concept approval requires --human-review pass after showing all five concepts.")
+    require_asset_approval()
+    data = validate_concepts()
+    valid_ids = {concept["id"] for concept in data["concepts"]}
+    if concept_id not in valid_ids:
+        fail("--concept-id must name one of the five concepts in concepts.json.")
+    data["selectedConceptId"] = concept_id
+    write_json(CONCEPTS_PATH, data)
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {"status": "approved", "conceptId": concept_id, "inputHash": concept_approval_hash()}
+    write_json(APPROVALS / "concept.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
+def approve_script(human_review: str) -> None:
+    if human_review != "pass":
+        fail("Script approval requires --human-review pass after showing all fifteen sentences.")
+    require_concept_approval()
+    validate_script()
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {"status": "approved", "inputHash": script_approval_hash()}
+    write_json(APPROVALS / "script.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
+def proof_board() -> Path:
+    require_concept_approval()
+    require_script_approval()
+    content = validate_content()
+    concepts = validate_concepts(require_selected=True)
+    plan = validate_visual_plan(content, concepts)
+    canvas = Image.new("RGB", (1080, 1920), (246, 248, 250))
+    draw = ImageDraw.Draw(canvas)
+    title_font = ImageFont.truetype(str(FONT_PATH), 54)
+    label_font = ImageFont.truetype(str(FONT_PATH), 38)
+    draw.text((40, 30), "Six-image proof review", font=title_font, fill=(12, 12, 24))
+    subtitle_font = ImageFont.truetype(str(FONT_PATH), 27)
+    draw.text(
+        (40, 91),
+        "Do the pictures and A/B differences make sense without explanatory copy?",
+        font=subtitle_font,
+        fill=(65, 75, 90),
+    )
+    card_width, card_height = 498, 560
+    for index, proof in enumerate(plan["proofs"]):
+        column, row = index % 2, index // 2
+        x = 30 + column * 522
+        y = 145 + row * 580
+        draw.rounded_rectangle((x, y, x + card_width, y + card_height), radius=14, fill="white", outline=(190, 198, 210), width=2)
+        lesson = content["lessons"][proof["lesson"] - 1]
+        label = lesson[f"{proof['side']}Label"].title()
+        draw.text((x + 22, y + 16), f"{proof['lesson']}. {label}", font=label_font, fill=(12, 12, 24))
+        image_box = (x + 20, y + 72, x + card_width - 20, y + card_height - 24)
+        with Image.open(ROOT / proof["image"]) as image:
+            visual = ImageOps.contain(image.convert("RGB"), (image_box[2] - image_box[0], image_box[3] - image_box[1]), Image.Resampling.LANCZOS)
+        visual_x = image_box[0] + (image_box[2] - image_box[0] - visual.width) // 2
+        visual_y = image_box[1] + (image_box[3] - image_box[1] - visual.height) // 2
+        canvas.paste(visual, (visual_x, visual_y))
+    review_dir = RUN / "review"
+    review_dir.mkdir(parents=True, exist_ok=True)
+    path = review_dir / "proof-board.jpg"
+    canvas.save(path, quality=94)
+    print(json.dumps({"status": "review-required", "artifact": str(path), "providerCalls": 0}, indent=2))
+    return path
+
+
+def approve_proofs(human_review: str) -> None:
+    if human_review != "pass":
+        fail("Proof approval requires --human-review pass after showing the six-image board.")
+    require_concept_approval()
+    require_script_approval()
+    content = validate_content()
+    concepts = validate_concepts(require_selected=True)
+    plan = validate_visual_plan(content, concepts)
+    board = proof_board()
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "status": "approved",
+        "inputHash": proof_approval_hash(content, plan),
+        "proofBoard": str(board.relative_to(ROOT)),
+    }
+    write_json(APPROVALS / "proofs.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
 def smoke() -> None:
+    require_render_dependencies()
     configure_engine()
     smoke_dir = RUN / "smoke"
     smoke_dir.mkdir(parents=True, exist_ok=True)
@@ -176,6 +700,7 @@ def smoke() -> None:
 
 def validate() -> None:
     content = validate_content()
+    require_creative_approvals(content)
     missing_tools = [tool for tool in ("ffmpeg", "ffprobe") if not shutil.which(tool)]
     if missing_tools:
         fail("Missing local tools: " + ", ".join(missing_tools))
@@ -183,7 +708,8 @@ def validate() -> None:
 
 
 def render() -> None:
-    configure_engine()
+    require_render_dependencies()
+    configure_engine(require_approvals=True)
     engine.main()
     video = sorted((RUN / "output").glob("*.mp4"), key=lambda path: path.stat().st_mtime)[-1]
     contacts = sorted((RUN / "contact").glob("*.jpg"), key=lambda path: path.stat().st_mtime)
@@ -199,15 +725,19 @@ def render() -> None:
 
 def input_hash() -> str:
     content = load_json(CONTENT_PATH)
-    paths = [CONTENT_PATH, ROOT / "voice-references.json", FONT_PATH]
+    paths = [
+        BRIEF_PATH,
+        VISUAL_ASSETS_PATH,
+        CONCEPTS_PATH,
+        CONTENT_PATH,
+        VISUAL_PLAN_PATH,
+        ROOT / "voice-references.json",
+        FONT_PATH,
+    ]
     paths.extend(ROOT / lesson[field] for lesson in content["lessons"] for field in ("leftImage", "rightImage"))
     paths.extend(sorted((ROOT / "assets" / "poses").glob("*.png")))
     paths.extend(ROOT / item["file"] for item in load_json(ROOT / "voice-references.json"))
-    digest = hashlib.sha256()
-    for path in paths:
-        digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
-        digest.update(path.read_bytes())
-    return digest.hexdigest()
+    return paths_hash(paths)
 
 
 def latest_video() -> Path:
@@ -223,6 +753,7 @@ def latest_video() -> Path:
 
 
 def inspect() -> dict:
+    require_creative_approvals(validate_content())
     video = latest_video()
     manifest_path = RUN / "render-manifest.json"
     if not manifest_path.exists():
@@ -307,11 +838,45 @@ def finalize(human_review: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("smoke", "validate", "render", "inspect", "finalize"))
+    parser.add_argument(
+        "command",
+        choices=(
+            "smoke",
+            "assets",
+            "asset-board",
+            "approve-assets",
+            "concepts",
+            "approve-concept",
+            "approve-script",
+            "proof-board",
+            "approve-proofs",
+            "validate",
+            "render",
+            "inspect",
+            "finalize",
+        ),
+    )
+    parser.add_argument("--concept-id")
     parser.add_argument("--human-review", choices=("pass", "fail"), default="fail")
     args = parser.parse_args()
     if args.command == "smoke":
         smoke()
+    elif args.command == "assets":
+        show_assets()
+    elif args.command == "asset-board":
+        asset_board()
+    elif args.command == "approve-assets":
+        approve_assets(args.human_review)
+    elif args.command == "concepts":
+        show_concepts()
+    elif args.command == "approve-concept":
+        approve_concept(args.concept_id, args.human_review)
+    elif args.command == "approve-script":
+        approve_script(args.human_review)
+    elif args.command == "proof-board":
+        proof_board()
+    elif args.command == "approve-proofs":
+        approve_proofs(args.human_review)
     elif args.command == "validate":
         validate()
     elif args.command == "render":

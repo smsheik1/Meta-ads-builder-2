@@ -142,6 +142,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Clean display copies restored one top-right reference across both formats without changing the shared Discovery renderer.
 
+### 16. Prove the visuals before choosing the story
+
+**Rule:** In proof-led visual Formats, inventory real subject-specific assets before concepts, render them on an image-only phone-size audition board, and require explicit approval before story selection. Reject fine-text-dependent assets, concepts that cannot bind every beat to sourced evidence, and A/B pairs whose images share the same scene family. Proof boards must hide explanatory notes so a weak picture cannot borrow meaning from copy.
+
+**Why:** A fresh Mugsy Explains agent wrote a clear Recall.ai lesson but filled five of six proof slots with homemade diagrams because the kit chose the concept before checking whether strong visuals existed.
+
+**Evidence:** Recall.ai's official pages contained product screenshots and meeting examples, yet the old contract accepted generic local diagrams because it validated only fields, dimensions, and file readability. The corrected gate then rejected tiny SaaS UI, an ambiguous FinalStraw patent diagram, MasterClass course-page screenshots, and redundant Orangetheory class images. Fresh agents passed only after replacing them with visually distinct objects, people, actions, places, or simple graphics. When an official asset blocks direct download, timebox that method and use a tight visible-browser screenshot or official video frame; do not bulk-export whole pages.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:
