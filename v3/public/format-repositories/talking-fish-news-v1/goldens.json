@@ -1,0 +1,16 @@
+{
+  "purpose": "Judge cold-audience clarity, deadpan news pacing, grounded fish presentation, exact captions, and evidence relevance at phone size.",
+  "examples": [
+    {
+      "id": "nasa-curiosity",
+      "title": "Mars enters its floor-tile era",
+      "videoPath": "goldens/nasa-curiosity.mp4",
+      "sourceUrl": "https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/nasas-curiosity-mars-rover-discovers-field-of-honeycomb-textures/",
+      "whyItWorks": [
+        "The first sentence explains the discovery before the joke appears.",
+        "Each visual is official NASA evidence and remains legible inside the evidence frame.",
+        "The punchline reframes the true story without turning it into an ad."
+      ]
+    }
+  ]
+}

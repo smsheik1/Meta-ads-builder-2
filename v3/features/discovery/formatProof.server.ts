@@ -21,6 +21,52 @@ type FormatProfileConfig = {
 
 const formatConfigs: FormatProfileConfig[] = [
   {
+    slug: "talking-fish-news",
+    promise: "Turn one real current story into a short deadpan fish report built from source proof.",
+    lastUpdated: "August 2026",
+    technicalHref: "/format-lab/talking-fish-news",
+    manifestPath: "format-repositories/talking-fish-news-v1/format.json",
+    whatStays: [
+      "The fixed fish anchor and underwater desk",
+      "Four evidence-backed report beats",
+      "Exact captions and audio-driven mouth movement",
+      "One short deadpan payoff",
+    ],
+    whatChanges: [
+      "The current story",
+      "The official evidence images",
+      "The four-beat report",
+      "The final joke",
+    ],
+    handoff: {
+      requiredInputs: [
+        "A topic or source link, or permission to pick a story",
+      ],
+      deliverables: [
+        "One sourced research file and visual inventory",
+        "Five distinct news concepts",
+        "One approved four-beat script",
+        "One inspected vertical MP4",
+      ],
+      instructions: [
+        "Run the packaged smoke test before starting a story",
+        "Use one trustworthy source and official or source-owned images",
+        "Show five concepts before writing the final script in Guide mode",
+        "Ask before calling Fish voice or Deepgram timing",
+        "Inspect the complete MP4 and contact sheet before finalizing",
+      ],
+      estimates: [
+        { label: "Research + five concepts", cost: "$0 Wiggly provider cost", time: "about 4-10 min" },
+        { label: "Script", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Voice + timing", cost: "$0 Fish provider cost; Deepgram BYOK is usually pennies or less", time: "about 1-3 min" },
+        { label: "Local render + inspection", cost: "$0 provider cost", time: "about 2-5 min" },
+      ],
+      totalEstimate: "Usually $0 Fish provider cost plus minimal Deepgram usage, in 8-20 min",
+      output: "One vertical 1080 x 1920 MP4, 14-24 seconds",
+      firstQuestion: "What should tonight's fish report cover? Send a topic or source link, or say pick for me.",
+    },
+  },
+  {
     slug: "mugsy-explains",
     promise: "Turn three useful differences into a fast visual lesson people can understand at a glance.",
     lastUpdated: "August 2026",

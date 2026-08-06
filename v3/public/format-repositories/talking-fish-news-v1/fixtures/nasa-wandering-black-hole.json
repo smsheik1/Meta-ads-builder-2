@@ -1,0 +1,157 @@
+{
+  "research": {
+    "topic": "NASA's Swift sees a wandering black hole shredding a star",
+    "sourceUrl": "https://science.nasa.gov/missions/swift/nasas-swift-sees-wandering-mega-black-hole-shredding-star/",
+    "publisher": "NASA Science",
+    "publishedAt": "2026-07-27",
+    "facts": [
+      {
+        "text": "NASA's Swift Observatory captured an orphan black hole lighting up as it devoured a star outside a distant galaxy's core.",
+        "sourceUrl": "https://science.nasa.gov/missions/swift/nasas-swift-sees-wandering-mega-black-hole-shredding-star/"
+      },
+      {
+        "text": "The galaxy is about 750 million light-years away, and the black hole weighs roughly one million times the Sun.",
+        "sourceUrl": "https://science.nasa.gov/missions/swift/nasas-swift-sees-wandering-mega-black-hole-shredding-star/"
+      },
+      {
+        "text": "For a few months the flare outshone its host galaxy in ultraviolet light and radiated with the light of about 10 billion Suns.",
+        "sourceUrl": "https://science.nasa.gov/missions/swift/nasas-swift-sees-wandering-mega-black-hole-shredding-star/"
+      },
+      {
+        "text": "The event was identified more than 30,000 light-years from the galaxy's center.",
+        "sourceUrl": "https://science.nasa.gov/missions/swift/nasas-swift-sees-wandering-mega-black-hole-shredding-star/"
+      }
+    ],
+    "visualAssets": [
+      {
+        "id": "tidal-event-concept",
+        "src": "/talking-fish-news-assets/wandering-black-hole-concept.jpg",
+        "sourceUrl": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia22/pia22355/PIA22355.jpg",
+        "description": "Artist concept of a star being torn apart beside a massive black hole.",
+        "credit": "NRAO/AUI/NSF/NASA",
+        "focalSubject": "A star visibly stretching into a black hole",
+        "phoneReadable": true
+      },
+      {
+        "id": "galaxy-before",
+        "src": "/talking-fish-news-assets/wandering-black-hole-before.jpg",
+        "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/Swift_off-kilter%20TDE.gif",
+        "description": "The distant galaxy before the off-center flare appeared.",
+        "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein",
+        "focalSubject": "A tiny unresolved galaxy point",
+        "phoneReadable": false
+      },
+      {
+        "id": "galaxy-flare",
+        "src": "/talking-fish-news-assets/wandering-black-hole-before-after.jpg",
+        "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/Swift_off-kilter%20TDE.gif",
+        "description": "The off-center blue flare after the tidal disruption event appeared.",
+        "credit": "Lowell Discovery Telescope/Legacy Survey/Robert Stein",
+        "focalSubject": "A tiny blue flare beside an unresolved galaxy point",
+        "phoneReadable": false
+      },
+      {
+        "id": "star-stretched",
+        "src": "/talking-fish-news-assets/wandering-black-hole-tidal-event.jpg",
+        "sourceUrl": "https://assets.science.nasa.gov/content/dam/science/missions/swift-observatory/homepage/news-elsewhere/TDE%20video.mp4",
+        "description": "NASA visualization of tidal forces stretching a star near a massive black hole.",
+        "credit": "NASA, ESA, STScI, Ralf Crawford (STScI)",
+        "focalSubject": "A bright star being visibly pulled apart",
+        "phoneReadable": true
+      }
+    ]
+  },
+  "concepts": {
+    "concepts": [
+      {
+        "id": "galaxy-lost-a-black-hole",
+        "headline": "A galaxy lost track of a million-sun black hole",
+        "premise": "NASA catches a wandering black hole only when it lights up while destroying a star.",
+        "whyItWorks": "The cosmic disaster is instantly clear, and the true location twist earns the deadpan payoff.",
+        "takeaway": "The flare exposed a massive black hole far from its galaxy's center.",
+        "punchline": "Apparently, the galaxy lost track of one.",
+        "assetIds": ["tidal-event-concept", "galaxy-before", "galaxy-flare", "star-stretched"],
+        "storyMoves": [
+          "Open on the black hole visibly destroying a star.",
+          "Establish that it was wandering far from the expected galactic center.",
+          "Reveal that the destruction made the hidden black hole visible.",
+          "Resolve with the galaxy-lost-track-of-one punchline."
+        ]
+      },
+      {
+        "id": "ten-billion-sun-flare",
+        "headline": "One flare briefly shined like ten billion Suns",
+        "premise": "A violent off-center flare exposes an otherwise invisible wandering black hole.",
+        "whyItWorks": "The scale comparison creates an immediate visual and verbal escalation.",
+        "takeaway": "The flare exposed an otherwise invisible wandering black hole.",
+        "punchline": "Subtle was no longer an option.",
+        "assetIds": ["galaxy-before", "galaxy-flare", "tidal-event-concept", "star-stretched"],
+        "storyMoves": [
+          "Open on the sudden off-center flare.",
+          "Escalate to the impossible ten-billion-Suns brightness.",
+          "Reveal that a wandering black hole caused the flare by shredding a star.",
+          "Resolve with the understated subtlety joke."
+        ]
+      },
+      {
+        "id": "caught-eating",
+        "headline": "NASA found a hidden black hole because it ate loudly",
+        "premise": "An invisible object reveals itself by shredding a star 30,000 light-years from the expected spot.",
+        "whyItWorks": "It turns an abstract detection method into a familiar caught-in-the-act joke.",
+        "takeaway": "The star's destruction revealed a black hole in an unexpected location.",
+        "punchline": "The quiet neighbor finally made noise.",
+        "assetIds": ["galaxy-before", "star-stretched", "galaxy-flare", "tidal-event-concept"],
+        "storyMoves": [
+          "Begin with an apparently empty location in space.",
+          "Show a star being torn apart where no black hole was expected.",
+          "Reveal the flare as the signal that exposed the hidden object.",
+          "Resolve with the noisy-neighbor payoff."
+        ]
+      },
+      {
+        "id": "wrong-side-of-galaxy",
+        "headline": "This black hole was found on the wrong side of town",
+        "premise": "Astronomers discover a massive black hole far outside the galactic center where they usually search.",
+        "whyItWorks": "A simple location mismatch explains why the discovery changes how scientists hunt.",
+        "takeaway": "Scientists may need to search beyond galactic centers.",
+        "punchline": "Astronomy checked the wrong neighborhood.",
+        "assetIds": ["galaxy-before", "galaxy-flare", "star-stretched", "tidal-event-concept"],
+        "storyMoves": [
+          "Open on the flare far from the galaxy's center.",
+          "Establish where astronomers normally expect massive black holes.",
+          "Reveal the star-shredding event that exposed this off-center object.",
+          "Resolve with the wrong-neighborhood joke."
+        ]
+      },
+      {
+        "id": "star-alarm-system",
+        "headline": "A destroyed star became a black-hole alarm",
+        "premise": "The tidal disruption flare gives scientists a new way to find wandering black holes.",
+        "whyItWorks": "The star's destruction becomes a clean mechanism reveal instead of a list of astronomy facts.",
+        "takeaway": "Tidal flares can help astronomers find wandering black holes.",
+        "punchline": "The alarm was unfortunately the star.",
+        "assetIds": ["star-stretched", "tidal-event-concept", "galaxy-before", "galaxy-flare"],
+        "storyMoves": [
+          "Open on a star being violently stretched.",
+          "Escalate with the previously invisible black hole behind it.",
+          "Reveal the flare as an alarm astronomers can use to find wanderers.",
+          "Resolve by naming the destroyed star as the alarm."
+        ]
+      }
+    ]
+  },
+  "selection": {
+    "selectedId": "galaxy-lost-a-black-hole",
+    "reason": "It has the clearest cold-audience setup, strongest location twist, and most memorable deadpan payoff."
+  },
+  "script": {
+    "stationName": "Talking Fish News",
+    "linkText": "Read the full NASA story",
+    "beats": [
+      "Breaking news. NASA caught a wandering black hole shredding a star outside its galaxy's center.",
+      "The flare came from 750 million light-years away, powered by a black hole roughly one million Suns heavy.",
+      "For months, it outshone its entire galaxy in ultraviolet light and blazed like ten billion Suns.",
+      "Apparently, the galaxy lost track of one."
+    ]
+  }
+}

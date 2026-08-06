@@ -11,6 +11,7 @@ import { threeDBreakdownFormatModule } from "./three-d-breakdown";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
 import { staticPackageFormatModule } from "./static-package";
+import { talkingFishNewsFormatModule } from "./talking-fish-news";
 
 export type AnyAdFormatModule = AdFormatModule<string, any>;
 
@@ -28,6 +29,7 @@ export const formatRegistry = createFormatRegistry({
   "motion-story": motionStoryFormatModule,
   "three-d-breakdown": threeDBreakdownFormatModule,
   "static-package": staticPackageFormatModule,
+  "talking-fish-news": talkingFishNewsFormatModule,
 } satisfies Record<RenderableAdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

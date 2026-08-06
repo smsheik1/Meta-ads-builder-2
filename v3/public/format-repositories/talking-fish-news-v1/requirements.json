@@ -1,0 +1,47 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "binaries": ["ffmpeg", "ffprobe"],
+    "install": "npm install"
+  },
+  "providers": [
+    {
+      "id": "fish-studio",
+      "purpose": "Fixed fish-anchor voice",
+      "model": "s2.1-pro-free",
+      "voiceId": "105a95c3aa3d4301b175ca1f7b3996ca",
+      "environmentVariable": "FISH_STUDIO_APIKEY",
+      "requiredFor": ["voice"],
+      "approvalFlag": "--approve-voice",
+      "automaticRetry": false,
+      "providerCost": "$0"
+    },
+    {
+      "id": "deepgram",
+      "purpose": "Speech timing for exact renderer captions and mouth motion",
+      "model": "listen smart-format",
+      "environmentVariable": "DEEPGRAM_API_KEY",
+      "requiredFor": ["voice"],
+      "approvalFlag": "--approve-voice",
+      "automaticRetry": false,
+      "providerCost": "BYOK; normally pennies or less for one short clip"
+    }
+  ],
+  "tools": [
+    "A web research and image-search tool available to the host agent",
+    "Google Chrome or Chromium for local Remotion rendering",
+    "ffmpeg and ffprobe"
+  ],
+  "explicitlyNotUsed": [
+    "Replicate",
+    "image generation",
+    "video generation",
+    "music generation",
+    "automatic provider fallback"
+  ],
+  "notes": [
+    "The host agent performs research and writes concepts/scripts with the packaged prompts.",
+    "All evidence images are downloaded from trustworthy source pages and saved locally with provenance.",
+    "All final video pixels are rendered locally through Wiggly's shared AdRenderSurface."
+  ]
+}

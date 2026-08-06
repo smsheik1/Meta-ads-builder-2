@@ -1,0 +1,103 @@
+import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { talkingFishNewsProofScene, talkingFishNewsProofScript } from "../features/formats/talking-fish-news/fixture";
+import { validateTalkingFishNewsScene } from "../features/formats/talking-fish-news/validate";
+import { getFormatModule } from "../features/formats/registry";
+import { AdRenderSurface } from "../features/render/AdRenderSurface";
+import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
+
+const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
+const validation = validateTalkingFishNewsScene(talkingFishNewsProofScene);
+
+assert.equal(validation.valid, true, validation.errors.join(" "));
+assert.ok(talkingFishNewsProofScript.startsWith("Breaking news."));
+assert.ok(wordCount(talkingFishNewsProofScript) >= 38 && wordCount(talkingFishNewsProofScript) <= 60);
+assert.equal(talkingFishNewsProofScene.layout.beats.length, 4);
+assert.equal(talkingFishNewsProofScene.layout.durationMs, 18504);
+assert.equal(talkingFishNewsProofScene.audio.status, "generated");
+assert.equal(talkingFishNewsProofScene.audio.provider, "fish-studio");
+assert.ok(talkingFishNewsProofScene.audio.model.includes("105a95c3aa3d4301b175ca1f7b3996ca"));
+assert.equal(talkingFishNewsProofScene.backgroundMusic, undefined);
+assert.deepEqual(getRenderMusicBed(talkingFishNewsProofScene), {
+  src: "/talking-fish-news-assets/bikini-bottom-news-theme.mp3",
+  volume: 0.11,
+  loop: true,
+});
+assert.equal(getFormatModule("talking-fish-news").id, "talking-fish-news");
+
+for (const beat of talkingFishNewsProofScene.layout.beats) {
+  assert.ok(beat.proofSrc.startsWith("/talking-fish-news-assets/mars-"));
+}
+assert.equal(
+  talkingFishNewsProofScene.audio.captions.map((caption) => caption.text).join(" "),
+  talkingFishNewsProofScript,
+);
+
+const closedMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: talkingFishNewsProofScene,
+  mode: "video",
+  timeSeconds: 7.5,
+}));
+const openMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: talkingFishNewsProofScene,
+  mode: "video",
+  timeSeconds: 7.65,
+}));
+const silentMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: talkingFishNewsProofScene,
+  mode: "video",
+  timeSeconds: 6.75,
+}));
+assert.ok(closedMouthHtml.includes('data-render-surface="ad"'));
+assert.ok(closedMouthHtml.includes('data-format="talking-fish-news"'));
+assert.ok(closedMouthHtml.includes('data-talking-fish-news-caption="true"'));
+assert.ok(closedMouthHtml.includes('data-talking-fish-news-evidence-frame="true"'));
+assert.ok(closedMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
+assert.ok(openMouthHtml.includes('data-talking-fish-news-mouth="open"'));
+assert.ok(silentMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
+assert.ok(closedMouthHtml.includes("Each polygon is only"));
+assert.equal(closedMouthHtml.includes("Tiny polygons. Entire valley."), false);
+assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
+assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
+assert.ok(closedMouthHtml.includes("translateY(13cqw)"));
+assert.ok(closedMouthHtml.includes("mars-polygons-closeup.png"));
+assert.ok(closedMouthHtml.includes("Framed evidence screen"));
+assert.equal(closedMouthHtml.includes("height:50%"), false);
+assert.equal(closedMouthHtml.includes("THE DAILY CURRENT"), false);
+assert.equal(closedMouthHtml.includes("REPORT"), false);
+
+const invalid = validateTalkingFishNewsScene({
+  ...talkingFishNewsProofScene,
+  layout: {
+    ...talkingFishNewsProofScene.layout,
+    durationMs: 12000,
+  },
+});
+assert.equal(invalid.valid, false);
+assert.ok(invalid.errors.some((error) => error.includes("14-24 seconds")));
+
+const naturalDeadpanDuration = validateTalkingFishNewsScene({
+  ...talkingFishNewsProofScene,
+  audio: {
+    ...talkingFishNewsProofScene.audio,
+    durationMs: 22902,
+    durationSeconds: 22.902,
+  },
+  layout: {
+    ...talkingFishNewsProofScene.layout,
+    durationMs: 22902,
+    speechSegments: talkingFishNewsProofScene.layout.speechSegments.map((segment, index, segments) => (
+      index === segments.length - 1 ? { ...segment, endMs: 22902 } : segment
+    )),
+    beats: [
+      talkingFishNewsProofScene.layout.beats[0],
+      talkingFishNewsProofScene.layout.beats[1],
+      talkingFishNewsProofScene.layout.beats[2],
+      { ...talkingFishNewsProofScene.layout.beats[3], endMs: 22902 },
+    ],
+  },
+});
+assert.equal(naturalDeadpanDuration.valid, true, naturalDeadpanDuration.errors.join(" "));
+
+console.log("talking fish news format tests passed");

@@ -1,0 +1,24 @@
+{
+  "firstQuestion": "What should tonight's fish report cover? Send a topic or source link, or say pick for me.",
+  "mode": {
+    "default": "guide",
+    "options": ["guide", "turbo"],
+    "guide": "Show five concepts and ask the user to pick one before writing the report.",
+    "turbo": "Research the topic, generate five concepts, and select the strongest evidence-backed story before asking for voice approval."
+  },
+  "required": [
+    {
+      "id": "topicOrSourceUrl",
+      "type": "string",
+      "question": "What should tonight's fish report cover? Send a topic or source link, or say pick for me."
+    }
+  ],
+  "defaults": {
+    "concepts": 5,
+    "scriptBeats": 4,
+    "scriptWords": "38-60",
+    "voiceModel": "fish-audio/s2.1-pro-free:105a95c3aa3d4301b175ca1f7b3996ca",
+    "output": "1080x1920 MP4",
+    "durationSeconds": "14-24"
+  }
+}

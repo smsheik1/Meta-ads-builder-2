@@ -1,0 +1,30 @@
+{
+  "id": "talking-fish-news",
+  "version": "1.0.0",
+  "title": "Wiggly Talking Fish News",
+  "description": "Turn one sourced current story into a deadpan vertical fish-news report.",
+  "status": "agent-ready",
+  "outputs": [
+    {
+      "type": "video/mp4",
+      "count": 1,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": "14-24"
+    },
+    {
+      "type": "application/json",
+      "files": [
+        "research.json",
+        "concepts.json",
+        "selection.json",
+        "script.json",
+        "audio.json",
+        "scene.json",
+        "quality-report.json",
+        "final-manifest.json",
+        "state.json"
+      ]
+    }
+  ]
+}
