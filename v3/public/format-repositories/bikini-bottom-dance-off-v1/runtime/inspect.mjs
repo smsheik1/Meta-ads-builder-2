@@ -84,8 +84,8 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const closing = renderReport.timeline.events.find((event) => event.type === "closing");
   const closingChorusAssets = renderReport.dialogue.filter((asset) => (asset.timelineEventId || asset.id) === "closing");
   const panelCrops = CELL_POSITIONS.map(({ x, y }) => ({ x, y, width: CELL_WIDTH, height: CELL_HEIGHT }));
-  const squilliamCrop = panelCrops.at(-1);
-  const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, squilliamCrop)));
+  const closingCharacterCrop = panelCrops.at(-1);
+  const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, closingCharacterCrop)));
   const finaleDuration = renderReport.timeline.finale.end - renderReport.timeline.finale.start;
   const finaleFreezeEvents = await Promise.all(panelCrops.map((crop) => freezeEvents(
     videoPath,
@@ -113,7 +113,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     nineSecondGroupFinale: Math.abs(renderReport.timeline.finale.end - renderReport.timeline.finale.start - 9) < 0.01,
     uninterruptedFinaleSources: renderReport.characters.every((character) => character.finaleMotionId && character.finaleRenderedClipSha256),
     finaleMotionContinuity: finaleFreezeEvents.every((events) => events.length === 0),
-    squilliamMovesDuringCta: closingFrameHashes[0] !== closingFrameHashes[1],
+    closingCharacterMovesDuringCta: closingFrameHashes[0] !== closingFrameHashes[1],
     closingChorusVoices: closingChorusAssets.length === automatic.closingChorusVoiceCount
       && new Set(closingChorusAssets.map((asset) => asset.characterId)).size === automatic.closingChorusVoiceCount,
     seamlessReplayFrame: loopSeam.score >= automatic.minimumLoopSeamSsim,

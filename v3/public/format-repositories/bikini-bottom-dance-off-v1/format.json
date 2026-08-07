@@ -1,8 +1,8 @@
 {
   "id": "bikini-bottom-dance-off-v1",
   "name": "Bikini Bottom Dance Off",
-  "version": "0.5.0",
-  "description": "Turn a song excerpt into a replayable 47-second vertical four-character dance-off with Fish Audio banter, five-second-or-longer solos, an uninterrupted nine-second group showcase, and a seamless countdown loop.",
+  "version": "0.6.0",
+  "description": "Turn a song excerpt and user-selected solo, finale, and reaction motions into a replayable 47-second vertical four-character dance-off with optional Fish Audio generation and a seamless countdown loop.",
   "runtime": "runner.mjs",
   "renderer": "../mixamo-character-motion-v1/runtime/renderer/app.js",
   "inputContract": "input-contract.json",

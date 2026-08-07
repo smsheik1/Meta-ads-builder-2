@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "packagedMechanics": [
+    "the official Character Dance Lab renderer and retargeter",
+    "verified character motion profiles, grounding, paired limbs, and protected face bones",
+    "the 9:16 four-panel compositor, timing model, caption lane, countdown, finale, chorus, and replay bridge",
+    "motion selection, local motion import, MP4 composition, inspection, and finalization",
+    "quality gates and two proof input fixtures"
+  ],
+  "packagedReplaceableContent": [
+    "the local normalized starter motion catalog",
+    "the four operator-supplied character packs",
+    "public Fish Audio reference IDs and non-secret delivery presets"
+  ],
+  "episodeInputs": [
+    "a local song file and excerpt",
+    "solo, finale, and reaction motion IDs for every character",
+    "opening, taunts, closing CTA, labels, order, and panel colors"
+  ],
+  "localImports": [
+    {
+      "kind": "motion",
+      "source": "an operator-downloaded Mixamo Collada file with skin and inverse-bind matrices",
+      "command": "node runner.mjs import-motion --source=/absolute/path/to/Motion.dae --id=my-motion --label=\"My Motion\"",
+      "providerApiCalls": 0,
+      "sourceFilePackaged": false
+    }
+  ],
+  "providerCalls": [
+    {
+      "provider": "Fish Audio",
+      "when": "a required dialogue clip is missing or stale",
+      "approval": "render requires --approve-provider",
+      "secretNames": ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"],
+      "outputs": "ignored run-local WAV files and non-secret receipts"
+    }
+  ],
+  "notProviderCalls": [
+    "Mixamo animation selection and rendering",
+    "song analysis",
+    "motion normalization and retargeting",
+    "character rendering, video composition, inspection, and export"
+  ],
+  "unsupportedAutomation": [
+    {
+      "name": "gnuton/mixamo_anims_downloader",
+      "decision": "do not package or execute",
+      "reasons": [
+        "uses a signed-in browser token and undocumented Mixamo endpoints",
+        "has no declared software license, package metadata, automated tests, or stable release contract",
+        "bulk acquisition is not required for a user-selected motion import workflow"
+      ],
+      "reference": "https://github.com/gnuton/mixamo_anims_downloader"
+    }
+  ]
+}

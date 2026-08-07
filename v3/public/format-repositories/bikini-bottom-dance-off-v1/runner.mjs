@@ -85,29 +85,37 @@ function dialogueSpecs(input) {
   ];
 }
 
+async function dialogueCacheStatus(input, directory) {
+  const specs = dialogueSpecs(input);
+  const dialogueDirectory = path.join(directory, "dialogue");
+  const manifestPath = path.join(dialogueDirectory, "manifest.json");
+  const manifest = await exists(manifestPath) ? await readJson(manifestPath) : { assets: [] };
+  const entries = [];
+  for (const spec of specs) {
+    const asset = manifest.assets?.find((candidate) => candidate.id === spec.id);
+    const file = asset?.file ? path.join(directory, asset.file) : null;
+    const receiptPath = path.join(dialogueDirectory, `${spec.id}.receipt.json`);
+    const receipt = await exists(receiptPath) ? await readJson(receiptPath) : null;
+    const cached = Boolean(asset && file && await exists(file) && receipt
+      && asset.characterId === spec.characterId && asset.text === spec.text
+      && (asset.timelineEventId || asset.id) === spec.timelineEventId
+      && receipt.characterId === spec.characterId && receipt.text === spec.text);
+    entries.push({ spec, asset, file, cached });
+  }
+  return entries;
+}
+
 async function generateDialogue(input, directory) {
   const specs = dialogueSpecs(input);
   const dialogueDirectory = path.join(directory, "dialogue");
   const manifestPath = path.join(dialogueDirectory, "manifest.json");
-  if (await exists(manifestPath)) {
-    const manifest = await readJson(manifestPath);
-    const cached = [];
-    for (const spec of specs) {
-      const asset = manifest.assets?.find((candidate) => candidate.id === spec.id);
-      const file = asset?.file ? path.join(directory, asset.file) : null;
-      const receiptPath = path.join(dialogueDirectory, `${spec.id}.receipt.json`);
-      const receipt = await exists(receiptPath) ? await readJson(receiptPath) : null;
-      if (!asset || !file || !(await exists(file)) || !receipt
-        || asset.characterId !== spec.characterId || asset.text !== spec.text
-        || (asset.timelineEventId || asset.id) !== spec.timelineEventId
-        || receipt.characterId !== spec.characterId || receipt.text !== spec.text) {
-        cached.length = 0;
-        break;
-      }
-      cached.push({ ...spec, file, durationSeconds: await probeDuration(file), sha256: await sha256(file) });
-    }
-    if (cached.length === specs.length) return cached;
-  }
+  const cache = await dialogueCacheStatus(input, directory);
+  if (cache.every((entry) => entry.cached)) return Promise.all(cache.map(async ({ spec, file }) => ({
+    ...spec,
+    file,
+    durationSeconds: await probeDuration(file),
+    sha256: await sha256(file),
+  })));
 
   await loadLocalEnv();
   const apiKey = process.env.FISH_STUDIO_APIKEY || process.env.FISH_AUDIO_API_KEY || process.env.FISH_API_KEY;
@@ -217,6 +225,7 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     seen.add(character.characterId);
     if (!catalog.packs.some((candidate) => candidate.id === character.characterId && candidate.status === "motion-ready")) errors.push(`Character is not motion-ready: ${character.characterId}`);
     if (!manifest.motions.some((candidate) => candidate.id === character.motionId)) errors.push(`Unknown motion: ${character.motionId}`);
+    if (!manifest.motions.some((candidate) => candidate.id === character.reactionMotionId)) errors.push(`Unknown reaction motion: ${character.reactionMotionId}`);
     const finaleMotion = manifest.motions.find((candidate) => candidate.id === character.finaleMotionId);
     if (!finaleMotion) errors.push(`Unknown finale motion: ${character.finaleMotionId}`);
     else if (finaleMotion.durationSeconds < 9) errors.push(`Finale motion must cover nine uninterrupted seconds: ${character.finaleMotionId}`);
@@ -232,6 +241,7 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     if (input.songExcerptStart + 30 > songDuration + 0.01) errors.push("The selected excerpt extends beyond the song.");
   }
   if (errors.length) throw new Error(`Validation failed:\n- ${errors.join("\n- ")}`);
+  const dialogueCache = await dialogueCacheStatus(input, directory);
   const receipt = {
     status: "pass",
     validatedAt: new Date().toISOString(),
@@ -240,6 +250,18 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     songDurationSeconds: songDuration,
     songExcerptStart: input.songExcerptStart,
     renderer: "../mixamo-character-motion-v1/runtime/renderer/app.js",
+    motionSelections: input.characters.map(({ characterId, motionId, finaleMotionId, reactionMotionId }) => ({
+      characterId,
+      solo: motionId,
+      finale: finaleMotionId,
+      reaction: reactionMotionId,
+    })),
+    providerPlan: {
+      mixamoApiCalls: 0,
+      fishAudioCallsRequired: dialogueCache.filter((entry) => !entry.cached).length,
+      fishAudioApprovalRequired: dialogueCache.some((entry) => !entry.cached),
+      localInputs: [input.songFile],
+    },
   };
   if (receiptPath) await writeJson(receiptPath, receipt);
   return { input, receipt };
@@ -319,18 +341,95 @@ async function finalizeRun() {
 
 async function checkRepo() {
   for (const tool of ["node", "npm", "ffmpeg", "ffprobe"]) await execute(tool, tool === "node" || tool === "npm" ? ["--version"] : ["-version"], { capture: true });
-  for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "assets/voice-presets.json"]) await readJson(path.join(root, file));
+  for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/voice-presets.json"]) await readJson(path.join(root, file));
   for (const file of ["runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
   await execute("npm", ["test"]);
   console.log(JSON.stringify({ status: "pass", renderer: "mixamo-character-motion-v1/runtime/renderer/app.js" }, null, 2));
 }
 
+async function listMotions() {
+  const manifest = await readJson(path.join(motionRoot, "assets/motions/manifest.json"));
+  console.log(JSON.stringify({
+    source: "local-normalized-catalog",
+    mixamoApiCalls: 0,
+    motions: manifest.motions.map(({ id, label, durationSeconds }) => ({
+      id,
+      label,
+      durationSeconds,
+      soloEligible: true,
+      finaleEligible: durationSeconds >= 9,
+    })),
+  }, null, 2));
+}
+
+async function importMotion() {
+  for (const required of ["source", "id", "label"]) if (!args[required]) throw new Error(`Missing --${required}`);
+  await execute("node", [
+    path.join(motionRoot, "runner.mjs"),
+    "import-motion",
+    `--source=${path.resolve(args.source)}`,
+    `--id=${args.id}`,
+    `--label=${args.label}`,
+  ], { cwd: motionRoot });
+}
+
+async function generateSmokeTone(file, durationSeconds, frequency) {
+  await execute("ffmpeg", [
+    "-y", "-v", "error", "-f", "lavfi", "-i", `sine=frequency=${frequency}:sample_rate=48000:duration=${durationSeconds}`,
+    "-ar", "48000", "-ac", "1", file,
+  ]);
+}
+
+async function smoke() {
+  const directory = path.join(root, "agent-runs", "_smoke");
+  const dialogueDirectory = path.join(directory, "dialogue");
+  await mkdir(dialogueDirectory, { recursive: true });
+  const input = await readJson(path.join(root, "fixtures/alternate/input.json"));
+  input.songFile = "source.wav";
+  await writeJson(path.join(directory, "input.json"), input);
+  await generateSmokeTone(path.join(directory, input.songFile), 60, 220);
+
+  const specs = dialogueSpecs(input);
+  const assets = [];
+  for (const [index, spec] of specs.entries()) {
+    const durationSeconds = spec.timelineEventId === "closing" ? 2.2 : 0.9 + index * 0.18;
+    const file = path.join(dialogueDirectory, `${spec.id}.wav`);
+    await generateSmokeTone(file, durationSeconds, 330 + index * 55);
+    await writeJson(path.join(dialogueDirectory, `${spec.id}.receipt.json`), {
+      provider: "synthetic-smoke",
+      characterId: spec.characterId,
+      text: spec.text,
+    });
+    assets.push({
+      ...spec,
+      file,
+      durationSeconds: await probeDuration(file),
+      sha256: await sha256(file),
+    });
+  }
+  await writeJson(path.join(dialogueDirectory, "manifest.json"), {
+    provider: "synthetic-smoke",
+    assets: assets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(directory, file) })),
+  });
+  await validateInput(path.join(directory, "input.json"), { receiptPath: path.join(directory, ".validation.json") });
+  await composeRun({ input, dialogueAssets: assets, runDirectory: directory, outputPath: path.join(directory, "smoke.mp4") });
+  const report = await inspectVideo({
+    videoPath: path.join(directory, "smoke.mp4"),
+    runDirectory: directory,
+    qualityContractPath: path.join(root, "quality.json"),
+  });
+  console.log(JSON.stringify({ status: report.status, video: path.join(directory, "smoke.mp4") }, null, 2));
+}
+
 switch (command) {
   case "check": await checkRepo(); break;
+  case "smoke": await smoke(); break;
   case "init": await initialize(); break;
   case "validate": await validateRun(); break;
   case "render": await renderRun(); break;
   case "inspect": await inspectRun(); break;
   case "finalize": await finalizeRun(); break;
-  default: throw new Error("Use check, init, validate, render, inspect, or finalize.");
+  case "list-motions": await listMotions(); break;
+  case "import-motion": await importMotion(); break;
+  default: throw new Error("Use check, init, validate, render, inspect, finalize, list-motions, or import-motion.");
 }

@@ -9,7 +9,6 @@ import { CAPTION_HEIGHT, CAPTION_Y, CELL_HEIGHT, CELL_POSITIONS, CELL_WIDTH } fr
 import { buildTimeline, DURATION } from "./timeline.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const REACTION_MOTION_ID = "taunt";
 const IDLE_SPEED = 0.36;
 const RIGHT_COLUMN_SAFE_SHIFT = 76;
 
@@ -191,13 +190,13 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     return destination;
   }));
   const reactionClips = await Promise.all(input.characters.map(async (character) => {
-    const destination = path.join(clipsDirectory, `${character.characterId}-${REACTION_MOTION_ID}-reaction.mp4`);
+    const destination = path.join(clipsDirectory, `${character.characterId}-${character.reactionMotionId}-reaction.mp4`);
     try {
       if ((await stat(destination)).size > 20_000) return destination;
     } catch {
       // Render missing clips below.
     }
-    const rendered = await renderDownload({ characterId: character.characterId, motionId: REACTION_MOTION_ID, format: "mp4" });
+    const rendered = await renderDownload({ characterId: character.characterId, motionId: character.reactionMotionId, format: "mp4" });
     await writeFile(destination, rendered.bytes);
     return destination;
   }));
@@ -331,7 +330,6 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
       finale: timeline.finale,
       renderedClipSha256: await sha256(characterClips[index]),
       finaleRenderedClipSha256: await sha256(finaleClips[index]),
-      reactionMotionId: REACTION_MOTION_ID,
       reactionRenderedClipSha256: await sha256(reactionClips[index]),
     }))),
     outputSha256: await sha256(outputPath),

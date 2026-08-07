@@ -24,11 +24,11 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 ### 1. Ship a runnable package
 
-**Rule:** A Wiggly Repo must include its working runtime, not only a page, prompts, screenshots, or pseudocode.
+**Rule:** A Wiggly Repo must include its working runtime, not only a page, prompts, screenshots, or pseudocode. If the official runtime consumes another local Repo, ship both in one installable artifact or workspace instead of relying on a sibling that exists only in the source tree.
 
 **Why:** A fresh agent rebuilt Otaku’s renderer when it could only see how the output was supposed to look. The replacement introduced different timing behavior.
 
-**Evidence:** The downloadable Otaku Format Kit let fresh agents use the packaged runner and renderer instead.
+**Evidence:** The downloadable Otaku Format Kit let fresh agents use the packaged runner and renderer instead. Bikini Bottom Dance Off preserved its one official character renderer by packaging the Dance Off and Character Motion Repos as npm workspaces; a clean extraction installed, checked, and rendered its smoke proof without the source workspace.
 
 ### 2. Make one runtime official
 
@@ -88,11 +88,11 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 ### 9. Separate reusable mechanics from replaceable content
 
-**Rule:** Keep content packs, prompts, assets, voices, and facts outside the reusable renderer and runner.
+**Rule:** Keep content packs, prompts, assets, voices, and facts outside the reusable renderer and runner. When an asset source has no supported public API, expose a validated local import boundary instead of making private browser automation a runtime dependency.
 
 **Why:** A content change should not require surgery on the engine.
 
-**Evidence:** Danny Phantom and SpongeBob were added through world data, assets, voices, music, and scenes without story-specific renderer code.
+**Evidence:** Danny Phantom and SpongeBob were added through world data, assets, voices, music, and scenes without story-specific renderer code. Bikini Bottom Dance Off replaced every solo and finale through input data, imported new Mixamo Collada files locally, and rendered a second real choreography with zero Mixamo or Fish calls.
 
 ### 10. Limit attempts and fail clearly
 

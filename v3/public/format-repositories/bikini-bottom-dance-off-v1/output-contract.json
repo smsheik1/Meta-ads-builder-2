@@ -10,22 +10,28 @@
     "durationSeconds": 47
   },
   "timeline": {
-    "timingRule": "Eight Fish Audio clips are measured: one opening, three taunts, and four versions of the closing line. Squilliam's closing duration sets the chorus window and the other three voices are time-matched to it; the remaining solo budget is divided evenly among four dancers. Every solo lasts at least 5 seconds, the countdown is 3 seconds, the uninterrupted group showcase is 9 seconds, the replay bridge is 1 second, and the complete timeline is exactly 47 seconds.",
+    "timingRule": "Eight dialogue clips are measured: one opening, three taunts, and four versions of the closing line. The final character's closing duration sets the chorus window and the other three voices are time-matched to it; the remaining solo budget is divided evenly among four dancers. Every solo lasts at least 5 seconds, the countdown is 3 seconds, the uninterrupted group showcase is 9 seconds, the replay bridge is 1 second, and the complete timeline is exactly 47 seconds.",
     "minimumSoloSeconds": 5,
     "sequence": [
       {"beat": "countdown-beeps", "song": false, "voice": false},
-      {"beat": "spongebob-opening", "song": false, "voice": true},
-      {"beat": "dance-spongebob", "song": true, "voice": false},
-      {"beat": "patrick-taunts-spongebob", "song": false, "voice": true},
-      {"beat": "dance-patrick", "song": true, "voice": false},
-      {"beat": "mr-krabs-taunts-patrick", "song": false, "voice": true},
-      {"beat": "dance-mr-krabs", "song": true, "voice": false},
-      {"beat": "squilliam-taunts-mr-krabs", "song": false, "voice": true},
-      {"beat": "dance-squilliam", "song": true, "voice": false},
+      {"beat": "opening-character-hype", "song": false, "voice": true},
+      {"beat": "dance-character-1", "song": true, "voice": false},
+      {"beat": "character-2-taunts-character-1", "song": false, "voice": true},
+      {"beat": "dance-character-2", "song": true, "voice": false},
+      {"beat": "character-3-taunts-character-2", "song": false, "voice": true},
+      {"beat": "dance-character-3", "song": true, "voice": false},
+      {"beat": "character-4-taunts-character-3", "song": false, "voice": true},
+      {"beat": "dance-character-4", "song": true, "voice": false},
       {"beat": "all-character-finale", "song": true, "voice": false},
       {"beat": "four-character-comment-cta-chorus", "song": false, "voice": true},
       {"beat": "replay-loop-bridge", "song": false, "voice": false}
     ]
   },
-  "evidence": ["analysis.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
+  "motionAssignments": {
+    "perCharacter": ["motionId", "finaleMotionId", "reactionMotionId"],
+    "source": "the local normalized motion catalog",
+    "newMotionPath": "operator-downloaded DAE normalized by runner.mjs import-motion",
+    "runtimeProviderCalls": 0
+  },
+  "evidence": ["analysis.json", ".validation.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
 }

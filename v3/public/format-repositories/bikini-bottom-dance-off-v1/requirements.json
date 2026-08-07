@@ -13,6 +13,8 @@
   "environmentVariables": ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"],
   "notes": [
     "Character pixels are rendered by the existing Character Dance Lab renderer.",
+    "Mixamo is not a runtime provider and has no supported public API in this Repo. A new motion is downloaded by the operator and normalized locally with import-motion.",
+    "The unsupported gnuton/mixamo_anims_downloader browser-token script is not packaged or executed.",
     "Song files are copied into local run folders and are not packaged.",
     "The SpongeBob, Patrick, and Mr. Krabs public reference presets are packaged; Squilliam's approved private clone stays environment-only.",
     "Validation completes before any Fish Audio call, and render requires --approve-provider whenever a dialogue cache entry is missing or stale."

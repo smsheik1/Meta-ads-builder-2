@@ -8,12 +8,12 @@
     "The supplied song plays only while one or more characters are dancing",
     "Each individual solo lasts at least five seconds",
     "Nine-second all-character finale using one uninterrupted long-form motion per character",
-    "Four-character spoken comment chorus time-matched to Squilliam's closing delivery while he uses the official Taunt motion and the others react subtly",
+    "Four-character spoken comment chorus time-matched to the final character's closing delivery while every character uses its selected reaction motion",
     "One-second vote-to-countdown replay bridge whose dimmed-character final frame matches the opening countdown",
     "Dedicated caption lane below the character grid",
     "Character pixels rendered only by the Character Dance Lab renderer"
   ],
-  "replaceable": ["song and excerpt", "verified four-character roster", "solo and finale motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],
+  "replaceable": ["song and excerpt", "verified four-character roster and order", "solo, finale, and reaction motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],
   "outOfScope": ["automatic rights clearance", "creating new voice clones", "motion-specific rig patches", "timeline editor"],
   "rendererInvariant": "The compositor may crop, dim, sequence, label, and frame clips, but every animated character frame must come from mixamo-character-motion-v1/runtime/renderer/app.js."
 }

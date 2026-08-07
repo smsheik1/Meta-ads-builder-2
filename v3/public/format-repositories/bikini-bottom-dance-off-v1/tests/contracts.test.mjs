@@ -36,6 +36,18 @@ test("the timeline is exactly 47 seconds with no gaps, five-second solos, and a 
 test("the smoke roster uses every verified character once", async () => {
   const input = await readJson("fixtures/smoke/input.json");
   assert.deepEqual(input.characters.map((character) => character.characterId).sort(), ["mr-krabs", "patrick", "spongebob", "squilliam"]);
+  assert.ok(input.characters.every((character) => character.reactionMotionId));
+});
+
+test("a second proof input replaces every solo and finale without runtime changes", async () => {
+  const original = await readJson("fixtures/smoke/input.json");
+  const alternate = await readJson("fixtures/alternate/input.json");
+  assert.deepEqual(alternate.characters.map((character) => character.characterId), original.characters.map((character) => character.characterId));
+  for (const [index, character] of alternate.characters.entries()) {
+    assert.notEqual(character.motionId, original.characters[index].motionId);
+    assert.notEqual(character.finaleMotionId, original.characters[index].finaleMotionId);
+    assert.ok(character.reactionMotionId);
+  }
 });
 
 test("each incoming challenger taunts the dancer directly before them", async () => {
@@ -71,9 +83,9 @@ test("the approved Fish voice presets are registered and provider calls require 
   assert.match(runner, /closing-\$\{character\.characterId\}/);
   assert.match(runner, /timelineEventId: "closing"/);
   assert.match(runner, /timelineEventId: spec\.timelineEventId/);
-  assert.ok(runner.indexOf("if (await exists(manifestPath))") < runner.indexOf("await loadLocalEnv()"));
+  assert.ok(runner.indexOf("const cache = await dialogueCacheStatus") < runner.indexOf("await loadLocalEnv()"));
   assert.ok(
-    runner.indexOf("const cached = await cachedDialogueAsset") <
+    runner.indexOf("const cached = receipt && await exists(output)") <
       runner.indexOf("for uncached ${spec.id} audio"),
     "cached private voice clips must be reusable without reloading the private provider reference",
   );
@@ -96,14 +108,19 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.equal(output.timeline.sequence.at(-1).beat, "replay-loop-bridge");
   const quality = await readJson("quality.json");
   assert.ok(quality.automatic.minimumLoopSeamSsim >= 0.995);
-  const input = await readJson("fixtures/smoke/input.json");
+  const inputs = await Promise.all([readJson("fixtures/smoke/input.json"), readJson("fixtures/alternate/input.json")]);
   const manifest = await readJson("../mixamo-character-motion-v1/assets/motions/manifest.json");
-  for (const character of input.characters) {
-    const motion = manifest.motions.find((candidate) => candidate.id === character.finaleMotionId);
-    assert.ok(motion.durationSeconds >= 9);
+  for (const input of inputs) {
+    for (const character of input.characters) {
+      assert.ok(manifest.motions.some((candidate) => candidate.id === character.motionId));
+      assert.ok(manifest.motions.some((candidate) => candidate.id === character.reactionMotionId));
+      const motion = manifest.motions.find((candidate) => candidate.id === character.finaleMotionId);
+      assert.ok(motion.durationSeconds >= 9);
+    }
   }
   const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
-  assert.match(compositor, /REACTION_MOTION_ID = "taunt"/);
+  assert.doesNotMatch(compositor, /REACTION_MOTION_ID/);
+  assert.match(compositor, /character\.reactionMotionId/);
   assert.match(compositor, /IDLE_SPEED = 0\.36/);
   assert.match(compositor, /RIGHT_COLUMN_SAFE_SHIFT = 76/);
   assert.equal(CELL_HEIGHT, 515);
@@ -125,10 +142,27 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(inspector, /freezedetect/);
   assert.match(inspector, /CELL_POSITIONS\.map/);
   assert.match(inspector, /closingChorusVoices/);
+  assert.match(inspector, /closingCharacterMovesDuringCta/);
+  assert.doesNotMatch(inspector, /squilliamMovesDuringCta/);
   assert.doesNotMatch(inspector, /finaleFrameHashes/);
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {
   const composition = await readJson("composition-contract.json");
   assert.match(composition.rendererInvariant, /mixamo-character-motion-v1\/runtime\/renderer\/app\.js/);
+});
+
+test("the package boundary keeps Mixamo local and external calls explicit", async () => {
+  const boundary = await readJson("content-boundary.json");
+  assert.equal(boundary.localImports[0].providerApiCalls, 0);
+  assert.equal(boundary.localImports[0].sourceFilePackaged, false);
+  assert.deepEqual(boundary.providerCalls.map((provider) => provider.provider), ["Fish Audio"]);
+  assert.equal(boundary.unsupportedAutomation[0].decision, "do not package or execute");
+  const runner = await readFile(new URL("runner.mjs", root), "utf8");
+  assert.match(runner, /case "list-motions"/);
+  assert.match(runner, /case "import-motion"/);
+  assert.match(runner, /mixamoApiCalls: 0/);
+  const buildKit = await readFile(new URL("build-kit.mjs", root), "utf8");
+  assert.match(buildKit, /workspaces: \["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"\]/);
+  assert.match(buildKit, /await cp\(motionRoot/);
 });
