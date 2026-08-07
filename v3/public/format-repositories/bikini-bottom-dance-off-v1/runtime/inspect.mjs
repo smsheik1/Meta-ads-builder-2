@@ -15,6 +15,16 @@ function execute(program, args, { capture = false } = {}) {
   });
 }
 
+async function meanVolume(videoPath, [start, end]) {
+  const output = await execute("ffmpeg", [
+    "-hide_banner", "-ss", String(start), "-t", String(end - start), "-i", videoPath,
+    "-vn", "-af", "volumedetect", "-f", "null", "-",
+  ], { capture: true });
+  const match = output.match(/mean_volume:\s+(-?[\d.]+|-inf)\s+dB/);
+  if (!match) throw new Error(`Could not measure audio window ${start}-${end}.`);
+  return match[1] === "-inf" ? -Infinity : Number(match[1]);
+}
+
 export async function inspectVideo({ videoPath, runDirectory, qualityContractPath }) {
   const probe = JSON.parse(await execute("ffprobe", [
     "-v", "error", "-show_streams", "-show_format", "-of", "json", videoPath,
@@ -26,12 +36,18 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const fpsParts = String(video?.avg_frame_rate || "0/1").split("/").map(Number);
   const fps = fpsParts[1] ? fpsParts[0] / fpsParts[1] : 0;
   const duration = Number(probe.format.duration);
+  const beepVolumes = await Promise.all(automatic.beepWindows.map((window) => meanVolume(videoPath, window)));
+  const songVolumes = await Promise.all(automatic.songWindows.map((window) => meanVolume(videoPath, window)));
+  const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
   const checks = {
     width: video?.width === automatic.width,
     height: video?.height === automatic.height,
     fps: Math.abs(fps - automatic.fps) < 0.01,
     duration: Math.abs(duration - automatic.durationSeconds) <= automatic.durationToleranceSeconds,
     audio: Boolean(audio),
+    countdownBeeps: beepVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
+    danceMusic: songVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
+    nonDanceSilence: silentVolumes.every((volume) => volume <= automatic.maximumSilentWindowMeanDb),
   };
   if (Object.values(checks).some((passed) => !passed)) {
     throw new Error(`Automatic inspection failed: ${JSON.stringify({ checks, duration, fps, video, audio }, null, 2)}`);
@@ -46,7 +62,17 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     status: "automatic-pass-human-pending",
     inspectedAt: new Date().toISOString(),
     checks,
-    measured: { width: video.width, height: video.height, fps, durationSeconds: duration, audioCodec: audio.codec_name },
+    measured: {
+      width: video.width,
+      height: video.height,
+      fps,
+      durationSeconds: duration,
+      audioCodec: audio.codec_name,
+      audioSampleRate: Number(audio.sample_rate),
+      beepWindowMeanDb: beepVolumes,
+      songWindowMeanDb: songVolumes,
+      silentWindowMeanDb: silentVolumes,
+    },
     humanReview: { status: "pending", criteria: contract.human },
     contactSheet: path.basename(contactSheet),
   };

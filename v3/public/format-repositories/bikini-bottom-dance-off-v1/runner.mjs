@@ -72,13 +72,13 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     readJson(path.join(motionRoot, "assets/motions/manifest.json")),
   ]);
   const seen = new Set();
-  for (const character of input.characters || []) {
+  for (const [index, character] of (input.characters || []).entries()) {
     if (seen.has(character.characterId)) errors.push(`Duplicate character: ${character.characterId}`);
     seen.add(character.characterId);
     if (!catalog.packs.some((candidate) => candidate.id === character.characterId && candidate.status === "motion-ready")) errors.push(`Character is not motion-ready: ${character.characterId}`);
     if (!manifest.motions.some((candidate) => candidate.id === character.motionId)) errors.push(`Unknown motion: ${character.motionId}`);
     if (!/^#[0-9a-fA-F]{6}$/.test(character.color || "")) errors.push(`Invalid color for ${character.characterId}`);
-    if (typeof character.taunt !== "string" || !character.taunt.trim() || character.taunt.length > 58) errors.push(`Invalid taunt for ${character.characterId}`);
+    if (typeof character.taunt !== "string" || character.taunt.length > 58 || (index > 0 && !character.taunt.trim())) errors.push(`Invalid taunt for ${character.characterId}`);
   }
   const songPath = path.join(directory, input.songFile || "");
   if (!(await exists(songPath))) errors.push(`Song file is missing: ${input.songFile}`);

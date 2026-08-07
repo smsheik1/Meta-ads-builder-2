@@ -10,6 +10,12 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DURATION = 30;
 const FINALE_START = 25;
 const FINALE_END = 28;
+const ROUND_WINDOWS = [
+  { roundStart: 5, roundEnd: 10, danceStart: 5, danceEnd: 10 },
+  { roundStart: 10, roundEnd: 15, tauntStart: 10, tauntEnd: 11.5, danceStart: 11.5, danceEnd: 15 },
+  { roundStart: 15, roundEnd: 20, tauntStart: 15, tauntEnd: 16.5, danceStart: 16.5, danceEnd: 20 },
+  { roundStart: 20, roundEnd: 25, tauntStart: 20, tauntEnd: 21.5, danceStart: 21.5, danceEnd: 25 },
+];
 
 function execute(program, args) {
   return new Promise((resolve, reject) => {
@@ -42,7 +48,7 @@ function centeredText({ value, y, size, fill = "white", stroke = "#020b13", stro
   return `<text class="display" x="540" y="${y}" font-size="${size}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}">${xml(value)}</text>`;
 }
 
-async function renderGraphics({ input, directory, cellPositions, soloWindows }) {
+async function renderGraphics({ input, directory, cellPositions }) {
   await mkdir(directory, { recursive: true });
   const graphics = [];
   const add = async (name, enable, content) => {
@@ -70,16 +76,19 @@ async function renderGraphics({ input, directory, cellPositions, soloWindows }) 
 
   for (let index = 0; index < input.characters.length; index += 1) {
     const character = input.characters[index];
+    const previousCharacter = input.characters[index - 1];
     const position = cellPositions[index];
-    const solo = soloWindows[index];
-    await add(`active-${index}`, `between(t,${solo.start},${solo.end})`,
+    const round = ROUND_WINDOWS[index];
+    await add(`active-${index}`, `between(t,${round.roundStart},${round.roundEnd})`,
       `<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="${character.color}" stroke-width="18"/>`);
-    const tauntSize = character.taunt.length > 34 ? 37 : 48;
-    await add(`taunt-${index}`, `between(t,${solo.start},${solo.start + 1.8})`, [
-      '<rect x="40" y="1560" width="1000" height="170" rx="30" fill="#020b13" fill-opacity="0.9"/>',
-      centeredText({ value: `${character.label} SAYS:`, y: 1618, size: 30, fill: character.color, strokeWidth: 2 }),
-      centeredText({ value: character.taunt, y: 1690, size: tauntSize, strokeWidth: 3 }),
-    ].join(""));
+    if (round.tauntStart !== undefined) {
+      const tauntSize = character.taunt.length > 34 ? 37 : 48;
+      await add(`taunt-${index}`, `between(t,${round.tauntStart},${round.tauntEnd})`, [
+        '<rect x="40" y="1560" width="1000" height="170" rx="30" fill="#020b13" fill-opacity="0.9"/>',
+        centeredText({ value: `${character.label} TO ${previousCharacter.label}:`, y: 1618, size: 30, fill: character.color, strokeWidth: 2 }),
+        centeredText({ value: character.taunt, y: 1690, size: tauntSize, strokeWidth: 3 }),
+      ].join(""));
+    }
   }
 
   await add("challenge", "between(t,3,5)", [
@@ -146,7 +155,6 @@ export async function composeRun({ input, runDirectory, outputPath }) {
   }));
 
   const filters = ["color=c=0x061829:s=1080x1920:r=30:d=30[base]"];
-  const soloWindows = input.characters.map((_, index) => ({ start: 5 + index * 5, end: 10 + index * 5 }));
   const cellPositions = [
     { x: 20, y: 250 },
     { x: 550, y: 250 },
@@ -157,19 +165,18 @@ export async function composeRun({ input, runDirectory, outputPath }) {
     input,
     directory: path.join(runDirectory, "graphics"),
     cellPositions,
-    soloWindows,
   });
 
   input.characters.forEach((character, index) => {
-    const solo = soloWindows[index];
-    const middleDuration = FINALE_START - solo.end;
+    const round = ROUND_WINDOWS[index];
+    const middleDuration = FINALE_START - round.danceEnd;
     filters.push(`[${index}:v]split=5[c${index}pre0][c${index}solo0][c${index}mid0][c${index}final0][c${index}post0]`);
-    filters.push(freeze(`c${index}pre0`, solo.start, `c${index}pre`));
-    filters.push(`[c${index}solo0]trim=duration=${solo.end - solo.start},setpts=PTS-STARTPTS[c${index}solo]`);
+    filters.push(freeze(`c${index}pre0`, round.danceStart, `c${index}pre`));
+    filters.push(`[c${index}solo0]trim=duration=${round.danceEnd - round.danceStart},setpts=PTS-STARTPTS[c${index}solo]`);
     filters.push(freeze(`c${index}mid0`, middleDuration, `c${index}mid`));
     filters.push(`[c${index}final0]trim=duration=${FINALE_END - FINALE_START},setpts=PTS-STARTPTS[c${index}final]`);
     filters.push(freeze(`c${index}post0`, DURATION - FINALE_END, `c${index}post`));
-    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${solo.start},${solo.end})+between(t,${FINALE_START},${FINALE_END}))',setsar=1[c${index}]`);
+    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${FINALE_START},${FINALE_END}))',setsar=1[c${index}]`);
   });
 
   let current = "base";
@@ -185,7 +192,24 @@ export async function composeRun({ input, runDirectory, outputPath }) {
     current = next;
   });
   filters.push(`[${current}]fps=30,format=yuv420p[vout]`);
-  filters.push(`[4:a]atrim=duration=${DURATION},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.12,afade=t=out:st=29.4:d=0.6,loudnorm=I=-15:LRA=10:TP=-1.2[music]`);
+  const musicWindows = [
+    ...ROUND_WINDOWS.map(({ danceStart, danceEnd }) => ({ start: danceStart, end: danceEnd })),
+    { start: FINALE_START, end: FINALE_END },
+  ];
+  const musicDuration = musicWindows.reduce((total, window) => total + window.end - window.start, 0);
+  filters.push(`[4:a]atrim=duration=${musicDuration},asetpts=PTS-STARTPTS,aresample=48000,loudnorm=I=-15:LRA=10:TP=-1.2,asplit=${musicWindows.length}${musicWindows.map((_, index) => `[music${index}src]`).join("")}`);
+  let sourceStart = 0;
+  musicWindows.forEach((window, index) => {
+    const segmentDuration = window.end - window.start;
+    const fadeOutStart = Math.max(0, segmentDuration - 0.08);
+    filters.push(`[music${index}src]atrim=start=${sourceStart}:duration=${segmentDuration},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.04,afade=t=out:st=${fadeOutStart}:d=0.08,adelay=${Math.round(window.start * 1000)}:all=1[music${index}]`);
+    sourceStart += segmentDuration;
+  });
+  filters.push("sine=frequency=700:sample_rate=48000:duration=0.16,volume=0.28,aformat=channel_layouts=stereo,adelay=180:all=1[beep0]");
+  filters.push("sine=frequency=700:sample_rate=48000:duration=0.16,volume=0.28,aformat=channel_layouts=stereo,adelay=1180:all=1[beep1]");
+  filters.push("sine=frequency=980:sample_rate=48000:duration=0.32,volume=0.32,aformat=channel_layouts=stereo,adelay=2150:all=1[beep2]");
+  filters.push(`anullsrc=r=48000:cl=stereo:d=${DURATION}[silence]`);
+  filters.push(`[silence]${musicWindows.map((_, index) => `[music${index}]`).join("")}[beep0][beep1][beep2]amix=inputs=${musicWindows.length + 4}:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95[music]`);
 
   const filterPath = path.join(runDirectory, "filter-complex.txt");
   await writeFile(filterPath, `${filters.join(";\n")}\n`);
@@ -212,7 +236,8 @@ export async function composeRun({ input, runDirectory, outputPath }) {
     song: { file: input.songFile, excerptStart: input.songExcerptStart, sha256: await sha256(songPath) },
     characters: await Promise.all(input.characters.map(async (character, index) => ({
       ...character,
-      solo: soloWindows[index],
+      taunts: index ? input.characters[index - 1].characterId : null,
+      round: ROUND_WINDOWS[index],
       finale: { start: FINALE_START, end: FINALE_END },
       renderedClipSha256: await sha256(characterClips[index]),
     }))),

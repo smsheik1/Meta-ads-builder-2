@@ -2,9 +2,10 @@
   "schemaVersion": 1,
   "fixed": [
     "1080x1920 Instagram Reel canvas at 30 fps",
-    "Three-second old-film countdown",
+    "Three-second old-film countdown with one beep per number and no music",
     "Two-by-two character grid",
-    "Four five-second solo rounds in roster order",
+    "The first character dances immediately; each later character taunts the dancer directly before them, then dances",
+    "The supplied song plays only while one or more characters are dancing",
     "Three-second all-character finale",
     "Two-second comment CTA",
     "Character pixels rendered only by the Character Dance Lab renderer"

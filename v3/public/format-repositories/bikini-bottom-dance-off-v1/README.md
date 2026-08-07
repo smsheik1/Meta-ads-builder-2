@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off
 
-A 30-second 9:16 proof that turns one song excerpt into a four-way character dance battle. The Reel opens on a 3–2–1 film countdown, introduces the challenge, gives each character a five-second highlighted solo, brings all four back for a finale, and ends on a comment prompt.
+A 30-second 9:16 proof that turns one song excerpt into a four-way character dance battle. The Reel opens on a silent-song 3–2–1 countdown with beeps, introduces the challenge, then alternates dances with direct roasts: each incoming challenger taunts the dancer immediately before them and takes over. All four return for the finale before the comment prompt.
 
 This Repo sequences character clips; it does not own another character renderer. SpongeBob, Patrick, Mr. Krabs, and Squilliam are rendered by the existing Character Dance Lab runtime, including its protected faces, grounding, and Squilliam paired-leg profile.
 
@@ -12,7 +12,7 @@ node runner.mjs render --run=wiggle-proof
 node runner.mjs inspect --run=wiggle-proof
 ```
 
-The supplied song is copied into the local run folder and remains untracked. The initial proof uses on-screen taunts so music, layout, motion, and pacing can be judged before optional voice-provider calls.
+The supplied song is copied into the local run folder and remains untracked. It plays only during dance windows; countdown, challenge, taunts, and CTA stay clear. The initial proof uses on-screen taunts so music, layout, motion, and pacing can be judged before optional voice-provider calls.
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|

@@ -10,14 +10,17 @@
     "durationSeconds": 30
   },
   "timeline": [
-    {"start": 0, "end": 3, "beat": "countdown"},
-    {"start": 3, "end": 5, "beat": "challenge"},
-    {"start": 5, "end": 10, "beat": "solo-1"},
-    {"start": 10, "end": 15, "beat": "solo-2"},
-    {"start": 15, "end": 20, "beat": "solo-3"},
-    {"start": 20, "end": 25, "beat": "solo-4"},
-    {"start": 25, "end": 28, "beat": "finale"},
-    {"start": 28, "end": 30, "beat": "comment-cta"}
+    {"start": 0, "end": 3, "beat": "countdown-beeps", "song": false},
+    {"start": 3, "end": 5, "beat": "challenge", "song": false},
+    {"start": 5, "end": 10, "beat": "dance-spongebob", "song": true},
+    {"start": 10, "end": 11.5, "beat": "patrick-taunts-spongebob", "song": false},
+    {"start": 11.5, "end": 15, "beat": "dance-patrick", "song": true},
+    {"start": 15, "end": 16.5, "beat": "mr-krabs-taunts-patrick", "song": false},
+    {"start": 16.5, "end": 20, "beat": "dance-mr-krabs", "song": true},
+    {"start": 20, "end": 21.5, "beat": "squilliam-taunts-mr-krabs", "song": false},
+    {"start": 21.5, "end": 25, "beat": "dance-squilliam", "song": true},
+    {"start": 25, "end": 28, "beat": "all-character-finale", "song": true},
+    {"start": 28, "end": 30, "beat": "comment-cta", "song": false}
   ],
   "evidence": ["analysis.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
 }
