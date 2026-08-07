@@ -7,10 +7,10 @@
     "width": 1080,
     "height": 1920,
     "fps": 30,
-    "durationSeconds": 30
+    "durationSeconds": 36
   },
   "timeline": {
-    "timingRule": "The five generated Fish Audio clips are measured first. Their exact lengths determine the speech windows; the remaining time is divided evenly among four solo dances. The countdown is 3 seconds, the finale is 3 seconds, and the complete timeline is exactly 30 seconds.",
+    "timingRule": "The five generated Fish Audio clips are measured first. Their exact lengths determine the speech windows; the remaining solo budget is divided evenly among four dancers. The countdown is 3 seconds, the group showcase is 9 seconds, and the complete timeline is exactly 36 seconds.",
     "minimumSoloSeconds": 2.5,
     "sequence": [
       {"beat": "countdown-beeps", "song": false, "voice": false},

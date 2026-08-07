@@ -7,7 +7,7 @@ import { buildTimeline } from "../runtime/timeline.mjs";
 const root = new URL("../", import.meta.url);
 const readJson = async (file) => JSON.parse(await readFile(new URL(file, root), "utf8"));
 
-test("the timeline is exactly 30 seconds with no gaps", async () => {
+test("the timeline is exactly 36 seconds with no gaps", async () => {
   const input = await readJson("fixtures/smoke/input.json");
   const dialogue = [
     { id: "opening", durationSeconds: 0.7 },
@@ -21,8 +21,9 @@ test("the timeline is exactly 30 seconds with no gaps", async () => {
   for (let index = 1; index < timeline.events.length; index += 1) {
     assert.equal(timeline.events[index - 1].end, timeline.events[index].start);
   }
-  assert.equal(timeline.events.at(-1).end, 30);
+  assert.equal(timeline.events.at(-1).end, 36);
   assert.ok(timeline.danceDuration >= 2.5);
+  assert.ok(Math.abs(timeline.finale.end - timeline.finale.start - 9) < 0.01);
 });
 
 test("the smoke roster uses every verified character once", async () => {
@@ -69,6 +70,15 @@ test("long spoken captions wrap inside the Reel-safe card", async () => {
     assert.equal(wrapped.length, 2);
     assert.ok(wrapped.every((part) => part.length <= 28));
   }
+});
+
+test("the nine-second group showcase hands off to an animated Squilliam CTA", async () => {
+  const output = await readJson("output-contract.json");
+  assert.equal(output.video.durationSeconds, 36);
+  assert.match(output.timeline.timingRule, /group showcase is 9 seconds/);
+  const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
+  assert.match(compositor, /CLOSING_MOTION_ID = "taunt"/);
+  assert.match(compositor, /tpad=stop_mode=clone/);
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {

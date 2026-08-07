@@ -1,6 +1,6 @@
-export const DURATION = 30;
+export const DURATION = 36;
 export const COUNTDOWN_END = 3;
-export const FINALE_DURATION = 3;
+export const FINALE_DURATION = 9;
 
 export function buildTimeline(input, dialogueAssets) {
   const dialogueById = new Map(dialogueAssets.map((asset) => [asset.id, asset]));
@@ -15,7 +15,7 @@ export function buildTimeline(input, dialogueAssets) {
   const speechDuration = dialogue.reduce((total, asset) => total + asset.durationSeconds, 0);
   const danceDuration = (DURATION - COUNTDOWN_END - FINALE_DURATION - speechDuration) / input.characters.length;
   if (danceDuration < 2.5) {
-    throw new Error(`Dialogue is too long for a 30-second dance-off (${speechDuration.toFixed(3)}s of speech leaves ${danceDuration.toFixed(3)}s per solo).`);
+    throw new Error(`Dialogue is too long for a ${DURATION}-second dance-off (${speechDuration.toFixed(3)}s of speech leaves ${danceDuration.toFixed(3)}s per solo).`);
   }
 
   const events = [{ type: "countdown", id: "countdown", start: 0, end: COUNTDOWN_END, song: false }];

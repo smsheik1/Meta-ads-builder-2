@@ -1,8 +1,8 @@
 {
   "id": "bikini-bottom-dance-off-v1",
   "name": "Bikini Bottom Dance Off",
-  "version": "0.2.0",
-  "description": "Turn a song excerpt into a 30-second vertical four-character dance-off with Fish Audio character banter between music-only dance rounds.",
+  "version": "0.3.0",
+  "description": "Turn a song excerpt into a 36-second vertical four-character dance-off with Fish Audio banter, music-only dance rounds, and a nine-second group showcase.",
   "runtime": "runner.mjs",
   "renderer": "../mixamo-character-motion-v1/runtime/renderer/app.js",
   "inputContract": "input-contract.json",

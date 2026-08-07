@@ -6,8 +6,8 @@
     "Two-by-two character grid",
     "The first character speaks a short hype line; each later character audibly taunts the dancer directly before them, then dances",
     "The supplied song plays only while one or more characters are dancing",
-    "Three-second all-character finale",
-    "Spoken Squilliam comment CTA",
+    "Nine-second all-character finale",
+    "Spoken Squilliam comment CTA using the official Taunt motion while the other characters hold",
     "Character pixels rendered only by the Character Dance Lab renderer"
   ],
   "replaceable": ["song and excerpt", "verified four-character roster", "motion per character", "opening line", "taunt text", "closing line", "panel accent colors"],

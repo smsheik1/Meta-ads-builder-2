@@ -8,6 +8,7 @@ import { renderDownload } from "../../mixamo-character-motion-v1/runtime/export.
 import { buildTimeline, DURATION } from "./timeline.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const CLOSING_MOTION_ID = "taunt";
 
 function execute(program, args) {
   return new Promise((resolve, reject) => {
@@ -74,7 +75,7 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     chrome.push(`<rect x="${position.x + 5}" y="${position.y + 552}" width="500" height="78" fill="#061829"/>`);
     chrome.push(`<text class="display" x="${position.x + 255}" y="${position.y + 601}" font-size="22" fill="white" stroke="#020b13" stroke-width="2">${xml(motionLabel)}</text>`);
   });
-  await add("chrome", "between(t,0,30)", chrome.join(""));
+  await add("chrome", `between(t,0,${DURATION})`, chrome.join(""));
 
   for (let index = 0; index < input.characters.length; index += 1) {
     const character = input.characters[index];
@@ -116,8 +117,11 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
 
   const closing = timeline.events.find((event) => event.type === "closing");
   const closingLines = wrapWords(input.closingLine);
+  const closingPosition = cellPositions.at(-1);
+  const closingCharacter = input.characters.at(-1);
   await add("cta", `between(t,${closing.start},${closing.end})`, [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.8"/>',
+    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
+    `<rect x="${closingPosition.x}" y="${closingPosition.y}" width="510" height="635" fill="none" stroke="${closingCharacter.color}" stroke-width="18"/>`,
     centeredText({ value: "WHO WON?", y: 750, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
     ...closingLines.map((line, index) => centeredText({ value: line, y: 865 + index * 65, size: 48, strokeWidth: 4 })),
   ].join(""));
@@ -151,6 +155,13 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     await writeFile(destination, rendered.bytes);
     return destination;
   }));
+  const closingClip = path.join(clipsDirectory, `${input.characters.at(-1).characterId}-${CLOSING_MOTION_ID}.mp4`);
+  try {
+    if ((await stat(closingClip)).size <= 20_000) throw new Error("Closing clip is incomplete.");
+  } catch {
+    const rendered = await renderDownload({ characterId: input.characters.at(-1).characterId, motionId: CLOSING_MOTION_ID, format: "mp4" });
+    await writeFile(closingClip, rendered.bytes);
+  }
 
   const filters = ["color=c=0x061829:s=1080x1920:r=30:d=30[base]"];
   const cellPositions = [
@@ -169,13 +180,24 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
   input.characters.forEach((character, index) => {
     const round = timeline.rounds[index];
     const middleDuration = timeline.finale.start - round.danceEnd;
-    filters.push(`[${index}:v]split=5[c${index}pre0][c${index}solo0][c${index}mid0][c${index}final0][c${index}post0]`);
+    const closingDuration = DURATION - timeline.finale.end;
+    const closingEvent = timeline.events.find((event) => event.type === "closing");
+    const closingInputIndex = 5 + dialogueAssets.length;
+    const isClosingSpeaker = index === input.characters.length - 1;
+    filters.push(isClosingSpeaker
+      ? `[${index}:v]split=4[c${index}pre0][c${index}solo0][c${index}mid0][c${index}final0]`
+      : `[${index}:v]split=5[c${index}pre0][c${index}solo0][c${index}mid0][c${index}final0][c${index}post0]`);
     filters.push(freeze(`c${index}pre0`, round.danceStart, `c${index}pre`));
     filters.push(`[c${index}solo0]trim=duration=${round.danceEnd - round.danceStart},setpts=PTS-STARTPTS[c${index}solo]`);
     filters.push(freeze(`c${index}mid0`, middleDuration, `c${index}mid`));
     filters.push(`[c${index}final0]trim=duration=${timeline.finale.end - timeline.finale.start},setpts=PTS-STARTPTS[c${index}final]`);
-    filters.push(freeze(`c${index}post0`, DURATION - timeline.finale.end, `c${index}post`));
-    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end}))',setsar=1[c${index}]`);
+    if (isClosingSpeaker) {
+      filters.push(`[${closingInputIndex}:v]tpad=stop_mode=clone:stop_duration=${closingDuration},trim=duration=${closingDuration},setpts=PTS-STARTPTS[c${index}post]`);
+    } else {
+      filters.push(freeze(`c${index}post0`, closingDuration, `c${index}post`));
+    }
+    const closingActive = isClosingSpeaker ? `+between(t,${closingEvent.start},${closingEvent.end})` : "";
+    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
   });
 
   let current = "base";
@@ -187,7 +209,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
 
   graphics.forEach((graphic, index) => {
     const next = `graphic${index}`;
-    filters.push(`[${current}][${5 + dialogueAssets.length + index}:v]overlay=x=0:y=0:enable='${graphic.enable}'[${next}]`);
+    filters.push(`[${current}][${6 + dialogueAssets.length + index}:v]overlay=x=0:y=0:enable='${graphic.enable}'[${next}]`);
     current = next;
   });
   filters.push(`[${current}]fps=30,format=yuv420p[vout]`);
@@ -219,6 +241,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     ...characterClips.flatMap((clip) => ["-stream_loop", "-1", "-i", clip]),
     "-ss", String(input.songExcerptStart), "-i", songPath,
     ...dialogueAssets.flatMap((asset) => ["-i", asset.file]),
+    "-i", closingClip,
     ...graphics.flatMap((graphic) => ["-loop", "1", "-framerate", "30", "-i", graphic.file]),
     "-filter_complex_script", filterPath,
     "-map", "[vout]", "-map", "[music]",
@@ -237,6 +260,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     timeline,
     song: { file: input.songFile, excerptStart: input.songExcerptStart, sha256: await sha256(songPath) },
     dialogue: dialogueAssets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(runDirectory, file) })),
+    closingMotion: { characterId: input.characters.at(-1).characterId, motionId: CLOSING_MOTION_ID, renderedClipSha256: await sha256(closingClip) },
     characters: await Promise.all(input.characters.map(async (character, index) => ({
       ...character,
       taunts: index ? input.characters[index - 1].characterId : null,

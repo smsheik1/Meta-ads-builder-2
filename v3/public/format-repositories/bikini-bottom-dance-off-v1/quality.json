@@ -4,7 +4,7 @@
     "width": 1080,
     "height": 1920,
     "fps": 30,
-    "durationSeconds": 30,
+    "durationSeconds": 36,
     "durationToleranceSeconds": 0.08,
     "audioRequired": true,
     "minimumActiveAudioMeanDb": -45,
@@ -19,8 +19,10 @@
     "Only the active soloist moves before the group finale; incoming challengers remain still while taunting.",
     "The countdown has three clear beeps and no song underneath it.",
     "The supplied song is audible only during solo dances and the group finale.",
+    "The all-character finale lasts nine full seconds so every dance remains readable.",
     "The opening, every taunt, and the closing CTA are spoken in the assigned Fish Audio voice with no song underneath.",
     "Each incoming challenger clearly taunts the character directly before them, and the performance sounds natural rather than rushed.",
+    "Squilliam visibly performs the Taunt motion during his closing CTA while the other three characters remain still.",
     "Taunts, character names, and final CTA are readable inside Reel-safe margins.",
     "No character is clipped in a way that hides the identity or dance."
   ]

@@ -25,6 +25,16 @@ async function meanVolume(videoPath, [start, end]) {
   return match[1] === "-inf" ? -Infinity : Number(match[1]);
 }
 
+async function frameHash(videoPath, time) {
+  const output = await execute("ffmpeg", [
+    "-v", "error", "-ss", String(time), "-i", videoPath,
+    "-vf", "crop=510:635:550:885", "-frames:v", "1", "-f", "hash", "-hash", "sha256", "-",
+  ], { capture: true });
+  const match = output.match(/SHA256=([a-f0-9]+)/i);
+  if (!match) throw new Error(`Could not fingerprint the Squilliam panel at ${time}s.`);
+  return match[1];
+}
+
 export async function inspectVideo({ videoPath, runDirectory, qualityContractPath }) {
   const probe = JSON.parse(await execute("ffprobe", [
     "-v", "error", "-show_streams", "-show_format", "-of", "json", videoPath,
@@ -44,6 +54,8 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const songVolumes = await Promise.all(songWindows.map((window) => meanVolume(videoPath, window)));
   const dialogueVolumes = await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)));
   const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
+  const closing = renderReport.timeline.events.find((event) => event.type === "closing");
+  const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time)));
   const checks = {
     width: video?.width === automatic.width,
     height: video?.height === automatic.height,
@@ -54,6 +66,8 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     danceMusic: songVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
     dialogueVoices: dialogueVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
     countdownGapsSilent: silentVolumes.every((volume) => volume <= automatic.maximumSilentWindowMeanDb),
+    nineSecondGroupFinale: Math.abs(renderReport.timeline.finale.end - renderReport.timeline.finale.start - 9) < 0.01,
+    squilliamMovesDuringCta: closingFrameHashes[0] !== closingFrameHashes[1],
   };
   if (Object.values(checks).some((passed) => !passed)) {
     throw new Error(`Automatic inspection failed: ${JSON.stringify({ checks, duration, fps, video, audio }, null, 2)}`);
@@ -61,7 +75,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const contactSheet = path.join(runDirectory, "contact-sheet.png");
   await execute("ffmpeg", [
     "-y", "-i", videoPath,
-    "-vf", "fps=1/3,scale=216:384:flags=lanczos,tile=5x2:padding=8:margin=8:color=0x061829",
+    "-vf", "fps=1/3,scale=180:320:flags=lanczos,tile=6x2:padding=8:margin=8:color=0x061829",
     "-frames:v", "1", contactSheet,
   ]);
   const report = {
@@ -79,6 +93,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       songWindowMeanDb: songVolumes,
       dialogueWindowMeanDb: dialogueVolumes,
       silentWindowMeanDb: silentVolumes,
+      closingMotionFrameHashes: closingFrameHashes,
     },
     humanReview: { status: "pending", criteria: contract.human },
     contactSheet: path.basename(contactSheet),
