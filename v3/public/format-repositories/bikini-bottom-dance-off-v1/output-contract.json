@@ -10,7 +10,7 @@
     "durationSeconds": 47
   },
   "timeline": {
-    "timingRule": "The five generated Fish Audio clips are measured first. Their exact lengths determine the speech windows; the remaining solo budget is divided evenly among four dancers. Every solo lasts at least 5 seconds, the countdown is 3 seconds, the uninterrupted group showcase is 9 seconds, the replay bridge is 1 second, and the complete timeline is exactly 47 seconds.",
+    "timingRule": "Eight Fish Audio clips are measured: one opening, three taunts, and four versions of the closing line. Squilliam's closing duration sets the chorus window and the other three voices are time-matched to it; the remaining solo budget is divided evenly among four dancers. Every solo lasts at least 5 seconds, the countdown is 3 seconds, the uninterrupted group showcase is 9 seconds, the replay bridge is 1 second, and the complete timeline is exactly 47 seconds.",
     "minimumSoloSeconds": 5,
     "sequence": [
       {"beat": "countdown-beeps", "song": false, "voice": false},
@@ -23,7 +23,7 @@
       {"beat": "squilliam-taunts-mr-krabs", "song": false, "voice": true},
       {"beat": "dance-squilliam", "song": true, "voice": false},
       {"beat": "all-character-finale", "song": true, "voice": false},
-      {"beat": "squilliam-comment-cta", "song": false, "voice": true},
+      {"beat": "four-character-comment-cta-chorus", "song": false, "voice": true},
       {"beat": "replay-loop-bridge", "song": false, "voice": false}
     ]
   },

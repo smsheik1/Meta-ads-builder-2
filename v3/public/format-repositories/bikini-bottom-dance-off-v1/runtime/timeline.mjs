@@ -5,6 +5,12 @@ export const LOOP_BRIDGE_DURATION = 1;
 
 export function buildTimeline(input, dialogueAssets) {
   const dialogueById = new Map(dialogueAssets.map((asset) => [asset.id, asset]));
+  const closingChorus = dialogueAssets.filter((asset) => (asset.timelineEventId || asset.id) === "closing");
+  const closingCharacterIds = new Set(closingChorus.map((asset) => asset.characterId));
+  if (closingChorus.length !== input.characters.length
+    || input.characters.some((character) => !closingCharacterIds.has(character.characterId))) {
+    throw new Error("The closing chorus needs one measured voice clip for every character.");
+  }
   const dialogue = [
     dialogueById.get("opening"),
     ...input.characters.slice(1).map((character) => dialogueById.get(`taunt-${character.characterId}`)),
@@ -39,7 +45,7 @@ export function buildTimeline(input, dialogueAssets) {
   const closing = dialogueById.get("closing");
   const closingStart = cursor;
   cursor += closing.durationSeconds;
-  events.push({ type: "closing", id: closing.id, characterId: input.characters.at(-1).characterId, start: closingStart, end: cursor, song: false });
+  events.push({ type: "closing", id: closing.id, characterIds: input.characters.map((character) => character.characterId), start: closingStart, end: cursor, song: false });
   const loopBridgeStart = cursor;
   cursor += LOOP_BRIDGE_DURATION;
   events.push({ type: "loop-bridge", id: "replay-loop-bridge", start: loopBridgeStart, end: cursor, song: false });
@@ -51,6 +57,7 @@ export function buildTimeline(input, dialogueAssets) {
     danceDuration,
     rounds,
     finale: { start: finaleStart, end: finaleStart + FINALE_DURATION },
+    closingChorus: { start: closingStart, end: closingStart + closing.durationSeconds, characterIds: input.characters.map((character) => character.characterId) },
     loopBridge: { start: loopBridgeStart, end: DURATION },
     events,
   };

@@ -278,8 +278,17 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
   filters.push("sine=frequency=700:sample_rate=48000:duration=0.16,volume=0.28,aformat=channel_layouts=stereo,adelay=1180:all=1[beep1]");
   filters.push("sine=frequency=980:sample_rate=48000:duration=0.32,volume=0.32,aformat=channel_layouts=stereo,adelay=2150:all=1[beep2]");
   dialogueAssets.forEach((asset, index) => {
-    const event = timeline.events.find((candidate) => candidate.id === asset.id);
-    filters.push(`[${dialogueInputIndex + index}:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-17:LRA=7:TP=-1.5,adelay=${Math.round(event.start * 1000)}:all=1[voice${index}]`);
+    const timelineEventId = asset.timelineEventId || asset.id;
+    const event = timeline.events.find((candidate) => candidate.id === timelineEventId);
+    if (!event) throw new Error(`No timeline event for dialogue asset ${asset.id}.`);
+    const eventDuration = event.end - event.start;
+    const isClosingChorus = timelineEventId === "closing";
+    const tempo = asset.durationSeconds / eventDuration;
+    if (isClosingChorus && (tempo < 0.5 || tempo > 2)) {
+      throw new Error(`Closing voice ${asset.id} needs an unsupported ${tempo.toFixed(3)}x tempo correction.`);
+    }
+    const chorusTiming = isClosingChorus ? `,atempo=${tempo.toFixed(6)},apad,atrim=duration=${eventDuration},volume=0.5` : "";
+    filters.push(`[${dialogueInputIndex + index}:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-17:LRA=7:TP=-1.5${chorusTiming},adelay=${Math.round(event.start * 1000)}:all=1[voice${index}]`);
   });
   timeline.rounds.forEach((round, index) => {
     filters.push(`aevalsrc=0.14*sin(2*PI*(900+2200*t)*t)*exp(-18*t):s=48000:d=0.22,aformat=channel_layouts=stereo,adelay=${Math.round(round.danceStart * 1000)}:all=1[stinger${index}]`);

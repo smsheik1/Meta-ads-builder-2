@@ -72,10 +72,16 @@ async function probeDuration(file) {
 }
 
 function dialogueSpecs(input) {
+  const closingCharacterId = input.characters.at(-1).characterId;
   return [
-    { id: "opening", characterId: input.characters[0].characterId, text: input.openingLine },
-    ...input.characters.slice(1).map((character) => ({ id: `taunt-${character.characterId}`, characterId: character.characterId, text: character.taunt })),
-    { id: "closing", characterId: input.characters.at(-1).characterId, text: input.closingLine },
+    { id: "opening", timelineEventId: "opening", characterId: input.characters[0].characterId, text: input.openingLine },
+    ...input.characters.slice(1).map((character) => ({ id: `taunt-${character.characterId}`, timelineEventId: `taunt-${character.characterId}`, characterId: character.characterId, text: character.taunt })),
+    ...input.characters.map((character) => ({
+      id: character.characterId === closingCharacterId ? "closing" : `closing-${character.characterId}`,
+      timelineEventId: "closing",
+      characterId: character.characterId,
+      text: input.closingLine,
+    })),
   ];
 }
 
@@ -93,6 +99,7 @@ async function generateDialogue(input, directory) {
       const receipt = await exists(receiptPath) ? await readJson(receiptPath) : null;
       if (!asset || !file || !(await exists(file)) || !receipt
         || asset.characterId !== spec.characterId || asset.text !== spec.text
+        || (asset.timelineEventId || asset.id) !== spec.timelineEventId
         || receipt.characterId !== spec.characterId || receipt.text !== spec.text) {
         cached.length = 0;
         break;
@@ -111,7 +118,6 @@ async function generateDialogue(input, directory) {
     const preset = presets.get(spec.characterId);
     if (!preset) throw new Error(`No Fish Audio preset for ${spec.characterId}.`);
     const referenceId = preset.referenceId || (spec.characterId === "squilliam" ? process.env.SQUILLIAM_VOICE_ID : null);
-    if (!referenceId) throw new Error(`Missing ${catalog.privateReferenceEnvironmentVariable} for the approved private Squilliam clone.`);
     return { ...spec, referenceId, speed: preset.speed };
   });
   await mkdir(dialogueDirectory, { recursive: true });
@@ -121,9 +127,15 @@ async function generateDialogue(input, directory) {
     const output = path.join(dialogueDirectory, `${spec.id}.wav`);
     const raw = path.join(dialogueDirectory, `${spec.id}.source.wav`);
     const receiptPath = path.join(dialogueDirectory, `${spec.id}.receipt.json`);
-    const contentHash = createHash("sha256").update(JSON.stringify({ text: spec.text, referenceId: spec.referenceId, speed: spec.speed, model: catalog.model })).digest("hex");
+    const contentHash = spec.referenceId
+      ? createHash("sha256").update(JSON.stringify({ text: spec.text, referenceId: spec.referenceId, speed: spec.speed, model: catalog.model })).digest("hex")
+      : null;
     let receipt = await exists(receiptPath) ? await readJson(receiptPath) : null;
-    if (!receipt || receipt.contentHash !== contentHash || !(await exists(output))) {
+    const cached = receipt && await exists(output)
+      && receipt.characterId === spec.characterId && receipt.text === spec.text
+      && (!contentHash || receipt.contentHash === contentHash);
+    if (!cached) {
+      if (!spec.referenceId) throw new Error(`Missing ${catalog.privateReferenceEnvironmentVariable} for uncached ${spec.id} audio.`);
       if (!args["approve-provider"]) throw new Error(`Fish Audio generation is required for ${spec.id}. Re-run render with --approve-provider after reviewing the script.`);
       const response = await fetch("https://api.fish.audio/v1/tts", {
         method: "POST",
@@ -171,7 +183,7 @@ async function generateDialogue(input, directory) {
       };
       await writeJson(receiptPath, receipt);
     }
-    assets.push({ id: spec.id, characterId: spec.characterId, text: spec.text, file: output, durationSeconds: await probeDuration(output), sha256: await sha256(output) });
+    assets.push({ id: spec.id, timelineEventId: spec.timelineEventId, characterId: spec.characterId, text: spec.text, file: output, durationSeconds: await probeDuration(output), sha256: await sha256(output) });
   }
   await writeJson(manifestPath, {
     provider: catalog.provider,

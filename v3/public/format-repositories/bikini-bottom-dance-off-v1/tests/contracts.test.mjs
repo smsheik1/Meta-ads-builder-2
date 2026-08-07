@@ -15,7 +15,10 @@ test("the timeline is exactly 47 seconds with no gaps, five-second solos, and a 
     { id: "taunt-patrick", durationSeconds: 2 },
     { id: "taunt-mr-krabs", durationSeconds: 2.1 },
     { id: "taunt-squilliam", durationSeconds: 2.2 },
-    { id: "closing", durationSeconds: 2 },
+    { id: "closing-spongebob", timelineEventId: "closing", characterId: "spongebob", durationSeconds: 2.3 },
+    { id: "closing-patrick", timelineEventId: "closing", characterId: "patrick", durationSeconds: 1.9 },
+    { id: "closing-mr-krabs", timelineEventId: "closing", characterId: "mr-krabs", durationSeconds: 2.2 },
+    { id: "closing", timelineEventId: "closing", characterId: "squilliam", durationSeconds: 2 },
   ];
   const timeline = buildTimeline(input, dialogue);
   assert.equal(timeline.events[0].start, 0);
@@ -27,6 +30,7 @@ test("the timeline is exactly 47 seconds with no gaps, five-second solos, and a 
   assert.ok(Math.abs(timeline.finale.end - timeline.finale.start - 9) < 0.01);
   assert.equal(timeline.events.at(-1).type, "loop-bridge");
   assert.equal(timeline.loopBridge.end - timeline.loopBridge.start, 1);
+  assert.deepEqual(timeline.closingChorus.characterIds, ["spongebob", "patrick", "mr-krabs", "squilliam"]);
 });
 
 test("the smoke roster uses every verified character once", async () => {
@@ -64,7 +68,15 @@ test("the approved Fish voice presets are registered and provider calls require 
   assert.match(runner, /approve-provider/);
   assert.match(runner, /api\.fish\.audio\/v1\/tts/);
   assert.match(runner, /sample_rate: 44100/);
+  assert.match(runner, /closing-\$\{character\.characterId\}/);
+  assert.match(runner, /timelineEventId: "closing"/);
+  assert.match(runner, /timelineEventId: spec\.timelineEventId/);
   assert.ok(runner.indexOf("if (await exists(manifestPath))") < runner.indexOf("await loadLocalEnv()"));
+  assert.ok(
+    runner.indexOf("const cached = await cachedDialogueAsset") <
+      runner.indexOf("for uncached ${spec.id} audio"),
+    "cached private voice clips must be reusable without reloading the private provider reference",
+  );
 });
 
 test("long spoken captions wrap inside the Reel-safe card", async () => {
@@ -105,11 +117,14 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.doesNotMatch(compositor, /ROUND TWO/);
   assert.match(compositor, /dance-punch/);
   assert.match(compositor, /stinger/);
+  assert.match(compositor, /atempo=/);
+  assert.match(compositor, /volume=0\.5/);
   assert.match(compositor, /character\.finaleMotionId/);
   assert.match(compositor, /middleDuration > 1 \/ 30/);
   const inspector = await readFile(new URL("runtime/inspect.mjs", root), "utf8");
   assert.match(inspector, /freezedetect/);
   assert.match(inspector, /CELL_POSITIONS\.map/);
+  assert.match(inspector, /closingChorusVoices/);
   assert.doesNotMatch(inspector, /finaleFrameHashes/);
 });
 

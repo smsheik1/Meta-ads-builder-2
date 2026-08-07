@@ -5,7 +5,7 @@
     {
       "name": "Fish Audio",
       "model": "s2.1-pro-free",
-      "purpose": "Generate one opening, three taunts, and one closing CTA in the assigned character voices after validation and approval.",
+      "purpose": "Generate one opening, three taunts, and the same closing CTA in all four assigned character voices after validation and approval.",
       "estimatedCost": "$0 through August 31, 2026 under Fish Audio's published fair-use window; recheck before later use",
       "pricingSource": "https://fish.audio/blog/s2-1-pro-free-api/"
     }

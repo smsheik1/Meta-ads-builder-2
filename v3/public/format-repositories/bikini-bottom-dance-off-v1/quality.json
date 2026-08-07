@@ -13,6 +13,7 @@
     "maximumFinaleHoldSeconds": 0.75,
     "minimumLoopSeamSsim": 0.995,
     "measurementInsetSeconds": 0.15,
+    "closingChorusVoiceCount": 4,
     "beepWindows": [[0.16, 0.38], [1.16, 1.38], [2.15, 2.5]],
     "silentWindows": [[0.5, 0.95], [1.5, 1.95], [2.6, 2.95]],
     "maximumAttempts": 3
@@ -24,9 +25,9 @@
     "The supplied song is audible only during solo dances and the group finale.",
     "Every individual solo lasts at least five full seconds so the dancer can show off the selected motion.",
     "The all-character finale lasts nine full seconds, keeps faces camera-readable, and every character remains visibly animated without a frozen hold or short-clip restart.",
-    "The opening, every taunt, and the closing CTA are spoken in the assigned Fish Audio voice with no song underneath.",
+    "The opening and every taunt use the assigned Fish Audio voice; the closing line begins in audible four-character unison with no song underneath.",
     "Each incoming challenger clearly taunts the character directly before them, and the performance sounds natural rather than rushed.",
-    "Squilliam visibly performs the Taunt motion during his closing CTA while the other three characters remain subtly alive and visually subordinate.",
+    "Squilliam visibly performs the Taunt motion during the four-voice closing chorus while the other three characters remain subtly alive and visually subordinate.",
     "Taunts remain inside the dedicated caption lane below the grid without covering any character; right-column faces remain clear of the action rail.",
     "The dimmed-character final countdown-3 frame joins the matching opening countdown without implying a separate video.",
     "No character is clipped in a way that hides the identity or dance."

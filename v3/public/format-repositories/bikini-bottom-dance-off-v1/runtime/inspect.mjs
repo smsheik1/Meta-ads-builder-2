@@ -82,6 +82,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const dialogueVolumes = await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)));
   const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
   const closing = renderReport.timeline.events.find((event) => event.type === "closing");
+  const closingChorusAssets = renderReport.dialogue.filter((asset) => (asset.timelineEventId || asset.id) === "closing");
   const panelCrops = CELL_POSITIONS.map(({ x, y }) => ({ x, y, width: CELL_WIDTH, height: CELL_HEIGHT }));
   const squilliamCrop = panelCrops.at(-1);
   const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, squilliamCrop)));
@@ -113,6 +114,8 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     uninterruptedFinaleSources: renderReport.characters.every((character) => character.finaleMotionId && character.finaleRenderedClipSha256),
     finaleMotionContinuity: finaleFreezeEvents.every((events) => events.length === 0),
     squilliamMovesDuringCta: closingFrameHashes[0] !== closingFrameHashes[1],
+    closingChorusVoices: closingChorusAssets.length === automatic.closingChorusVoiceCount
+      && new Set(closingChorusAssets.map((asset) => asset.characterId)).size === automatic.closingChorusVoiceCount,
     seamlessReplayFrame: loopSeam.score >= automatic.minimumLoopSeamSsim,
   };
   if (Object.values(checks).some((passed) => !passed)) {
@@ -140,6 +143,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       dialogueWindowMeanDb: dialogueVolumes,
       silentWindowMeanDb: silentVolumes,
       closingMotionFrameHashes: closingFrameHashes,
+      closingChorusVoiceCount: closingChorusAssets.length,
       finaleFreezeEvents,
       loopSeamTimes,
       loopSeam,
