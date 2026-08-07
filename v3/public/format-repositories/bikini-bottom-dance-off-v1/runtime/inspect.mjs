@@ -36,6 +36,15 @@ async function frameHash(videoPath, time, crop) {
   return match[1];
 }
 
+async function freezeEvents(videoPath, crop, start, duration, { noise, holdSeconds }) {
+  const output = await execute("ffmpeg", [
+    "-hide_banner", "-ss", String(start), "-t", String(duration), "-i", videoPath,
+    "-vf", `crop=${crop.width}:${crop.height}:${crop.x}:${crop.y},freezedetect=n=${noise}:d=${holdSeconds}`,
+    "-an", "-f", "null", "-",
+  ], { capture: true });
+  return [...output.matchAll(/freeze_(start|end|duration):\s+([\d.]+)/g)].map((match) => ({ type: match[1], seconds: Number(match[2]) }));
+}
+
 async function loopSeamSimilarity(videoPath, runDirectory, [endTime, startTime]) {
   const endFrame = path.join(runDirectory, "loop-seam-end.png");
   const startFrame = path.join(runDirectory, "loop-seam-start.png");
@@ -80,11 +89,14 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   ];
   const squilliamCrop = panelCrops.at(-1);
   const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, squilliamCrop)));
-  const finaleSampleTimes = Array.from({ length: 12 }, (_, index) => renderReport.timeline.finale.start + 0.35 + index * 0.72);
-  const finaleFrameHashes = await Promise.all(panelCrops.map((crop) => Promise.all(
-    finaleSampleTimes.map((time) => frameHash(videoPath, time, crop)),
+  const finaleDuration = renderReport.timeline.finale.end - renderReport.timeline.finale.start;
+  const finaleFreezeEvents = await Promise.all(panelCrops.map((crop) => freezeEvents(
+    videoPath,
+    crop,
+    renderReport.timeline.finale.start,
+    finaleDuration,
+    { noise: automatic.finaleFreezeNoise, holdSeconds: automatic.maximumFinaleHoldSeconds },
   )));
-  const finaleMotionContinuity = finaleFrameHashes.every((hashes) => hashes.every((hash, index) => index === 0 || hash !== hashes[index - 1]));
   const loopSeamTimes = [
     renderReport.timeline.loopBridge.end - 0.05,
     0.05,
@@ -103,7 +115,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     fiveSecondSolos: renderReport.timeline.rounds.every((round) => round.danceEnd - round.danceStart >= 5),
     nineSecondGroupFinale: Math.abs(renderReport.timeline.finale.end - renderReport.timeline.finale.start - 9) < 0.01,
     uninterruptedFinaleSources: renderReport.characters.every((character) => character.finaleMotionId && character.finaleRenderedClipSha256),
-    finaleMotionContinuity,
+    finaleMotionContinuity: finaleFreezeEvents.every((events) => events.length === 0),
     squilliamMovesDuringCta: closingFrameHashes[0] !== closingFrameHashes[1],
     seamlessReplayFrame: loopSeam.score >= automatic.minimumLoopSeamSsim,
   };
@@ -132,8 +144,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       dialogueWindowMeanDb: dialogueVolumes,
       silentWindowMeanDb: silentVolumes,
       closingMotionFrameHashes: closingFrameHashes,
-      finaleSampleTimes,
-      finaleMotionFrameHashes: finaleFrameHashes,
+      finaleFreezeEvents,
       loopSeamTimes,
       loopSeam,
     },

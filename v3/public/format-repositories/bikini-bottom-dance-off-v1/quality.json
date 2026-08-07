@@ -9,6 +9,8 @@
     "audioRequired": true,
     "minimumActiveAudioMeanDb": -45,
     "maximumSilentWindowMeanDb": -65,
+    "finaleFreezeNoise": 0.004,
+    "maximumFinaleHoldSeconds": 0.75,
     "minimumLoopSeamSsim": 0.995,
     "measurementInsetSeconds": 0.15,
     "beepWindows": [[0.16, 0.38], [1.16, 1.38], [2.15, 2.5]],

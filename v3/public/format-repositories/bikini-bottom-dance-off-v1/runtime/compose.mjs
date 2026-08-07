@@ -210,15 +210,17 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
   input.characters.forEach((character, index) => {
     const round = timeline.rounds[index];
     const middleDuration = timeline.finale.start - round.danceEnd;
+    const hasMiddle = middleDuration > 1 / 30;
     const closingDuration = DURATION - timeline.finale.end;
     const closingEvent = timeline.events.find((event) => event.type === "closing");
     const isClosingSpeaker = index === input.characters.length - 1;
-    filters.push(isClosingSpeaker
-      ? `[${index}:v]split=3[c${index}pre0][c${index}solo0][c${index}mid0]`
-      : `[${index}:v]split=4[c${index}pre0][c${index}solo0][c${index}mid0][c${index}post0]`);
+    const soloParts = [`c${index}pre0`, `c${index}solo0`];
+    if (hasMiddle) soloParts.push(`c${index}mid0`);
+    if (!isClosingSpeaker) soloParts.push(`c${index}post0`);
+    filters.push(`[${index}:v]split=${soloParts.length}${soloParts.map((part) => `[${part}]`).join("")}`);
     filters.push(freeze(`c${index}pre0`, round.danceStart, `c${index}pre`));
     filters.push(`[c${index}solo0]trim=duration=${round.danceEnd - round.danceStart},setpts=PTS-STARTPTS[c${index}solo]`);
-    filters.push(freeze(`c${index}mid0`, middleDuration, `c${index}mid`));
+    if (hasMiddle) filters.push(freeze(`c${index}mid0`, middleDuration, `c${index}mid`));
     filters.push(`[${input.characters.length + index}:v]trim=duration=${timeline.finale.end - timeline.finale.start},setpts=PTS-STARTPTS[c${index}final]`);
     if (isClosingSpeaker) {
       filters.push(`[${closingInputIndex}:v]tpad=stop_mode=clone:stop_duration=${closingDuration},trim=duration=${closingDuration},setpts=PTS-STARTPTS[c${index}post]`);
@@ -226,7 +228,10 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
       filters.push(freeze(`c${index}post0`, closingDuration, `c${index}post`));
     }
     const closingActive = isClosingSpeaker ? `+between(t,${closingEvent.start},${closingEvent.end})` : "";
-    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
+    const timelineParts = [`c${index}pre`, `c${index}solo`];
+    if (hasMiddle) timelineParts.push(`c${index}mid`);
+    timelineParts.push(`c${index}final`, `c${index}post`);
+    filters.push(`${timelineParts.map((part) => `[${part}]`).join("")}concat=n=${timelineParts.length}:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
   });
 
   let current = "base";

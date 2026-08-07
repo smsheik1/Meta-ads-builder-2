@@ -142,6 +142,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Clean display copies restored one top-right reference across both formats without changing the shared Discovery renderer.
 
+### 16. Measure motion on the composed output
+
+**Rule:** Omit zero-duration clips from media concat graphs, and verify sustained motion on the final rendered region with temporal freeze detection rather than unequal compressed-frame hashes.
+
+**Why:** A zero-length hold can survive concat as a frozen frame and swallow the motion that follows it. Lossy encoding can still change pixel hashes on that visually frozen frame, producing a false pass.
+
+**Evidence:** Bikini Bottom Dance Off's Squilliam finale appeared animated in its source clip and passed hash sampling, yet remained frozen for all nine rendered seconds. Removing the zero-duration segment and running `freezedetect` over the composed panel exposed and prevented the failure.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

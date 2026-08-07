@@ -94,6 +94,10 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /tpad=stop_mode=clone/);
   assert.match(compositor, /character\.finaleMotionId/);
   assert.match(compositor, /STILL NOT SURE\?/);
+  assert.match(compositor, /middleDuration > 1 \/ 30/);
+  const inspector = await readFile(new URL("runtime/inspect.mjs", root), "utf8");
+  assert.match(inspector, /freezedetect/);
+  assert.doesNotMatch(inspector, /finaleFrameHashes/);
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {
