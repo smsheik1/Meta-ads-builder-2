@@ -14,6 +14,8 @@ node runner.mjs render --run=wiggle-proof --approve-provider
 node runner.mjs inspect --run=wiggle-proof
 ```
 
+`npm run check` verifies both the Dance Off contracts and the bundled character-motion foundation, including an isolated local `import-motion` round trip.
+
 Every character chooses three motion IDs in `input.json`: `motionId` for the solo, `finaleMotionId` for the uninterrupted group showcase, and `reactionMotionId` for dialogue and the closing CTA. To add a motion that is not in the starter catalog, download one Collada file with skin from Mixamo and import it locally:
 
 ```bash

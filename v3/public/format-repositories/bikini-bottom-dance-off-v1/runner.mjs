@@ -344,6 +344,7 @@ async function checkRepo() {
   for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/voice-presets.json"]) await readJson(path.join(root, file));
   for (const file of ["runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
   await execute("npm", ["test"]);
+  await execute("npm", ["test"], { cwd: motionRoot });
   console.log(JSON.stringify({ status: "pass", renderer: "mixamo-character-motion-v1/runtime/renderer/app.js" }, null, 2));
 }
 
