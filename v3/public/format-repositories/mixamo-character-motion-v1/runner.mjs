@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { access, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadMotionCatalog, userManifestPath } from "./runtime/motion-catalog.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const command = process.argv[2];
@@ -57,8 +58,9 @@ async function sha256(file) {
 }
 
 async function catalogs() {
+  const motionCatalog = await loadMotionCatalog();
   return {
-    manifest: await readJson(path.join(root, "assets/motions/manifest.json")),
+    manifest: { schemaVersion: 1, motions: motionCatalog.motions },
     characters: await readJson(path.join(root, "assets/character-packs.json")),
   };
 }
@@ -222,16 +224,16 @@ async function smoke() {
 async function importMotion() {
   for (const required of ["source", "id", "label"]) if (!args[required]) throw new Error(`Missing --${required}`);
   if (!/^[a-z0-9][a-z0-9-]{1,62}$/.test(args.id)) throw new Error("Motion id must be lowercase and hyphenated.");
-  const manifestFile = path.join(root, "assets/motions/manifest.json");
-  const manifest = await readJson(manifestFile);
-  if (manifest.motions.some((motion) => motion.id === args.id)) throw new Error(`Motion already exists: ${args.id}`);
-  const output = path.join(root, "assets/motions", `${args.id}.json`);
+  const catalog = await loadMotionCatalog();
+  if (catalog.motions.some((motion) => motion.id === args.id)) throw new Error(`Motion already exists: ${args.id}`);
+  const manifest = catalog.user;
+  const output = path.join(root, "user-motions", `${args.id}.json`);
   await execute("node", ["runtime/scripts/extract-mixamo.mjs", `--source=${path.resolve(args.source)}`, `--output=${output}`, `--id=${args.id}`, `--label=${args.label}`]);
   const normalized = await readJson(output);
   manifest.motions.push({
     id: normalized.id,
     label: normalized.label,
-    file: `assets/motions/${args.id}.json`,
+    file: `user-motions/${args.id}.json`,
     fps: normalized.fps,
     frameCount: normalized.frameCount,
     durationSeconds: normalized.durationSeconds,
@@ -239,7 +241,7 @@ async function importMotion() {
     sourceSha256: normalized.source.sha256,
     normalizedSha256: await sha256(output),
   });
-  await writeJson(manifestFile, manifest);
+  await writeJson(userManifestPath, manifest);
   console.log(JSON.stringify(manifest.motions.at(-1), null, 2));
 }
 

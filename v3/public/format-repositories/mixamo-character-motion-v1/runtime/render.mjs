@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { startStaticServer } from "./static-server.mjs";
+import { loadMotionCatalog } from "./motion-catalog.mjs";
 
 const formatRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -76,8 +77,8 @@ const workDirectory = insideRoot(args["work-dir"]);
 const reportPath = insideRoot(args.report || path.join(workDirectory, "motion-report.json"));
 const smoke = args.smoke === true;
 const input = JSON.parse(await readFile(inputPath, "utf8"));
-const manifest = JSON.parse(await readFile(path.join(formatRoot, "assets/motions/manifest.json"), "utf8"));
-const motionRecord = manifest.motions.find((motion) => motion.id === input.motionId);
+const motionCatalog = await loadMotionCatalog();
+const motionRecord = motionCatalog.motions.find((motion) => motion.id === input.motionId);
 if (!motionRecord) throw new Error(`Unknown motion: ${input.motionId}`);
 const motionPath = insideRoot(path.join(formatRoot, motionRecord.file));
 const normalizedMotion = JSON.parse(await readFile(motionPath, "utf8"));

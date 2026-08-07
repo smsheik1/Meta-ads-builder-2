@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "fixed": [
     {"path": "assets/character-packs.json", "role": "verified character rig profiles"},
-    {"path": "assets/motions/manifest.json", "role": "registry for 25 normalized exact-frame Mixamo motions"},
+    {"path": "assets/motions/manifest.json", "role": "frozen registry for 25 bundled normalized exact-frame starter motions"},
+    {"path": "user-motions/manifest.json", "role": "runtime-created extensible registry for operator-imported normalized motions", "required": false},
     {"path": "assets/characters/spongebob/chr_bob_bindpose.dae", "role": "proof character model"},
     {"path": "assets/characters/spongebob/tex_0000_spongebob_128.PNG", "role": "character texture"},
     {"path": "assets/characters/spongebob/tx1_0000_lashes.PNG", "role": "transparent facial overlay"},

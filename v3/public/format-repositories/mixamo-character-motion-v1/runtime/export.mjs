@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadMotionCatalog } from "./motion-catalog.mjs";
 
 const formatRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const formats = new Set(["gif", "mp4"]);
@@ -29,12 +30,12 @@ export async function renderDownload({ characterId, motionId, format } = {}) {
   if (typeof characterId !== "string" || typeof motionId !== "string" || !formats.has(format)) {
     throw new ExportInputError("Choose a valid character, motion, and download format.");
   }
-  const [catalog, manifest] = await Promise.all([
+  const [catalog, motionCatalog] = await Promise.all([
     readJson("assets/character-packs.json"),
-    readJson("assets/motions/manifest.json"),
+    loadMotionCatalog(),
   ]);
   const character = catalog.packs.find((candidate) => candidate.id === characterId && candidate.status === "motion-ready");
-  const motion = manifest.motions.find((candidate) => candidate.id === motionId);
+  const motion = motionCatalog.motions.find((candidate) => candidate.id === motionId);
   if (!character || !motion) throw new ExportInputError("The selected character or motion is unavailable.");
 
   const runsRoot = path.join(formatRoot, "agent-runs");

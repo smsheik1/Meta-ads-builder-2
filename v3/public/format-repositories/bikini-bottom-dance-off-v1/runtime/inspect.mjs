@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { CELL_HEIGHT, CELL_POSITIONS, CELL_WIDTH } from "./layout.mjs";
+import { writeEvaluation } from "./evaluate.mjs";
 
 function execute(program, args, { capture = false } = {}) {
   return new Promise((resolve, reject) => {
@@ -152,5 +153,6 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     contactSheet: path.basename(contactSheet),
   };
   await writeFile(path.join(runDirectory, "quality-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+  await writeEvaluation({ runDirectory, qualityReport: report, contract });
   return report;
 }

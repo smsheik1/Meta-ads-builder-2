@@ -167,3 +167,17 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   assert.match(buildKit, /workspaces: \["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"\]/);
   assert.match(buildKit, /await cp\(motionRoot/);
 });
+
+test("finalization returns one delivery bundle with a scored eval", async () => {
+  const output = await readJson("output-contract.json");
+  assert.equal(output.delivery.finalVideo, "final.mp4");
+  assert.equal(output.delivery.machineReadableEval, "eval-report.json");
+  assert.equal(output.delivery.friendlyEval, "eval-report.md");
+  const quality = await readJson("quality.json");
+  assert.equal(quality.grading.automaticCriteria.reduce((sum, criterion) => sum + criterion.weight, 0), 70);
+  assert.equal(quality.human.reduce((sum, criterion) => sum + criterion.weight, 0), 30);
+  const runner = await readFile(new URL("runner.mjs", root), "utf8");
+  assert.match(runner, /delivery\.json/);
+  assert.match(runner, /eval-report\.md/);
+  assert.match(runner, /grade: evaluation\.overall\.grade/);
+});

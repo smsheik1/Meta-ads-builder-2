@@ -51,26 +51,32 @@ function syntheticMixamoDae() {
   return `<COLLADA><asset><unit meter="1"/></asset><library_controllers><controller><skin source="#mesh"><source id="joints"><Name_array>${bones.join(" ")}</Name_array></source><source id="inverse-bind"><float_array>${bones.map((bone) => inverseTranslation(worldPositions[bone])).join(" ")}</float_array></source><joints><input semantic="JOINT" source="#joints"/><input semantic="INV_BIND_MATRIX" source="#inverse-bind"/></joints></skin></controller></library_controllers><library_animations><source id="mixamorig_Hips-Matrix-animation-input"><float_array>0 0.033333333 0.066666667</float_array></source>${animationSources}</library_animations><library_visual_scenes><visual_scene id="Scene"><node id="mixamorig_Hips" name="mixamorig_Hips"><node id="mixamorig_LeftUpLeg" name="mixamorig_LeftUpLeg"><node id="mixamorig_LeftLeg" name="mixamorig_LeftLeg"><node id="mixamorig_LeftFoot" name="mixamorig_LeftFoot"></node></node></node><node id="mixamorig_RightUpLeg" name="mixamorig_RightUpLeg"><node id="mixamorig_RightLeg" name="mixamorig_RightLeg"><node id="mixamorig_RightFoot" name="mixamorig_RightFoot"></node></node></node></node></visual_scene></library_visual_scenes></COLLADA>`;
 }
 
-test("the local import-motion command normalizes a user-supplied Mixamo clip and updates its catalog", async () => {
+test("the local import-motion command keeps the starter catalog frozen and extends the user catalog", async () => {
   const temporary = await mkdtemp(path.join(tmpdir(), "wiggly-import-motion-"));
   try {
     await mkdir(path.join(temporary, "runtime/scripts"), { recursive: true });
     await mkdir(path.join(temporary, "assets/motions"), { recursive: true });
     await mkdir(path.join(temporary, "node_modules"), { recursive: true });
     await copyFile(path.join(root, "runner.mjs"), path.join(temporary, "runner.mjs"));
+    await copyFile(path.join(root, "runtime/motion-catalog.mjs"), path.join(temporary, "runtime/motion-catalog.mjs"));
     await copyFile(path.join(root, "runtime/scripts/extract-mixamo.mjs"), path.join(temporary, "runtime/scripts/extract-mixamo.mjs"));
     const threeEntry = fileURLToPath(import.meta.resolve("three"));
     await symlink(path.resolve(path.dirname(threeEntry), ".."), path.join(temporary, "node_modules/three"), "dir");
-    await writeFile(path.join(temporary, "assets/motions/manifest.json"), '{"schemaVersion":1,"motions":[]}\n');
+    const starters = Array.from({ length: 25 }, (_, index) => ({ id: `starter-${index + 1}` }));
+    await writeFile(path.join(temporary, "assets/motions/manifest.json"), `${JSON.stringify({ schemaVersion: 1, motions: starters })}\n`);
     const source = path.join(temporary, "Operator Motion.dae");
     await writeFile(source, syntheticMixamoDae());
 
     await execute(process.execPath, ["runner.mjs", "import-motion", `--source=${source}`, "--id=operator-motion", "--label=Operator Motion"], { cwd: temporary });
 
-    const manifest = JSON.parse(await readFile(path.join(temporary, "assets/motions/manifest.json"), "utf8"));
-    const motion = JSON.parse(await readFile(path.join(temporary, "assets/motions/operator-motion.json"), "utf8"));
-    assert.equal(manifest.motions.length, 1);
-    assert.equal(manifest.motions[0].id, "operator-motion");
+    const starterManifest = JSON.parse(await readFile(path.join(temporary, "assets/motions/manifest.json"), "utf8"));
+    const userManifest = JSON.parse(await readFile(path.join(temporary, "user-motions/manifest.json"), "utf8"));
+    const motion = JSON.parse(await readFile(path.join(temporary, "user-motions/operator-motion.json"), "utf8"));
+    assert.equal(starterManifest.motions.length, 25);
+    assert.equal(userManifest.motions.length, 1);
+    assert.equal(userManifest.motions[0].id, "operator-motion");
+    assert.equal(userManifest.motions[0].file, "user-motions/operator-motion.json");
+    assert.equal(starterManifest.motions.length + userManifest.motions.length, 26);
     assert.equal(motion.source.fileName, "Operator Motion.dae");
     assert.equal(motion.source.referencePose, "inverse-bind-matrices");
     assert.equal(motion.fps, 30);

@@ -114,10 +114,12 @@ async function initializeRenderer() {
 
 async function initializeLab() {
   document.body.classList.add("lab");
-  const [catalog, manifest] = await Promise.all([
+  const [catalog, starterManifest, userManifest] = await Promise.all([
     readJson("../../assets/character-packs.json"),
     readJson("../../assets/motions/manifest.json"),
+    readOptionalJson("../../user-motions/manifest.json", { motions: [] }),
   ]);
+  const manifest = { motions: [...starterManifest.motions, ...(userManifest.motions || [])] };
   const packs = catalog.packs.filter((pack) => pack.status === "motion-ready");
   const initialCharacter = packs.find((pack) => pack.id === params.get("character"))
     || packs.find((pack) => pack.id === catalog.defaultCharacterId)
@@ -137,6 +139,14 @@ async function initializeLab() {
   requestAnimationFrame(animate);
 
   window.__DANCE_LAB_READY__ = true;
+}
+
+async function readOptionalJson(url, fallback) {
+  try {
+    return await readJson(url);
+  } catch {
+    return fallback;
+  }
 }
 
 function renderCharacterButtons(packs) {

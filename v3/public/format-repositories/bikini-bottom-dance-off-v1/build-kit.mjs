@@ -13,7 +13,7 @@ const kitName = "wiggly-bikini-bottom-dance-off-format-kit";
 const downloads = path.join(danceRoot, "downloads");
 const output = path.join(downloads, `${kitName}.zip`);
 const checksumFile = `${output}.sha256`;
-const excludedRoots = new Set(["agent-runs", "downloads", "node_modules"]);
+const excludedRoots = new Set(["agent-runs", "downloads", "node_modules", "user-motions"]);
 const excludedNames = new Set([".DS_Store", ".env", ".env.local", "__pycache__"]);
 
 function execute(program, args, cwd) {
@@ -53,7 +53,7 @@ try {
   await writeFile(path.join(staged, "package.json"), `${JSON.stringify({
     name: kitName,
     private: true,
-    version: "0.6.0",
+    version: "0.7.0",
     workspaces: ["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"],
     scripts: {
       check: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run check",
@@ -64,13 +64,13 @@ try {
   const files = await listFiles(staged);
   await writeFile(path.join(staged, "KIT-MANIFEST.json"), `${JSON.stringify({
     kit: kitName,
-    formatVersion: "0.6.0",
+    formatVersion: "0.7.0",
     builtAt: new Date().toISOString(),
     officialFormat: "bikini-bottom-dance-off-v1",
     officialMotionDependency: "mixamo-character-motion-v1",
     install: "npm install",
     smoke: "npm run smoke",
-    excluded: ["secrets", "node_modules", "agent run caches", "operator songs", "source Mixamo DAE imports", "download artifacts"],
+    excluded: ["secrets", "node_modules", "agent run caches", "operator songs", "source Mixamo DAE imports", "operator user-motion library", "download artifacts"],
     files,
   }, null, 2)}\n`);
   await rm(output, { force: true });

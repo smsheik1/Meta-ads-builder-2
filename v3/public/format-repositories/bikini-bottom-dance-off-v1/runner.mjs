@@ -8,6 +8,8 @@ import { fileURLToPath } from "node:url";
 import { analyzeAudio } from "./runtime/analyze-audio.mjs";
 import { composeRun } from "./runtime/compose.mjs";
 import { inspectVideo } from "./runtime/inspect.mjs";
+import { writeEvaluation } from "./runtime/evaluate.mjs";
+import { loadMotionCatalog } from "../mixamo-character-motion-v1/runtime/motion-catalog.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const motionRoot = path.resolve(root, "../mixamo-character-motion-v1");
@@ -215,10 +217,11 @@ async function validateInput(inputPath, { receiptPath } = {}) {
   if (!Number.isFinite(input.songExcerptStart) || input.songExcerptStart < 0) errors.push("songExcerptStart must be non-negative.");
   if (!Array.isArray(input.characters) || input.characters.length !== 4) errors.push("Exactly four characters are required.");
 
-  const [catalog, manifest] = await Promise.all([
+  const [catalog, motionCatalog] = await Promise.all([
     readJson(path.join(motionRoot, "assets/character-packs.json")),
-    readJson(path.join(motionRoot, "assets/motions/manifest.json")),
+    loadMotionCatalog(),
   ]);
+  const manifest = { motions: motionCatalog.motions };
   const seen = new Set();
   for (const [index, character] of (input.characters || []).entries()) {
     if (seen.has(character.characterId)) errors.push(`Duplicate character: ${character.characterId}`);
@@ -334,9 +337,39 @@ async function finalizeRun() {
   quality.humanReview.status = "pass";
   quality.humanReview.approvedAt = new Date().toISOString();
   await writeJson(qualityPath, quality);
+  const evaluation = await writeEvaluation({
+    runDirectory: directory,
+    qualityReport: quality,
+    contract: await readJson(path.join(root, "quality.json")),
+  });
+  const finalPath = path.join(directory, "final.mp4");
+  const delivery = {
+    schemaVersion: 1,
+    status: "ready",
+    deliveredAt: new Date().toISOString(),
+    format: "bikini-bottom-dance-off-v1",
+    runId: args.run,
+    finalVideo: { path: "final.mp4", sha256: await sha256(finalPath) },
+    eval: {
+      grade: evaluation.overall.grade,
+      score: evaluation.overall.score,
+      status: evaluation.overall.status,
+      machineReadable: "eval-report.json",
+      friendly: "eval-report.md",
+    },
+    evidence: ["contact-sheet.png", "quality-report.json", "render-report.json", ".validation.json"],
+  };
+  await writeJson(path.join(directory, "delivery.json"), delivery);
   const state = await readJson(path.join(directory, "state.json"));
   await writeJson(path.join(directory, "state.json"), { ...state, status: "finalized", finalizedAt: new Date().toISOString() });
-  console.log(path.join(directory, "final.mp4"));
+  console.log(JSON.stringify({
+    status: "ready",
+    video: finalPath,
+    evalReport: path.join(directory, "eval-report.md"),
+    delivery: path.join(directory, "delivery.json"),
+    grade: evaluation.overall.grade,
+    score: evaluation.overall.score,
+  }, null, 2));
 }
 
 async function checkRepo() {
@@ -349,14 +382,17 @@ async function checkRepo() {
 }
 
 async function listMotions() {
-  const manifest = await readJson(path.join(motionRoot, "assets/motions/manifest.json"));
+  const catalog = await loadMotionCatalog();
   console.log(JSON.stringify({
     source: "local-normalized-catalog",
     mixamoApiCalls: 0,
-    motions: manifest.motions.map(({ id, label, durationSeconds }) => ({
+    starterCount: catalog.starter.motions.length,
+    userCount: catalog.user.motions.length,
+    motions: catalog.motions.map(({ id, label, durationSeconds, library }) => ({
       id,
       label,
       durationSeconds,
+      library,
       soloEligible: true,
       finaleEligible: durationSeconds >= 9,
     })),

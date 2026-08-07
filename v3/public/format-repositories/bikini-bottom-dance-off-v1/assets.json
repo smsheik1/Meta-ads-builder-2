@@ -3,7 +3,8 @@
   "fixed": [
     {"path": "../mixamo-character-motion-v1/runtime/renderer/app.js", "role": "official character renderer"},
     {"path": "../mixamo-character-motion-v1/assets/character-packs.json", "role": "verified character rig profiles"},
-    {"path": "../mixamo-character-motion-v1/assets/motions/manifest.json", "role": "normalized motion catalog"},
+    {"path": "../mixamo-character-motion-v1/assets/motions/manifest.json", "role": "frozen 25-motion starter catalog"},
+    {"path": "../mixamo-character-motion-v1/user-motions/manifest.json", "role": "optional operator-imported motion catalog", "required": false},
     {"path": "assets/voice-presets.json", "role": "Fish Audio voice assignments and delivery settings"}
   ],
   "generated": ["local song analysis", "eight Fish Audio dialogue clips and receipts", "four solo clips, four uninterrupted finale clips, and four configurable reaction clips", "47-second looping Reel MP4", "contact sheet", "quality report"],

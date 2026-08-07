@@ -2407,6 +2407,28 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "bikini-bottom-dance-off-wiggle",
+    status: "published",
+    order: 11.6,
+    brand: "Bikini Bottom",
+    title: "Four characters enter. One comment section decides.",
+    curatorNote: "Choose from 25 starter dances—or import another locally—then let SpongeBob, Patrick, Mr. Krabs, and Squilliam taunt, solo, and collide in a scored 47-second Reel.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/final.mp4",
+      poster: "/format-repositories/bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/poster.png",
+      durationLabel: "47 sec",
+      aspectRatio: "9:16",
+    },
+    format: {
+      slug: "bikini-bottom-dance-off",
+      name: "Bikini Bottom Dance Off",
+      version: "0.7.0",
+      owner: "Shaz",
+    },
+  },
+  {
     id: "davids-cookies-this-is-fine",
     status: "published",
     order: 12,
@@ -2592,7 +2614,7 @@ const discoveryShelfDefinitions = [
     id: "character-explainers",
     title: "Explain It With Characters",
     description: "Familiar characters make hard ideas and real promotions easy to follow.",
-    formats: ["squilliam-news", "otaku-explainer"],
+    formats: ["squilliam-news", "bikini-bottom-dance-off", "otaku-explainer"],
   },
   {
     id: "conversations",

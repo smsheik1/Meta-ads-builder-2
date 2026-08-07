@@ -5,10 +5,10 @@
     "verified character motion profiles, grounding, paired limbs, and protected face bones",
     "the 9:16 four-panel compositor, timing model, caption lane, countdown, finale, chorus, and replay bridge",
     "motion selection, local motion import, MP4 composition, inspection, and finalization",
-    "quality gates and two proof input fixtures"
+    "weighted technical and human-review evals, delivery manifest, and two proof input fixtures"
   ],
   "packagedReplaceableContent": [
-    "the local normalized starter motion catalog",
+    "the frozen 25-motion normalized starter catalog",
     "the four operator-supplied character packs",
     "public Fish Audio reference IDs and non-secret delivery presets"
   ],
@@ -23,7 +23,10 @@
       "source": "an operator-downloaded Mixamo Collada file with skin and inverse-bind matrices",
       "command": "node runner.mjs import-motion --source=/absolute/path/to/Motion.dae --id=my-motion --label=\"My Motion\"",
       "providerApiCalls": 0,
-      "sourceFilePackaged": false
+      "sourceFilePackaged": false,
+      "normalizedDestination": "ignored user-motions library",
+      "starterCatalogMutated": false,
+      "totalMotionCap": null
     }
   ],
   "providerCalls": [

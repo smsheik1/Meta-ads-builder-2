@@ -18,18 +18,50 @@
     "silentWindows": [[0.5, 0.95], [1.5, 1.95], [2.6, 2.95]],
     "maximumAttempts": 3
   },
+  "grading": {
+    "passingScore": 85,
+    "gradeScale": [
+      {"minimum": 97, "grade": "A+"},
+      {"minimum": 93, "grade": "A"},
+      {"minimum": 90, "grade": "A-"},
+      {"minimum": 87, "grade": "B+"},
+      {"minimum": 83, "grade": "B"},
+      {"minimum": 80, "grade": "B-"},
+      {"minimum": 70, "grade": "C"},
+      {"minimum": 60, "grade": "D"},
+      {"minimum": 0, "grade": "F"}
+    ],
+    "automaticCriteria": [
+      {"id": "width", "label": "Reel width", "weight": 2, "threshold": "exactly 1080 px", "measurementPath": "measured.width"},
+      {"id": "height", "label": "Reel height", "weight": 2, "threshold": "exactly 1920 px", "measurementPath": "measured.height"},
+      {"id": "fps", "label": "Frame rate", "weight": 3, "threshold": "30 fps ±0.01", "measurementPath": "measured.fps"},
+      {"id": "duration", "label": "Complete runtime", "weight": 5, "threshold": "47 sec ±0.08", "measurementPath": "measured.durationSeconds"},
+      {"id": "audio", "label": "Playable audio track", "weight": 4, "threshold": "audio stream present", "measurementPath": "measured.audioCodec"},
+      {"id": "countdownBeeps", "label": "Three audible countdown beeps", "weight": 4, "threshold": "every beep window at least -45 dB", "measurementPath": "measured.beepWindowMeanDb"},
+      {"id": "danceMusic", "label": "Music during every dance", "weight": 5, "threshold": "every dance window at least -45 dB", "measurementPath": "measured.songWindowMeanDb"},
+      {"id": "dialogueVoices", "label": "Dialogue is audible", "weight": 5, "threshold": "every dialogue window at least -45 dB", "measurementPath": "measured.dialogueWindowMeanDb"},
+      {"id": "countdownGapsSilent", "label": "Countdown has clean gaps", "weight": 4, "threshold": "silent windows at most -65 dB", "measurementPath": "measured.silentWindowMeanDb"},
+      {"id": "fiveSecondSolos", "label": "Every solo has showcase time", "weight": 5, "threshold": "each solo at least 5 sec", "measurementPath": "measured.durationSeconds"},
+      {"id": "nineSecondGroupFinale", "label": "Full group finale", "weight": 5, "threshold": "exactly 9 sec", "measurementPath": "measured.durationSeconds"},
+      {"id": "uninterruptedFinaleSources", "label": "Dedicated finale motions", "weight": 4, "threshold": "all four finale clips rendered", "measurementPath": "measured.finaleFreezeEvents"},
+      {"id": "finaleMotionContinuity", "label": "Nobody freezes in the finale", "weight": 6, "threshold": "zero freeze events over 0.75 sec", "measurementPath": "measured.finaleFreezeEvents"},
+      {"id": "closingCharacterMovesDuringCta", "label": "Closing performer stays alive", "weight": 5, "threshold": "CTA frame hashes differ", "measurementPath": "measured.closingMotionFrameHashes"},
+      {"id": "closingChorusVoices", "label": "Four-character closing chorus", "weight": 5, "threshold": "four distinct voices", "measurementPath": "measured.closingChorusVoiceCount"},
+      {"id": "seamlessReplayFrame", "label": "Replay seam", "weight": 6, "threshold": "SSIM at least 0.995", "measurementPath": "measured.loopSeam.score"}
+    ]
+  },
   "human": [
-    "All four faces and eyes remain readable throughout their solos.",
-    "The active speaker uses a readable reaction gesture while waiting characters stay subtly alive and visually subordinate.",
-    "The countdown has three clear beeps and no song underneath it.",
-    "The supplied song is audible only during solo dances and the group finale.",
-    "Every individual solo lasts at least five full seconds so the dancer can show off the selected motion.",
-    "The all-character finale lasts nine full seconds, keeps faces camera-readable, and every character remains visibly animated without a frozen hold or short-clip restart.",
-    "The opening and every taunt use the assigned Fish Audio voice; the closing line begins in audible four-character unison with no song underneath.",
-    "Each incoming challenger clearly taunts the character directly before them, and the performance sounds natural rather than rushed.",
-    "The final character visibly performs its selected reaction motion during the four-voice closing chorus while the other three characters remain alive and visually subordinate.",
-    "Taunts remain inside the dedicated caption lane below the grid without covering any character; right-column faces remain clear of the action rail.",
-    "The dimmed-character final countdown-3 frame joins the matching opening countdown without implying a separate video.",
-    "No character is clipped in a way that hides the identity or dance."
+    {"id": "faces-readable", "label": "All four faces and eyes remain readable throughout their solos.", "weight": 2.5},
+    {"id": "body-language", "label": "The active speaker uses a readable reaction gesture while waiting characters stay subtly alive and visually subordinate.", "weight": 2.5},
+    {"id": "countdown-clarity", "label": "The countdown has three clear beeps and no song underneath it.", "weight": 2.5},
+    {"id": "music-placement", "label": "The supplied song is audible only during solo dances and the group finale.", "weight": 2.5},
+    {"id": "solo-showcase", "label": "Every individual solo lasts at least five full seconds so the dancer can show off the selected motion.", "weight": 2.5},
+    {"id": "finale-readability", "label": "The nine-second finale keeps faces readable and every character visibly animated.", "weight": 2.5},
+    {"id": "voice-casting", "label": "Opening and taunts use assigned voices; the closing begins in four-character unison without music.", "weight": 2.5},
+    {"id": "taunt-flow", "label": "Each incoming challenger clearly taunts the previous dancer without sounding rushed.", "weight": 2.5},
+    {"id": "closing-performance", "label": "The closing performer visibly reacts while the other three remain alive and subordinate.", "weight": 2.5},
+    {"id": "caption-safety", "label": "Captions stay below the grid; faces remain clear of the Reels action rail.", "weight": 2.5},
+    {"id": "loop-story", "label": "The final countdown frame joins the opening without implying a separate video.", "weight": 2.5},
+    {"id": "character-framing", "label": "No character is clipped in a way that hides identity or dance.", "weight": 2.5}
   ]
 }

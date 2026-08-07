@@ -12,17 +12,20 @@ node runner.mjs init --run=wiggle-proof --song=/absolute/path/to/song.mp3
 node runner.mjs validate --run=wiggle-proof
 node runner.mjs render --run=wiggle-proof --approve-provider
 node runner.mjs inspect --run=wiggle-proof
+node runner.mjs finalize --run=wiggle-proof --human-review=pass
 ```
 
 `npm run check` verifies both the Dance Off contracts and the bundled character-motion foundation, including an isolated local `import-motion` round trip.
 
-Every character chooses three motion IDs in `input.json`: `motionId` for the solo, `finaleMotionId` for the uninterrupted group showcase, and `reactionMotionId` for dialogue and the closing CTA. To add a motion that is not in the starter catalog, download one Collada file with skin from Mixamo and import it locally:
+Every character chooses three motion IDs in `input.json`: `motionId` for the solo, `finaleMotionId` for the uninterrupted group showcase, and `reactionMotionId` for dialogue and the closing CTA. The bundled `assets/motions/manifest.json` is a frozen 25-motion starter library. To add motion 26 or 260 without changing that foundation, download one Collada file with skin from Mixamo and import it into the separate ignored `user-motions/` library:
 
 ```bash
 node runner.mjs import-motion --source=/absolute/path/to/Motion.dae --id=my-motion --label="My Motion"
 ```
 
 Mixamo is not called during validation or rendering. The local source DAE is never copied into the Repo. `content-boundary.json` is the machine-readable decision record for what ships, what remains an episode input, and what may call an external provider.
+
+`inspect` writes both `eval-report.json` and a readable `eval-report.md`. The 100-point score is 70 points of measured technical checks and 30 points of explicit human review. Before a person watches the video, the grade stays pending and reports the automatic percentage separately. `finalize --human-review=pass` creates `final.mp4`, the final A-F grade, and `delivery.json`, then prints all three paths as one return-ready bundle.
 
 The supplied song is copied into the local run folder and remains untracked. It plays only during dance windows. Countdown gaps remain silent except for beeps; opening, taunts, and CTA contain Fish Audio dialogue with no song underneath. Generated voice clips are measured before the runtime divides the solo budget evenly among the four dancers; the group showcase then receives nine uninterrupted seconds from dedicated finale motions that are never clip-looped.
 

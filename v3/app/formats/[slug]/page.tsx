@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, ArrowRight, BadgeCheck, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, BadgeCheck, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
@@ -107,6 +107,16 @@ export default async function FormatPage({
                 Technical proof
                 <ExternalLink className="size-4" aria-hidden="true" />
               </Link>
+            ) : null}
+            {format.repositoryHref ? (
+              <a
+                href={format.repositoryHref}
+                download
+                className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#c9ff55] px-5 text-sm font-black"
+              >
+                Download runnable Repo
+                <Download className="size-4" aria-hidden="true" />
+              </a>
             ) : null}
           </div>
         </div>

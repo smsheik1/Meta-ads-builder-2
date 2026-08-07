@@ -34,6 +34,7 @@ export type DiscoveryFormatProfile = {
   promise: string;
   lastUpdated: string;
   technicalHref?: string;
+  repositoryHref?: string;
   proofEntries: DiscoveryEntry[];
   whatStays: string[];
   whatChanges: string[];
