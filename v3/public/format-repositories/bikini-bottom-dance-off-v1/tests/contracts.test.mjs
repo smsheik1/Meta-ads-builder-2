@@ -80,7 +80,7 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.equal(output.video.durationSeconds, 47);
   assert.equal(output.timeline.minimumSoloSeconds, 5);
   assert.match(output.timeline.timingRule, /group showcase is 9 seconds/);
-  assert.equal(output.timeline.sequence.at(-1).beat, "round-two-loop-bridge");
+  assert.equal(output.timeline.sequence.at(-1).beat, "replay-loop-bridge");
   const quality = await readJson("quality.json");
   assert.ok(quality.automatic.minimumLoopSeamSsim >= 0.995);
   const input = await readJson("fixtures/smoke/input.json");
@@ -90,10 +90,14 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
     assert.ok(motion.durationSeconds >= 9);
   }
   const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
-  assert.match(compositor, /CLOSING_MOTION_ID = "taunt"/);
-  assert.match(compositor, /tpad=stop_mode=clone/);
+  assert.match(compositor, /REACTION_MOTION_ID = "taunt"/);
+  assert.match(compositor, /IDLE_SPEED = 0\.36/);
+  assert.match(compositor, /RIGHT_COLUMN_SAFE_SHIFT = 76/);
+  assert.match(compositor, /RUN IT BACK/);
+  assert.doesNotMatch(compositor, /ROUND TWO/);
+  assert.match(compositor, /dance-punch/);
+  assert.match(compositor, /stinger/);
   assert.match(compositor, /character\.finaleMotionId/);
-  assert.match(compositor, /STILL NOT SURE\?/);
   assert.match(compositor, /middleDuration > 1 \/ 30/);
   const inspector = await readFile(new URL("runtime/inspect.mjs", root), "utf8");
   assert.match(inspector, /freezedetect/);

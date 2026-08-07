@@ -24,7 +24,7 @@
       {"beat": "dance-squilliam", "song": true, "voice": false},
       {"beat": "all-character-finale", "song": true, "voice": false},
       {"beat": "squilliam-comment-cta", "song": false, "voice": true},
-      {"beat": "round-two-loop-bridge", "song": false, "voice": false}
+      {"beat": "replay-loop-bridge", "song": false, "voice": false}
     ]
   },
   "evidence": ["analysis.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]

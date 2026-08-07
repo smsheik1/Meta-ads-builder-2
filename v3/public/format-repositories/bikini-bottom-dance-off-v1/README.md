@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off
 
-A 47-second 9:16 proof that turns one song excerpt into a four-way character dance battle. The Reel opens on a silent-song 3–2–1 countdown with beeps, then alternates spoken character roasts with solos lasting at least five seconds: each incoming challenger taunts the dancer immediately before them and takes over. All four return for a nine-second group showcase built from uninterrupted long-form motions before Squilliam delivers the comment prompt with a body-language Taunt motion. A one-second “Round Two?” card then becomes the first frame of the countdown so the Reel loops without a visible cut.
+A 47-second 9:16 proof that turns one song excerpt into a four-way character dance battle. The Reel opens on a silent-song 3–2–1 countdown with beeps, then alternates spoken character roasts with solos lasting at least five seconds: each incoming challenger taunts the dancer immediately before them and takes over. All four return for a nine-second group showcase built from uninterrupted long-form motions before Squilliam delivers the comment prompt with a body-language Taunt motion. A one-second “Run It Back” card then becomes the first frame of the countdown so the same Reel loops without a visible cut.
 
 This Repo sequences character clips; it does not own another character renderer. SpongeBob, Patrick, Mr. Krabs, and Squilliam are rendered by the existing Character Dance Lab runtime, including its protected faces, grounding, and Squilliam paired-leg profile.
 

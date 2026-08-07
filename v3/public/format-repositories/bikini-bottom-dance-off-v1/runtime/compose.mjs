@@ -8,7 +8,9 @@ import { renderDownload } from "../../mixamo-character-motion-v1/runtime/export.
 import { buildTimeline, DURATION } from "./timeline.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const CLOSING_MOTION_ID = "taunt";
+const REACTION_MOTION_ID = "taunt";
+const IDLE_SPEED = 0.36;
+const RIGHT_COLUMN_SAFE_SHIFT = 76;
 
 function execute(program, args) {
   return new Promise((resolve, reject) => {
@@ -37,8 +39,8 @@ function graphicSvg(content) {
   </svg>`);
 }
 
-function centeredText({ value, y, size, fill = "white", stroke = "#020b13", strokeWidth = 4 }) {
-  return `<text class="display" x="540" y="${y}" font-size="${size}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}">${xml(value)}</text>`;
+function centeredText({ value, x = 540, y, size, fill = "white", stroke = "#020b13", strokeWidth = 4 }) {
+  return `<text class="display" x="${x}" y="${y}" font-size="${size}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}">${xml(value)}</text>`;
 }
 
 function countdownGraphic(number) {
@@ -94,13 +96,17 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     const round = timeline.rounds[index];
     await add(`active-${index}`, `between(t,${round.roundStart},${round.roundEnd})`,
       `<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="${character.color}" stroke-width="18"/>`);
+    await add(`dance-punch-${index}`, `between(t,${round.danceStart},${round.danceStart + 0.24})`, [
+      `<rect x="${position.x + 5}" y="${position.y + 5}" width="500" height="625" fill="${character.color}" fill-opacity="0.12" stroke="white" stroke-width="28"/>`,
+      `<rect x="${position.x + 13}" y="${position.y + 13}" width="484" height="609" fill="none" stroke="${character.color}" stroke-width="12"/>`,
+    ].join(""));
     const speech = index === 0 ? input.openingLine : character.taunt;
     const speakerLabel = index === 0 ? `${character.label}:` : `${character.label} TO ${previousCharacter.label}:`;
     const speechLines = speech.length > 30 ? wrapWords(speech) : [speech.toUpperCase()];
     await add(`speech-${index}`, `between(t,${round.speechStart},${round.speechEnd})`, [
-      '<rect x="40" y="1560" width="1000" height="170" rx="30" fill="#020b13" fill-opacity="0.9"/>',
-      centeredText({ value: speakerLabel, y: 1608, size: 28, fill: character.color, strokeWidth: 2 }),
-      ...speechLines.map((line, lineIndex) => centeredText({ value: line, y: speechLines.length === 1 ? 1685 : 1663 + lineIndex * 50, size: speechLines.length === 1 ? 48 : 36, strokeWidth: 3 })),
+      '<rect x="40" y="1275" width="825" height="160" rx="26" fill="#020b13" fill-opacity="0.92"/>',
+      centeredText({ value: speakerLabel, x: 452, y: 1320, size: 27, fill: character.color, strokeWidth: 2 }),
+      ...speechLines.map((line, lineIndex) => centeredText({ value: line, x: 452, y: speechLines.length === 1 ? 1390 : 1366 + lineIndex * 43, size: speechLines.length === 1 ? 42 : 32, strokeWidth: 3 })),
     ].join(""));
   }
 
@@ -110,9 +116,8 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
   }).join("");
   await add("finale", `between(t,${timeline.finale.start},${timeline.finale.end})`, [
     finaleStrokes,
-    '<rect x="40" y="1550" width="1000" height="185" rx="30" fill="#020b13" fill-opacity="0.92"/>',
-    centeredText({ value: "FINAL ROUND", y: 1620, size: 44, fill: "#59dece", strokeWidth: 3 }),
-    centeredText({ value: "EVERYBODY WIGGLE!", y: 1698, size: 58, fill: "#f8dd40", strokeWidth: 4 }),
+    '<rect x="245" y="164" width="590" height="64" rx="24" fill="#020b13" fill-opacity="0.94"/>',
+    centeredText({ value: "FINAL ROUND • EVERYBODY WIGGLE!", y: 206, size: 29, fill: "#f8dd40", strokeWidth: 3 }),
   ].join(""));
 
   for (const [index, number] of [3, 2, 1].entries()) {
@@ -121,9 +126,9 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
 
   await add("loop-bridge-prompt", `between(t,${timeline.loopBridge.start},${timeline.loopBridge.end - 0.2})`, [
     '<rect x="0" y="0" width="1080" height="1920" fill="#02050a"/>',
-    centeredText({ value: "STILL NOT SURE?", y: 770, size: 72, fill: "#59dece", strokeWidth: 5 }),
-    centeredText({ value: "ROUND TWO?", y: 900, size: 118, fill: "#f8dd40", strokeWidth: 7 }),
-    centeredText({ value: "WATCH AGAIN. THEN VOTE.", y: 1000, size: 42, strokeWidth: 4 }),
+    centeredText({ value: "WHO WON?", y: 770, size: 84, fill: "#59dece", strokeWidth: 5 }),
+    centeredText({ value: "RUN IT BACK.", y: 910, size: 116, fill: "#f8dd40", strokeWidth: 7 }),
+    centeredText({ value: "WATCH AGAIN. THEN VOTE.", y: 1005, size: 40, strokeWidth: 4 }),
   ].join(""));
   await add("loop-bridge-countdown", `between(t,${timeline.loopBridge.end - 0.2},${timeline.loopBridge.end})`, countdownGraphic(3));
 
@@ -136,12 +141,14 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     `<rect x="${closingPosition.x}" y="${closingPosition.y}" width="510" height="635" fill="none" stroke="${closingCharacter.color}" stroke-width="18"/>`,
     centeredText({ value: "WHO WON?", y: 750, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
     ...closingLines.map((line, index) => centeredText({ value: line, y: 865 + index * 65, size: 48, strokeWidth: 4 })),
+    '<rect x="272" y="1035" width="536" height="76" rx="38" fill="#59dece" fill-opacity="0.94"/>',
+    centeredText({ value: "THEN RUN IT BACK.", y: 1087, size: 38, fill: "#061829", stroke: "none", strokeWidth: 0 }),
   ].join(""));
   return graphics;
 }
 
-function freeze(label, duration, output) {
-  return `[${label}]trim=end_frame=1,loop=loop=-1:size=1:start=0,trim=duration=${duration},setpts=PTS-STARTPTS[${output}]`;
+function motionSegment(label, duration, output, speed = 1) {
+  return `[${label}]setpts=(PTS-STARTPTS)/${speed},trim=duration=${duration},setpts=PTS-STARTPTS[${output}]`;
 }
 
 async function sha256(file) {
@@ -182,13 +189,17 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     await writeFile(destination, rendered.bytes);
     return destination;
   }));
-  const closingClip = path.join(clipsDirectory, `${input.characters.at(-1).characterId}-${CLOSING_MOTION_ID}.mp4`);
-  try {
-    if ((await stat(closingClip)).size <= 20_000) throw new Error("Closing clip is incomplete.");
-  } catch {
-    const rendered = await renderDownload({ characterId: input.characters.at(-1).characterId, motionId: CLOSING_MOTION_ID, format: "mp4" });
-    await writeFile(closingClip, rendered.bytes);
-  }
+  const reactionClips = await Promise.all(input.characters.map(async (character) => {
+    const destination = path.join(clipsDirectory, `${character.characterId}-${REACTION_MOTION_ID}-reaction.mp4`);
+    try {
+      if ((await stat(destination)).size > 20_000) return destination;
+    } catch {
+      // Render missing clips below.
+    }
+    const rendered = await renderDownload({ characterId: character.characterId, motionId: REACTION_MOTION_ID, format: "mp4" });
+    await writeFile(destination, rendered.bytes);
+    return destination;
+  }));
 
   const filters = [`color=c=0x061829:s=1080x1920:r=30:d=${DURATION}[base]`];
   const cellPositions = [
@@ -203,35 +214,35 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     directory: path.join(runDirectory, "graphics"),
     cellPositions,
   });
-  const songInputIndex = input.characters.length * 2;
+  const songInputIndex = input.characters.length * 3;
   const dialogueInputIndex = songInputIndex + 1;
-  const closingInputIndex = dialogueInputIndex + dialogueAssets.length;
+  const graphicsInputIndex = dialogueInputIndex + dialogueAssets.length;
 
   input.characters.forEach((character, index) => {
     const round = timeline.rounds[index];
+    const waitDuration = round.speechStart;
+    const speechDuration = round.speechEnd - round.speechStart;
     const middleDuration = timeline.finale.start - round.danceEnd;
     const hasMiddle = middleDuration > 1 / 30;
     const closingDuration = DURATION - timeline.finale.end;
     const closingEvent = timeline.events.find((event) => event.type === "closing");
     const isClosingSpeaker = index === input.characters.length - 1;
-    const soloParts = [`c${index}pre0`, `c${index}solo0`];
-    if (hasMiddle) soloParts.push(`c${index}mid0`);
-    if (!isClosingSpeaker) soloParts.push(`c${index}post0`);
-    filters.push(`[${index}:v]split=${soloParts.length}${soloParts.map((part) => `[${part}]`).join("")}`);
-    filters.push(freeze(`c${index}pre0`, round.danceStart, `c${index}pre`));
-    filters.push(`[c${index}solo0]trim=duration=${round.danceEnd - round.danceStart},setpts=PTS-STARTPTS[c${index}solo]`);
-    if (hasMiddle) filters.push(freeze(`c${index}mid0`, middleDuration, `c${index}mid`));
-    filters.push(`[${input.characters.length + index}:v]trim=duration=${timeline.finale.end - timeline.finale.start},setpts=PTS-STARTPTS[c${index}final]`);
-    if (isClosingSpeaker) {
-      filters.push(`[${closingInputIndex}:v]tpad=stop_mode=clone:stop_duration=${closingDuration},trim=duration=${closingDuration},setpts=PTS-STARTPTS[c${index}post]`);
-    } else {
-      filters.push(freeze(`c${index}post0`, closingDuration, `c${index}post`));
-    }
+    const reactionInputIndex = input.characters.length * 2 + index;
+    const reactionParts = [`c${index}wait0`, `c${index}speech0`, `c${index}post0`];
+    if (hasMiddle) reactionParts.splice(2, 0, `c${index}mid0`);
+    filters.push(`[${reactionInputIndex}:v]split=${reactionParts.length}${reactionParts.map((part) => `[${part}]`).join("")}`);
+    filters.push(motionSegment(`c${index}wait0`, waitDuration, `c${index}wait`, IDLE_SPEED));
+    filters.push(motionSegment(`c${index}speech0`, speechDuration, `c${index}speech`));
+    filters.push(motionSegment(`${index}:v`, round.danceEnd - round.danceStart, `c${index}solo`));
+    if (hasMiddle) filters.push(motionSegment(`c${index}mid0`, middleDuration, `c${index}mid`, IDLE_SPEED));
+    filters.push(motionSegment(`${input.characters.length + index}:v`, timeline.finale.end - timeline.finale.start, `c${index}final`));
+    filters.push(motionSegment(`c${index}post0`, closingDuration, `c${index}post`, isClosingSpeaker ? 1 : IDLE_SPEED));
     const closingActive = isClosingSpeaker ? `+between(t,${closingEvent.start},${closingEvent.end})` : "";
-    const timelineParts = [`c${index}pre`, `c${index}solo`];
+    const timelineParts = [`c${index}wait`, `c${index}speech`, `c${index}solo`];
     if (hasMiddle) timelineParts.push(`c${index}mid`);
     timelineParts.push(`c${index}final`, `c${index}post`);
-    filters.push(`${timelineParts.map((part) => `[${part}]`).join("")}concat=n=${timelineParts.length}:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
+    const safeShift = index % 2 === 1 ? RIGHT_COLUMN_SAFE_SHIFT : 0;
+    filters.push(`${timelineParts.map((part) => `[${part}]`).join("")}concat=n=${timelineParts.length}:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2+${safeShift}:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
   });
 
   let current = "base";
@@ -243,7 +254,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
 
   graphics.forEach((graphic, index) => {
     const next = `graphic${index}`;
-    const graphicInputIndex = closingInputIndex + 1 + index;
+    const graphicInputIndex = graphicsInputIndex + index;
     filters.push(`[${current}][${graphicInputIndex}:v]overlay=x=0:y=0:enable='${graphic.enable}'[${next}]`);
     current = next;
   });
@@ -265,8 +276,11 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     const event = timeline.events.find((candidate) => candidate.id === asset.id);
     filters.push(`[${dialogueInputIndex + index}:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-17:LRA=7:TP=-1.5,adelay=${Math.round(event.start * 1000)}:all=1[voice${index}]`);
   });
+  timeline.rounds.forEach((round, index) => {
+    filters.push(`aevalsrc=0.14*sin(2*PI*(900+2200*t)*t)*exp(-18*t):s=48000:d=0.22,aformat=channel_layouts=stereo,adelay=${Math.round(round.danceStart * 1000)}:all=1[stinger${index}]`);
+  });
   filters.push(`anullsrc=r=48000:cl=stereo:d=${DURATION}[silence]`);
-  filters.push(`[silence]${musicWindows.map((_, index) => `[music${index}]`).join("")}${dialogueAssets.map((_, index) => `[voice${index}]`).join("")}[beep0][beep1][beep2]amix=inputs=${musicWindows.length + dialogueAssets.length + 4}:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95[music]`);
+  filters.push(`[silence]${musicWindows.map((_, index) => `[music${index}]`).join("")}${dialogueAssets.map((_, index) => `[voice${index}]`).join("")}${timeline.rounds.map((_, index) => `[stinger${index}]`).join("")}[beep0][beep1][beep2]amix=inputs=${musicWindows.length + dialogueAssets.length + timeline.rounds.length + 4}:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95[music]`);
 
   const filterPath = path.join(runDirectory, "filter-complex.txt");
   await writeFile(filterPath, `${filters.join(";\n")}\n`);
@@ -275,9 +289,9 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     "-y",
     ...characterClips.flatMap((clip) => ["-stream_loop", "-1", "-i", clip]),
     ...finaleClips.flatMap((clip) => ["-i", clip]),
+    ...reactionClips.flatMap((clip) => ["-stream_loop", "-1", "-i", clip]),
     "-ss", String(input.songExcerptStart), "-i", songPath,
     ...dialogueAssets.flatMap((asset) => ["-i", asset.file]),
-    "-i", closingClip,
     ...graphics.flatMap((graphic) => ["-loop", "1", "-framerate", "30", "-i", graphic.file]),
     "-filter_complex_script", filterPath,
     "-map", "[vout]", "-map", "[music]",
@@ -296,7 +310,6 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     timeline,
     song: { file: input.songFile, excerptStart: input.songExcerptStart, sha256: await sha256(songPath) },
     dialogue: dialogueAssets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(runDirectory, file) })),
-    closingMotion: { characterId: input.characters.at(-1).characterId, motionId: CLOSING_MOTION_ID, renderedClipSha256: await sha256(closingClip) },
     characters: await Promise.all(input.characters.map(async (character, index) => ({
       ...character,
       taunts: index ? input.characters[index - 1].characterId : null,
@@ -304,6 +317,8 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
       finale: timeline.finale,
       renderedClipSha256: await sha256(characterClips[index]),
       finaleRenderedClipSha256: await sha256(finaleClips[index]),
+      reactionMotionId: REACTION_MOTION_ID,
+      reactionRenderedClipSha256: await sha256(reactionClips[index]),
     }))),
     outputSha256: await sha256(outputPath),
   };

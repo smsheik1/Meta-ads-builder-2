@@ -19,16 +19,16 @@
   },
   "human": [
     "All four faces and eyes remain readable throughout their solos.",
-    "Only the active soloist moves before the group finale; incoming challengers remain still while taunting.",
+    "The active speaker uses a readable reaction gesture while waiting characters stay subtly alive and visually subordinate.",
     "The countdown has three clear beeps and no song underneath it.",
     "The supplied song is audible only during solo dances and the group finale.",
     "Every individual solo lasts at least five full seconds so the dancer can show off the selected motion.",
-    "The all-character finale lasts nine full seconds and every character remains visibly animated throughout it without a frozen hold or short-clip restart.",
+    "The all-character finale lasts nine full seconds, keeps faces camera-readable, and every character remains visibly animated without a frozen hold or short-clip restart.",
     "The opening, every taunt, and the closing CTA are spoken in the assigned Fish Audio voice with no song underneath.",
     "Each incoming challenger clearly taunts the character directly before them, and the performance sounds natural rather than rushed.",
-    "Squilliam visibly performs the Taunt motion during his closing CTA while the other three characters remain still.",
-    "Taunts, character names, final CTA, and Round Two replay prompt are readable inside Reel-safe margins.",
-    "The final countdown-3 frame joins the opening countdown-3 frame without a visible jump, making replay feel intentional.",
+    "Squilliam visibly performs the Taunt motion during his closing CTA while the other three characters remain subtly alive and visually subordinate.",
+    "Taunts, character names, final CTA, and replay prompt are readable inside Reel-safe margins; right-column faces remain clear of the action rail.",
+    "The Run It Back card and final countdown-3 frame join the opening countdown without implying a separate video.",
     "No character is clipped in a way that hides the identity or dance."
   ]
 }

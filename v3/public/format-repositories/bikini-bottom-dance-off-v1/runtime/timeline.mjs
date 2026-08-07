@@ -42,7 +42,7 @@ export function buildTimeline(input, dialogueAssets) {
   events.push({ type: "closing", id: closing.id, characterId: input.characters.at(-1).characterId, start: closingStart, end: cursor, song: false });
   const loopBridgeStart = cursor;
   cursor += LOOP_BRIDGE_DURATION;
-  events.push({ type: "loop-bridge", id: "round-two-loop-bridge", start: loopBridgeStart, end: cursor, song: false });
+  events.push({ type: "loop-bridge", id: "replay-loop-bridge", start: loopBridgeStart, end: cursor, song: false });
   const closingDelta = Math.abs(DURATION - cursor);
   if (closingDelta > 0.02) throw new Error(`Timeline math drifted by ${closingDelta.toFixed(3)}s.`);
 
