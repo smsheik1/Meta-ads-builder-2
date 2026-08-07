@@ -2424,7 +2424,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "bikini-bottom-dance-off",
       name: "Bikini Bottom Dance Off",
-      version: "0.7.0",
+      version: "0.7.1",
       owner: "Shaz",
     },
   },

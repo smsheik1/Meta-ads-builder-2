@@ -21,6 +21,7 @@ assert.equal(entries[0]?.media.aspectRatio, "9:16");
 assert.equal(statSync(finalVideo).size > 5_000_000, true);
 assert.equal(existsSync(`${evidenceRoot}/poster.png`), true);
 assert.equal(existsSync(`${evidenceRoot}/contact-sheet.png`), true);
+assert.equal(existsSync(`${evidenceRoot}/delivery.json`), true);
 
 const evalReport = JSON.parse(readFileSync(`${evidenceRoot}/eval-report.json`, "utf8")) as {
   overall: Record<string, string | number>;
@@ -39,9 +40,20 @@ assert.deepEqual(evalReport.overall, {
 });
 assert.ok(evalReport.criteria.length > 20);
 assert.ok(evalReport.criteria.every((criterion) => criterion.status === "pass" && criterion.explanation));
+const delivery = JSON.parse(readFileSync(`${evidenceRoot}/delivery.json`, "utf8")) as {
+  status: string;
+  finalVideo: { path: string; sha256: string };
+  eval: { grade: string; score: number; status: string };
+};
+assert.equal(delivery.status, "ready");
+assert.equal(delivery.eval.grade, "A+");
+assert.equal(delivery.eval.score, 100);
+assert.equal(delivery.eval.status, "pass");
+assert.equal(delivery.finalVideo.path, "final.mp4");
+assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.7.0");
+assert.equal(profile.version, "0.7.1");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(profile.repositoryHref, "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip");
 assert.equal(profile.proofEntries.length, 1);

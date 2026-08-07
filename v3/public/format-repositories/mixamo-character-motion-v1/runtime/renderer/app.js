@@ -101,7 +101,13 @@ async function initializeRenderer() {
   const characterPack = catalog.packs.find((pack) => pack.id === input.characterId);
   if (!characterPack) throw new Error(`Unknown character: ${input.characterId}`);
 
-  document.body.style.background = `radial-gradient(circle at 50% 28%, rgba(255,255,255,.2), transparent 36%), linear-gradient(145deg, ${input.background || "#0b3558"} 0%, #08718c 52%, #082b50 100%)`;
+  if (input.backgroundPreset === "talking-fish-news") {
+    document.body.dataset.backgroundPreset = input.backgroundPreset;
+  } else if (input.backgroundPreset) {
+    throw new Error(`Unknown background preset: ${input.backgroundPreset}`);
+  } else {
+    document.body.style.background = `radial-gradient(circle at 50% 28%, rgba(255,255,255,.2), transparent 36%), linear-gradient(145deg, ${input.background || "#0b3558"} 0%, #08718c 52%, #082b50 100%)`;
+  }
   title.textContent = input.title;
   const loaded = await loadCachedCharacter(characterPack);
   commitPreparedSelection(characterPack, loaded, motion);

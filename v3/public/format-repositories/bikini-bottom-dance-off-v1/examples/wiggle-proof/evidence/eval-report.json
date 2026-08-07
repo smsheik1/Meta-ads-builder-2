@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "format": "bikini-bottom-dance-off-v1",
-  "evaluatedAt": "2026-08-07T19:36:08.341Z",
+  "evaluatedAt": "2026-08-07T20:09:54.228Z",
   "overall": {
     "status": "pass",
     "score": 100,
@@ -179,7 +179,7 @@
       "category": "automatic",
       "status": "pass",
       "score": 5,
-      "measured": "e1f402b596b4e0f18e5250884b43dcd8bb29c92fd25268aa01558a6a68cfb10b, 4dc8e308ac5ab2820759666df7c7cd5e63be8a2498a591b28cfd82e14fe9ad68",
+      "measured": "02c080b9059c5902edb4dc4d0fd11fdc8446c964a80571a1e33c24d3fe2fd0c1, ad076aa7d109d8639599f9a67cec3819d2571c02b0ab51089b21eccdaa36a1b7",
       "explanation": "Closing performer stays alive met its threshold (CTA frame hashes differ)."
     },
     {
@@ -203,7 +203,7 @@
       "category": "automatic",
       "status": "pass",
       "score": 6,
-      "measured": "0.995946",
+      "measured": "0.996138",
       "explanation": "Replay seam met its threshold (SSIM at least 0.995)."
     },
     {
@@ -213,7 +213,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -223,7 +223,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -233,7 +233,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -243,7 +243,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -253,7 +253,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -263,7 +263,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -273,7 +273,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -283,7 +283,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -293,7 +293,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -303,7 +303,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -313,7 +313,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -323,7 +323,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T18:29:34.825Z",
+      "measured": "Approved 2026-08-07T20:09:54.227Z",
       "explanation": "A human reviewer approved this criterion."
     }
   ],

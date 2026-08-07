@@ -48,7 +48,7 @@ try {
   const files = await listFiles(staged);
   await writeFile(path.join(staged, "KIT-MANIFEST.json"), `${JSON.stringify({
     kit: kitName,
-    formatVersion: "0.5.0",
+    formatVersion: "0.5.1",
     builtAt: new Date().toISOString(),
     excluded: ["secrets", "node_modules", "agent run caches", "source Mixamo DAEs", "download artifacts"],
     files,

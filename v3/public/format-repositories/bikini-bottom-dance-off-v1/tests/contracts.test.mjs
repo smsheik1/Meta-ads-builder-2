@@ -150,6 +150,11 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
 test("the compositor delegates character pixels to the motion repo", async () => {
   const composition = await readJson("composition-contract.json");
   assert.match(composition.rendererInvariant, /mixamo-character-motion-v1\/runtime\/renderer\/app\.js/);
+  assert.ok(composition.fixed.some((rule) => rule.includes("Talking Fish News")));
+  const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
+  assert.match(compositor, /CHARACTER_BACKGROUND_PRESET = "talking-fish-news"/);
+  assert.match(compositor, /backgroundPreset: CHARACTER_BACKGROUND_PRESET/);
+  assert.match(compositor, /characterClipName/);
 });
 
 test("the package boundary keeps Mixamo local and external calls explicit", async () => {

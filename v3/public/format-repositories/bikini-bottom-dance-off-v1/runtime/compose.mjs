@@ -11,6 +11,11 @@ import { buildTimeline, DURATION } from "./timeline.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const IDLE_SPEED = 0.36;
 const RIGHT_COLUMN_SAFE_SHIFT = 76;
+const CHARACTER_BACKGROUND_PRESET = "talking-fish-news";
+
+function characterClipName(character, motionId, suffix = "") {
+  return `${character.characterId}-${motionId}-${CHARACTER_BACKGROUND_PRESET}${suffix}.mp4`;
+}
 
 function execute(program, args) {
   return new Promise((resolve, reject) => {
@@ -160,7 +165,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
   const clipsDirectory = path.join(runDirectory, "character-clips");
   await mkdir(clipsDirectory, { recursive: true });
   const characterClips = await Promise.all(input.characters.map(async (character) => {
-    const destination = path.join(clipsDirectory, `${character.characterId}-${character.motionId}.mp4`);
+    const destination = path.join(clipsDirectory, characterClipName(character, character.motionId));
     try {
       if ((await stat(destination)).size > 20_000) return destination;
     } catch {
@@ -170,12 +175,13 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
       characterId: character.characterId,
       motionId: character.motionId,
       format: "mp4",
+      backgroundPreset: CHARACTER_BACKGROUND_PRESET,
     });
     await writeFile(destination, rendered.bytes);
     return destination;
   }));
   const finaleClips = await Promise.all(input.characters.map(async (character) => {
-    const destination = path.join(clipsDirectory, `${character.characterId}-${character.finaleMotionId}-finale.mp4`);
+    const destination = path.join(clipsDirectory, characterClipName(character, character.finaleMotionId, "-finale"));
     try {
       if ((await stat(destination)).size > 20_000) return destination;
     } catch {
@@ -185,18 +191,24 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
       characterId: character.characterId,
       motionId: character.finaleMotionId,
       format: "mp4",
+      backgroundPreset: CHARACTER_BACKGROUND_PRESET,
     });
     await writeFile(destination, rendered.bytes);
     return destination;
   }));
   const reactionClips = await Promise.all(input.characters.map(async (character) => {
-    const destination = path.join(clipsDirectory, `${character.characterId}-${character.reactionMotionId}-reaction.mp4`);
+    const destination = path.join(clipsDirectory, characterClipName(character, character.reactionMotionId, "-reaction"));
     try {
       if ((await stat(destination)).size > 20_000) return destination;
     } catch {
       // Render missing clips below.
     }
-    const rendered = await renderDownload({ characterId: character.characterId, motionId: character.reactionMotionId, format: "mp4" });
+    const rendered = await renderDownload({
+      characterId: character.characterId,
+      motionId: character.reactionMotionId,
+      format: "mp4",
+      backgroundPreset: CHARACTER_BACKGROUND_PRESET,
+    });
     await writeFile(destination, rendered.bytes);
     return destination;
   }));

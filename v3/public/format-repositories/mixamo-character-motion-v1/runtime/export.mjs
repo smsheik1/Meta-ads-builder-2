@@ -26,8 +26,9 @@ async function readJson(relative) {
   return JSON.parse(await readFile(path.join(formatRoot, relative), "utf8"));
 }
 
-export async function renderDownload({ characterId, motionId, format } = {}) {
-  if (typeof characterId !== "string" || typeof motionId !== "string" || !formats.has(format)) {
+export async function renderDownload({ characterId, motionId, format, backgroundPreset } = {}) {
+  if (typeof characterId !== "string" || typeof motionId !== "string" || !formats.has(format)
+    || (backgroundPreset !== undefined && backgroundPreset !== "talking-fish-news")) {
     throw new ExportInputError("Choose a valid character, motion, and download format.");
   }
   const [catalog, motionCatalog] = await Promise.all([
@@ -50,6 +51,7 @@ export async function renderDownload({ characterId, motionId, format } = {}) {
       motionId,
       title: character.label,
       background: "#0b3558",
+      ...(backgroundPreset ? { backgroundPreset } : {}),
     }, null, 2)}\n`);
     await execute(process.execPath, [
       "runtime/render.mjs",

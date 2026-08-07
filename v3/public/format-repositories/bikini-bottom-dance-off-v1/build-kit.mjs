@@ -53,7 +53,7 @@ try {
   await writeFile(path.join(staged, "package.json"), `${JSON.stringify({
     name: kitName,
     private: true,
-    version: "0.7.0",
+    version: "0.7.1",
     workspaces: ["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"],
     scripts: {
       check: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run check",
@@ -64,7 +64,7 @@ try {
   const files = await listFiles(staged);
   await writeFile(path.join(staged, "KIT-MANIFEST.json"), `${JSON.stringify({
     kit: kitName,
-    formatVersion: "0.7.0",
+    formatVersion: "0.7.1",
     builtAt: new Date().toISOString(),
     officialFormat: "bikini-bottom-dance-off-v1",
     officialMotionDependency: "mixamo-character-motion-v1",
