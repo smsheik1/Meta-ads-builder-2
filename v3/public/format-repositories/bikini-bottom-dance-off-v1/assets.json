@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    {"path": "../mixamo-character-motion-v1/runtime/renderer/app.js", "role": "official character renderer"},
+    {"path": "../mixamo-character-motion-v1/assets/character-packs.json", "role": "verified character rig profiles"},
+    {"path": "../mixamo-character-motion-v1/assets/motions/manifest.json", "role": "normalized motion catalog"}
+  ],
+  "generated": ["local song analysis", "four character clips", "30-second Reel MP4", "contact sheet", "quality report"],
+  "sourceNotes": "The operator supplies the song locally. This Repo records its hash and timing analysis but does not package the song."
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "automatic": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 30,
+    "durationToleranceSeconds": 0.08,
+    "audioRequired": true,
+    "maximumAttempts": 3
+  },
+  "human": [
+    "All four faces and eyes remain readable throughout their solos.",
+    "Only the active soloist moves before the group finale.",
+    "The selected song excerpt feels rhythmically strong from the countdown into the first solo.",
+    "Taunts, character names, and final CTA are readable inside Reel-safe margins.",
+    "No character is clipped in a way that hides the identity or dance."
+  ]
+}

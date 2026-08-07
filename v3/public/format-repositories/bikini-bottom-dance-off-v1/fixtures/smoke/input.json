@@ -1,0 +1,12 @@
+{
+  "title": "Bikini Bottom Dance Off",
+  "songTitle": "Wiggle",
+  "songFile": "source.mp3",
+  "songExcerptStart": 0,
+  "characters": [
+    {"characterId": "spongebob", "motionId": "booty-hip-hop-dance", "label": "SPONGEBOB", "taunt": "I AM READY!", "color": "#f8dd40"},
+    {"characterId": "patrick", "motionId": "rumba-dancing", "label": "PATRICK", "taunt": "I ALREADY WON.", "color": "#ff86b7"},
+    {"characterId": "mr-krabs", "motionId": "chicken-dance", "label": "MR. KRABS", "taunt": "THERE IS PRIZE MONEY, RIGHT?", "color": "#ff5454"},
+    {"characterId": "squilliam", "motionId": "hip-hop-dancing", "label": "SQUILLIAM", "taunt": "OBSERVE REAL RHYTHM.", "color": "#58dbc9"}
+  ]
+}

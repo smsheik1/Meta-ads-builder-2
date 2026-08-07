@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "video": {
+    "container": "mp4",
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 30
+  },
+  "timeline": [
+    {"start": 0, "end": 3, "beat": "countdown"},
+    {"start": 3, "end": 5, "beat": "challenge"},
+    {"start": 5, "end": 10, "beat": "solo-1"},
+    {"start": 10, "end": 15, "beat": "solo-2"},
+    {"start": 15, "end": 20, "beat": "solo-3"},
+    {"start": 20, "end": 25, "beat": "solo-4"},
+    {"start": 25, "end": 28, "beat": "finale"},
+    {"start": 28, "end": 30, "beat": "comment-cta"}
+  ],
+  "evidence": ["analysis.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
+}

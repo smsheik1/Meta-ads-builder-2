@@ -1,0 +1,11 @@
+{
+  "id": "bikini-bottom-dance-off-v1",
+  "name": "Bikini Bottom Dance Off",
+  "version": "0.1.0",
+  "description": "Turn a song excerpt into a 30-second vertical four-character dance-off with solo rounds, taunt cards, a group finale, and a comment CTA.",
+  "runtime": "runner.mjs",
+  "renderer": "../mixamo-character-motion-v1/runtime/renderer/app.js",
+  "inputContract": "input-contract.json",
+  "outputContract": "output-contract.json",
+  "qualityContract": "quality.json"
+}

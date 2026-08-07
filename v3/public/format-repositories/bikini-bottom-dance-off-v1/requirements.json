@@ -1,0 +1,11 @@
+{
+  "localTools": ["node", "npm", "ffmpeg", "ffprobe", "Google Chrome", "sharp"],
+  "formatRepoDependencies": ["mixamo-character-motion-v1"],
+  "providers": [],
+  "environmentVariables": [],
+  "notes": [
+    "Character pixels are rendered by the existing Character Dance Lab renderer.",
+    "Song files are copied into local run folders and are not packaged.",
+    "This proof uses on-screen taunts. Character voice generation is an optional later provider step."
+  ]
+}

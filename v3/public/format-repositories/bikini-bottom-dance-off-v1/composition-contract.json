@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    "1080x1920 Instagram Reel canvas at 30 fps",
+    "Three-second old-film countdown",
+    "Two-by-two character grid",
+    "Four five-second solo rounds in roster order",
+    "Three-second all-character finale",
+    "Two-second comment CTA",
+    "Character pixels rendered only by the Character Dance Lab renderer"
+  ],
+  "replaceable": ["song and excerpt", "verified four-character roster", "motion per character", "taunt text", "panel accent colors"],
+  "outOfScope": ["automatic rights clearance", "automatic voice cloning", "motion-specific rig patches", "timeline editor"],
+  "rendererInvariant": "The compositor may crop, dim, sequence, label, and frame clips, but every animated character frame must come from mixamo-character-motion-v1/runtime/renderer/app.js."
+}

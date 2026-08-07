@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "required": ["title", "songTitle", "songFile", "songExcerptStart", "characters"],
+  "properties": {
+    "title": {"type": "string", "minLength": 1, "maxLength": 60},
+    "songTitle": {"type": "string", "minLength": 1, "maxLength": 80},
+    "songFile": {"type": "string", "pattern": "^[a-zA-Z0-9._-]+$"},
+    "songExcerptStart": {"type": "number", "minimum": 0},
+    "characters": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["characterId", "motionId", "label", "taunt", "color"],
+        "properties": {
+          "characterId": {"type": "string", "enum": ["spongebob", "patrick", "mr-krabs", "squilliam"]},
+          "motionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+          "label": {"type": "string", "minLength": 1, "maxLength": 30},
+          "taunt": {"type": "string", "minLength": 1, "maxLength": 58},
+          "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
