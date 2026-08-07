@@ -6,6 +6,6 @@
     {"path": "../mixamo-character-motion-v1/assets/motions/manifest.json", "role": "normalized motion catalog"},
     {"path": "assets/voice-presets.json", "role": "Fish Audio voice assignments and delivery settings"}
   ],
-  "generated": ["local song analysis", "five Fish Audio dialogue clips and receipts", "four dance clips plus one Squilliam CTA motion clip", "36-second Reel MP4", "contact sheet", "quality report"],
+  "generated": ["local song analysis", "five Fish Audio dialogue clips and receipts", "four solo clips, four uninterrupted finale clips, and one Squilliam CTA motion clip", "47-second looping Reel MP4", "contact sheet", "quality report"],
   "sourceNotes": "The operator supplies the song locally. This Repo records its hash and timing analysis but does not package the song. Public Fish reference presets were supplied by the operator; the private Squilliam clone ID and API key are never packaged."
 }

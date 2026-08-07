@@ -7,7 +7,7 @@ import { buildTimeline } from "../runtime/timeline.mjs";
 const root = new URL("../", import.meta.url);
 const readJson = async (file) => JSON.parse(await readFile(new URL(file, root), "utf8"));
 
-test("the timeline is exactly 36 seconds with no gaps", async () => {
+test("the timeline is exactly 47 seconds with no gaps, five-second solos, and a replay bridge", async () => {
   const input = await readJson("fixtures/smoke/input.json");
   const dialogue = [
     { id: "opening", durationSeconds: 0.7 },
@@ -21,9 +21,11 @@ test("the timeline is exactly 36 seconds with no gaps", async () => {
   for (let index = 1; index < timeline.events.length; index += 1) {
     assert.equal(timeline.events[index - 1].end, timeline.events[index].start);
   }
-  assert.equal(timeline.events.at(-1).end, 36);
-  assert.ok(timeline.danceDuration >= 2.5);
+  assert.equal(timeline.events.at(-1).end, 47);
+  assert.ok(timeline.danceDuration >= 5);
   assert.ok(Math.abs(timeline.finale.end - timeline.finale.start - 9) < 0.01);
+  assert.equal(timeline.events.at(-1).type, "loop-bridge");
+  assert.equal(timeline.loopBridge.end - timeline.loopBridge.start, 1);
 });
 
 test("the smoke roster uses every verified character once", async () => {
@@ -61,6 +63,7 @@ test("the approved Fish voice presets are registered and provider calls require 
   assert.match(runner, /approve-provider/);
   assert.match(runner, /api\.fish\.audio\/v1\/tts/);
   assert.match(runner, /sample_rate: 44100/);
+  assert.ok(runner.indexOf("if (await exists(manifestPath))") < runner.indexOf("await loadLocalEnv()"));
 });
 
 test("long spoken captions wrap inside the Reel-safe card", async () => {
@@ -72,13 +75,25 @@ test("long spoken captions wrap inside the Reel-safe card", async () => {
   }
 });
 
-test("the nine-second group showcase hands off to an animated Squilliam CTA", async () => {
+test("the nine-second group showcase uses uninterrupted motions and hands off to a looping CTA", async () => {
   const output = await readJson("output-contract.json");
-  assert.equal(output.video.durationSeconds, 36);
+  assert.equal(output.video.durationSeconds, 47);
+  assert.equal(output.timeline.minimumSoloSeconds, 5);
   assert.match(output.timeline.timingRule, /group showcase is 9 seconds/);
+  assert.equal(output.timeline.sequence.at(-1).beat, "round-two-loop-bridge");
+  const quality = await readJson("quality.json");
+  assert.ok(quality.automatic.minimumLoopSeamSsim >= 0.995);
+  const input = await readJson("fixtures/smoke/input.json");
+  const manifest = await readJson("../mixamo-character-motion-v1/assets/motions/manifest.json");
+  for (const character of input.characters) {
+    const motion = manifest.motions.find((candidate) => candidate.id === character.finaleMotionId);
+    assert.ok(motion.durationSeconds >= 9);
+  }
   const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
   assert.match(compositor, /CLOSING_MOTION_ID = "taunt"/);
   assert.match(compositor, /tpad=stop_mode=clone/);
+  assert.match(compositor, /character\.finaleMotionId/);
+  assert.match(compositor, /STILL NOT SURE\?/);
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {

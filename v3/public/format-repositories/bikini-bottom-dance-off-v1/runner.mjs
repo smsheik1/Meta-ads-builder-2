@@ -80,19 +80,40 @@ function dialogueSpecs(input) {
 }
 
 async function generateDialogue(input, directory) {
+  const specs = dialogueSpecs(input);
+  const dialogueDirectory = path.join(directory, "dialogue");
+  const manifestPath = path.join(dialogueDirectory, "manifest.json");
+  if (await exists(manifestPath)) {
+    const manifest = await readJson(manifestPath);
+    const cached = [];
+    for (const spec of specs) {
+      const asset = manifest.assets?.find((candidate) => candidate.id === spec.id);
+      const file = asset?.file ? path.join(directory, asset.file) : null;
+      const receiptPath = path.join(dialogueDirectory, `${spec.id}.receipt.json`);
+      const receipt = await exists(receiptPath) ? await readJson(receiptPath) : null;
+      if (!asset || !file || !(await exists(file)) || !receipt
+        || asset.characterId !== spec.characterId || asset.text !== spec.text
+        || receipt.characterId !== spec.characterId || receipt.text !== spec.text) {
+        cached.length = 0;
+        break;
+      }
+      cached.push({ ...spec, file, durationSeconds: await probeDuration(file), sha256: await sha256(file) });
+    }
+    if (cached.length === specs.length) return cached;
+  }
+
   await loadLocalEnv();
   const apiKey = process.env.FISH_STUDIO_APIKEY || process.env.FISH_AUDIO_API_KEY || process.env.FISH_API_KEY;
   if (!apiKey) throw new Error("Missing FISH_STUDIO_APIKEY. Add it locally; never paste it into chat.");
   const catalog = await readJson(path.join(root, "assets/voice-presets.json"));
   const presets = new Map(catalog.voices.map((voice) => [voice.characterId, voice]));
-  const resolved = dialogueSpecs(input).map((spec) => {
+  const resolved = specs.map((spec) => {
     const preset = presets.get(spec.characterId);
     if (!preset) throw new Error(`No Fish Audio preset for ${spec.characterId}.`);
     const referenceId = preset.referenceId || (spec.characterId === "squilliam" ? process.env.SQUILLIAM_VOICE_ID : null);
     if (!referenceId) throw new Error(`Missing ${catalog.privateReferenceEnvironmentVariable} for the approved private Squilliam clone.`);
     return { ...spec, referenceId, speed: preset.speed };
   });
-  const dialogueDirectory = path.join(directory, "dialogue");
   await mkdir(dialogueDirectory, { recursive: true });
   const assets = [];
 
@@ -152,7 +173,7 @@ async function generateDialogue(input, directory) {
     }
     assets.push({ id: spec.id, characterId: spec.characterId, text: spec.text, file: output, durationSeconds: await probeDuration(output), sha256: await sha256(output) });
   }
-  await writeJson(path.join(dialogueDirectory, "manifest.json"), {
+  await writeJson(manifestPath, {
     provider: catalog.provider,
     model: catalog.model,
     generatedAt: new Date().toISOString(),
@@ -184,6 +205,9 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     seen.add(character.characterId);
     if (!catalog.packs.some((candidate) => candidate.id === character.characterId && candidate.status === "motion-ready")) errors.push(`Character is not motion-ready: ${character.characterId}`);
     if (!manifest.motions.some((candidate) => candidate.id === character.motionId)) errors.push(`Unknown motion: ${character.motionId}`);
+    const finaleMotion = manifest.motions.find((candidate) => candidate.id === character.finaleMotionId);
+    if (!finaleMotion) errors.push(`Unknown finale motion: ${character.finaleMotionId}`);
+    else if (finaleMotion.durationSeconds < 9) errors.push(`Finale motion must cover nine uninterrupted seconds: ${character.finaleMotionId}`);
     if (!/^#[0-9a-fA-F]{6}$/.test(character.color || "")) errors.push(`Invalid color for ${character.characterId}`);
     if (typeof character.taunt !== "string" || character.taunt.length > 58 || (index > 0 && !character.taunt.trim())) errors.push(`Invalid taunt for ${character.characterId}`);
   }

@@ -25,14 +25,31 @@ async function meanVolume(videoPath, [start, end]) {
   return match[1] === "-inf" ? -Infinity : Number(match[1]);
 }
 
-async function frameHash(videoPath, time) {
+async function frameHash(videoPath, time, crop) {
   const output = await execute("ffmpeg", [
     "-v", "error", "-ss", String(time), "-i", videoPath,
-    "-vf", "crop=510:635:550:885", "-frames:v", "1", "-f", "hash", "-hash", "sha256", "-",
+    ...(crop ? ["-vf", `crop=${crop.width}:${crop.height}:${crop.x}:${crop.y}`] : []),
+    "-frames:v", "1", "-f", "hash", "-hash", "sha256", "-",
   ], { capture: true });
   const match = output.match(/SHA256=([a-f0-9]+)/i);
-  if (!match) throw new Error(`Could not fingerprint the Squilliam panel at ${time}s.`);
+  if (!match) throw new Error(`Could not fingerprint the frame at ${time}s.`);
   return match[1];
+}
+
+async function loopSeamSimilarity(videoPath, runDirectory, [endTime, startTime]) {
+  const endFrame = path.join(runDirectory, "loop-seam-end.png");
+  const startFrame = path.join(runDirectory, "loop-seam-start.png");
+  await Promise.all([
+    execute("ffmpeg", ["-y", "-v", "error", "-ss", String(endTime), "-i", videoPath, "-frames:v", "1", endFrame]),
+    execute("ffmpeg", ["-y", "-v", "error", "-ss", String(startTime), "-i", videoPath, "-frames:v", "1", startFrame]),
+  ]);
+  const output = await execute("ffmpeg", [
+    "-hide_banner", "-i", endFrame, "-i", startFrame,
+    "-lavfi", "[0:v][1:v]ssim", "-f", "null", "-",
+  ], { capture: true });
+  const match = output.match(/All:([\d.]+)/);
+  if (!match) throw new Error("Could not measure the replay seam similarity.");
+  return { score: Number(match[1]), endFrame: path.basename(endFrame), startFrame: path.basename(startFrame) };
 }
 
 export async function inspectVideo({ videoPath, runDirectory, qualityContractPath }) {
@@ -55,7 +72,24 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const dialogueVolumes = await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)));
   const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
   const closing = renderReport.timeline.events.find((event) => event.type === "closing");
-  const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time)));
+  const panelCrops = [
+    { x: 20, y: 250, width: 510, height: 635 },
+    { x: 550, y: 250, width: 510, height: 635 },
+    { x: 20, y: 885, width: 510, height: 635 },
+    { x: 550, y: 885, width: 510, height: 635 },
+  ];
+  const squilliamCrop = panelCrops.at(-1);
+  const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, squilliamCrop)));
+  const finaleSampleTimes = Array.from({ length: 12 }, (_, index) => renderReport.timeline.finale.start + 0.35 + index * 0.72);
+  const finaleFrameHashes = await Promise.all(panelCrops.map((crop) => Promise.all(
+    finaleSampleTimes.map((time) => frameHash(videoPath, time, crop)),
+  )));
+  const finaleMotionContinuity = finaleFrameHashes.every((hashes) => hashes.every((hash, index) => index === 0 || hash !== hashes[index - 1]));
+  const loopSeamTimes = [
+    renderReport.timeline.loopBridge.end - 0.05,
+    0.05,
+  ];
+  const loopSeam = await loopSeamSimilarity(videoPath, runDirectory, loopSeamTimes);
   const checks = {
     width: video?.width === automatic.width,
     height: video?.height === automatic.height,
@@ -66,8 +100,12 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     danceMusic: songVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
     dialogueVoices: dialogueVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
     countdownGapsSilent: silentVolumes.every((volume) => volume <= automatic.maximumSilentWindowMeanDb),
+    fiveSecondSolos: renderReport.timeline.rounds.every((round) => round.danceEnd - round.danceStart >= 5),
     nineSecondGroupFinale: Math.abs(renderReport.timeline.finale.end - renderReport.timeline.finale.start - 9) < 0.01,
+    uninterruptedFinaleSources: renderReport.characters.every((character) => character.finaleMotionId && character.finaleRenderedClipSha256),
+    finaleMotionContinuity,
     squilliamMovesDuringCta: closingFrameHashes[0] !== closingFrameHashes[1],
+    seamlessReplayFrame: loopSeam.score >= automatic.minimumLoopSeamSsim,
   };
   if (Object.values(checks).some((passed) => !passed)) {
     throw new Error(`Automatic inspection failed: ${JSON.stringify({ checks, duration, fps, video, audio }, null, 2)}`);
@@ -75,7 +113,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const contactSheet = path.join(runDirectory, "contact-sheet.png");
   await execute("ffmpeg", [
     "-y", "-i", videoPath,
-    "-vf", "fps=1/3,scale=180:320:flags=lanczos,tile=6x2:padding=8:margin=8:color=0x061829",
+    "-vf", "fps=1/4,scale=180:320:flags=lanczos,tile=6x2:padding=8:margin=8:color=0x061829",
     "-frames:v", "1", contactSheet,
   ]);
   const report = {
@@ -94,6 +132,10 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       dialogueWindowMeanDb: dialogueVolumes,
       silentWindowMeanDb: silentVolumes,
       closingMotionFrameHashes: closingFrameHashes,
+      finaleSampleTimes,
+      finaleMotionFrameHashes: finaleFrameHashes,
+      loopSeamTimes,
+      loopSeam,
     },
     humanReview: { status: "pending", criteria: contract.human },
     contactSheet: path.basename(contactSheet),

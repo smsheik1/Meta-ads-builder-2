@@ -1,6 +1,7 @@
-export const DURATION = 36;
+export const DURATION = 47;
 export const COUNTDOWN_END = 3;
 export const FINALE_DURATION = 9;
+export const LOOP_BRIDGE_DURATION = 1;
 
 export function buildTimeline(input, dialogueAssets) {
   const dialogueById = new Map(dialogueAssets.map((asset) => [asset.id, asset]));
@@ -13,8 +14,8 @@ export function buildTimeline(input, dialogueAssets) {
     throw new Error("Every opening, taunt, and closing voice clip needs a measured duration.");
   }
   const speechDuration = dialogue.reduce((total, asset) => total + asset.durationSeconds, 0);
-  const danceDuration = (DURATION - COUNTDOWN_END - FINALE_DURATION - speechDuration) / input.characters.length;
-  if (danceDuration < 2.5) {
+  const danceDuration = (DURATION - COUNTDOWN_END - FINALE_DURATION - LOOP_BRIDGE_DURATION - speechDuration) / input.characters.length;
+  if (danceDuration < 5) {
     throw new Error(`Dialogue is too long for a ${DURATION}-second dance-off (${speechDuration.toFixed(3)}s of speech leaves ${danceDuration.toFixed(3)}s per solo).`);
   }
 
@@ -36,8 +37,13 @@ export function buildTimeline(input, dialogueAssets) {
   cursor += FINALE_DURATION;
   events.push({ type: "finale", id: "all-character-finale", start: finaleStart, end: cursor, song: true });
   const closing = dialogueById.get("closing");
-  events.push({ type: "closing", id: closing.id, characterId: input.characters.at(-1).characterId, start: cursor, end: DURATION, song: false });
-  const closingDelta = Math.abs(DURATION - cursor - closing.durationSeconds);
+  const closingStart = cursor;
+  cursor += closing.durationSeconds;
+  events.push({ type: "closing", id: closing.id, characterId: input.characters.at(-1).characterId, start: closingStart, end: cursor, song: false });
+  const loopBridgeStart = cursor;
+  cursor += LOOP_BRIDGE_DURATION;
+  events.push({ type: "loop-bridge", id: "round-two-loop-bridge", start: loopBridgeStart, end: cursor, song: false });
+  const closingDelta = Math.abs(DURATION - cursor);
   if (closingDelta > 0.02) throw new Error(`Timeline math drifted by ${closingDelta.toFixed(3)}s.`);
 
   return {
@@ -45,6 +51,7 @@ export function buildTimeline(input, dialogueAssets) {
     danceDuration,
     rounds,
     finale: { start: finaleStart, end: finaleStart + FINALE_DURATION },
+    loopBridge: { start: loopBridgeStart, end: DURATION },
     events,
   };
 }

@@ -6,11 +6,13 @@
     "Two-by-two character grid",
     "The first character speaks a short hype line; each later character audibly taunts the dancer directly before them, then dances",
     "The supplied song plays only while one or more characters are dancing",
-    "Nine-second all-character finale",
+    "Each individual solo lasts at least five seconds",
+    "Nine-second all-character finale using one uninterrupted long-form motion per character",
     "Spoken Squilliam comment CTA using the official Taunt motion while the other characters hold",
+    "One-second Round Two replay bridge whose final frame matches the opening countdown",
     "Character pixels rendered only by the Character Dance Lab renderer"
   ],
-  "replaceable": ["song and excerpt", "verified four-character roster", "motion per character", "opening line", "taunt text", "closing line", "panel accent colors"],
+  "replaceable": ["song and excerpt", "verified four-character roster", "solo and finale motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],
   "outOfScope": ["automatic rights clearance", "creating new voice clones", "motion-specific rig patches", "timeline editor"],
   "rendererInvariant": "The compositor may crop, dim, sequence, label, and frame clips, but every animated character frame must come from mixamo-character-motion-v1/runtime/renderer/app.js."
 }
