@@ -5,7 +5,7 @@ description: "Audition 25 normalized Mixamo motions on verified Wiggly character
 
 # Character Dance Lab
 
-1. Run `npm run check` and `npm run smoke` before real work.
+1. Run `npm run check`, `npm run smoke`, and `npm run smoke:stability` before real work.
 2. Run `npm run lab`, audition the catalog, and use Download ↑ for an immediate MP4 or GIF, or note the chosen IDs for the full inspect/finalize workflow.
 3. Use an existing ID from `assets/motions/manifest.json`, or import a user-downloaded Mixamo `.dae` with `node runner.mjs import-motion`; preserve the inverse-bind reference pose.
 4. Run `init`, edit only the run's `input.json`, and run `validate` before rendering.

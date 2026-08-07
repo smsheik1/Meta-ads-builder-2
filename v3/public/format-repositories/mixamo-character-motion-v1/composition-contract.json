@@ -5,6 +5,7 @@
     "MP4 and GIF downloads generated from the selected character and motion through the shared renderer",
     "Responsive selector with four verified characters and 25 normalized motions",
     "Manifest-first startup with only the active character and motion payload loaded",
+    "Atomic latest-selection scene swaps with recoverable interactive WebGL playback",
     "Mixamo inverse-bind world-delta motion schema",
     "Character semantic bone maps and paired-limb profiles",
     "Exact source timing, scaled root travel, deterministic foot grounding, and protected facial transforms",

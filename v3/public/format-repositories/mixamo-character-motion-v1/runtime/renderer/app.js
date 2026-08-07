@@ -8,8 +8,9 @@ const canvas = document.querySelector("#canvas");
 const title = document.querySelector("#title");
 const clipLabel = document.querySelector("#clip-label");
 const errorPanel = document.querySelector("#error");
+const LOAD_TIMEOUT_MS = 15_000;
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: !labMode });
 renderer.setPixelRatio(1);
 renderer.setSize(1280, 720, false);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -67,6 +68,17 @@ const state = {
 };
 const characterCache = new Map();
 const motionCache = new Map();
+const selectionState = {
+  generation: 0,
+  phase: labMode ? "loading" : "ready",
+  targetCharacterPack: null,
+  targetMotionRecord: null,
+};
+let resumeAfterContextRestore = true;
+let webglStatus = "ready";
+
+canvas.addEventListener("webglcontextlost", handleWebglContextLost);
+canvas.addEventListener("webglcontextrestored", handleWebglContextRestored);
 
 try {
   if (labMode) await initializeLab();
@@ -91,8 +103,8 @@ async function initializeRenderer() {
 
   document.body.style.background = `radial-gradient(circle at 50% 28%, rgba(255,255,255,.2), transparent 36%), linear-gradient(145deg, ${input.background || "#0b3558"} 0%, #08718c 52%, #082b50 100%)`;
   title.textContent = input.title;
-  await activateCharacter(characterPack);
-  activateMotion(motion);
+  const loaded = await loadCachedCharacter(characterPack);
+  commitPreparedSelection(characterPack, loaded, motion);
 
   window.motionInfo = motionInfo();
   window.renderFrame = renderFrame;
@@ -118,12 +130,10 @@ async function initializeLab() {
   document.querySelector("#motion-count").textContent = `${manifest.motions.length} motions`;
   renderCharacterButtons(packs);
   renderMotionButtons(manifest.motions);
-  state.motion = await loadMotion(initialRecord);
-  state.motionId = initialRecord.id;
-  await activateCharacter(initialCharacter);
-  activateMotion(state.motion);
-  updateLabSelection();
   bindLabControls();
+  selectionState.targetCharacterPack = initialCharacter;
+  selectionState.targetMotionRecord = initialRecord;
+  await requestSelection({}, { throwOnError: true });
   requestAnimationFrame(animate);
 
   window.__DANCE_LAB_READY__ = true;
@@ -138,11 +148,8 @@ function renderCharacterButtons(packs) {
     button.dataset.characterId = pack.id;
     button.textContent = pack.label.replace(" SquarePants", "");
     button.addEventListener("click", async () => {
-      if (pack.id === state.characterId) return restart();
-      await runSelection(async () => {
-        await activateCharacter(pack);
-        activateMotion(state.motion);
-      });
+      if (pack.id === state.characterId && selectionState.phase === "ready") return restart();
+      await requestSelection({ characterPack: pack });
     });
     container.append(button);
   }
@@ -169,26 +176,42 @@ function renderMotionButtons(motions) {
     button.append(number, label, duration);
 
     button.addEventListener("click", async () => {
-      if (motion.id === state.motionId) return restart();
-      await runSelection(async () => {
-        state.motion = await loadMotion(motion);
-        state.motionId = motion.id;
-        activateMotion(state.motion);
-      });
+      if (motion.id === state.motionId && selectionState.phase === "ready") return restart();
+      await requestSelection({ motionRecord: motion });
     });
     container.append(button);
   });
 }
 
-async function runSelection(action) {
-  setBusy(true);
+async function requestSelection(
+  {
+    characterPack = selectionState.targetCharacterPack,
+    motionRecord = selectionState.targetMotionRecord,
+  } = {},
+  { throwOnError = false } = {},
+) {
+  if (!characterPack || !motionRecord) throw new Error("A character and motion are required");
+  selectionState.targetCharacterPack = characterPack;
+  selectionState.targetMotionRecord = motionRecord;
+  const generation = ++selectionState.generation;
+  setSelectionPhase("loading");
+  clearError();
   try {
-    await action();
+    const [loaded, motion] = await Promise.all([
+      loadCachedCharacter(characterPack),
+      loadMotion(motionRecord),
+    ]);
+    if (generation !== selectionState.generation) return false;
+    commitPreparedSelection(characterPack, loaded, motion);
     updateLabSelection();
+    setSelectionPhase("ready");
+    return true;
   } catch (error) {
+    if (generation !== selectionState.generation) return false;
+    setSelectionPhase("error");
     showError(error);
-  } finally {
-    setBusy(false);
+    if (throwOnError) throw error;
+    return false;
   }
 }
 
@@ -264,9 +287,16 @@ async function downloadSelection(format) {
   }
 }
 
+function setSelectionPhase(phase) {
+  selectionState.phase = phase;
+  setBusy(phase === "loading" || phase === "recovering");
+  updateRuntimeDataset();
+}
+
 function setBusy(busy) {
-  document.querySelector("#lab-shell").setAttribute("aria-busy", String(busy));
-  for (const button of document.querySelectorAll("#controls button")) button.disabled = busy;
+  const shell = document.querySelector("#lab-shell");
+  shell.setAttribute("aria-busy", String(busy));
+  for (const button of document.querySelectorAll(".stage-actions button")) button.disabled = busy;
 }
 
 function updateLabSelection() {
@@ -285,10 +315,12 @@ function updateLabSelection() {
   clipLabel.textContent = `${state.motion.label} · ${state.motion.frameCount} frames`;
   document.querySelector("#now-playing").textContent = `${state.characterPack.label} · ${state.motion.label}`;
   updatePlaybackButtons();
+  updateRuntimeDataset();
 }
 
 function updatePlaybackButtons() {
   const button = document.querySelector("#play-toggle");
+  if (!button) return;
   button.textContent = state.playing ? "Pause" : "Play";
   button.setAttribute("aria-pressed", String(!state.playing));
 }
@@ -298,40 +330,69 @@ function restart() {
   state.currentFrame = 0;
   state.startedAt = performance.now();
   state.playing = true;
-  renderFrame(0);
+  if (webglStatus === "ready") renderFrame(0);
   if (labMode) updatePlaybackButtons();
 }
 
 async function loadMotion(record) {
-  if (!motionCache.has(record.id)) motionCache.set(record.id, readJson(`../../${record.file}`));
-  return motionCache.get(record.id);
+  return cacheLoad(
+    motionCache,
+    record.id,
+    () => readJson(`../../${record.file}`),
+    `motion ${record.label}`,
+  );
 }
 
-async function activateCharacter(characterPack) {
-  state.retargeter?.resetPose();
-  state.retargeter = null;
-  if (state.characterRoot) scene.remove(state.characterRoot);
-  if (!characterCache.has(characterPack.id)) characterCache.set(characterPack.id, loadCharacter(characterPack));
-  const loaded = await characterCache.get(characterPack.id);
+async function loadCachedCharacter(characterPack) {
+  return cacheLoad(
+    characterCache,
+    characterPack.id,
+    () => loadCharacter(characterPack),
+    `character ${characterPack.label}`,
+  );
+}
+
+function commitPreparedSelection(characterPack, loaded, motion) {
+  const sameCharacter = state.characterRoot === loaded.characterRoot;
+  if (sameCharacter) state.retargeter?.resetPose();
+  const nextRetargeter = createMixamoRetargeter({
+    characterRoot: loaded.characterRoot,
+    character: loaded.character,
+    profile: characterPack.motionProfile,
+    clip: motion,
+  });
+  if (!sameCharacter) {
+    state.retargeter?.resetPose();
+    if (state.characterRoot) scene.remove(state.characterRoot);
+    scene.add(loaded.characterRoot);
+  }
   state.character = loaded.character;
   state.characterId = characterPack.id;
   state.characterPack = characterPack;
   state.characterRoot = loaded.characterRoot;
-  scene.add(state.characterRoot);
-}
-
-function activateMotion(motion) {
-  state.retargeter?.resetPose();
   state.motion = motion;
   state.motionId = motion.id;
-  state.retargeter = createMixamoRetargeter({
-    characterRoot: state.characterRoot,
-    character: state.character,
-    profile: state.characterPack.motionProfile,
-    clip: motion,
-  });
-  clipLabel.textContent = `${motion.label} · ${motion.frameCount} frames`;
+  state.retargeter = nextRetargeter;
   restart();
+}
+
+function cacheLoad(cache, key, load, label) {
+  if (cache.has(key)) return cache.get(key);
+  let timer;
+  let pending;
+  pending = Promise.race([
+    load(),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Timed out loading ${label}`)), LOAD_TIMEOUT_MS);
+    }),
+  ])
+    .finally(() => clearTimeout(timer))
+    .catch((error) => {
+      if (cache.get(key) === pending) cache.delete(key);
+      throw error;
+    });
+  cache.set(key, pending);
+  return pending;
 }
 
 async function loadCharacter(characterPack) {
@@ -388,21 +449,63 @@ async function loadCharacter(characterPack) {
   return { character, characterRoot };
 }
 
-function animate(now) {
-  if (state.retargeter && state.playing) {
-    const frame = Math.floor((now - state.startedAt) * state.motion.fps / 1000) % state.motion.frameCount;
-    if (frame !== state.currentFrame) renderFrame(frame);
-  } else {
-    renderer.render(scene, camera);
+function handleWebglContextLost(event) {
+  event.preventDefault();
+  resumeAfterContextRestore = state.playing;
+  state.playing = false;
+  webglStatus = "lost";
+  if (labMode && selectionState.phase !== "loading") setSelectionPhase("recovering");
+  updatePlaybackButtons();
+  updateRuntimeDataset();
+}
+
+function handleWebglContextRestored() {
+  webglStatus = "ready";
+  if (state.retargeter) {
+    state.playing = resumeAfterContextRestore;
+    state.startedAt = performance.now() - state.currentFrame * 1000 / state.motion.fps;
+    renderFrame(state.currentFrame);
   }
-  requestAnimationFrame(animate);
+  if (labMode && selectionState.phase === "recovering") setSelectionPhase("ready");
+  clearError();
+  updatePlaybackButtons();
+  updateRuntimeDataset();
+}
+
+function animate(now) {
+  try {
+    if (document.hidden || webglStatus === "lost") return;
+    if (state.retargeter && state.playing) {
+      const elapsed = Math.max(0, now - state.startedAt);
+      const frame = Math.floor(elapsed * state.motion.fps / 1000) % state.motion.frameCount;
+      if (frame !== state.currentFrame) renderFrame(frame);
+    } else {
+      renderer.render(scene, camera);
+    }
+  } catch (error) {
+    state.playing = false;
+    if (labMode) setSelectionPhase("error");
+    showError(error);
+  } finally {
+    requestAnimationFrame(animate);
+  }
 }
 
 function renderFrame(index) {
+  if (!state.retargeter) return null;
   state.currentFrame = index;
   const diagnostics = state.retargeter.applyFrame(index);
   renderer.render(scene, camera);
+  updateRuntimeDataset();
   return diagnostics;
+}
+
+function updateRuntimeDataset() {
+  if (!labMode) return;
+  const shell = document.querySelector("#lab-shell");
+  shell.dataset.currentFrame = String(state.currentFrame);
+  shell.dataset.selectionPhase = selectionState.phase;
+  shell.dataset.webglStatus = webglStatus;
 }
 
 function motionInfo() {
@@ -428,4 +531,9 @@ async function readJson(url) {
 function showError(error) {
   errorPanel.style.display = "grid";
   errorPanel.textContent = error?.stack || error?.message || String(error);
+}
+
+function clearError() {
+  errorPanel.style.display = "none";
+  errorPanel.textContent = "";
 }

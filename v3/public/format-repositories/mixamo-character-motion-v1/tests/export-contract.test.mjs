@@ -21,3 +21,14 @@ test("the lab exposes one visible MP4/GIF drop-up through the official export en
   assert.match(app, /\/api\/format-lab\/character-dance-lab\/export/);
   assert.doesNotMatch(app, /MediaRecorder|captureStream/);
 });
+
+test("the interactive renderer owns a recoverable atomic selection lifecycle", async () => {
+  const app = await readFile(new URL("../runtime/renderer/app.js", import.meta.url), "utf8");
+  assert.match(app, /preserveDrawingBuffer:\s*!labMode/);
+  assert.match(app, /selectionState\.generation/);
+  assert.match(app, /generation !== selectionState\.generation/);
+  assert.match(app, /webglcontextlost/);
+  assert.match(app, /webglcontextrestored/);
+  assert.match(app, /Math\.max\(0, now - state\.startedAt\)/);
+  assert.match(app, /finally\s*{\s*requestAnimationFrame\(animate\)/);
+});

@@ -6,6 +6,8 @@ Version 0.3 adds 21 user-downloaded Mixamo clips for a 25-motion catalog and exp
 
 Version 0.4 adds Patrick Star as the fourth verified rig. Patrick uses the same renderer, world-delta retargeter, foot IK, and export path as the existing characters. His declarative profile protects the authored eye, brow, jaw, lip, forehead, and head-detail controls; no Patrick-specific renderer or motion file was introduced.
 
+Version 0.5 hardens the interactive renderer lifecycle. Character and motion changes now resolve as one latest-selection transaction, the displayed scene remains intact until its replacement is ready, rejected or timed-out loads leave the cache retryable, and interactive WebGL context loss has an explicit recovery path. Deterministic rendering and both download formats retain the existing export renderer behavior.
+
 | Motion | Original frames | Exact duration | Mapped bones | Planar root retained | Automatic quality |
 |---|---:|---:|---:|---:|---|
 | Hip Hop Dancing | 135 | 4.500 s | 35 | 100% | Pass |
@@ -65,3 +67,11 @@ Version 0.3.1 adds one visible Download ↑ control immediately after Restart. I
 An end-to-end browser run selected Squilliam and Rumba Dancing, then downloaded both outputs through the Wiggly page. The MP4 was a `266,014`-byte, 1280×720 H.264 file at 30 fps; the GIF was a `403,549`-byte, 640×360 looping file at 15 fps. Both were exactly `2.400` seconds. Visual inspection confirmed stable eyes, joined legs, intact textures, the selected motion, and the correct Squilliam Fancyson title. The same two-download browser run passed again from a fresh ZIP through its packaged `npm run lab` server. Both exports use `runtime/renderer/app.js` through the existing deterministic frame runner; there is no capture-stream or fallback renderer.
 
 Version 0.4 repeated the live Wiggly page test with Patrick and Rumba Dancing. Playwright selected Patrick, selected Rumba, and received the expected `patrick-rumba-dancing.mp4` and `.gif` filenames. The `359,546`-byte MP4 is 1280×720 H.264, 72 frames at 30 fps; the `489,522`-byte GIF is 640×360 with 36 sampled frames. Both are exactly `2.400` seconds. A seven-frame contact sheet confirmed intact textures and face overlays throughout the downloaded MP4. The same two-download test passed from a clean v0.4.0 ZIP extraction after a fresh dependency install; the published SHA-256 sidecar matches the archive.
+
+## Playback stability proof
+
+The v0.5 browser regression adds artificial delay to character and motion requests, then issues eight rapid character/motion selections without waiting between clicks. The selector controls remain usable while loading, the old dancer remains on stage, stale completions are ignored, and the scene converges on the final Patrick + Twist Dance pair. The same pass forces `WEBGL_lose_context`, restores it, verifies that playback advances again, and reloads the lab five consecutive times. All four characters are also committed and rendered by the existing lab smoke.
+
+The stress run reproduced the original intermittent freeze as `Frame -1 is outside 0-143`. A scene restart could occur a fraction after the browser timestamped the next animation callback, producing a negative elapsed interval. Elapsed time is now clamped at zero, and the animation callback schedules its successor from `finally`, so one unexpected frame error cannot permanently kill the loop. Interactive playback also disables the export-only preserved drawing buffer; deterministic output keeps it.
+
+Export parity was repeated after the lifecycle fix with Patrick and Rumba Dancing. The official path produced a `359,521`-byte MP4 with 72 H.264 frames at 1280×720 and 30 fps, and a `506,390`-byte 640×360 looping GIF with 36 sampled frames. Both outputs are exactly `2.400` seconds and still render through `runtime/renderer/app.js`.

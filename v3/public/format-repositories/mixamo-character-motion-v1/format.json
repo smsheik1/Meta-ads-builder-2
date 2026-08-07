@@ -1,8 +1,8 @@
 {
   "id": "mixamo-character-motion-v1",
   "name": "Character Dance Lab",
-  "version": "0.4.0",
-  "description": "Audition 25 normalized Mixamo motions on four verified Wiggly characters, then download the selected clip as MP4 or GIF with exact timing, deterministic grounding, and protected facial bones.",
+  "version": "0.5.0",
+  "description": "Audition 25 normalized Mixamo motions on four verified Wiggly characters with atomic switching and recoverable playback, then download the selected clip as MP4 or GIF with exact timing, deterministic grounding, and protected facial bones.",
   "runtime": "runner.mjs",
   "renderer": "runtime/renderer/app.js",
   "interactiveLab": "runtime/renderer/index.html?mode=lab",

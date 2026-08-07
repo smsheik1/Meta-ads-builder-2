@@ -36,7 +36,11 @@ try {
       && element.dataset.loadedMotionCount === "2"
       && element.dataset.loadedCharacterCount === "2";
   });
-  assert.equal(await page.locator("#error").isVisible(), false);
+  assert.equal(
+    await page.locator("#error").isVisible(),
+    false,
+    await page.locator("#error").textContent(),
+  );
 
   await page.locator('[data-character-id="squilliam"]').click();
   await page.waitForFunction(() => document.querySelector("#lab-shell")?.dataset.characterId === "squilliam");
@@ -64,7 +68,11 @@ try {
       && element.dataset.loadedCharacterCount === "4";
   });
   assert.equal(await page.locator("#title").textContent(), "Patrick Star");
-  assert.equal(await page.locator("#error").isVisible(), false);
+  assert.equal(
+    await page.locator("#error").isVisible(),
+    false,
+    await page.locator("#error").textContent(),
+  );
 
   const selectorBox = await page.locator("#character-selector").boundingBox();
   const patrickBox = await page.locator('#character-selector [data-character-id="patrick"]').boundingBox();
