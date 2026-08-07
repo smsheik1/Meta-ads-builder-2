@@ -1,11 +1,13 @@
 {
   "schemaVersion": 1,
-  "required": ["title", "songTitle", "songFile", "songExcerptStart", "characters"],
+  "required": ["title", "songTitle", "songFile", "songExcerptStart", "openingLine", "closingLine", "characters"],
   "properties": {
     "title": {"type": "string", "minLength": 1, "maxLength": 60},
     "songTitle": {"type": "string", "minLength": 1, "maxLength": 80},
     "songFile": {"type": "string", "pattern": "^[a-zA-Z0-9._-]+$"},
     "songExcerptStart": {"type": "number", "minimum": 0},
+    "openingLine": {"type": "string", "minLength": 1, "maxLength": 40},
+    "closingLine": {"type": "string", "minLength": 1, "maxLength": 58},
     "characters": {
       "type": "array",
       "minItems": 4,

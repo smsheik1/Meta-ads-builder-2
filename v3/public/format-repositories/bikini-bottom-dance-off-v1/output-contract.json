@@ -9,18 +9,22 @@
     "fps": 30,
     "durationSeconds": 30
   },
-  "timeline": [
-    {"start": 0, "end": 3, "beat": "countdown-beeps", "song": false},
-    {"start": 3, "end": 5, "beat": "challenge", "song": false},
-    {"start": 5, "end": 10, "beat": "dance-spongebob", "song": true},
-    {"start": 10, "end": 11.5, "beat": "patrick-taunts-spongebob", "song": false},
-    {"start": 11.5, "end": 15, "beat": "dance-patrick", "song": true},
-    {"start": 15, "end": 16.5, "beat": "mr-krabs-taunts-patrick", "song": false},
-    {"start": 16.5, "end": 20, "beat": "dance-mr-krabs", "song": true},
-    {"start": 20, "end": 21.5, "beat": "squilliam-taunts-mr-krabs", "song": false},
-    {"start": 21.5, "end": 25, "beat": "dance-squilliam", "song": true},
-    {"start": 25, "end": 28, "beat": "all-character-finale", "song": true},
-    {"start": 28, "end": 30, "beat": "comment-cta", "song": false}
-  ],
-  "evidence": ["analysis.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
+  "timeline": {
+    "timingRule": "The five generated Fish Audio clips are measured first. Their exact lengths determine the speech windows; the remaining time is divided evenly among four solo dances. The countdown is 3 seconds, the finale is 3 seconds, and the complete timeline is exactly 30 seconds.",
+    "minimumSoloSeconds": 2.5,
+    "sequence": [
+      {"beat": "countdown-beeps", "song": false, "voice": false},
+      {"beat": "spongebob-opening", "song": false, "voice": true},
+      {"beat": "dance-spongebob", "song": true, "voice": false},
+      {"beat": "patrick-taunts-spongebob", "song": false, "voice": true},
+      {"beat": "dance-patrick", "song": true, "voice": false},
+      {"beat": "mr-krabs-taunts-patrick", "song": false, "voice": true},
+      {"beat": "dance-mr-krabs", "song": true, "voice": false},
+      {"beat": "squilliam-taunts-mr-krabs", "song": false, "voice": true},
+      {"beat": "dance-squilliam", "song": true, "voice": false},
+      {"beat": "all-character-finale", "song": true, "voice": false},
+      {"beat": "squilliam-comment-cta", "song": false, "voice": true}
+    ]
+  },
+  "evidence": ["analysis.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
 }

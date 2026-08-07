@@ -5,17 +5,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { renderDownload } from "../../mixamo-character-motion-v1/runtime/export.mjs";
+import { buildTimeline, DURATION } from "./timeline.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const DURATION = 30;
-const FINALE_START = 25;
-const FINALE_END = 28;
-const ROUND_WINDOWS = [
-  { roundStart: 5, roundEnd: 10, danceStart: 5, danceEnd: 10 },
-  { roundStart: 10, roundEnd: 15, tauntStart: 10, tauntEnd: 11.5, danceStart: 11.5, danceEnd: 15 },
-  { roundStart: 15, roundEnd: 20, tauntStart: 15, tauntEnd: 16.5, danceStart: 16.5, danceEnd: 20 },
-  { roundStart: 20, roundEnd: 25, tauntStart: 20, tauntEnd: 21.5, danceStart: 21.5, danceEnd: 25 },
-];
 
 function execute(program, args) {
   return new Promise((resolve, reject) => {
@@ -48,7 +40,17 @@ function centeredText({ value, y, size, fill = "white", stroke = "#020b13", stro
   return `<text class="display" x="540" y="${y}" font-size="${size}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}">${xml(value)}</text>`;
 }
 
-async function renderGraphics({ input, directory, cellPositions }) {
+export function wrapWords(value) {
+  const words = value.toUpperCase().split(/\s+/);
+  let split = 1;
+  for (let index = 1; index < words.length; index += 1) {
+    if (Math.abs(words.slice(0, index).join(" ").length - words.slice(index).join(" ").length)
+      < Math.abs(words.slice(0, split).join(" ").length - words.slice(split).join(" ").length)) split = index;
+  }
+  return [words.slice(0, split).join(" "), words.slice(split).join(" ")];
+}
+
+async function renderGraphics({ input, timeline, directory, cellPositions }) {
   await mkdir(directory, { recursive: true });
   const graphics = [];
   const add = async (name, enable, content) => {
@@ -78,30 +80,24 @@ async function renderGraphics({ input, directory, cellPositions }) {
     const character = input.characters[index];
     const previousCharacter = input.characters[index - 1];
     const position = cellPositions[index];
-    const round = ROUND_WINDOWS[index];
+    const round = timeline.rounds[index];
     await add(`active-${index}`, `between(t,${round.roundStart},${round.roundEnd})`,
       `<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="${character.color}" stroke-width="18"/>`);
-    if (round.tauntStart !== undefined) {
-      const tauntSize = character.taunt.length > 34 ? 37 : 48;
-      await add(`taunt-${index}`, `between(t,${round.tauntStart},${round.tauntEnd})`, [
-        '<rect x="40" y="1560" width="1000" height="170" rx="30" fill="#020b13" fill-opacity="0.9"/>',
-        centeredText({ value: `${character.label} TO ${previousCharacter.label}:`, y: 1618, size: 30, fill: character.color, strokeWidth: 2 }),
-        centeredText({ value: character.taunt, y: 1690, size: tauntSize, strokeWidth: 3 }),
-      ].join(""));
-    }
+    const speech = index === 0 ? input.openingLine : character.taunt;
+    const speakerLabel = index === 0 ? `${character.label}:` : `${character.label} TO ${previousCharacter.label}:`;
+    const speechLines = speech.length > 30 ? wrapWords(speech) : [speech.toUpperCase()];
+    await add(`speech-${index}`, `between(t,${round.speechStart},${round.speechEnd})`, [
+      '<rect x="40" y="1560" width="1000" height="170" rx="30" fill="#020b13" fill-opacity="0.9"/>',
+      centeredText({ value: speakerLabel, y: 1608, size: 28, fill: character.color, strokeWidth: 2 }),
+      ...speechLines.map((line, lineIndex) => centeredText({ value: line, y: speechLines.length === 1 ? 1685 : 1663 + lineIndex * 50, size: speechLines.length === 1 ? 48 : 36, strokeWidth: 3 })),
+    ].join(""));
   }
-
-  await add("challenge", "between(t,3,5)", [
-    '<rect x="40" y="1550" width="1000" height="185" rx="30" fill="#020b13" fill-opacity="0.92"/>',
-    centeredText({ value: "FOUR DANCERS. ONE SONG.", y: 1620, size: 43, strokeWidth: 3 }),
-    centeredText({ value: "WHO CAN WIGGLE BEST?", y: 1698, size: 57, fill: "#f8dd40", strokeWidth: 4 }),
-  ].join(""));
 
   const finaleStrokes = input.characters.map((character, index) => {
     const position = cellPositions[index];
     return `<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="${character.color}" stroke-width="18"/>`;
   }).join("");
-  await add("finale", "between(t,25,28)", [
+  await add("finale", `between(t,${timeline.finale.start},${timeline.finale.end})`, [
     finaleStrokes,
     '<rect x="40" y="1550" width="1000" height="185" rx="30" fill="#020b13" fill-opacity="0.92"/>',
     centeredText({ value: "FINAL ROUND", y: 1620, size: 44, fill: "#59dece", strokeWidth: 3 }),
@@ -118,11 +114,12 @@ async function renderGraphics({ input, directory, cellPositions }) {
     ].join(""));
   }
 
-  await add("cta", "between(t,28,30)", [
+  const closing = timeline.events.find((event) => event.type === "closing");
+  const closingLines = wrapWords(input.closingLine);
+  await add("cta", `between(t,${closing.start},${closing.end})`, [
     '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.8"/>',
-    centeredText({ value: "WHO WON?", y: 760, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
-    centeredText({ value: "PUT YOUR WINNER", y: 875, size: 61, strokeWidth: 4 }),
-    centeredText({ value: "IN THE COMMENTS BELOW", y: 955, size: 61, strokeWidth: 4 }),
+    centeredText({ value: "WHO WON?", y: 750, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
+    ...closingLines.map((line, index) => centeredText({ value: line, y: 865 + index * 65, size: 48, strokeWidth: 4 })),
   ].join(""));
   return graphics;
 }
@@ -135,7 +132,8 @@ async function sha256(file) {
   return createHash("sha256").update(await readFile(file)).digest("hex");
 }
 
-export async function composeRun({ input, runDirectory, outputPath }) {
+export async function composeRun({ input, dialogueAssets, runDirectory, outputPath }) {
+  const timeline = buildTimeline(input, dialogueAssets);
   const clipsDirectory = path.join(runDirectory, "character-clips");
   await mkdir(clipsDirectory, { recursive: true });
   const characterClips = await Promise.all(input.characters.map(async (character) => {
@@ -163,20 +161,21 @@ export async function composeRun({ input, runDirectory, outputPath }) {
   ];
   const graphics = await renderGraphics({
     input,
+    timeline,
     directory: path.join(runDirectory, "graphics"),
     cellPositions,
   });
 
   input.characters.forEach((character, index) => {
-    const round = ROUND_WINDOWS[index];
-    const middleDuration = FINALE_START - round.danceEnd;
+    const round = timeline.rounds[index];
+    const middleDuration = timeline.finale.start - round.danceEnd;
     filters.push(`[${index}:v]split=5[c${index}pre0][c${index}solo0][c${index}mid0][c${index}final0][c${index}post0]`);
     filters.push(freeze(`c${index}pre0`, round.danceStart, `c${index}pre`));
     filters.push(`[c${index}solo0]trim=duration=${round.danceEnd - round.danceStart},setpts=PTS-STARTPTS[c${index}solo]`);
     filters.push(freeze(`c${index}mid0`, middleDuration, `c${index}mid`));
-    filters.push(`[c${index}final0]trim=duration=${FINALE_END - FINALE_START},setpts=PTS-STARTPTS[c${index}final]`);
-    filters.push(freeze(`c${index}post0`, DURATION - FINALE_END, `c${index}post`));
-    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${FINALE_START},${FINALE_END}))',setsar=1[c${index}]`);
+    filters.push(`[c${index}final0]trim=duration=${timeline.finale.end - timeline.finale.start},setpts=PTS-STARTPTS[c${index}final]`);
+    filters.push(freeze(`c${index}post0`, DURATION - timeline.finale.end, `c${index}post`));
+    filters.push(`[c${index}pre][c${index}solo][c${index}mid][c${index}final][c${index}post]concat=n=5:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end}))',setsar=1[c${index}]`);
   });
 
   let current = "base";
@@ -188,14 +187,11 @@ export async function composeRun({ input, runDirectory, outputPath }) {
 
   graphics.forEach((graphic, index) => {
     const next = `graphic${index}`;
-    filters.push(`[${current}][${5 + index}:v]overlay=x=0:y=0:enable='${graphic.enable}'[${next}]`);
+    filters.push(`[${current}][${5 + dialogueAssets.length + index}:v]overlay=x=0:y=0:enable='${graphic.enable}'[${next}]`);
     current = next;
   });
   filters.push(`[${current}]fps=30,format=yuv420p[vout]`);
-  const musicWindows = [
-    ...ROUND_WINDOWS.map(({ danceStart, danceEnd }) => ({ start: danceStart, end: danceEnd })),
-    { start: FINALE_START, end: FINALE_END },
-  ];
+  const musicWindows = timeline.events.filter((event) => event.song).map(({ start, end }) => ({ start, end }));
   const musicDuration = musicWindows.reduce((total, window) => total + window.end - window.start, 0);
   filters.push(`[4:a]atrim=duration=${musicDuration},asetpts=PTS-STARTPTS,aresample=48000,loudnorm=I=-15:LRA=10:TP=-1.2,asplit=${musicWindows.length}${musicWindows.map((_, index) => `[music${index}src]`).join("")}`);
   let sourceStart = 0;
@@ -208,8 +204,12 @@ export async function composeRun({ input, runDirectory, outputPath }) {
   filters.push("sine=frequency=700:sample_rate=48000:duration=0.16,volume=0.28,aformat=channel_layouts=stereo,adelay=180:all=1[beep0]");
   filters.push("sine=frequency=700:sample_rate=48000:duration=0.16,volume=0.28,aformat=channel_layouts=stereo,adelay=1180:all=1[beep1]");
   filters.push("sine=frequency=980:sample_rate=48000:duration=0.32,volume=0.32,aformat=channel_layouts=stereo,adelay=2150:all=1[beep2]");
+  dialogueAssets.forEach((asset, index) => {
+    const event = timeline.events.find((candidate) => candidate.id === asset.id);
+    filters.push(`[${5 + index}:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-17:LRA=7:TP=-1.5,adelay=${Math.round(event.start * 1000)}:all=1[voice${index}]`);
+  });
   filters.push(`anullsrc=r=48000:cl=stereo:d=${DURATION}[silence]`);
-  filters.push(`[silence]${musicWindows.map((_, index) => `[music${index}]`).join("")}[beep0][beep1][beep2]amix=inputs=${musicWindows.length + 4}:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95[music]`);
+  filters.push(`[silence]${musicWindows.map((_, index) => `[music${index}]`).join("")}${dialogueAssets.map((_, index) => `[voice${index}]`).join("")}[beep0][beep1][beep2]amix=inputs=${musicWindows.length + dialogueAssets.length + 4}:duration=first:dropout_transition=0:normalize=0,alimiter=limit=0.95[music]`);
 
   const filterPath = path.join(runDirectory, "filter-complex.txt");
   await writeFile(filterPath, `${filters.join(";\n")}\n`);
@@ -218,6 +218,7 @@ export async function composeRun({ input, runDirectory, outputPath }) {
     "-y",
     ...characterClips.flatMap((clip) => ["-stream_loop", "-1", "-i", clip]),
     "-ss", String(input.songExcerptStart), "-i", songPath,
+    ...dialogueAssets.flatMap((asset) => ["-i", asset.file]),
     ...graphics.flatMap((graphic) => ["-loop", "1", "-framerate", "30", "-i", graphic.file]),
     "-filter_complex_script", filterPath,
     "-map", "[vout]", "-map", "[music]",
@@ -233,12 +234,14 @@ export async function composeRun({ input, runDirectory, outputPath }) {
     renderer: "../mixamo-character-motion-v1/runtime/renderer/app.js",
     compositor: "runtime/compose.mjs",
     dimensions: { width: 1080, height: 1920, fps: 30, durationSeconds: DURATION },
+    timeline,
     song: { file: input.songFile, excerptStart: input.songExcerptStart, sha256: await sha256(songPath) },
+    dialogue: dialogueAssets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(runDirectory, file) })),
     characters: await Promise.all(input.characters.map(async (character, index) => ({
       ...character,
       taunts: index ? input.characters[index - 1].characterId : null,
-      round: ROUND_WINDOWS[index],
-      finale: { start: FINALE_START, end: FINALE_END },
+      round: timeline.rounds[index],
+      finale: timeline.finale,
       renderedClipSha256: await sha256(characterClips[index]),
     }))),
     outputSha256: await sha256(outputPath),

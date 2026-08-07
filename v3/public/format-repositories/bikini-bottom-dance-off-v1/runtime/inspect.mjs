@@ -32,12 +32,17 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const video = probe.streams.find((stream) => stream.codec_type === "video");
   const audio = probe.streams.find((stream) => stream.codec_type === "audio");
   const contract = JSON.parse(await readFile(qualityContractPath, "utf8"));
+  const renderReport = JSON.parse(await readFile(path.join(runDirectory, "render-report.json"), "utf8"));
   const automatic = contract.automatic;
   const fpsParts = String(video?.avg_frame_rate || "0/1").split("/").map(Number);
   const fps = fpsParts[1] ? fpsParts[0] / fpsParts[1] : 0;
   const duration = Number(probe.format.duration);
   const beepVolumes = await Promise.all(automatic.beepWindows.map((window) => meanVolume(videoPath, window)));
-  const songVolumes = await Promise.all(automatic.songWindows.map((window) => meanVolume(videoPath, window)));
+  const inset = automatic.measurementInsetSeconds;
+  const songWindows = renderReport.timeline.events.filter((event) => event.song).map((event) => [event.start + inset, event.end - inset]);
+  const dialogueWindows = renderReport.timeline.events.filter((event) => ["opening", "taunt", "closing"].includes(event.type)).map((event) => [event.start + 0.03, event.end - 0.03]);
+  const songVolumes = await Promise.all(songWindows.map((window) => meanVolume(videoPath, window)));
+  const dialogueVolumes = await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)));
   const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
   const checks = {
     width: video?.width === automatic.width,
@@ -47,7 +52,8 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     audio: Boolean(audio),
     countdownBeeps: beepVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
     danceMusic: songVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
-    nonDanceSilence: silentVolumes.every((volume) => volume <= automatic.maximumSilentWindowMeanDb),
+    dialogueVoices: dialogueVolumes.every((volume) => volume >= automatic.minimumActiveAudioMeanDb),
+    countdownGapsSilent: silentVolumes.every((volume) => volume <= automatic.maximumSilentWindowMeanDb),
   };
   if (Object.values(checks).some((passed) => !passed)) {
     throw new Error(`Automatic inspection failed: ${JSON.stringify({ checks, duration, fps, video, audio }, null, 2)}`);
@@ -71,6 +77,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       audioSampleRate: Number(audio.sample_rate),
       beepWindowMeanDb: beepVolumes,
       songWindowMeanDb: songVolumes,
+      dialogueWindowMeanDb: dialogueVolumes,
       silentWindowMeanDb: silentVolumes,
     },
     humanReview: { status: "pending", criteria: contract.human },
