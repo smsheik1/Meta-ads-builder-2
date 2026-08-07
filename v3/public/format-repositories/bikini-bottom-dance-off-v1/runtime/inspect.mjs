@@ -88,6 +88,10 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const closingCharacterCrop = panelCrops.at(-1);
   const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, closingCharacterCrop)));
   const finaleDuration = renderReport.timeline.finale.end - renderReport.timeline.finale.start;
+  const soloDurationSeconds = renderReport.timeline.rounds.map((round) => round.danceEnd - round.danceStart);
+  const finaleRenderedClipCount = renderReport.characters.filter((character) => (
+    character.finaleMotionId && character.finaleRenderedClipSha256
+  )).length;
   const finaleFreezeEvents = await Promise.all(panelCrops.map((crop) => freezeEvents(
     videoPath,
     crop,
@@ -143,6 +147,10 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       songWindowMeanDb: songVolumes,
       dialogueWindowMeanDb: dialogueVolumes,
       silentWindowMeanDb: silentVolumes,
+      soloDurationSeconds,
+      groupFinaleDurationSeconds: finaleDuration,
+      finaleRenderedClipCount,
+      finaleFreezeEventCounts: finaleFreezeEvents.map((events) => events.length),
       closingMotionFrameHashes: closingFrameHashes,
       closingChorusVoiceCount: closingChorusAssets.length,
       finaleFreezeEvents,

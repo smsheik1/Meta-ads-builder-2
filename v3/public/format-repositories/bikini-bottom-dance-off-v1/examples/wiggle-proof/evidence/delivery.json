@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "status": "ready",
-  "deliveredAt": "2026-08-07T20:09:54.229Z",
+  "deliveredAt": "2026-08-07T21:19:13.456Z",
   "format": "bikini-bottom-dance-off-v1",
-  "runId": "wiggle-alt-choreography-v1",
+  "runId": "wiggle-alt-choreography-v2",
   "finalVideo": {
     "path": "final.mp4",
-    "sha256": "9b90c15558b59adcc298936942aff3e19c404214384d1df2206112c56127defb"
+    "sha256": "9410930282548bc052dc9123d5b84ea7df9b1a4d9809f491b3441a2cc7ca5620"
   },
   "eval": {
     "grade": "A+",

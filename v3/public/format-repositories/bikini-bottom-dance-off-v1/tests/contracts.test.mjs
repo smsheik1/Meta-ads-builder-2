@@ -133,6 +133,8 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.doesNotMatch(compositor, /RUN IT BACK/);
   assert.doesNotMatch(compositor, /ROUND TWO/);
   assert.match(compositor, /dance-punch/);
+  assert.match(compositor, /finale[\s\S]*rect x="0" y="164" width="1080" height="64" fill="#061829"/);
+  assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
   assert.match(compositor, /atempo=/);
   assert.match(compositor, /volume=0\.5/);
@@ -145,6 +147,10 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(inspector, /closingCharacterMovesDuringCta/);
   assert.doesNotMatch(inspector, /squilliamMovesDuringCta/);
   assert.doesNotMatch(inspector, /finaleFrameHashes/);
+  assert.match(inspector, /soloDurationSeconds/);
+  assert.match(inspector, /groupFinaleDurationSeconds/);
+  assert.match(inspector, /finaleRenderedClipCount/);
+  assert.match(inspector, /finaleFreezeEventCounts/);
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {
@@ -171,6 +177,8 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   const buildKit = await readFile(new URL("build-kit.mjs", root), "utf8");
   assert.match(buildKit, /workspaces: \["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"\]/);
   assert.match(buildKit, /await cp\(motionRoot/);
+  assert.match(buildKit, /formatVersion = JSON\.parse/);
+  assert.doesNotMatch(buildKit, /version: "0\.7/);
 });
 
 test("finalization returns one delivery bundle with a scored eval", async () => {

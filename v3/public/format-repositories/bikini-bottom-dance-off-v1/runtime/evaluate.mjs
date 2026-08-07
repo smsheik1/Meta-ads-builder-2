@@ -10,7 +10,8 @@ function gradeFor(score, scale) {
 }
 
 function display(value) {
-  if (Array.isArray(value)) return value.length > 4 ? `${value.length} measurements` : value.join(", ");
+  if (Array.isArray(value)) return value.length > 4 ? `${value.length} measurements` : value.map(display).join(", ");
+  if (typeof value === "number" && Number.isFinite(value)) return String(Number(value.toFixed(3)));
   if (value && typeof value === "object") return JSON.stringify(value);
   return String(value);
 }

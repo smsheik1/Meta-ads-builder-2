@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "format": "bikini-bottom-dance-off-v1",
-  "evaluatedAt": "2026-08-07T20:09:54.228Z",
+  "evaluatedAt": "2026-08-07T21:19:13.455Z",
   "overall": {
     "status": "pass",
     "score": 100,
@@ -127,11 +127,11 @@
       "label": "Every solo has showcase time",
       "weight": 5,
       "threshold": "each solo at least 5 sec",
-      "measurementPath": "measured.durationSeconds",
+      "measurementPath": "measured.soloDurationSeconds",
       "category": "automatic",
       "status": "pass",
       "score": 5,
-      "measured": "47",
+      "measured": "5.121, 5.121, 5.121, 5.121",
       "explanation": "Every solo has showcase time met its threshold (each solo at least 5 sec)."
     },
     {
@@ -139,11 +139,11 @@
       "label": "Full group finale",
       "weight": 5,
       "threshold": "exactly 9 sec",
-      "measurementPath": "measured.durationSeconds",
+      "measurementPath": "measured.groupFinaleDurationSeconds",
       "category": "automatic",
       "status": "pass",
       "score": 5,
-      "measured": "47",
+      "measured": "9",
       "explanation": "Full group finale met its threshold (exactly 9 sec)."
     },
     {
@@ -151,11 +151,11 @@
       "label": "Dedicated finale motions",
       "weight": 4,
       "threshold": "all four finale clips rendered",
-      "measurementPath": "measured.finaleFreezeEvents",
+      "measurementPath": "measured.finaleRenderedClipCount",
       "category": "automatic",
       "status": "pass",
       "score": 4,
-      "measured": ", , , ",
+      "measured": "4",
       "explanation": "Dedicated finale motions met its threshold (all four finale clips rendered)."
     },
     {
@@ -163,11 +163,11 @@
       "label": "Nobody freezes in the finale",
       "weight": 6,
       "threshold": "zero freeze events over 0.75 sec",
-      "measurementPath": "measured.finaleFreezeEvents",
+      "measurementPath": "measured.finaleFreezeEventCounts",
       "category": "automatic",
       "status": "pass",
       "score": 6,
-      "measured": ", , , ",
+      "measured": "0, 0, 0, 0",
       "explanation": "Nobody freezes in the finale met its threshold (zero freeze events over 0.75 sec)."
     },
     {
@@ -203,7 +203,7 @@
       "category": "automatic",
       "status": "pass",
       "score": 6,
-      "measured": "0.996138",
+      "measured": "0.996",
       "explanation": "Replay seam met its threshold (SSIM at least 0.995)."
     },
     {
@@ -213,7 +213,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -223,7 +223,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -233,7 +233,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -243,7 +243,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -253,7 +253,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -263,7 +263,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -273,7 +273,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -283,7 +283,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -293,7 +293,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -303,7 +303,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -313,7 +313,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     },
     {
@@ -323,7 +323,7 @@
       "category": "human",
       "status": "pass",
       "score": 2.5,
-      "measured": "Approved 2026-08-07T20:09:54.227Z",
+      "measured": "Approved 2026-08-07T21:19:13.454Z",
       "explanation": "A human reviewer approved this criterion."
     }
   ],

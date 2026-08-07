@@ -22,6 +22,10 @@ test("evals expose weighted evidence before approval and a final grade after app
       songWindowMeanDb: [-16],
       dialogueWindowMeanDb: [-18],
       silentWindowMeanDb: [-Infinity],
+      soloDurationSeconds: [6.78, 6.78, 6.78, 6.78],
+      groupFinaleDurationSeconds: 9,
+      finaleRenderedClipCount: 4,
+      finaleFreezeEventCounts: [0, 0, 0, 0],
       finaleFreezeEvents: [[], [], [], []],
       closingMotionFrameHashes: ["a", "b"],
       closingChorusVoiceCount: 4,
@@ -47,7 +51,12 @@ test("evals expose weighted evidence before approval and a final grade after app
     assert.equal(final.overall.grade, "A+");
     assert.equal(final.overall.status, "pass");
     assert.equal(final.criteria.length, contract.grading.automaticCriteria.length + contract.human.length);
-    assert.match(await readFile(path.join(directory, "eval-report.md"), "utf8"), /A\+ · 100\/100/);
+    const friendlyEval = await readFile(path.join(directory, "eval-report.md"), "utf8");
+    assert.match(friendlyEval, /A\+ · 100\/100/);
+    assert.match(friendlyEval, /Every solo has showcase time \| pass \| 5\/5 \| 6\.78, 6\.78, 6\.78, 6\.78/);
+    assert.match(friendlyEval, /Full group finale \| pass \| 5\/5 \| 9/);
+    assert.match(friendlyEval, /Dedicated finale motions \| pass \| 4\/4 \| 4/);
+    assert.match(friendlyEval, /Nobody freezes in the finale \| pass \| 6\/6 \| 0, 0, 0, 0/);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

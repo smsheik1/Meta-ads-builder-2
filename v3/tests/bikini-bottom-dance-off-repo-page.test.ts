@@ -53,7 +53,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.7.1");
+assert.equal(profile.version, "0.7.2");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(profile.repositoryHref, "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip");
 assert.equal(profile.proofEntries.length, 1);

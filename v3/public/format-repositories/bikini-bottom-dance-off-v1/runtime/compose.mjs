@@ -120,7 +120,7 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
   }).join("");
   await add("finale", `between(t,${timeline.finale.start},${timeline.finale.end})`, [
     finaleStrokes,
-    '<rect x="245" y="164" width="590" height="64" rx="24" fill="#020b13" fill-opacity="0.94"/>',
+    '<rect x="0" y="164" width="1080" height="64" fill="#061829"/>',
     centeredText({ value: "FINAL ROUND • EVERYBODY WIGGLE!", y: 206, size: 29, fill: "#f8dd40", strokeWidth: 3 }),
   ].join(""));
 

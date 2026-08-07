@@ -13,6 +13,7 @@ const kitName = "wiggly-bikini-bottom-dance-off-format-kit";
 const downloads = path.join(danceRoot, "downloads");
 const output = path.join(downloads, `${kitName}.zip`);
 const checksumFile = `${output}.sha256`;
+const formatVersion = JSON.parse(await readFile(path.join(danceRoot, "format.json"), "utf8")).version;
 const excludedRoots = new Set(["agent-runs", "downloads", "node_modules", "user-motions"]);
 const excludedNames = new Set([".DS_Store", ".env", ".env.local", "__pycache__"]);
 
@@ -53,7 +54,7 @@ try {
   await writeFile(path.join(staged, "package.json"), `${JSON.stringify({
     name: kitName,
     private: true,
-    version: "0.7.1",
+    version: formatVersion,
     workspaces: ["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"],
     scripts: {
       check: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run check",
@@ -64,7 +65,7 @@ try {
   const files = await listFiles(staged);
   await writeFile(path.join(staged, "KIT-MANIFEST.json"), `${JSON.stringify({
     kit: kitName,
-    formatVersion: "0.7.1",
+    formatVersion,
     builtAt: new Date().toISOString(),
     officialFormat: "bikini-bottom-dance-off-v1",
     officialMotionDependency: "mixamo-character-motion-v1",
