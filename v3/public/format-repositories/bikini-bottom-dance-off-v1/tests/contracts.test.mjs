@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { wrapWords } from "../runtime/compose.mjs";
+import { CAPTION_HEIGHT, CAPTION_Y, CELL_HEIGHT, CELL_POSITIONS, GRID_TOP } from "../runtime/layout.mjs";
 import { buildTimeline } from "../runtime/timeline.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -93,7 +94,14 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /REACTION_MOTION_ID = "taunt"/);
   assert.match(compositor, /IDLE_SPEED = 0\.36/);
   assert.match(compositor, /RIGHT_COLUMN_SAFE_SHIFT = 76/);
-  assert.match(compositor, /RUN IT BACK/);
+  assert.equal(CELL_HEIGHT, 515);
+  assert.equal(CAPTION_Y, 1300);
+  assert.equal(CAPTION_HEIGHT, 130);
+  assert.equal(CELL_POSITIONS.length, 4);
+  assert.match(compositor, /stillSegment/);
+  assert.ok(CAPTION_Y >= GRID_TOP + CELL_HEIGHT * 2, "caption lane must begin below the complete two-row character grid");
+  assert.match(compositor, /countdownGraphic[\s\S]*fill-opacity="0\.68"[\s\S]*WHO CAN DANCE BEST\?/);
+  assert.doesNotMatch(compositor, /RUN IT BACK/);
   assert.doesNotMatch(compositor, /ROUND TWO/);
   assert.match(compositor, /dance-punch/);
   assert.match(compositor, /stinger/);
@@ -101,6 +109,7 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /middleDuration > 1 \/ 30/);
   const inspector = await readFile(new URL("runtime/inspect.mjs", root), "utf8");
   assert.match(inspector, /freezedetect/);
+  assert.match(inspector, /CELL_POSITIONS\.map/);
   assert.doesNotMatch(inspector, /finaleFrameHashes/);
 });
 

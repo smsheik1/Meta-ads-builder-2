@@ -9,7 +9,8 @@
     "Each individual solo lasts at least five seconds",
     "Nine-second all-character finale using one uninterrupted long-form motion per character",
     "Spoken Squilliam comment CTA using the official Taunt motion while the other characters react subtly",
-    "One-second Run It Back replay bridge whose final frame matches the opening countdown",
+    "One-second vote-to-countdown replay bridge whose dimmed-character final frame matches the opening countdown",
+    "Dedicated caption lane below the character grid",
     "Character pixels rendered only by the Character Dance Lab renderer"
   ],
   "replaceable": ["song and excerpt", "verified four-character roster", "solo and finale motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],

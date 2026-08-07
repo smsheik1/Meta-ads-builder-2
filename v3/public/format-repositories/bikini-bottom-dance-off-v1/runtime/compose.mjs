@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { renderDownload } from "../../mixamo-character-motion-v1/runtime/export.mjs";
+import { CAPTION_HEIGHT, CAPTION_Y, CELL_HEIGHT, CELL_POSITIONS, CELL_WIDTH } from "./layout.mjs";
 import { buildTimeline, DURATION } from "./timeline.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -45,11 +46,10 @@ function centeredText({ value, x = 540, y, size, fill = "white", stroke = "#020b
 
 function countdownGraphic(number) {
   return [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a"/>',
-    '<rect x="190" y="390" width="700" height="700" fill="none" stroke="white" stroke-opacity="0.78" stroke-width="8"/>',
-    '<line x1="540" y1="390" x2="540" y2="1090" stroke="white" stroke-opacity="0.5" stroke-width="8"/>',
-    '<line x1="190" y1="740" x2="890" y2="740" stroke="white" stroke-opacity="0.5" stroke-width="8"/>',
-    centeredText({ value: number, y: 875, size: 390, stroke: "#111111", strokeWidth: 5 }),
+    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
+    centeredText({ value: "BIKINI BOTTOM DANCE OFF", y: 640, size: 48, fill: "#59dece", strokeWidth: 4 }),
+    centeredText({ value: number, y: 1010, size: 390, fill: "#f8dd40", stroke: "#020b13", strokeWidth: 8 }),
+    centeredText({ value: "WHO CAN DANCE BEST?", y: 1115, size: 42, strokeWidth: 4 }),
   ].join("");
 }
 
@@ -81,11 +81,11 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
   input.characters.forEach((character, index) => {
     const position = cellPositions[index];
     const motionLabel = character.motionId.replaceAll("-", " ").toUpperCase();
-    chrome.push(`<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="white" stroke-opacity="0.72" stroke-width="5"/>`);
+    chrome.push(`<rect x="${position.x}" y="${position.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="white" stroke-opacity="0.72" stroke-width="5"/>`);
     chrome.push(`<rect x="${position.x + 12}" y="${position.y + 12}" width="270" height="54" rx="9" fill="${character.color}" fill-opacity="0.96"/>`);
     chrome.push(`<text class="label" x="${position.x + 28}" y="${position.y + 50}" font-size="27" fill="#061829">${xml(character.label)}</text>`);
-    chrome.push(`<rect x="${position.x + 5}" y="${position.y + 552}" width="500" height="78" fill="#061829"/>`);
-    chrome.push(`<text class="display" x="${position.x + 255}" y="${position.y + 601}" font-size="22" fill="white" stroke="#020b13" stroke-width="2">${xml(motionLabel)}</text>`);
+    chrome.push(`<rect x="${position.x + 5}" y="${position.y + CELL_HEIGHT - 83}" width="500" height="78" fill="#061829"/>`);
+    chrome.push(`<text class="display" x="${position.x + 255}" y="${position.y + CELL_HEIGHT - 34}" font-size="22" fill="white" stroke="#020b13" stroke-width="2">${xml(motionLabel)}</text>`);
   });
   await add("chrome", `between(t,0,${DURATION})`, chrome.join(""));
 
@@ -95,24 +95,24 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     const position = cellPositions[index];
     const round = timeline.rounds[index];
     await add(`active-${index}`, `between(t,${round.roundStart},${round.roundEnd})`,
-      `<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="${character.color}" stroke-width="18"/>`);
+      `<rect x="${position.x}" y="${position.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${character.color}" stroke-width="18"/>`);
     await add(`dance-punch-${index}`, `between(t,${round.danceStart},${round.danceStart + 0.24})`, [
-      `<rect x="${position.x + 5}" y="${position.y + 5}" width="500" height="625" fill="${character.color}" fill-opacity="0.12" stroke="white" stroke-width="28"/>`,
-      `<rect x="${position.x + 13}" y="${position.y + 13}" width="484" height="609" fill="none" stroke="${character.color}" stroke-width="12"/>`,
+      `<rect x="${position.x + 5}" y="${position.y + 5}" width="500" height="${CELL_HEIGHT - 10}" fill="${character.color}" fill-opacity="0.12" stroke="white" stroke-width="28"/>`,
+      `<rect x="${position.x + 13}" y="${position.y + 13}" width="484" height="${CELL_HEIGHT - 26}" fill="none" stroke="${character.color}" stroke-width="12"/>`,
     ].join(""));
     const speech = index === 0 ? input.openingLine : character.taunt;
     const speakerLabel = index === 0 ? `${character.label}:` : `${character.label} TO ${previousCharacter.label}:`;
     const speechLines = speech.length > 30 ? wrapWords(speech) : [speech.toUpperCase()];
     await add(`speech-${index}`, `between(t,${round.speechStart},${round.speechEnd})`, [
-      '<rect x="40" y="1275" width="825" height="160" rx="26" fill="#020b13" fill-opacity="0.92"/>',
-      centeredText({ value: speakerLabel, x: 452, y: 1320, size: 27, fill: character.color, strokeWidth: 2 }),
-      ...speechLines.map((line, lineIndex) => centeredText({ value: line, x: 452, y: speechLines.length === 1 ? 1390 : 1366 + lineIndex * 43, size: speechLines.length === 1 ? 42 : 32, strokeWidth: 3 })),
+      `<rect x="40" y="${CAPTION_Y}" width="825" height="${CAPTION_HEIGHT}" rx="24" fill="#020b13" fill-opacity="0.94"/>`,
+      centeredText({ value: speakerLabel, x: 452, y: CAPTION_Y + 35, size: 24, fill: character.color, strokeWidth: 2 }),
+      ...speechLines.map((line, lineIndex) => centeredText({ value: line, x: 452, y: speechLines.length === 1 ? CAPTION_Y + 94 : CAPTION_Y + 76 + lineIndex * 34, size: speechLines.length === 1 ? 38 : 29, strokeWidth: 3 })),
     ].join(""));
   }
 
   const finaleStrokes = input.characters.map((character, index) => {
     const position = cellPositions[index];
-    return `<rect x="${position.x}" y="${position.y}" width="510" height="635" fill="none" stroke="${character.color}" stroke-width="18"/>`;
+    return `<rect x="${position.x}" y="${position.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${character.color}" stroke-width="18"/>`;
   }).join("");
   await add("finale", `between(t,${timeline.finale.start},${timeline.finale.end})`, [
     finaleStrokes,
@@ -125,10 +125,9 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
   }
 
   await add("loop-bridge-prompt", `between(t,${timeline.loopBridge.start},${timeline.loopBridge.end - 0.2})`, [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a"/>',
-    centeredText({ value: "WHO WON?", y: 770, size: 84, fill: "#59dece", strokeWidth: 5 }),
-    centeredText({ value: "RUN IT BACK.", y: 910, size: 116, fill: "#f8dd40", strokeWidth: 7 }),
-    centeredText({ value: "WATCH AGAIN. THEN VOTE.", y: 1005, size: 40, strokeWidth: 4 }),
+    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
+    centeredText({ value: "WHO WON?", y: 790, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
+    centeredText({ value: "COMMENT YOUR WINNER.", y: 900, size: 48, strokeWidth: 4 }),
   ].join(""));
   await add("loop-bridge-countdown", `between(t,${timeline.loopBridge.end - 0.2},${timeline.loopBridge.end})`, countdownGraphic(3));
 
@@ -138,17 +137,19 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
   const closingCharacter = input.characters.at(-1);
   await add("cta", `between(t,${closing.start},${closing.end})`, [
     '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
-    `<rect x="${closingPosition.x}" y="${closingPosition.y}" width="510" height="635" fill="none" stroke="${closingCharacter.color}" stroke-width="18"/>`,
+    `<rect x="${closingPosition.x}" y="${closingPosition.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${closingCharacter.color}" stroke-width="18"/>`,
     centeredText({ value: "WHO WON?", y: 750, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
     ...closingLines.map((line, index) => centeredText({ value: line, y: 865 + index * 65, size: 48, strokeWidth: 4 })),
-    '<rect x="272" y="1035" width="536" height="76" rx="38" fill="#59dece" fill-opacity="0.94"/>',
-    centeredText({ value: "THEN RUN IT BACK.", y: 1087, size: 38, fill: "#061829", stroke: "none", strokeWidth: 0 }),
   ].join(""));
   return graphics;
 }
 
 function motionSegment(label, duration, output, speed = 1) {
   return `[${label}]setpts=(PTS-STARTPTS)/${speed},trim=duration=${duration},setpts=PTS-STARTPTS[${output}]`;
+}
+
+function stillSegment(label, duration, output) {
+  return `[${label}]trim=end_frame=1,loop=loop=-1:size=1:start=0,trim=duration=${duration},setpts=PTS-STARTPTS[${output}]`;
 }
 
 async function sha256(file) {
@@ -202,12 +203,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
   }));
 
   const filters = [`color=c=0x061829:s=1080x1920:r=30:d=${DURATION}[base]`];
-  const cellPositions = [
-    { x: 20, y: 250 },
-    { x: 550, y: 250 },
-    { x: 20, y: 885 },
-    { x: 550, y: 885 },
-  ];
+  const cellPositions = CELL_POSITIONS;
   const graphics = await renderGraphics({
     input,
     timeline,
@@ -220,29 +216,38 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
 
   input.characters.forEach((character, index) => {
     const round = timeline.rounds[index];
-    const waitDuration = round.speechStart;
+    const countdownDuration = 3;
+    const waitDuration = round.speechStart - countdownDuration;
     const speechDuration = round.speechEnd - round.speechStart;
     const middleDuration = timeline.finale.start - round.danceEnd;
     const hasMiddle = middleDuration > 1 / 30;
-    const closingDuration = DURATION - timeline.finale.end;
     const closingEvent = timeline.events.find((event) => event.type === "closing");
+    const closingDuration = closingEvent.end - timeline.finale.end;
+    const bridgeDuration = DURATION - closingEvent.end;
     const isClosingSpeaker = index === input.characters.length - 1;
     const reactionInputIndex = input.characters.length * 2 + index;
-    const reactionParts = [`c${index}wait0`, `c${index}speech0`, `c${index}post0`];
-    if (hasMiddle) reactionParts.splice(2, 0, `c${index}mid0`);
+    const reactionParts = [`c${index}countdown0`];
+    if (waitDuration > 1 / 30) reactionParts.push(`c${index}wait0`);
+    reactionParts.push(`c${index}speech0`);
+    if (hasMiddle) reactionParts.push(`c${index}mid0`);
+    reactionParts.push(`c${index}post0`, `c${index}bridge0`);
     filters.push(`[${reactionInputIndex}:v]split=${reactionParts.length}${reactionParts.map((part) => `[${part}]`).join("")}`);
-    filters.push(motionSegment(`c${index}wait0`, waitDuration, `c${index}wait`, IDLE_SPEED));
+    filters.push(stillSegment(`c${index}countdown0`, countdownDuration, `c${index}countdown`));
+    if (waitDuration > 1 / 30) filters.push(motionSegment(`c${index}wait0`, waitDuration, `c${index}wait`, IDLE_SPEED));
     filters.push(motionSegment(`c${index}speech0`, speechDuration, `c${index}speech`));
     filters.push(motionSegment(`${index}:v`, round.danceEnd - round.danceStart, `c${index}solo`));
     if (hasMiddle) filters.push(motionSegment(`c${index}mid0`, middleDuration, `c${index}mid`, IDLE_SPEED));
     filters.push(motionSegment(`${input.characters.length + index}:v`, timeline.finale.end - timeline.finale.start, `c${index}final`));
     filters.push(motionSegment(`c${index}post0`, closingDuration, `c${index}post`, isClosingSpeaker ? 1 : IDLE_SPEED));
+    filters.push(stillSegment(`c${index}bridge0`, bridgeDuration, `c${index}bridge`));
     const closingActive = isClosingSpeaker ? `+between(t,${closingEvent.start},${closingEvent.end})` : "";
-    const timelineParts = [`c${index}wait`, `c${index}speech`, `c${index}solo`];
+    const timelineParts = [`c${index}countdown`];
+    if (waitDuration > 1 / 30) timelineParts.push(`c${index}wait`);
+    timelineParts.push(`c${index}speech`, `c${index}solo`);
     if (hasMiddle) timelineParts.push(`c${index}mid`);
-    timelineParts.push(`c${index}final`, `c${index}post`);
+    timelineParts.push(`c${index}final`, `c${index}post`, `c${index}bridge`);
     const safeShift = index % 2 === 1 ? RIGHT_COLUMN_SAFE_SHIFT : 0;
-    filters.push(`${timelineParts.map((part) => `[${part}]`).join("")}concat=n=${timelineParts.length}:v=1:a=0,scale=1129:635:flags=lanczos,crop=510:635:(iw-510)/2+${safeShift}:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
+    filters.push(`${timelineParts.map((part) => `[${part}]`).join("")}concat=n=${timelineParts.length}:v=1:a=0,scale=916:${CELL_HEIGHT}:flags=lanczos,crop=${CELL_WIDTH}:${CELL_HEIGHT}:(iw-${CELL_WIDTH})/2+${safeShift}:0,eq=brightness=-0.15:saturation=0.42:enable='not(between(t,${round.roundStart},${round.roundEnd})+between(t,${timeline.finale.start},${timeline.finale.end})${closingActive})',setsar=1[c${index}]`);
   });
 
   let current = "base";

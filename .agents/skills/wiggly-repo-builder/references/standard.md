@@ -144,11 +144,11 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 ### 16. Measure motion on the composed output
 
-**Rule:** Omit zero-duration clips from media concat graphs, and verify sustained motion on the final rendered region with temporal freeze detection rather than unequal compressed-frame hashes.
+**Rule:** Omit zero-duration clips from media concat graphs, and verify sustained motion on the final rendered region with temporal freeze detection rather than unequal compressed-frame hashes. Inspection regions must consume the same layout contract as the compositor instead of duplicating crop coordinates.
 
-**Why:** A zero-length hold can survive concat as a frozen frame and swallow the motion that follows it. Lossy encoding can still change pixel hashes on that visually frozen frame, producing a false pass.
+**Why:** A zero-length hold can survive concat as a frozen frame and swallow the motion that follows it. Lossy encoding can still change pixel hashes on that visually frozen frame, producing a false pass. Hard-coded inspection crops can also keep passing after the visible layout moves, because they are no longer measuring the actual character panels.
 
-**Evidence:** Bikini Bottom Dance Off's Squilliam finale appeared animated in its source clip and passed hash sampling, yet remained frozen for all nine rendered seconds. Removing the zero-duration segment and running `freezedetect` over the composed panel exposed and prevented the failure.
+**Evidence:** Bikini Bottom Dance Off's Squilliam finale appeared animated in its source clip and passed hash sampling, yet remained frozen for all nine rendered seconds. Removing the zero-duration segment and running `freezedetect` over the composed panel exposed and prevented the failure. Later, reserving a caption lane shortened and moved the panels while the inspector still held the old 635px crops; sharing one layout module restored accurate four-panel checks.
 
 ## Still testing
 

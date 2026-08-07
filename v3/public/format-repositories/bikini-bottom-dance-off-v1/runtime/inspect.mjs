@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { CELL_HEIGHT, CELL_POSITIONS, CELL_WIDTH } from "./layout.mjs";
 
 function execute(program, args, { capture = false } = {}) {
   return new Promise((resolve, reject) => {
@@ -81,12 +82,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const dialogueVolumes = await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)));
   const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
   const closing = renderReport.timeline.events.find((event) => event.type === "closing");
-  const panelCrops = [
-    { x: 20, y: 250, width: 510, height: 635 },
-    { x: 550, y: 250, width: 510, height: 635 },
-    { x: 20, y: 885, width: 510, height: 635 },
-    { x: 550, y: 885, width: 510, height: 635 },
-  ];
+  const panelCrops = CELL_POSITIONS.map(({ x, y }) => ({ x, y, width: CELL_WIDTH, height: CELL_HEIGHT }));
   const squilliamCrop = panelCrops.at(-1);
   const closingFrameHashes = await Promise.all([closing.start + 0.4, Math.min(closing.end - 0.25, closing.start + 1.6)].map((time) => frameHash(videoPath, time, squilliamCrop)));
   const finaleDuration = renderReport.timeline.finale.end - renderReport.timeline.finale.start;
