@@ -17,9 +17,6 @@ export function BikiniBottomDanceOffConnections({
 
   const apiKeyName =
     data.requirements.environmentVariables[0] ?? "FISH_STUDIO_APIKEY";
-  const fishAudioCost = provider.estimatedCost.startsWith("$0")
-    ? "Free*"
-    : provider.estimatedCost;
 
   return (
     <section
@@ -72,7 +69,15 @@ export function BikiniBottomDanceOffConnections({
                 </span>
               </ServiceValue>
               <ServiceValue label="Cost">
-                <strong>{fishAudioCost}</strong>
+                <strong>Free tier available</strong>
+                <a
+                  href={provider.pricingSource}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block text-xs font-black underline decoration-2 underline-offset-2"
+                >
+                  Check pricing
+                </a>
               </ServiceValue>
               <a
                 href={fishAudioKeyUrl}
@@ -105,6 +110,14 @@ export function BikiniBottomDanceOffConnections({
               </ServiceValue>
               <ServiceValue label="Cost">
                 <strong>Free</strong>
+                <a
+                  href={mixamoPricingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block text-xs font-black underline decoration-2 underline-offset-2"
+                >
+                  Pricing details
+                </a>
               </ServiceValue>
               <a
                 href={mixamoUrl}
@@ -143,27 +156,6 @@ export function BikiniBottomDanceOffConnections({
           </div>
         </div>
 
-        <p className="mt-3 text-xs font-bold leading-5 text-[#31566e]">
-          * {provider.estimatedCost}.{" "}
-          <a
-            href={provider.pricingSource}
-            target="_blank"
-            rel="noreferrer"
-            className="font-black underline decoration-2 underline-offset-2"
-          >
-            Check Fish Audio pricing
-          </a>
-          .{" "}
-          <a
-            href={mixamoPricingUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="font-black underline decoration-2 underline-offset-2"
-          >
-            Adobe says Mixamo is free with an Adobe ID
-          </a>
-          .
-        </p>
       </div>
     </section>
   );
