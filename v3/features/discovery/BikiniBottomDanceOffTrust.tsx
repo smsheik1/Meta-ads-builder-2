@@ -108,10 +108,9 @@ export function BikiniBottomDanceOffTrust({
         >
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>01 · Assembly line</p>
-              <h3 id="dance-off-assembly-title">
-                One job. Six transformations.
-              </h3>
+              <p id="dance-off-assembly-title" className={styles.eyebrow}>
+                01 · Assembly line
+              </p>
               <p>
                 See how your song and cast become a finished, inspected Reel.
               </p>
@@ -216,7 +215,7 @@ export function BikiniBottomDanceOffTrust({
           <div className={styles.panelHeading}>
             <div>
               <p className={styles.eyebrow}>02 · Why this proof works</p>
-              <h3 id="dance-off-proof-title">The real proof, annotated.</h3>
+              <h3 id="dance-off-proof-title">See it work.</h3>
               <p>
                 Each timestamp is tied to the published video and a measured
                 requirement from this exact Repo version.
@@ -276,9 +275,7 @@ export function BikiniBottomDanceOffTrust({
           <div className={styles.panelHeading}>
             <div>
               <p className={styles.eyebrow}>03 · Failure prevention</p>
-              <h3 id="dance-off-failures-title">
-                What the Repo refuses to ship.
-              </h3>
+              <h3 id="dance-off-failures-title">Quality checks.</h3>
             </div>
             <span className={styles.sourcePill}>
               <ShieldCheck aria-hidden="true" /> From quality.json

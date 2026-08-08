@@ -92,7 +92,11 @@ assert.match(
 );
 assert.match(trustComponent, /videoRef\.current\.currentTime = annotation\.seconds/);
 assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
-assert.match(trustComponent, /What the Repo refuses to ship/);
+assert.match(trustComponent, /See it work\./);
+assert.match(trustComponent, /Quality checks\./);
+assert.doesNotMatch(trustComponent, /One job\. Six transformations\./);
+assert.doesNotMatch(trustComponent, /The real proof, annotated\./);
+assert.doesNotMatch(trustComponent, /What the Repo refuses to ship\./);
 assert.match(trustComponent, /Read from the published v\s*\{data\.version\} Repo/);
 assert.match(trustComponent, /<section id="how-it-works"/);
 assert.match(trustComponent, /id="proof"/);
