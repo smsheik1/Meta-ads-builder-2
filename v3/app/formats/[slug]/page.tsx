@@ -167,6 +167,10 @@ export default async function FormatPage({
         </section>
       ) : null}
 
+      {danceOffTrust && format.handoff ? (
+        <DiscoveryFormatHandoff format={format} variant="inline" />
+      ) : null}
+
       {danceOffTrust && heroProof.media.kind === "video" && format.repositoryHref ? (
         <BikiniBottomDanceOffTrust
           data={danceOffTrust}

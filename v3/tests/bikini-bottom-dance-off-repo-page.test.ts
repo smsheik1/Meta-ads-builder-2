@@ -82,6 +82,7 @@ const convexProvider = readFileSync("app/ConvexClientProvider.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);
 assert.match(consumerRoute, /format\.repositoryHref/);
 assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
+assert.match(consumerRoute, /<DiscoveryFormatHandoff format=\{format\} variant="inline" \/>/);
 assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
 assert.match(consumerRoute, /!danceOffTrust/);
 assert.match(trustComponent, /videoRef\.current\.currentTime = annotation\.seconds/);
