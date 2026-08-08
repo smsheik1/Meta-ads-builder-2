@@ -78,13 +78,15 @@ assert.equal(
 
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 const connectionsComponent = readFileSync("features/discovery/BikiniBottomDanceOffConnections.tsx", "utf8");
+const runSummaryComponent = readFileSync("features/discovery/BikiniBottomDanceOffRunSummary.tsx", "utf8");
 const trustComponent = readFileSync("features/discovery/BikiniBottomDanceOffTrust.tsx", "utf8");
 const convexProvider = readFileSync("app/ConvexClientProvider.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);
 assert.match(consumerRoute, /format\.repositoryHref/);
 assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
 assert.match(consumerRoute, /<BikiniBottomDanceOffConnections data=\{danceOffTrust\} \/>/);
-assert.match(consumerRoute, /<DiscoveryFormatHandoff format=\{format\} variant="inline" \/>/);
+assert.match(consumerRoute, /<BikiniBottomDanceOffRunSummary format=\{format\} \/>/);
+assert.doesNotMatch(consumerRoute, /variant="inline"/);
 assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
 assert.match(consumerRoute, /!danceOffTrust/);
 assert.match(
@@ -95,7 +97,7 @@ assert.match(
 assert.match(trustComponent, /videoRef\.current\.currentTime = annotation\.seconds/);
 assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
 assert.match(trustComponent, /See it work\./);
-assert.match(trustComponent, /Quality checks\./);
+assert.match(trustComponent, /What gets stopped\./);
 assert.doesNotMatch(trustComponent, /One job\. Six transformations\./);
 assert.doesNotMatch(trustComponent, /The real proof, annotated\./);
 assert.doesNotMatch(trustComponent, /What the Repo refuses to ship\./);
@@ -103,6 +105,17 @@ assert.match(trustComponent, /Read from the published v\s*\{data\.version\} Repo
 assert.match(trustComponent, /<section id="how-it-works"/);
 assert.match(trustComponent, /id="proof"/);
 assert.match(trustComponent, /How this Format works\./);
+assert.match(trustComponent, /href="#dance-off-assembly"/);
+assert.match(trustComponent, /href="#dance-off-quality"/);
+assert.match(trustComponent, /href="#dance-off-repo"/);
+assert.match(trustComponent, /href="#dance-off-advanced"/);
+assert.match(trustComponent, /Open SKILL\.md/);
+assert.match(trustComponent, /Open proof report/);
+assert.match(trustComponent, /Open quality\.json/);
+assert.match(trustComponent, /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/);
+assert.doesNotMatch(trustComponent, /From SKILL\.md/);
+assert.doesNotMatch(trustComponent, /From PROOF-REPORT\.md/);
+assert.doesNotMatch(trustComponent, /From quality\.json/);
 assert.doesNotMatch(trustComponent, /fake green statuses/);
 assert.doesNotMatch(trustComponent, /does not maintain a second proof asset/);
 assert.doesNotMatch(trustComponent, /You’ve seen the system/);
@@ -122,6 +135,22 @@ assert.doesNotMatch(connectionsComponent, /Current estimate/);
 assert.doesNotMatch(connectionsComponent, /No API key needed for/);
 assert.doesNotMatch(connectionsComponent, /valid dialogue is already cached/);
 assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
+assert.match(runSummaryComponent, /What you need\. What you get\./);
+assert.match(runSummaryComponent, /Pick an agent\. Wiggly sends it this exact Format version\./);
+assert.match(runSummaryComponent, /One song you are allowed to use/);
+assert.match(runSummaryComponent, /A scored quality report with explanations/);
+assert.match(runSummaryComponent, /Usually 12–30 minutes/);
+assert.match(runSummaryComponent, /nothing paid runs without\s+approval/);
+assert.doesNotMatch(runSummaryComponent, /validated episode input/);
+assert.doesNotMatch(runSummaryComponent, /provider cost/);
+assert.doesNotMatch(runSummaryComponent, /A-F eval/);
+assert.match(consumerRoute, /Ready to make one\?/);
+assert.match(consumerRoute, /The requirements, timing, and exact Repo files are already above\./);
+assert.match(
+  consumerRoute,
+  /danceOffTrust && format\.handoff \? \([\s\S]*Ready to make one\?[\s\S]*\) : \(/,
+  "Dance Off should end with a compact CTA instead of repeating the full run breakdown.",
+);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
 assert.equal(trustData.version, "0.8.0");

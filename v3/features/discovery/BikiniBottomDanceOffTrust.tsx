@@ -56,6 +56,7 @@ export function BikiniBottomDanceOffTrust({
   videoSrc,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileGroupRefs = useRef<Array<HTMLDetailsElement | null>>([]);
   const [activeAnnotation, setActiveAnnotation] = useState(0);
 
   function seekToAnnotation(index: number) {
@@ -66,6 +67,14 @@ export function BikiniBottomDanceOffTrust({
     if (!videoRef.current) return;
     videoRef.current.currentTime = annotation.seconds;
     void videoRef.current.play().catch(() => undefined);
+  }
+
+  function revealSource(filePath: string) {
+    const groupIndex = data.fileGroups.findIndex((group) =>
+      group.files.some((file) => file.path === filePath),
+    );
+    const group = fileGroupRefs.current[groupIndex];
+    if (group) group.open = true;
   }
 
   return (
@@ -80,29 +89,29 @@ export function BikiniBottomDanceOffTrust({
               what comes with the Repo.
             </p>
           </div>
-          <ol
-            className={styles.sectionIndex}
-            aria-label="Format system sections"
-          >
-            <li>
-              <span>1</span>Assembly line
-            </li>
-            <li>
-              <span>2</span>Proof explained
-            </li>
-            <li>
-              <span>3</span>Failure prevention
-            </li>
-            <li>
-              <span>4</span>Repo contents
-            </li>
-            <li>
-              <span>5</span>Advanced details
-            </li>
-          </ol>
+          <nav aria-label="Format system sections">
+            <ol className={styles.sectionIndex}>
+              <li>
+                <a href="#dance-off-assembly"><span>1</span>Assembly line</a>
+              </li>
+              <li>
+                <a href="#proof"><span>2</span>Proof explained</a>
+              </li>
+              <li>
+                <a href="#dance-off-quality"><span>3</span>Quality checks</a>
+              </li>
+              <li>
+                <a href="#dance-off-repo"><span>4</span>Repo contents</a>
+              </li>
+              <li>
+                <a href="#dance-off-advanced"><span>5</span>Advanced details</a>
+              </li>
+            </ol>
+          </nav>
         </header>
 
         <section
+          id="dance-off-assembly"
           className={styles.panel}
           aria-labelledby="dance-off-assembly-title"
         >
@@ -115,9 +124,14 @@ export function BikiniBottomDanceOffTrust({
                 See how your song and cast become a finished, inspected Reel.
               </p>
             </div>
-            <span className={styles.sourcePill}>
-              <Workflow aria-hidden="true" /> From SKILL.md
-            </span>
+            <a
+              className={styles.sourceLink}
+              href={`#${sourceFileId("SKILL.md")}`}
+              onClick={() => revealSource("SKILL.md")}
+            >
+              <Workflow aria-hidden="true" /> Open SKILL.md
+              <ArrowRight aria-hidden="true" />
+            </a>
           </div>
 
           <div
@@ -221,9 +235,14 @@ export function BikiniBottomDanceOffTrust({
                 requirement from this exact Repo version.
               </p>
             </div>
-            <span className={styles.sourcePill}>
-              <BadgeCheck aria-hidden="true" /> From PROOF-REPORT.md
-            </span>
+            <a
+              className={styles.sourceLink}
+              href={`#${sourceFileId("PROOF-REPORT.md")}`}
+              onClick={() => revealSource("PROOF-REPORT.md")}
+            >
+              <BadgeCheck aria-hidden="true" /> Open proof report
+              <ArrowRight aria-hidden="true" />
+            </a>
           </div>
 
           <div className={styles.proofGrid}>
@@ -269,32 +288,38 @@ export function BikiniBottomDanceOffTrust({
         </section>
 
         <section
+          id="dance-off-quality"
           className={styles.panel}
           aria-labelledby="dance-off-failures-title"
         >
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>03 · Failure prevention</p>
-              <h3 id="dance-off-failures-title">Quality checks.</h3>
+              <p className={styles.eyebrow}>03 · Quality checks</p>
+              <h3 id="dance-off-failures-title">What gets stopped.</h3>
             </div>
-            <span className={styles.sourcePill}>
-              <ShieldCheck aria-hidden="true" /> From quality.json
-            </span>
+            <a
+              className={styles.sourceLink}
+              href={`#${sourceFileId("quality.json")}`}
+              onClick={() => revealSource("quality.json")}
+            >
+              <ShieldCheck aria-hidden="true" /> Open quality.json
+              <ArrowRight aria-hidden="true" />
+            </a>
           </div>
 
           <div className={styles.gateGrid}>
             <FailureGate
               color="cyan"
               icon={FileX2}
-              title="Blocks invalid input"
+              title="Invalid requests"
             >
-              Missing cast, song, dialogue, aspect ratio, or required motion
-              assignments stop before generation.
+              A missing song, dialogue, video size, or dance assignment stops
+              before generation.
             </FailureGate>
             <FailureGate
               color="pink"
               icon={ImageOff}
-              title="Rejects mismatched assets"
+              title="Mismatched assets"
             >
               Unknown character, motion, background, and voice IDs fail contract
               validation.
@@ -302,7 +327,7 @@ export function BikiniBottomDanceOffTrust({
             <FailureGate
               color="lime"
               icon={Hand}
-              title="Requires approval before spend"
+              title="Unapproved spending"
             >
               Fish Audio remains locked until dialogue is validated and the
               provider call is explicitly approved.
@@ -310,7 +335,7 @@ export function BikiniBottomDanceOffTrust({
             <FailureGate
               color="coral"
               icon={VideoOff}
-              title="Rejects broken final video"
+              title="Broken final video"
             >
               Freezes, missing audio, bad dimensions, failed replay seams, or
               missing human approval block delivery.
@@ -326,13 +351,14 @@ export function BikiniBottomDanceOffTrust({
         </section>
 
         <section
+          id="dance-off-repo"
           className={styles.panel}
           aria-labelledby="dance-off-repo-title"
         >
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>04 · What’s inside the Repo</p>
-              <h3 id="dance-off-repo-title">Everything included in the Repo.</h3>
+              <p className={styles.eyebrow}>04 · Everything included</p>
+              <h3 id="dance-off-repo-title">The exact Repo files.</h3>
             </div>
           </div>
 
@@ -359,6 +385,9 @@ export function BikiniBottomDanceOffTrust({
                 <details
                   key={group.title}
                   className={styles.fileGroup}
+                  ref={(node) => {
+                    fileGroupRefs.current[index] = node;
+                  }}
                   open={index === 0}
                 >
                   <summary>
@@ -375,7 +404,7 @@ export function BikiniBottomDanceOffTrust({
                   </summary>
                   <ul>
                     {group.files.map((file) => (
-                      <li key={file.path}>
+                      <li key={file.path} id={sourceFileId(file.path)}>
                         <code>{file.path}</code>
                         <span>{file.description}</span>
                       </li>
@@ -387,7 +416,7 @@ export function BikiniBottomDanceOffTrust({
           </div>
         </section>
 
-        <details className={styles.advanced}>
+        <details id="dance-off-advanced" className={styles.advanced}>
           <summary>
             <span className={styles.advancedIcon}>
               <TerminalSquare aria-hidden="true" />
@@ -460,6 +489,10 @@ export function BikiniBottomDanceOffTrust({
       </div>
     </section>
   );
+}
+
+function sourceFileId(filePath: string) {
+  return `dance-off-file-${filePath.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 }
 
 function FlowStation({

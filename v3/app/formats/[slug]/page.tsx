@@ -6,6 +6,7 @@ import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
 import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
 import { DiscoveryCharacterOptions } from "@/features/discovery/DiscoveryCharacterOptions";
 import { BikiniBottomDanceOffConnections } from "@/features/discovery/BikiniBottomDanceOffConnections";
+import { BikiniBottomDanceOffRunSummary } from "@/features/discovery/BikiniBottomDanceOffRunSummary";
 import { BikiniBottomDanceOffTrust } from "@/features/discovery/BikiniBottomDanceOffTrust";
 import { getBikiniBottomDanceOffTrustData } from "@/features/discovery/bikiniBottomDanceOffTrust.server";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
@@ -175,7 +176,7 @@ export default async function FormatPage({
       ) : null}
 
       {danceOffTrust && format.handoff ? (
-        <DiscoveryFormatHandoff format={format} variant="inline" />
+        <BikiniBottomDanceOffRunSummary format={format} />
       ) : null}
 
       {danceOffTrust && heroProof.media.kind === "video" && format.repositoryHref ? (
@@ -257,6 +258,27 @@ export default async function FormatPage({
         </div>
       </section>
 
+      {danceOffTrust && format.handoff ? (
+        <section
+          id="run-with-agent"
+          className="scroll-mt-6 border-t-2 border-[#080817] bg-[#080817] px-4 py-10 text-white sm:px-8 sm:py-12"
+        >
+          <div className="mx-auto flex max-w-[1100px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#52d6ff]">
+                Run it with an agent
+              </p>
+              <h2 className="mt-3 text-4xl font-black leading-none sm:text-5xl">
+                Ready to make one?
+              </h2>
+              <p className="mt-3 max-w-xl text-sm font-bold leading-6 text-white/70">
+                The requirements, timing, and exact Repo files are already above.
+              </p>
+            </div>
+            <DiscoveryFormatHandoff format={format} />
+          </div>
+        </section>
+      ) : (
       <section id="run-with-agent" className="scroll-mt-6 border-t-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">Run it with an agent</p>
@@ -304,6 +326,7 @@ export default async function FormatPage({
           </div>
         </div>
       </section>
+      )}
     </main>
   );
 }

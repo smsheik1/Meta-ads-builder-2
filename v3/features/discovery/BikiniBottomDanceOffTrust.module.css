@@ -18,10 +18,6 @@
 }
 
 .intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 2rem;
-  align-items: end;
   margin-bottom: 2rem;
 }
 
@@ -61,20 +57,29 @@
 }
 
 .sectionIndex {
-  display: grid;
-  gap: 0.5rem;
-  border: 2px solid #080817;
-  background: #fffdf8;
-  padding: 0.9rem;
-  box-shadow: 5px 5px 0 #080817;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
   font-size: 0.78rem;
   font-weight: 800;
 }
 
-.sectionIndex li {
+.sectionIndex a {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border: 1.5px solid #080817;
+  border-radius: 999px;
+  background: #fffdf8;
+  padding: 0.45rem 0.65rem 0.45rem 0.45rem;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.sectionIndex a:hover,
+.sectionIndex a:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 #080817;
 }
 
 .sectionIndex span {
@@ -90,6 +95,7 @@
 
 .panel,
 .advanced {
+  scroll-margin-top: 1.5rem;
   margin-top: 1.25rem;
   border: 2px solid #080817;
   border-radius: 1.25rem;
@@ -130,7 +136,7 @@
   line-height: 1.55;
 }
 
-.sourcePill {
+.sourceLink {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -141,11 +147,23 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.72rem;
   font-weight: 900;
+  transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
-.sourcePill svg {
+.sourceLink:hover,
+.sourceLink:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 #080817;
+}
+
+.sourceLink svg {
   width: 1rem;
   height: 1rem;
+}
+
+.sourceLink svg:last-child {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 .conveyor {
@@ -936,14 +954,6 @@
 }
 
 @media (max-width: 900px) {
-  .intro {
-    grid-template-columns: 1fr;
-  }
-
-  .sectionIndex {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .proofGrid {
     grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1.3fr);
   }
@@ -952,10 +962,6 @@
 @media (max-width: 700px) {
   .root {
     padding: 2rem 0.75rem 3rem;
-  }
-
-  .sectionIndex {
-    display: none;
   }
 
   .intro {
@@ -976,7 +982,7 @@
     display: block;
   }
 
-  .sourcePill {
+  .sourceLink {
     margin-top: 0.75rem;
   }
 
