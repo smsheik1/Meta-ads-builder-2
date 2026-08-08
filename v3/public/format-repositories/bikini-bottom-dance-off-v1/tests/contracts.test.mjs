@@ -136,12 +136,15 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /finale[\s\S]*rect x="0" y="164" width="1080" height="64" fill="#061829"/);
   assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
+  assert.match(compositor, /-force_key_frames/);
   assert.match(compositor, /atempo=/);
   assert.match(compositor, /volume=0\.5/);
   assert.match(compositor, /character\.finaleMotionId/);
   assert.match(compositor, /middleDuration > 1 \/ 30/);
   const inspector = await readFile(new URL("runtime/inspect.mjs", root), "utf8");
   assert.match(inspector, /freezedetect/);
+  assert.match(inspector, /format=gray/);
+  assert.match(inspector, /metric: "luma-ssim"/);
   assert.match(inspector, /CELL_POSITIONS\.map/);
   assert.match(inspector, /closingChorusVoices/);
   assert.match(inspector, /closingCharacterMovesDuringCta/);
@@ -156,9 +159,9 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
 test("the compositor delegates character pixels to the motion repo", async () => {
   const composition = await readJson("composition-contract.json");
   assert.match(composition.rendererInvariant, /mixamo-character-motion-v1\/runtime\/renderer\/app\.js/);
-  assert.ok(composition.fixed.some((rule) => rule.includes("Talking Fish News")));
+  assert.ok(composition.fixed.some((rule) => rule.includes("Fish News underwater flower-and-bubble")));
   const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
-  assert.match(compositor, /CHARACTER_BACKGROUND_PRESET = "talking-fish-news"/);
+  assert.match(compositor, /CHARACTER_BACKGROUND_PRESET = "fish-news"/);
   assert.match(compositor, /backgroundPreset: CHARACTER_BACKGROUND_PRESET/);
   assert.match(compositor, /characterClipName/);
 });

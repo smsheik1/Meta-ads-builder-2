@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.7.2`
+Format version: `0.7.3`
 
 ## Boundary decision
 
@@ -20,7 +20,7 @@ The alternate real run reused the original local song and accepted voice cache. 
 
 ## Evidence
 
-- Source contracts: 12 Dance Off tests and 10 character-motion foundation tests passed. The latter includes an isolated 26th-motion `import-motion` round trip that normalizes a synthetic operator-supplied Collada clip, records provenance in the user library, leaves the 25 starters untouched, makes no provider call, and protects the Talking Fish News background preset.
+- Source contracts: Dance Off and character-motion foundation tests passed. The latter includes an isolated 26th-motion `import-motion` round trip that normalizes a synthetic operator-supplied Collada clip, records provenance in the user library, leaves the 25 starters untouched, makes no provider call, and protects both packaged news background presets.
 - Free source smoke: `agent-runs/_smoke/smoke.mp4`, automatic checks passed.
 - Real alternate choreography: `agent-runs/wiggle-alt-choreography-v2/render.mp4`, automatic checks passed with no finale freezes, four closing voices, moving CTA character, and a 0.996138 replay-seam SSIM score.
 - Human creative review: passed August 7, 2026; the alternate proof was accepted and finalized as `agent-runs/wiggle-alt-choreography-v2/final.mp4`.
@@ -35,7 +35,8 @@ The alternate real run reused the original local song and accepted voice cache. 
 - The body-language motion was hardcoded as `taunt`. Every character now supplies `reactionMotionId` alongside its solo and finale IDs.
 - The first sandboxed smoke attempt could not open the local loopback renderer. The same command passed with loopback permission; this was an execution-environment restriction, not a provider or Format failure.
 - The first packaged check exercised only the Dance Off workspace. It now runs the bundled motion foundation's tests too, including a disposable real import, so the ZIP proves both halves of the system.
-- The first Dance Off clips baked in the motion lab's generic teal gradient. The compositor now requests the fixed `talking-fish-news` preset from the same official character renderer and keys cached clips by that preset, so all four performers share the Squilliam News dark-panel studio in preview and export.
+- The first Dance Off clips baked in the motion lab's generic teal gradient, then temporarily used the dark Squilliam newsroom. The compositor now requests the separate `fish-news` preset and keys cached clips by it, so all four performers share the exact bright flower-and-bubble Fish News background without changing Squilliam News.
+- The saturated Fish News art made the old RGB replay-seam SSIM report a false failure even though the start and end frames were visually identical. The compositor now forces a keyframe at the replay bridge and the inspector measures luma SSIM at the unchanged 0.995 threshold; the rendered smoke proof scored 0.996239.
 
 ## Completion audit
 

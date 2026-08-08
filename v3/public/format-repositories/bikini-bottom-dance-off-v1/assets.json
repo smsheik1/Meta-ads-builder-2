@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "fixed": [
     {"path": "../mixamo-character-motion-v1/runtime/renderer/app.js", "role": "official character renderer"},
-    {"path": "../mixamo-character-motion-v1/runtime/renderer/index.html", "role": "Talking Fish News newsroom background preset"},
+    {"path": "../mixamo-character-motion-v1/runtime/renderer/index.html", "role": "Fish News underwater background preset"},
+    {"path": "../mixamo-character-motion-v1/assets/backgrounds/fish-news-underwater-studio.png", "role": "exact Talking Fish News flower-and-bubble background"},
     {"path": "../mixamo-character-motion-v1/assets/character-packs.json", "role": "verified character rig profiles"},
     {"path": "../mixamo-character-motion-v1/assets/motions/manifest.json", "role": "frozen 25-motion starter catalog"},
     {"path": "../mixamo-character-motion-v1/user-motions/manifest.json", "role": "optional operator-imported motion catalog", "required": false},

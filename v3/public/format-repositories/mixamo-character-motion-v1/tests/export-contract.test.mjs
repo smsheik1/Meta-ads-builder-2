@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { ExportInputError, renderDownload } from "../runtime/export.mjs";
@@ -21,6 +22,20 @@ test("the official renderer exposes the Talking Fish News background preset", as
   ]);
   assert.match(html, /data-background-preset="talking-fish-news"/);
   assert.match(app, /input\.backgroundPreset === "talking-fish-news"/);
+});
+
+test("the Fish News preset packages the exact underwater studio art", async () => {
+  const [html, app, background] = await Promise.all([
+    readFile(new URL("../runtime/renderer/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../runtime/renderer/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../assets/backgrounds/fish-news-underwater-studio.png", import.meta.url)),
+  ]);
+  assert.match(html, /data-background-preset="fish-news"/);
+  assert.match(html, /url\("\.\.\/\.\.\/assets\/backgrounds\/fish-news-underwater-studio\.png"\)/);
+  assert.match(app, /input\.backgroundPreset === "fish-news"/);
+  assert.equal(createHash("sha256").update(background).digest("hex"), "3e8e56268cb35ef92d5cd582e603d558aa0c5c92cddc6177e101251ddd3569ab");
+  assert.equal(background.readUInt32BE(16), 1200);
+  assert.equal(background.readUInt32BE(20), 675);
 });
 
 test("the lab exposes one visible MP4/GIF drop-up through the official export endpoint", async () => {

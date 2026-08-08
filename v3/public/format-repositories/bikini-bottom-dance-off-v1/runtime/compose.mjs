@@ -11,7 +11,7 @@ import { buildTimeline, DURATION } from "./timeline.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const IDLE_SPEED = 0.36;
 const RIGHT_COLUMN_SAFE_SHIFT = 76;
-const CHARACTER_BACKGROUND_PRESET = "talking-fish-news";
+const CHARACTER_BACKGROUND_PRESET = "fish-news";
 
 function characterClipName(character, motionId, suffix = "") {
   return `${character.characterId}-${motionId}-${CHARACTER_BACKGROUND_PRESET}${suffix}.mp4`;
@@ -322,6 +322,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     "-map", "[vout]", "-map", "[music]",
     "-t", String(DURATION),
     "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+    "-force_key_frames", `0,${timeline.loopBridge.end - 0.2}`,
     "-c:a", "aac", "-b:a", "192k",
     "-movflags", "+faststart",
     outputPath,

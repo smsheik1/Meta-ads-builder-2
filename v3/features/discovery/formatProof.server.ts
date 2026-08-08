@@ -326,7 +326,7 @@ const formatConfigs: FormatProfileConfig[] = [
     whatStays: [
       "A three-beep countdown with no music underneath",
       "Four taunting characters with five-second solo showcases",
-      "The dark-panel Talking Fish News newsroom background behind every performer",
+      "The bright Fish News flower-and-bubble background behind every performer",
       "A nine-second all-character finale that keeps everyone moving",
       "A scored inspection and replay bridge into the opening frame",
     ],

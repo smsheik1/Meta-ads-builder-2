@@ -150,6 +150,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Bikini Bottom Dance Off's Squilliam finale appeared animated in its source clip and passed hash sampling, yet remained frozen for all nine rendered seconds. Removing the zero-duration segment and running `freezedetect` over the composed panel exposed and prevented the failure. Later, reserving a caption lane shortened and moved the panels while the inspector still held the old 635px crops; sharing one layout module restored accurate four-panel checks.
 
+### 17. Measure replay seams perceptually
+
+**Rule:** Force a keyframe when a replay bridge begins, preserve the compared frames as evidence, and evaluate the seam with luma SSIM. Keep a strict threshold rather than treating saturated chroma compression as a visible jump.
+
+**Why:** The same bright, saturated background can receive slightly different chroma quantization at opposite ends of an H.264 file even when the loop looks identical. RGB SSIM can reject that invisible color noise.
+
+**Evidence:** Bikini Bottom Dance Off's exact Fish News flower background produced visually matching loop frames but failed RGB SSIM. The forced replay keyframe plus luma SSIM scored 0.996239 against the unchanged 0.995 gate.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

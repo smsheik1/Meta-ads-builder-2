@@ -28,7 +28,7 @@ async function readJson(relative) {
 
 export async function renderDownload({ characterId, motionId, format, backgroundPreset } = {}) {
   if (typeof characterId !== "string" || typeof motionId !== "string" || !formats.has(format)
-    || (backgroundPreset !== undefined && backgroundPreset !== "talking-fish-news")) {
+    || (backgroundPreset !== undefined && !["talking-fish-news", "fish-news"].includes(backgroundPreset))) {
     throw new ExportInputError("Choose a valid character, motion, and download format.");
   }
   const [catalog, motionCatalog] = await Promise.all([
