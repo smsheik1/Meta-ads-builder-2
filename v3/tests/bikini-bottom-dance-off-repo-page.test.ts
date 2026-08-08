@@ -237,6 +237,11 @@ assert.match(
   /danceOffTrust && format\.handoff \? \([\s\S]*Ready to make one\?[\s\S]*\) : \(/,
   "Dance Off should end with a compact CTA instead of repeating the full run breakdown.",
 );
+assert.match(
+  consumerRoute,
+  /\{!danceOffTrust \? \([\s\S]*What stays the same[\s\S]*What changes[\s\S]*\) : null\}/,
+  "Dance Off should omit the redundant fixed-versus-changeable wall of text.",
+);
 
 assert.match(trustStyles, /width: min\(100%, 980px\)/);
 assert.match(

@@ -310,68 +310,40 @@ export default async function FormatPage({
         </section>
       )}
 
-      <section
-        className={`mx-auto grid ${
-          danceOffTrust
-            ? "w-[min(100%-32px,980px)] border-x-2 border-[#080817] py-14 md:grid-cols-2"
-            : "w-[min(100%-32px,1100px)] gap-5 py-12 sm:py-16 lg:grid-cols-2"
-        }`}
-      >
-        <div
-          className={
-            danceOffTrust
-              ? "border-y-2 border-[#080817] bg-[#c9ff55] p-[22px] md:border-r"
-              : "rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8"
-          }
-        >
-          <p className="text-xs font-black uppercase tracking-[0.18em]">
-            What stays the same
-          </p>
-          <ul
-            className={`${danceOffTrust ? "mt-3 list-disc space-y-2 pl-5" : "mt-6 grid gap-4"}`}
-          >
-            {format.whatStays.map((item) => (
-              <li
-                key={item}
-                className={
-                  danceOffTrust
-                    ? "text-base font-bold leading-6"
-                    : "border-t-2 border-[#080817] pt-4 text-2xl font-black leading-tight"
-                }
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div
-          className={
-            danceOffTrust
-              ? "border-b-2 border-[#080817] bg-[#fffdf8] p-[22px] md:border-y-2"
-              : "rounded-lg border-2 border-[#080817] bg-white p-6 shadow-[6px_6px_0_#080817] sm:p-8"
-          }
-        >
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-            What changes
-          </p>
-          <ul
-            className={`${danceOffTrust ? "mt-3 list-disc space-y-2 pl-5" : "mt-6 grid gap-4"}`}
-          >
-            {format.whatChanges.map((item) => (
-              <li
-                key={item}
-                className={
-                  danceOffTrust
-                    ? "text-base font-bold leading-6"
-                    : "border-t-2 border-[#080817] pt-4 text-2xl font-black leading-tight"
-                }
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {!danceOffTrust ? (
+        <section className="mx-auto grid w-[min(100%-32px,1100px)] gap-5 py-12 sm:py-16 lg:grid-cols-2">
+          <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8">
+            <p className="text-xs font-black uppercase tracking-[0.18em]">
+              What stays the same
+            </p>
+            <ul className="mt-6 grid gap-4">
+              {format.whatStays.map((item) => (
+                <li
+                  key={item}
+                  className="border-t-2 border-[#080817] pt-4 text-2xl font-black leading-tight"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-lg border-2 border-[#080817] bg-white p-6 shadow-[6px_6px_0_#080817] sm:p-8">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
+              What changes
+            </p>
+            <ul className="mt-6 grid gap-4">
+              {format.whatChanges.map((item) => (
+                <li
+                  key={item}
+                  className="border-t-2 border-[#080817] pt-4 text-2xl font-black leading-tight"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       {danceOffTrust && format.handoff ? (
         <section
