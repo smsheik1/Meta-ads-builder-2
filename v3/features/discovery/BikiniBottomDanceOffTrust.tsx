@@ -3,27 +3,13 @@
 import {
   ArrowRight,
   BadgeCheck,
-  BookOpenText,
-  Box,
-  Braces,
   ChevronDown,
-  Cpu,
   Download,
-  FileInput,
-  FileVideo,
   FileX2,
   Hand,
   ImageOff,
-  Inbox,
-  ListChecks,
-  MessageSquareCode,
   OctagonAlert,
-  PackageCheck,
-  RefreshCw,
-  ScanSearch,
   ShieldCheck,
-  Sparkles,
-  TerminalSquare,
   VideoOff,
   Workflow,
 } from "lucide-react";
@@ -38,15 +24,6 @@ type Props = {
   repositoryHref: string;
   videoSrc: string;
 };
-
-const fileGroupIcons = [
-  BookOpenText,
-  Braces,
-  MessageSquareCode,
-  BadgeCheck,
-  Cpu,
-  Box,
-];
 
 export function BikiniBottomDanceOffTrust({
   data,
@@ -92,19 +69,29 @@ export function BikiniBottomDanceOffTrust({
           <nav aria-label="Format system sections">
             <ol className={styles.sectionIndex}>
               <li>
-                <a href="#dance-off-assembly"><span>1</span>Assembly line</a>
+                <a href="#dance-off-assembly">
+                  <span>1</span>Assembly line
+                </a>
               </li>
               <li>
-                <a href="#proof"><span>2</span>Proof explained</a>
+                <a href="#proof">
+                  <span>2</span>Proof explained
+                </a>
               </li>
               <li>
-                <a href="#dance-off-quality"><span>3</span>Quality checks</a>
+                <a href="#dance-off-quality">
+                  <span>3</span>Quality checks
+                </a>
               </li>
               <li>
-                <a href="#dance-off-repo"><span>4</span>Repo contents</a>
+                <a href="#dance-off-repo">
+                  <span>4</span>Repo contents
+                </a>
               </li>
               <li>
-                <a href="#dance-off-advanced"><span>5</span>Advanced details</a>
+                <a href="#dance-off-advanced">
+                  <span>5</span>Advanced details
+                </a>
               </li>
             </ol>
           </nav>
@@ -120,9 +107,7 @@ export function BikiniBottomDanceOffTrust({
               <p id="dance-off-assembly-title" className={styles.eyebrow}>
                 01 · Assembly line
               </p>
-              <p>
-                See how your song and cast become a finished, inspected Reel.
-              </p>
+              <h3>One request moves straight to a finished Reel.</h3>
             </div>
             <a
               className={styles.sourceLink}
@@ -156,21 +141,18 @@ export function BikiniBottomDanceOffTrust({
                 title="Brief enters"
                 artifact="Song + cast + direction"
                 color="cyan"
-                icon={FileInput}
               />
               <FlowStation
                 number="02"
                 title="Plan"
                 artifact="Timed scene map"
                 color="pink"
-                icon={ListChecks}
               />
               <FlowStation
                 number="03"
                 title="Approve"
                 artifact="Human sign-off"
                 color="lime"
-                icon={Hand}
                 approval
               />
               <FlowStation
@@ -178,45 +160,19 @@ export function BikiniBottomDanceOffTrust({
                 title="Generate"
                 artifact="Voice + motion + edit"
                 color="yellow"
-                icon={Sparkles}
               />
               <FlowStation
                 number="05"
                 title="Inspect"
                 artifact="Checks + watch-through"
                 color="coral"
-                icon={ScanSearch}
               />
               <FlowStation
                 number="06"
                 title="Deliver"
                 artifact="MP4 + grade + evidence"
                 color="violet"
-                icon={PackageCheck}
               />
-            </div>
-            <div className={styles.transformation}>
-              <div className={styles.packageSummary}>
-                <span className={styles.packageIcon} data-color="cyan">
-                  <Inbox aria-hidden="true" />
-                </span>
-                <span>
-                  <small>What enters</small>
-                  <strong>One creative request</strong>
-                </span>
-              </div>
-              <span className={styles.transformArrow} aria-hidden="true">
-                <ArrowRight />
-              </span>
-              <div className={styles.packageSummary}>
-                <span className={styles.packageIcon} data-color="lime">
-                  <FileVideo aria-hidden="true" />
-                </span>
-                <span>
-                  <small>What exits</small>
-                  <strong>Final video + proof receipt</strong>
-                </span>
-              </div>
             </div>
           </div>
         </section>
@@ -228,12 +184,8 @@ export function BikiniBottomDanceOffTrust({
         >
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>02 · Why this proof works</p>
+              <p className={styles.eyebrow}>02 · Proof explained</p>
               <h3 id="dance-off-proof-title">See it work.</h3>
-              <p>
-                Each timestamp is tied to the published video and a measured
-                requirement from this exact Repo version.
-              </p>
             </div>
             <a
               className={styles.sourceLink}
@@ -308,27 +260,15 @@ export function BikiniBottomDanceOffTrust({
           </div>
 
           <div className={styles.gateGrid}>
-            <FailureGate
-              color="cyan"
-              icon={FileX2}
-              title="Invalid requests"
-            >
+            <FailureGate color="cyan" icon={FileX2} title="Invalid requests">
               A missing song, dialogue, video size, or dance assignment stops
               before generation.
             </FailureGate>
-            <FailureGate
-              color="pink"
-              icon={ImageOff}
-              title="Mismatched assets"
-            >
+            <FailureGate color="pink" icon={ImageOff} title="Mismatched assets">
               Unknown character, motion, background, and voice IDs fail contract
               validation.
             </FailureGate>
-            <FailureGate
-              color="lime"
-              icon={Hand}
-              title="Unapproved spending"
-            >
+            <FailureGate color="lime" icon={Hand} title="Unapproved spending">
               Fish Audio remains locked until dialogue is validated and the
               provider call is explicitly approved.
             </FailureGate>
@@ -360,69 +300,48 @@ export function BikiniBottomDanceOffTrust({
               <p className={styles.eyebrow}>04 · Everything included</p>
               <h3 id="dance-off-repo-title">The exact Repo files.</h3>
             </div>
-          </div>
-
-          <div className={styles.repoSummary}>
-            <span>
-              <strong>
-                {data.stats.motions} dances · {data.stats.backgrounds}{" "}
-                backgrounds · automatic + human quality checks
-              </strong>
-              <small>
-                <RefreshCw aria-hidden="true" /> Read from the published v
-                {data.version} Repo
-              </small>
-            </span>
-            <a href={repositoryHref} download>
+            <a className={styles.repoDownload} href={repositoryHref} download>
               <Download aria-hidden="true" /> Download exact Repo
             </a>
           </div>
 
           <div className={styles.fileGroups}>
-            {data.fileGroups.map((group, index) => {
-              const Icon = fileGroupIcons[index] ?? Box;
-              return (
-                <details
-                  key={group.title}
-                  className={styles.fileGroup}
-                  ref={(node) => {
-                    fileGroupRefs.current[index] = node;
-                  }}
-                  open={index === 0}
-                >
-                  <summary>
-                    <span className={styles.fileIcon} data-color={group.color}>
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <span>
-                      <strong>{group.title}</strong>
-                      <small>
-                        {group.summary} · {group.files.length} files
-                      </small>
-                    </span>
-                    <ChevronDown aria-hidden="true" />
-                  </summary>
-                  <ul>
-                    {group.files.map((file) => (
-                      <li key={file.path} id={sourceFileId(file.path)}>
-                        <code>{file.path}</code>
-                        <span>{file.description}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              );
-            })}
+            {data.fileGroups.map((group, index) => (
+              <details
+                key={group.title}
+                className={styles.fileGroup}
+                ref={(node) => {
+                  fileGroupRefs.current[index] = node;
+                }}
+                open={index === 0}
+              >
+                <summary>
+                  <span>
+                    <strong>{group.title}</strong>
+                    <small>{group.summary}</small>
+                  </span>
+                  <span className={styles.fileCount}>
+                    {group.files.length} files
+                  </span>
+                  <ChevronDown aria-hidden="true" />
+                </summary>
+                <ul>
+                  {group.files.map((file) => (
+                    <li key={file.path} id={sourceFileId(file.path)}>
+                      <code>{file.path}</code>
+                      <span>{file.description}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
           </div>
         </section>
 
         <details id="dance-off-advanced" className={styles.advanced}>
           <summary>
-            <span className={styles.advancedIcon}>
-              <TerminalSquare aria-hidden="true" />
-            </span>
             <span>
-              <strong>Advanced · exact execution details</strong>
+              <strong>Advanced execution details</strong>
               <small>
                 Commands and the published proof receipt, available when you
                 need them.
@@ -485,41 +404,37 @@ export function BikiniBottomDanceOffTrust({
             </div>
           </div>
         </details>
-
       </div>
     </section>
   );
 }
 
 function sourceFileId(filePath: string) {
-  return `dance-off-file-${filePath.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+  return `dance-off-file-${filePath
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")}`;
 }
 
 function FlowStation({
   approval = false,
   artifact,
   color,
-  icon: Icon,
   number,
   title,
 }: {
   approval?: boolean;
   artifact: string;
   color: string;
-  icon: typeof FileInput;
   number: string;
   title: string;
 }) {
   return (
     <article className={styles.station}>
-      <span className={styles.step}>{number}</span>
       <span className={styles.machine} data-color={color}>
-        <Icon aria-hidden="true" />
-        {approval ? (
-          <span className={styles.gateArm} aria-hidden="true" />
-        ) : null}
+        {number}
       </span>
-      {approval ? <span className={styles.gateState}>Pauses here</span> : null}
+      {approval ? <span className={styles.gateState}>Approval</span> : null}
       <div className={styles.stationCopy}>
         <h4>{title}</h4>
         <span>{artifact}</span>
@@ -536,7 +451,7 @@ function FailureGate({
 }: {
   children: ReactNode;
   color: string;
-  icon: typeof FileInput;
+  icon: typeof FileX2;
   title: string;
 }) {
   return (

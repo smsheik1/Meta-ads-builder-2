@@ -1,4 +1,3 @@
-import { Check } from "lucide-react";
 import { DiscoveryFormatHandoff } from "./DiscoveryFormatHandoff";
 import type { DiscoveryFormatProfile } from "./types";
 
@@ -34,33 +33,38 @@ export function BikiniBottomDanceOffRunSummary({
     <section
       id="dance-off-run-summary"
       aria-labelledby="dance-off-run-summary-title"
-      className="border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-10 sm:px-8 sm:py-14"
+      className="border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-[58px] sm:px-7"
     >
-      <div className="mx-auto max-w-[1180px]">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">
-            Run this Format
-          </p>
-          <h2
-            id="dance-off-run-summary-title"
-            className="mt-3 text-4xl font-black leading-none sm:text-6xl"
-          >
-            What you need. What you get.
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg font-bold leading-7 text-[#596176]">
-            Pick an agent. Wiggly sends it this exact Format version.
-          </p>
+      <div className="mx-auto max-w-[980px]">
+        <div className="grid gap-5 min-[701px]:grid-cols-[1fr_auto] min-[701px]:items-end">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">
+              Run this Format
+            </p>
+            <h2
+              id="dance-off-run-summary-title"
+              className="mt-3 text-[clamp(32px,4.5vw,52px)] font-black leading-[0.98] tracking-[-0.04em]"
+            >
+              What you need.
+              <br />
+              What you get.
+            </h2>
+            <p className="mt-4 max-w-2xl text-lg font-bold leading-7 text-[#596176]">
+              Pick an agent. Wiggly sends it this exact Format version.
+            </p>
+          </div>
+          <DiscoveryFormatHandoff format={format} />
         </div>
 
-        <div className="mt-8 grid gap-5 lg:grid-cols-3">
+        <div className="mt-6 grid border-2 border-[#080817] bg-white min-[701px]:grid-cols-3">
           <SummaryList title="You provide" items={plainInputs} />
           <SummaryList title="The agent makes" items={plainDeliverables} />
 
-          <section className="rounded-lg border-2 border-[#080817] bg-white p-5 shadow-[5px_5px_0_#080817] sm:p-6">
-            <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">
+          <section className="border-t border-[#b9b5ad] p-5 min-[701px]:border-l min-[701px]:border-t-0">
+            <h3 className="text-[19px] font-black leading-[1.15]">
               Usually 12–30 minutes
             </h3>
-            <ul className="mt-4 grid gap-3">
+            <ul className="mt-3 space-y-2">
               {format.handoff.estimates.map((estimate, index) => (
                 <li
                   key={estimate.label}
@@ -80,7 +84,7 @@ export function BikiniBottomDanceOffRunSummary({
           </section>
         </div>
 
-        <div className="mt-5 flex flex-col gap-5 rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-5 shadow-[5px_5px_0_#080817] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="mt-[14px] flex flex-col gap-5 border-2 border-[#080817] bg-[#c9ff55] px-[18px] py-4 min-[701px]:flex-row min-[701px]:items-center min-[701px]:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em]">
               Final output
@@ -91,10 +95,6 @@ export function BikiniBottomDanceOffRunSummary({
           </div>
           <DiscoveryFormatHandoff format={format} tone="dark" />
         </div>
-
-        <p className="mt-4 text-center text-xs font-bold leading-5 text-[#667087]">
-          Times are estimates. Wiggly never runs Fish Audio from this page.
-        </p>
       </div>
     </section>
   );
@@ -102,20 +102,11 @@ export function BikiniBottomDanceOffRunSummary({
 
 function SummaryList({ title, items }: { title: string; items: string[] }) {
   return (
-    <section className="rounded-lg border-2 border-[#080817] bg-white p-5 shadow-[5px_5px_0_#080817] sm:p-6">
-      <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#667087]">
-        {title}
-      </h3>
-      <ul className="mt-4 grid gap-3">
+    <section className="border-t border-[#b9b5ad] p-5 first:border-t-0 min-[701px]:border-r min-[701px]:border-t-0">
+      <h3 className="text-[19px] font-black leading-[1.15]">{title}</h3>
+      <ul className="mt-3 list-disc space-y-2 pl-5">
         {items.map((item) => (
-          <li
-            key={item}
-            className="flex items-start gap-2 text-sm font-bold text-[#30374b]"
-          >
-            <Check
-              className="mt-0.5 size-4 shrink-0 text-[#00a7d6]"
-              aria-hidden="true"
-            />
+          <li key={item} className="text-sm font-bold leading-5 text-[#424254]">
             {item}
           </li>
         ))}
