@@ -4,6 +4,7 @@ import {
   getPublishedDiscoveryEntries,
   groupDiscoveryEntriesByShelf,
 } from "../features/discovery/catalog";
+import { getBikiniBottomDanceOffTrustData } from "../features/discovery/bikiniBottomDanceOffTrust.server";
 import { getDiscoveryFormatProfile } from "../features/discovery/formatProof.server";
 import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
 
@@ -75,8 +76,31 @@ assert.equal(
 );
 
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
+const trustComponent = readFileSync("features/discovery/BikiniBottomDanceOffTrust.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);
 assert.match(consumerRoute, /format\.repositoryHref/);
+assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
+assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
+assert.match(trustComponent, /videoRef\.current\.currentTime = annotation\.seconds/);
+assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
+assert.match(trustComponent, /What the Repo refuses to ship/);
+assert.match(trustComponent, /Read from the published v\s*\{data\.version\} Repo/);
+
+const trustData = await getBikiniBottomDanceOffTrustData();
+assert.equal(trustData.version, "0.8.0");
+assert.deepEqual(trustData.stats, {
+  motions: 25,
+  backgrounds: 4,
+  automaticCriteria: 16,
+  humanCriteria: 12,
+  rendererCount: 1,
+});
+assert.deepEqual(trustData.annotations.map((annotation) => annotation.timeLabel), ["00:04", "00:34", "00:43", "00:46"]);
+assert.equal(trustData.proof.grade, "A+");
+assert.equal(trustData.proof.score, 100);
+assert.equal(trustData.commands.includes("npm run render -- --run=episode-01 --approve-provider"), true);
+assert.equal(trustData.commands.includes("npm run finalize -- --run=episode-01 --human-review=pass"), true);
+assert.equal(trustData.fileGroups.flatMap((group) => group.files).some((file) => file.path === "PROOF-REPORT.md"), true);
 
 const starterManifest = JSON.parse(readFileSync(`${repositoryRoot}/../mixamo-character-motion-v1/assets/motions/manifest.json`, "utf8")) as { motions: unknown[] };
 assert.equal(starterManifest.motions.length, 25);

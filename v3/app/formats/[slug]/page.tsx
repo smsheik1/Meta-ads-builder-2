@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
 import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
 import { DiscoveryCharacterOptions } from "@/features/discovery/DiscoveryCharacterOptions";
+import { BikiniBottomDanceOffTrust } from "@/features/discovery/BikiniBottomDanceOffTrust";
+import { getBikiniBottomDanceOffTrustData } from "@/features/discovery/bikiniBottomDanceOffTrust.server";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
 import {
   discoveryFormatSlugs,
@@ -44,6 +46,9 @@ export default async function FormatPage({
   const creator = getDiscoveryCreatorByName(format.creator);
   const heroIsLandscapeVideo =
     heroProof.media.kind === "video" && heroProof.media.aspectRatio === "16:9";
+  const danceOffTrust = slug === "bikini-bottom-dance-off"
+    ? await getBikiniBottomDanceOffTrustData()
+    : null;
 
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-[#080817]">
@@ -99,7 +104,7 @@ export default async function FormatPage({
               <ArrowRight className="size-4" aria-hidden="true" />
             </a>
             {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
-            {format.technicalHref ? (
+            {format.technicalHref && !danceOffTrust ? (
               <Link
                 href={format.technicalHref}
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-white px-5 text-sm font-black"
@@ -162,6 +167,15 @@ export default async function FormatPage({
         </section>
       ) : null}
 
+      {danceOffTrust && heroProof.media.kind === "video" && format.repositoryHref ? (
+        <BikiniBottomDanceOffTrust
+          data={danceOffTrust}
+          openProofHref={`/s/${heroProof.id}`}
+          poster={heroProof.media.poster}
+          repositoryHref={format.repositoryHref}
+          videoSrc={heroProof.media.src}
+        />
+      ) : (
       <section id="proof" className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-[1380px]">
           <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
@@ -207,6 +221,7 @@ export default async function FormatPage({
           </div>
         </div>
       </section>
+      )}
 
       <section className="mx-auto grid w-[min(100%-32px,1100px)] gap-5 py-12 sm:py-16 lg:grid-cols-2">
         <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8">
@@ -231,7 +246,7 @@ export default async function FormatPage({
         </div>
       </section>
 
-      <section className="border-t-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
+      <section id="run-with-agent" className="scroll-mt-6 border-t-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">Run it with an agent</p>
           <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
