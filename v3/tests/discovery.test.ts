@@ -54,7 +54,32 @@ assert.doesNotMatch(
 assert.doesNotMatch(
   discoveryClient,
   /\bautoPlay\b/,
-  "Discover media must start paused and silent.",
+  "Discover must wait for measured visibility instead of autoplaying every video in markup.",
+);
+assert.match(
+  discoveryClient,
+  /maxAmbientVideoPreviews = 2;[\s\S]*?ambientPreviewVisibilityThreshold = 0\.6;/,
+  "Discover should cap ambient decoding at two substantially visible videos.",
+);
+assert.match(
+  discoveryClient,
+  /prefers-reduced-motion: reduce/,
+  "Ambient video previews should respect reduced-motion preferences.",
+);
+assert.match(
+  discoveryClient,
+  /dataset\.discoveryPreview = "ambient";\s*video\.muted = true;\s*void video\.play\(\)/,
+  "Visible video previews should be identified and remain muted.",
+);
+assert.match(
+  discoveryClient,
+  /stopAmbientPreview[\s\S]*?video\.pause\(\);[\s\S]*?delete video\.dataset\.discoveryPreview;/,
+  "Ambient previews should stop when their cards leave the visible set.",
+);
+assert.match(
+  discoveryClient,
+  /media\.dataset\.discoveryPreview === "ambient"[\s\S]*?&& media\.muted[\s\S]*?return;/,
+  "Muted ambient playback must not masquerade as explicit user playback.",
 );
 assert.match(
   discoveryClient,
@@ -322,14 +347,14 @@ for (const id of ["lego-origin-story", "danny-phantom-apis", "naruto-apis", "spo
 assert.deepEqual(
   published.filter((entry) => entry.format.slug === "three-d-breakdown").map((entry) => entry.id),
   [
+    "scrub-daddy-two-personalities",
     "final-straw-pocket-problem",
     "gruns-daily-stack",
     "theragun-heat-and-motion",
     "kiala-supplement-journey",
     "lego-origin-story",
-    "scrub-daddy-two-personalities",
   ],
-  "All six 3D Breakdown videos should remain separate Discovery cards.",
+  "Scrub Daddy should lead the six separate 3D Breakdown Discovery cards.",
 );
 
 const draftEntry: DiscoveryEntry = {

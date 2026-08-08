@@ -2261,7 +2261,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "scrub-daddy-two-personalities",
     status: "published",
-    order: 5.5,
+    order: 0.5,
     brand: "Scrub Daddy",
     title: "The sponge with two personalities",
     curatorNote: "Temperature becomes a visible personality switch between tough scrubbing and gentle flexibility.",

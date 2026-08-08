@@ -46,6 +46,8 @@ const goalFilters: Array<{ id: DiscoveryGoal; label: string }> = [
 ];
 
 const ownerTokenStorageKey = "wiggly-owner-access-token";
+const maxAmbientVideoPreviews = 2;
+const ambientPreviewVisibilityThreshold = 0.6;
 
 export function DiscoveryClient({
   entries,
@@ -60,6 +62,7 @@ export function DiscoveryClient({
   const [activePlayback, setActivePlayback] = useState<DiscoveryPlaybackState>(null);
   const [curationMode, setCurationMode] = useState(false);
   const [toast, setToast] = useState("");
+  const activePlaybackRef = useRef<DiscoveryPlaybackState>(null);
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
   const audioRefs = useRef(new Map<string, HTMLAudioElement>());
   const shelfRefs = useRef(new Map<string, HTMLDivElement>());
@@ -85,6 +88,70 @@ export function DiscoveryClient({
   const activeEntryVisible = activePlayback
     ? visibleEntries.some((entry) => entry.id === activePlayback.id)
     : false;
+
+  useEffect(() => {
+    activePlaybackRef.current = activePlayback;
+  }, [activePlayback]);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const videos = [...videoRefs.current.values()];
+    const visibilityByVideo = new Map(videos.map((video) => [video, 0]));
+
+    const stopAmbientPreview = (video: HTMLVideoElement) => {
+      if (video.dataset.discoveryPreview !== "ambient") return;
+      video.pause();
+      video.muted = true;
+      delete video.dataset.discoveryPreview;
+    };
+
+    const refreshAmbientPreviews = () => {
+      const previewVideos = activePlaybackRef.current?.playing
+        ? new Set<HTMLVideoElement>()
+        : new Set(
+            videos
+              .filter((video) => (
+                (visibilityByVideo.get(video) || 0) >= ambientPreviewVisibilityThreshold
+              ))
+              .slice(0, maxAmbientVideoPreviews),
+          );
+
+      videos.forEach((video) => {
+        if (!previewVideos.has(video)) {
+          stopAmbientPreview(video);
+          return;
+        }
+        if (!video.paused && video.dataset.discoveryPreview === "ambient") return;
+
+        video.dataset.discoveryPreview = "ambient";
+        video.muted = true;
+        void video.play().catch((error) => {
+          delete video.dataset.discoveryPreview;
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          video.pause();
+        });
+      });
+    };
+
+    const observer = new IntersectionObserver((items) => {
+      items.forEach((item) => {
+        visibilityByVideo.set(
+          item.target as HTMLVideoElement,
+          item.isIntersecting ? item.intersectionRatio : 0,
+        );
+      });
+      refreshAmbientPreviews();
+    }, {
+      threshold: [0, ambientPreviewVisibilityThreshold, 1],
+    });
+
+    videos.forEach((video) => observer.observe(video));
+    return () => {
+      observer.disconnect();
+      videos.forEach(stopAmbientPreview);
+    };
+  }, [visibleEntries]);
 
   useEffect(() => {
     if (!activePlayback?.playing) return;
@@ -170,6 +237,11 @@ export function DiscoveryClient({
   );
 
   const syncPlayback = (id: string, media: HTMLMediaElement) => {
+    if (
+      media instanceof HTMLVideoElement
+      && media.dataset.discoveryPreview === "ambient"
+      && media.muted
+    ) return;
     if (media.paused) media.muted = true;
     setActivePlayback((current) => playbackSynced(current, id, media));
   };
@@ -183,6 +255,10 @@ export function DiscoveryClient({
   const playWithSound = (entry: DiscoveryEntry) => {
     const media = mediaFor(entry);
     if (!media) return;
+
+    if (media instanceof HTMLVideoElement) {
+      delete media.dataset.discoveryPreview;
+    }
 
     videoRefs.current.forEach((video, id) => {
       if (id === entry.id) return;
