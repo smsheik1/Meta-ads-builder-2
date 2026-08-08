@@ -26,6 +26,8 @@ export type DiscoveryEntry = {
   };
 };
 
+export type DiscoveryShelfLayout = "portrait" | "landscape";
+
 export type DiscoveryFormatProfile = {
   slug: string;
   name: string;

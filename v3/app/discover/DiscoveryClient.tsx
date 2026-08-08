@@ -383,7 +383,10 @@ export function DiscoveryClient({
                 </div>
 
                 <div
-                  className={styles.shelfTrack}
+                  className={`${styles.shelfTrack} ${
+                    shelf.layout === "landscape" ? styles.shelfTrackLandscape : ""
+                  }`}
+                  data-discovery-shelf-layout={shelf.layout}
                   ref={(track) => {
                     if (track) shelfRefs.current.set(shelf.id, track);
                     else shelfRefs.current.delete(shelf.id);
@@ -399,7 +402,9 @@ export function DiscoveryClient({
                       <article className={styles.card} id={entry.id} key={entry.id}>
                         <div
                           className={`${styles.mediaWell} ${
-                            entry.media.kind === "image" || entry.format.slug === "brainrot"
+                            entry.media.aspectRatio === "16:9"
+                              ? styles.mediaWellLandscape
+                              : entry.media.kind === "image" || entry.format.slug === "brainrot"
                               ? styles.mediaWellImage
                               : ""
                           }`}
