@@ -96,13 +96,15 @@ export default async function FormatPage({
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#proof"
-              className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white shadow-[4px_4px_0_#52d6ff]"
-            >
-              See the proof
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </a>
+            {!danceOffTrust ? (
+              <a
+                href="#proof"
+                className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white shadow-[4px_4px_0_#52d6ff]"
+              >
+                See the proof
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </a>
+            ) : null}
             {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
             {format.technicalHref && !danceOffTrust ? (
               <Link

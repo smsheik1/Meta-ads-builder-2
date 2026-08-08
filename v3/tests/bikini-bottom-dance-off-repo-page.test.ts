@@ -85,6 +85,11 @@ assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
 assert.match(consumerRoute, /<DiscoveryFormatHandoff format=\{format\} variant="inline" \/>/);
 assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
 assert.match(consumerRoute, /!danceOffTrust/);
+assert.match(
+  consumerRoute,
+  /\{!danceOffTrust \? \(\s*<a\s+href="#proof"/,
+  "Dance Off should not show the redundant hero proof button once proof is inline.",
+);
 assert.match(trustComponent, /videoRef\.current\.currentTime = annotation\.seconds/);
 assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
 assert.match(trustComponent, /What the Repo refuses to ship/);
