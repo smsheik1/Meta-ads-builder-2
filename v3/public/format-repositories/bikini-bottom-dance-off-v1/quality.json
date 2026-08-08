@@ -47,7 +47,7 @@
       {"id": "finaleMotionContinuity", "label": "Nobody freezes in the finale", "weight": 6, "threshold": "zero freeze events over 0.75 sec", "measurementPath": "measured.finaleFreezeEventCounts"},
       {"id": "closingCharacterMovesDuringCta", "label": "Closing performer stays alive", "weight": 5, "threshold": "CTA frame hashes differ", "measurementPath": "measured.closingMotionFrameHashes"},
       {"id": "closingChorusVoices", "label": "Four-character closing chorus", "weight": 5, "threshold": "four distinct voices", "measurementPath": "measured.closingChorusVoiceCount"},
-      {"id": "seamlessReplayFrame", "label": "Replay seam", "weight": 6, "threshold": "luma SSIM at least 0.995", "measurementPath": "measured.loopSeam.score"}
+      {"id": "seamlessReplayFrame", "label": "Replay seam", "weight": 6, "threshold": "half-scale luma SSIM at least 0.995", "measurementPath": "measured.loopSeam.score"}
     ]
   },
   "human": [

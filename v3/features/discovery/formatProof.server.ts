@@ -332,6 +332,7 @@ const formatConfigs: FormatProfileConfig[] = [
     ],
     whatChanges: [
       "The supplied song and best thirty-second excerpt",
+      "One of four packaged outer-canvas backgrounds",
       "Solo, reaction, and finale motions chosen from the 25 starters or user imports",
       "The character order, taunts, opening line, and closing chorus",
       "The approved voice performances and character colors",

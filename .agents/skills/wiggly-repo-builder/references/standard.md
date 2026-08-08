@@ -152,11 +152,11 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 ### 17. Measure replay seams perceptually
 
-**Rule:** Force a keyframe when a replay bridge begins, preserve the compared frames as evidence, and evaluate the seam with luma SSIM. Keep a strict threshold rather than treating saturated chroma compression as a visible jump.
+**Rule:** Force a keyframe when a replay bridge begins, preserve the compared frames as evidence, and evaluate the seam with half-scale luma SSIM. Keep a strict threshold rather than treating saturated chroma or fine-texture compression as a visible jump.
 
-**Why:** The same bright, saturated background can receive slightly different chroma quantization at opposite ends of an H.264 file even when the loop looks identical. RGB SSIM can reject that invisible color noise.
+**Why:** The same bright or finely textured background can receive slightly different quantization at opposite ends of an H.264 file even when the loop looks identical. Full-resolution RGB or luma SSIM can reject invisible compression noise instead of measuring the structure people perceive on playback.
 
-**Evidence:** Bikini Bottom Dance Off's exact Fish News flower background produced visually matching loop frames but failed RGB SSIM. The forced replay keyframe plus luma SSIM scored 0.996239 against the unchanged 0.995 gate.
+**Evidence:** Bikini Bottom Dance Off's exact Fish News flower background produced visually matching loop frames but failed RGB SSIM. The forced replay keyframe plus luma SSIM scored 0.996239 against the unchanged 0.995 gate. Its later dance-club canvas produced another visibly matching pair that scored 0.993305 at full-resolution luma and 0.996416 at half scale, again without lowering the gate.
 
 ## Still testing
 

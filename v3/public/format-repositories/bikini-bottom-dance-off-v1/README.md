@@ -25,6 +25,15 @@ node runner.mjs import-motion --source=/absolute/path/to/Motion.dae --id=my-moti
 
 Mixamo is not called during validation or rendering. The local source DAE is never copied into the Repo. `content-boundary.json` is the machine-readable decision record for what ships, what remains an episode input, and what may call an external provider.
 
+Choose the outer canvas with `outerBackground` in `input.json`. The Fish News flower-and-bubble set inside every character panel remains fixed.
+
+| `outerBackground` | Look |
+|---|---|
+| `deep-ocean` | Midnight underwater studio with subtle rays and bubbles; default |
+| `retro-tv` | Aged brass-and-teal underwater television |
+| `dance-club` | Indigo club with cyan and magenta spotlights |
+| `control-room` | Teal metal porthole and restrained rivets |
+
 `inspect` writes both `eval-report.json` and a readable `eval-report.md`. The 100-point score is 70 points of measured technical checks and 30 points of explicit human review. Before a person watches the video, the grade stays pending and reports the automatic percentage separately. `finalize --human-review=pass` creates `final.mp4`, the final A-F grade, and `delivery.json`, then prints all three paths as one return-ready bundle.
 
 The supplied song is copied into the local run folder and remains untracked. It plays only during dance windows. Countdown gaps remain silent except for beeps; opening, taunts, and CTA contain Fish Audio dialogue with no song underneath. Generated voice clips are measured before the runtime divides the solo budget evenly among the four dancers; the group showcase then receives nine uninterrupted seconds from dedicated finale motions that are never clip-looped.
@@ -33,4 +42,4 @@ Set `FISH_STUDIO_APIKEY` locally. SpongeBob, Patrick, and Mr. Krabs use the pack
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|
-| 9:16 Reel, 2×2 grid, countdown, four solo rounds, uninterrupted finale, replay bridge, voice/song gating, official character renderer | Song/excerpt, verified roster/order, solo/finale/reaction motion IDs, opening, taunts, closing, panel colors |
+| 9:16 Reel, 2×2 grid, countdown, four solo rounds, uninterrupted finale, replay bridge, voice/song gating, official character renderer | Song/excerpt, outer background, verified roster/order, solo/finale/reaction motion IDs, opening, taunts, closing, panel colors |

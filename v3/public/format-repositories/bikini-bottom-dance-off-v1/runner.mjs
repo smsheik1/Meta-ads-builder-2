@@ -6,6 +6,7 @@ import { access, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeAudio } from "./runtime/analyze-audio.mjs";
+import { resolveOuterBackground } from "./runtime/backgrounds.mjs";
 import { composeRun } from "./runtime/compose.mjs";
 import { inspectVideo } from "./runtime/inspect.mjs";
 import { writeEvaluation } from "./runtime/evaluate.mjs";
@@ -208,7 +209,7 @@ async function validateInput(inputPath, { receiptPath } = {}) {
   const input = await readJson(inputPath);
   const directory = path.dirname(inputPath);
   const errors = [];
-  const allowed = new Set(["title", "songTitle", "songFile", "songExcerptStart", "openingLine", "closingLine", "characters"]);
+  const allowed = new Set(["title", "songTitle", "songFile", "songExcerptStart", "outerBackground", "openingLine", "closingLine", "characters"]);
   for (const field of Object.keys(input)) if (!allowed.has(field)) errors.push(`Unknown input field: ${field}`);
   for (const field of ["title", "songTitle", "songFile"]) if (typeof input[field] !== "string" || !input[field].trim()) errors.push(`${field} is required.`);
   for (const [field, maximum] of [["openingLine", 40], ["closingLine", 58]]) {
@@ -221,6 +222,15 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     readJson(path.join(motionRoot, "assets/character-packs.json")),
     loadMotionCatalog(),
   ]);
+  let outerBackground = null;
+  try {
+    outerBackground = await resolveOuterBackground(input.outerBackground);
+    input.outerBackground = outerBackground.id;
+    if (!(await exists(outerBackground.file))) errors.push(`Outer background is missing: ${outerBackground.path}`);
+    else if (await sha256(outerBackground.file) !== outerBackground.sha256) errors.push(`Outer background checksum mismatch: ${outerBackground.path}`);
+  } catch (error) {
+    errors.push(error.message);
+  }
   const manifest = { motions: motionCatalog.motions };
   const seen = new Set();
   for (const [index, character] of (input.characters || []).entries()) {
@@ -252,6 +262,7 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     songSha256: await sha256(songPath),
     songDurationSeconds: songDuration,
     songExcerptStart: input.songExcerptStart,
+    outerBackground: outerBackground && { id: outerBackground.id, label: outerBackground.label, path: outerBackground.path },
     renderer: "../mixamo-character-motion-v1/runtime/renderer/app.js",
     motionSelections: input.characters.map(({ characterId, motionId, finaleMotionId, reactionMotionId }) => ({
       characterId,
@@ -264,6 +275,7 @@ async function validateInput(inputPath, { receiptPath } = {}) {
       fishAudioCallsRequired: dialogueCache.filter((entry) => !entry.cached).length,
       fishAudioApprovalRequired: dialogueCache.some((entry) => !entry.cached),
       localInputs: [input.songFile],
+      fixedAssets: outerBackground ? [outerBackground.path] : [],
     },
   };
   if (receiptPath) await writeJson(receiptPath, receipt);

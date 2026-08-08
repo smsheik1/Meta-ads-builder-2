@@ -6,6 +6,11 @@
     "songTitle": {"type": "string", "minLength": 1, "maxLength": 80},
     "songFile": {"type": "string", "pattern": "^[a-zA-Z0-9._-]+$"},
     "songExcerptStart": {"type": "number", "minimum": 0},
+    "outerBackground": {
+      "type": "string",
+      "enum": ["deep-ocean", "retro-tv", "dance-club", "control-room"],
+      "default": "deep-ocean"
+    },
     "openingLine": {"type": "string", "minLength": 1, "maxLength": 40},
     "closingLine": {"type": "string", "minLength": 1, "maxLength": 58},
     "characters": {

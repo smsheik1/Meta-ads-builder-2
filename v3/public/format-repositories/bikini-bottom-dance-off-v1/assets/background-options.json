@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "default": "deep-ocean",
+  "options": [
+    {
+      "id": "deep-ocean",
+      "label": "Deep-Ocean Broadcast Studio",
+      "description": "Midnight blue water, soft caustic rays, sparse bubbles, and faint flower silhouettes.",
+      "path": "assets/backgrounds/deep-ocean-studio.png",
+      "sha256": "1ddc9ed854476febdf81154bcd5f6109d1684b1df400a753b466b8b2c4eca319"
+    },
+    {
+      "id": "retro-tv",
+      "label": "Retro Underwater Television",
+      "description": "A dark teal tube-TV housing framed by aged brass underwater piping.",
+      "path": "assets/backgrounds/retro-underwater-tv.png",
+      "sha256": "cb97610fac8aac376575422c561638088286a453f85f5aa08a0ac1e2a17a9921"
+    },
+    {
+      "id": "dance-club",
+      "label": "Underwater Dance Club",
+      "description": "A dark indigo club with cyan and magenta spotlights, bubbles, and neon caustics.",
+      "path": "assets/backgrounds/underwater-dance-club.png",
+      "sha256": "8478862bf2bb8cf170fdca63789d3280ede3360a4b1c9d034c701b07265c7045"
+    },
+    {
+      "id": "control-room",
+      "label": "Nautical Control Room",
+      "description": "A clean teal metal porthole wall with restrained rivets and underwater light.",
+      "path": "assets/backgrounds/nautical-control-room.png",
+      "sha256": "e679e8245aa5d86c844a218a1018e55b10b0301bf2ed44313d5ef6769f76247b"
+    }
+  ],
+  "sourceNote": "Generated with OpenAI's built-in image-generation workflow from the four user-approved concept mockups, then normalized to 1080x1920 PNG plates."
+}
