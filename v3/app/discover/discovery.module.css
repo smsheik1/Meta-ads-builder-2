@@ -292,6 +292,10 @@
   scrollbar-width: none;
 }
 
+.shelfTrackLandscape {
+  grid-auto-columns: clamp(520px, 52vw, 760px);
+}
+
 .shelfTrack::-webkit-scrollbar {
   display: none;
 }
@@ -321,6 +325,15 @@
 .mediaWellImage {
   aspect-ratio: 4 / 5;
   background: white;
+}
+
+.mediaWellLandscape {
+  aspect-ratio: 16 / 9;
+  background: #080817;
+}
+
+.mediaWell.mediaWellLandscape video {
+  object-fit: contain;
 }
 
 .mediaLink {
@@ -635,6 +648,10 @@
   .shelfTrack {
     grid-auto-columns: min(72vw, 300px);
   }
+
+  .shelfTrackLandscape {
+    grid-auto-columns: min(86vw, 680px);
+  }
 }
 
 @media (max-width: 560px) {
@@ -718,6 +735,10 @@
 
   .shelfTrack {
     grid-auto-columns: min(82vw, 310px);
+  }
+
+  .shelfTrackLandscape {
+    grid-auto-columns: min(88vw, 620px);
   }
 
   .card {

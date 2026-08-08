@@ -116,6 +116,21 @@ assert.match(
   /\.mediaLink > img:not\(\[data-discovery-reference\]\)\s*\{[^}]*object-fit:\s*contain;/,
   "Discovery must preserve the complete text and composition of static creatives.",
 );
+assert.match(
+  discoveryClient,
+  /entry\.media\.aspectRatio === "16:9"[\s\S]*?styles\.mediaWellLandscape/,
+  "Landscape proof should select the aspect-aware media well.",
+);
+assert.match(
+  discoveryStyles,
+  /\.mediaWellLandscape\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9;/,
+  "Landscape proof should preserve its complete 16:9 frame.",
+);
+assert.match(
+  discoveryStyles,
+  /\.mediaWell\.mediaWellLandscape video\s*\{[^}]*object-fit:\s*contain;/,
+  "Landscape video must not crop the sides of the approved final.",
+);
 
 assert.ok(published.length >= 6, "Discovery should launch with enough real finished work to browse.");
 assert.deepEqual(
@@ -151,22 +166,38 @@ assert.ok(
     .every((entry) => entry.media.poster && existsSync(`public${entry.media.poster}`)),
   "Every video should have a local poster for slow connections.",
 );
+const jingleProofs = proofEntries.filter((entry) => entry.format.slug === "jingle");
 const jingles = published.filter((entry) => entry.format.slug === "jingle");
-assert.equal(jingles.length, 39, "Every distinct completed jingle with valid brand metadata should be discoverable.");
+assert.equal(jingleProofs.length, 39, "Every distinct completed jingle should remain available as Format proof.");
+assert.equal(jingles.length, 11, "Discover should feature one finished jingle per brand.");
 assert.equal(
-  new Set(jingles.map((entry) => entry.media.src)).size,
-  jingles.length,
+  new Set(jingleProofs.map((entry) => entry.media.src)).size,
+  jingleProofs.length,
   "The jingle archive should not repeat the same stored song.",
 );
 assert.ok(
-  jingles.every((entry) => entry.media.kind === "audio"),
+  jingleProofs.every((entry) => entry.media.kind === "audio"),
   "Jingles should use native audio playback instead of fake video wrappers.",
 );
 assert.ok(
-  jingles
+  jingleProofs
     .filter((entry) => entry.media.src.startsWith("/homepage/jingles/"))
     .every((entry) => entry.order < 20),
   "The three proven jingles should be spread through the opening feed.",
+);
+assert.equal(
+  new Set(jingles.map((entry) => entry.brand)).size,
+  jingles.length,
+  "Songs People Remember should never repeat the same brand within its shelf.",
+);
+assert.deepEqual(
+  jingles.filter((entry) => ["Apple", "David's Cookies", "OGTool"].includes(entry.brand)).map((entry) => entry.media.src),
+  [
+    "/homepage/jingles/apple-all-in-one-place.mp3",
+    "/homepage/jingles/davids-no-time-to-bake.mp3",
+    "/homepage/jingles/ogtool-break-the-rules.mp3",
+  ],
+  "The curated local Apple, David's Cookies, and OGTool jingles should represent their brands.",
 );
 const videoMemes = published.filter((entry) => entry.format.slug === "video-meme");
 assert.equal(videoMemes.length, 3, "Discover should show each canonical Video Meme clip once.");
@@ -286,7 +317,7 @@ assert.equal(
   "Failed source metadata should never become public proof.",
 );
 for (const id of ["lego-origin-story", "danny-phantom-apis", "naruto-apis", "spongebob-evs"]) {
-  assert.ok(published.some((entry) => entry.id === id), `${id} should be included in the finished-output archive.`);
+  assert.ok(proofEntries.some((entry) => entry.id === id), `${id} should be included in the finished-output archive.`);
 }
 assert.deepEqual(
   published.filter((entry) => entry.format.slug === "three-d-breakdown").map((entry) => entry.id),
@@ -329,7 +360,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 12, "Current Discovery proof should organize into twelve useful shelves.");
+assert.equal(shelves.length, 14, "Current Discovery proof should organize into fourteen focused shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -355,7 +386,35 @@ assert.equal(
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),
   jingles.map((entry) => entry.id),
-  "Every Brand Jingle should stay together in one horizontal shelf.",
+  "One curated jingle per brand should stay together in one horizontal shelf.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "conversations")?.entries
+    .filter((entry) => entry.format.slug === "text-message")
+    .map((entry) => entry.id),
+  ["scene-j57cr2xv8py1b30waepejjm5wh8axj7d"],
+  "Conversations That Sell should show one iMessage proof instead of repeating the format.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "character-explainers")?.entries.map((entry) => entry.id),
+  ["naruto-compilers", "yugioh-compilers", "danny-phantom-apis", "spongebob-evs"],
+  "Character explainers should show one distinct Naruto, Yu-Gi-Oh!, Danny Phantom, and SpongeBob example.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "character-news"),
+  {
+    id: "character-news",
+    title: "Character Newsrooms",
+    description: "Real stories and promotions delivered as full-frame character broadcasts.",
+    layout: "landscape",
+    entries: [published.find((entry) => entry.id === "squilliam-news-artistic-emergency")],
+  },
+  "Squilliam News should live in its own landscape newsroom shelf.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "character-dance-offs")?.entries.map((entry) => entry.id),
+  ["bikini-bottom-dance-off-wiggle"],
+  "Bikini Bottom Dance Off should live outside the explainer shelf.",
 );
 assert.ok(
   shelves

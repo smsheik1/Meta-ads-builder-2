@@ -69,12 +69,22 @@ const featuredOrders: Record<string, number> = {
   kg2e29aq1r214rdcj8c7qdmc8189kfmc: 11.5,
 };
 
+const featuredStorageIdByBrand: Record<string, string> = {
+  Apple: "kg222v2mh7dc4kga0nz9bmx0x589rqpf",
+  "David's Cookies": "kg24pezp5gnte6max74wvtwn5h89kmjx",
+  OGTool: "kg2e29aq1r214rdcj8c7qdmc8189kfmc",
+};
+
 export const jingleDiscoveryEntries: DiscoveryEntry[] = jingleArchiveRows.map((
   [storageId, brand, title, source],
   index,
 ) => ({
   id: `jingle-${storageId}`,
   status: "published",
+  showInDiscovery: storageId === (
+    featuredStorageIdByBrand[brand]
+      || jingleArchiveRows.find(([, candidateBrand]) => candidateBrand === brand)?.[0]
+  ),
   order: featuredOrders[storageId] || 100 + index,
   brand,
   title,

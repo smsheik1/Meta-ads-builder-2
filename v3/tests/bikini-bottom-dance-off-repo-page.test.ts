@@ -64,8 +64,15 @@ assert.match(prompt, /Return final\.mp4 together with eval-report\.md and delive
 assert.match(prompt, /What song should the four characters dance to\?/);
 
 const shelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
-  .find((candidate) => candidate.id === "character-explainers");
+  .find((candidate) => candidate.id === "character-dance-offs");
 assert.ok(shelf?.entries.some((entry) => entry.format.slug === "bikini-bottom-dance-off"));
+assert.equal(
+  groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
+    .find((candidate) => candidate.id === "character-explainers")
+    ?.entries.some((entry) => entry.format.slug === "bikini-bottom-dance-off"),
+  false,
+  "Dance Off should not be mixed into the explainer shelf.",
+);
 
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);

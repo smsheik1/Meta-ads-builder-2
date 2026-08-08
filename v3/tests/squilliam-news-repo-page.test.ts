@@ -99,11 +99,19 @@ assert.equal(discoveryEntries[0]?.media.poster, `/${evidenceRoot.replace(/^publi
 assert.equal(discoveryEntries[0]?.media.aspectRatio, "16:9");
 assert.match(discoveryEntries[0]?.curatorNote ?? "", /Squilliam, Squidward, SpongeBob, or Mr\. Krabs/);
 const characterShelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
-  .find((shelf) => shelf.id === "character-explainers");
+  .find((shelf) => shelf.id === "character-news");
 assert.equal(
   characterShelf?.entries[0]?.format.slug,
   "squilliam-news",
-  "Squilliam News should be the first visible card on the character-led Discover shelf.",
+  "Squilliam News should be the visible card on its dedicated Discover shelf.",
+);
+assert.equal(characterShelf?.layout, "landscape");
+assert.equal(
+  groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries())
+    .find((shelf) => shelf.id === "character-explainers")
+    ?.entries.some((entry) => entry.format.slug === "squilliam-news"),
+  false,
+  "Squilliam News should not be mixed into the vertical character explainer shelf.",
 );
 
 const profile = getDiscoveryFormatProfile("squilliam-news");

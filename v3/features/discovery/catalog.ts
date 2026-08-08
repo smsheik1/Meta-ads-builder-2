@@ -1,4 +1,4 @@
-import type { DiscoveryEntry, DiscoveryGoal } from "./types";
+import type { DiscoveryEntry, DiscoveryGoal, DiscoveryShelfLayout } from "./types";
 import { databaseFormatDiscoveryEntries } from "./databaseFormatArchive";
 import { jingleDiscoveryEntries } from "./jingleArchive";
 import { videoMemeDiscoveryEntries } from "./videoMemeArchive";
@@ -2324,6 +2324,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "naruto-mcp",
     status: "published",
+    showInDiscovery: false,
     order: 7,
     brand: "Developer Tools",
     title: "MCP, explained by Naruto",
@@ -2387,6 +2388,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "naruto-apis",
     status: "published",
+    showInDiscovery: false,
     order: 10,
     brand: "Developer Education",
     title: "APIs, explained by Naruto",
@@ -2612,6 +2614,7 @@ export type DiscoveryShelf = {
   id: string;
   title: string;
   description: string;
+  layout: DiscoveryShelfLayout;
   entries: DiscoveryEntry[];
 };
 
@@ -2641,6 +2644,13 @@ const discoveryShelfDefinitions = [
     formats: ["talking-fish-news"],
   },
   {
+    id: "character-news",
+    title: "Character Newsrooms",
+    description: "Real stories and promotions delivered as full-frame character broadcasts.",
+    formats: ["squilliam-news"],
+    layout: "landscape",
+  },
+  {
     id: "brand-jingles",
     title: "Songs People Remember",
     description: "Brand jingles built around one sharp buyer truth.",
@@ -2662,7 +2672,13 @@ const discoveryShelfDefinitions = [
     id: "character-explainers",
     title: "Explain It With Characters",
     description: "Familiar characters make hard ideas and real promotions easy to follow.",
-    formats: ["squilliam-news", "bikini-bottom-dance-off", "otaku-explainer"],
+    formats: ["otaku-explainer"],
+  },
+  {
+    id: "character-dance-offs",
+    title: "Character Dance-Offs",
+    description: "Music, taunts, and reusable choreography built for replayable vertical video.",
+    formats: ["bikini-bottom-dance-off"],
   },
   {
     id: "conversations",
@@ -2751,6 +2767,7 @@ export function groupDiscoveryEntriesByShelf(entries: DiscoveryEntry[]): Discove
           id: shelf.id,
           title: shelf.title,
           description: shelf.description,
+          layout: "layout" in shelf ? shelf.layout : "portrait",
           entries: [...shelfEntries].sort(
             (left, right) => formatOrder.indexOf(left.format.slug) - formatOrder.indexOf(right.format.slug),
           ),
