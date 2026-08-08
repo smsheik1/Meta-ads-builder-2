@@ -26,6 +26,7 @@ Exact public version: ${format.version}
 Stable Format URL: ${absoluteUrl(origin, `/formats/${format.slug}`)}
 Creator: ${format.creator}
 ${format.technicalHref ? `Technical instructions: ${absoluteUrl(origin, format.technicalHref)}\n` : ""}
+${format.repositoryHref ? `Runnable Repo: ${absoluteUrl(origin, format.repositoryHref)}\n` : ""}
 Required inputs:
 ${requiredInputs}
 

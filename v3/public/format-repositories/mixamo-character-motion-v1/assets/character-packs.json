@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 1,
+  "defaultCharacterId": "spongebob",
+  "packs": [
+    {
+      "id": "spongebob",
+      "label": "SpongeBob SquarePants",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/spongebob/chr_bob_bindpose.dae",
+      "scale": 2.1,
+      "transparentTextures": ["tx1_0000_lashes.PNG", "tx8_0000_spongecheeks_32.PNG", "tx8_0000_spongeeyes_128.PNG"],
+      "transparentMaterials": ["unnamed.003", "unnamed.004", "unnamed.006", "unnamed.007", "unnamed.008"],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 35,
+        "rootBone": "bob_sub_root",
+        "feet": {"left": "bob_toe_L", "right": "bob_toe_R"},
+        "legChains": {
+          "left": ["bob_thigh_L", "bob_knee_L", "bob_ankle_L"],
+          "right": ["bob_thigh_R", "bob_knee_R", "bob_ankle_R"]
+        },
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "bob_sub_root": "mixamorig_Hips",
+          "bob_chest": "mixamorig_Spine2",
+          "bob_head": "mixamorig_Head",
+          "bob_clavicle_L": "mixamorig_LeftShoulder",
+          "bob_bicep_L": "mixamorig_LeftArm",
+          "bob_elbow_L": "mixamorig_LeftForeArm",
+          "bob_wrist_L": "mixamorig_LeftHand",
+          "bob_index_base_L": "mixamorig_LeftHandIndex1",
+          "bob_index_tip_L": "mixamorig_LeftHandIndex3",
+          "bob_mid_base_L": "mixamorig_LeftHandMiddle1",
+          "bob_mid_tp_L": "mixamorig_LeftHandMiddle3",
+          "bob_pinky_base_L": "mixamorig_LeftHandPinky1",
+          "bob_pinky_tip_L": "mixamorig_LeftHandPinky3",
+          "bob_thumb_base_L": "mixamorig_LeftHandThumb1",
+          "bob_thumb_tip_L": "mixamorig_LeftHandThumb3",
+          "bob_clavicle_R": "mixamorig_RightShoulder",
+          "bob_bicep_R": "mixamorig_RightArm",
+          "bob_elbow_R": "mixamorig_RightForeArm",
+          "bob_wrist_R": "mixamorig_RightHand",
+          "bob_index_base_R": "mixamorig_RightHandIndex1",
+          "bob_index_tip_R": "mixamorig_RightHandIndex3",
+          "bob_mid_base_R": "mixamorig_RightHandMiddle1",
+          "bob_mid_tip_R": "mixamorig_RightHandMiddle3",
+          "bob_pinky_base_R": "mixamorig_RightHandPinky1",
+          "bob_pinky_tip_R": "mixamorig_RightHandPinky3",
+          "bob_thumb_base_R": "mixamorig_RightHandThumb1",
+          "bob_thumb_tip_R": "mixamorig_RightHandThumb3",
+          "bob_thigh_L": "mixamorig_LeftUpLeg",
+          "bob_knee_L": "mixamorig_LeftLeg",
+          "bob_ankle_L": "mixamorig_LeftFoot",
+          "bob_toe_L": "mixamorig_LeftToeBase",
+          "bob_thigh_R": "mixamorig_RightUpLeg",
+          "bob_knee_R": "mixamorig_RightLeg",
+          "bob_ankle_R": "mixamorig_RightFoot",
+          "bob_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "bob_eye_socket_shrink_L", "bob_eye_L", "bob_eye_stretch_L", "bob_lid_lower_L", "bob_lid_upper_L",
+          "bob_eye_socket_shrink_R", "bob_eye_R", "bob_eye_stretch_R", "bob_lid_lower_R", "bob_lid_upper_R",
+          "bob_forehead", "bob_lip_upper", "bob_teeth", "bob_mouth_L", "bob_mouth_R", "bob_nose", "bob_jaw",
+          "bob_lip_lower", "bob_lip_lower_L", "bob_lip_lower_R", "bob_tongue_base", "bob_tongue_end"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - SpongeBob SquarePants.zip"
+    },
+    {
+      "id": "squilliam",
+      "label": "Squilliam Fancyson",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/squilliam/chr_squilliam_bindpose.dae",
+      "scale": 1.67,
+      "transparentTextures": [
+        "tx8_0000_squideyes_128.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed.012",
+        "unnamed.013"
+      ],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "squilliam_sub_root",
+        "feet": {
+          "left": "squilliam_front_toe_L",
+          "right": "squilliam_front_toe_R"
+        },
+        "legChains": {
+          "left": [
+            "squilliam_front_thigh_L",
+            "squilliam_front_knee_L",
+            "squilliam_front_ankle_L"
+          ],
+          "right": [
+            "squilliam_front_thigh_R",
+            "squilliam_front_knee_R",
+            "squilliam_front_ankle_R"
+          ]
+        },
+        "pairedBoneChains": [
+          {
+            "driver": [
+              "squilliam_front_thigh_L",
+              "squilliam_front_knee_L",
+              "squilliam_front_ankle_L",
+              "squilliam_front_toe_L"
+            ],
+            "follower": [
+              "squilliam_rear_thigh_L",
+              "squilliam_rear_knee_L",
+              "squilliam_rear_ankle_L",
+              "squilliam_rear_toe_L"
+            ]
+          },
+          {
+            "driver": [
+              "squilliam_front_thigh_R",
+              "squilliam_front_knee_R",
+              "squilliam_front_ankle_R",
+              "squilliam_front_toe_R"
+            ],
+            "follower": [
+              "squilliam_rear_thigh_R",
+              "squilliam_rear_knee_R",
+              "squilliam_rear_ankle_R",
+              "squilliam_rear_toe_R"
+            ]
+          }
+        ],
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "squilliam_sub_root": "mixamorig_Hips",
+          "squilliam_spine_base": "mixamorig_Spine",
+          "squilliam_chest": "mixamorig_Spine2",
+          "squilliam_neck_base": "mixamorig_Neck",
+          "squilliam_head": "mixamorig_Head",
+          "squilliam_clavicle_L": "mixamorig_LeftShoulder",
+          "squilliam_bicep_L": "mixamorig_LeftArm",
+          "squilliam_elbow_L": "mixamorig_LeftForeArm",
+          "squilliam_hand_L": "mixamorig_LeftHand",
+          "squilliam_fingers_L": "mixamorig_LeftHandMiddle1",
+          "squilliam_clavicle_R": "mixamorig_RightShoulder",
+          "squilliam_bicep_R": "mixamorig_RightArm",
+          "squilliam_elbow_R": "mixamorig_RightForeArm",
+          "squilliam_hand_R": "mixamorig_RightHand",
+          "squilliam_fingers_R": "mixamorig_RightHandMiddle1",
+          "squilliam_front_thigh_L": "mixamorig_LeftUpLeg",
+          "squilliam_front_knee_L": "mixamorig_LeftLeg",
+          "squilliam_front_ankle_L": "mixamorig_LeftFoot",
+          "squilliam_front_toe_L": "mixamorig_LeftToeBase",
+          "squilliam_front_thigh_R": "mixamorig_RightUpLeg",
+          "squilliam_front_knee_R": "mixamorig_RightLeg",
+          "squilliam_front_ankle_R": "mixamorig_RightFoot",
+          "squilliam_front_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "squilliam_eye_rotate_space_L",
+          "squilliam_eye_scale_space_L",
+          "pupil_L",
+          "squilliam_eye_rotate_space_R",
+          "squilliam_eye_scale_space_R",
+          "pupil_R",
+          "squilliam_mouth",
+          "squilliam_mouth_corner_L",
+          "squilliam_mouth_corner_R",
+          "squilliam_nose_base",
+          "squilliam_nose_end"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Non-Playable Characters - Squilliam Fancyson.zip"
+    },
+    {
+      "id": "mr-krabs",
+      "label": "Mr. Krabs",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/mr-krabs/chr_krabs_bindpose.dae",
+      "scale": 1.79,
+      "transparentTextures": [
+        "tx1_0000_krabslids_128.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed.001",
+        "unnamed.002"
+      ],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.0015,
+        "rootBone": "krabs_sub_root",
+        "feet": {
+          "left": "krabs_ankle_L",
+          "right": "krabs_ankle_R"
+        },
+        "legChains": {
+          "left": [
+            "krabs_thigh_L",
+            "krabs_knee_L"
+          ],
+          "right": [
+            "krabs_thigh_R",
+            "krabs_knee_R"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "krabs_sub_root": "mixamorig_Hips",
+          "krabs_waist": "mixamorig_Spine2",
+          "krabs_head": "mixamorig_Head",
+          "krabs_clavicle_L": "mixamorig_LeftShoulder",
+          "krabs_bicep_L": "mixamorig_LeftArm",
+          "krabs_elbow_L": "mixamorig_LeftForeArm",
+          "krabs_wrist_L": "mixamorig_LeftHand",
+          "krabs_claw_upper_L": "mixamorig_LeftHandMiddle1",
+          "krabs_claw_tip_L": "mixamorig_LeftHandMiddle3",
+          "krabs_thumb_claw_L": "mixamorig_LeftHandThumb1",
+          "krabs_clavicle_R": "mixamorig_RightShoulder",
+          "krabs_bicep_R": "mixamorig_RightArm",
+          "krabs_elbow_R": "mixamorig_RightForeArm",
+          "krabs_wrist_R": "mixamorig_RightHand",
+          "krabs_claw_upper_R": "mixamorig_RightHandMiddle1",
+          "krabs_claw_tip_R": "mixamorig_RightHandMiddle3",
+          "krabs_thumb_claw_R": "mixamorig_RightHandThumb1",
+          "krabs_thigh_L": "mixamorig_LeftUpLeg",
+          "krabs_knee_L": "mixamorig_LeftLeg",
+          "krabs_ankle_L": "mixamorig_LeftFoot",
+          "krabs_thigh_R": "mixamorig_RightUpLeg",
+          "krabs_knee_R": "mixamorig_RightLeg",
+          "krabs_ankle_R": "mixamorig_RightFoot"
+        },
+        "protectedBones": [
+          "krabs_eye_stalk_base_L",
+          "krabs_eye_stalk_02_L",
+          "krabs_eye_L",
+          "krabs_eye_stalk_temp_L",
+          "krabs_lower_lid_L",
+          "krabs_upper_lid_L",
+          "krabs_eye_stalk_base_R",
+          "krabs_eye_stalk_02_R",
+          "krabs_eye_R",
+          "krabs_eye_stalk_temp_R",
+          "krabs_lower_lid_R",
+          "krabs_upper_lid_R",
+          "krabs_jaw",
+          "krabs_mouth_lower",
+          "krabs_mouth_lower_L",
+          "krabs_mouth_lower_R",
+          "krabs_mouth_corner_L",
+          "krabs_mouth_corner_R",
+          "krabs_mouth_upper",
+          "krabs_mouth_upper_L",
+          "krabs_mouth_upper_R",
+          "krabs_nose"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Mr. Krabs.zip"
+    },
+    {
+      "id": "patrick",
+      "label": "Patrick Star",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/patrick/chr_pat_bindpose.dae",
+      "scale": 2.1,
+      "transparentTextures": [
+        "tx1_0000_lidpatrick.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed_001",
+        "unnamed_002"
+      ],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 13,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "pat_root_joint",
+        "feet": {
+          "left": "pat_foot_L",
+          "right": "pat_foot_R"
+        },
+        "legChains": {
+          "left": [
+            "pat_thigh_L",
+            "pat_calf_L"
+          ],
+          "right": [
+            "pat_thigh_R",
+            "pat_calf_R"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.14,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "pat_root_joint": "mixamorig_Hips",
+          "pat_chest": "mixamorig_Spine2",
+          "pat_head": "mixamorig_Head",
+          "pat_clavicle_L": "mixamorig_LeftShoulder",
+          "pat_bicep_L": "mixamorig_LeftArm",
+          "pat_elbow_L": "mixamorig_LeftForeArm",
+          "pat_wrist_L": "mixamorig_LeftHand",
+          "pat_clavicle_R": "mixamorig_RightShoulder",
+          "pat_bicep_R": "mixamorig_RightArm",
+          "pat_elbow_R": "mixamorig_RightForeArm",
+          "pat_wrist_R": "mixamorig_RightHand",
+          "pat_thigh_L": "mixamorig_LeftUpLeg",
+          "pat_thigh_R": "mixamorig_RightUpLeg"
+        },
+        "protectedBones": [
+          "pat_eye_L",
+          "pat_eye_R",
+          "pat_forehead",
+          "pat_brow_L",
+          "pat_brow_R",
+          "pat_whippy_bit",
+          "pat_jaw",
+          "pat_lip_lower",
+          "pat_lip_upper"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Patrick.zip"
+    }
+  ]
+}

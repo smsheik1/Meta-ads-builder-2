@@ -12,6 +12,7 @@ type FormatProfileConfig = {
   promise: string;
   lastUpdated: string;
   technicalHref?: string;
+  repositoryHref?: string;
   manifestPath?: string;
   whatStays: string[];
   whatChanges: string[];
@@ -313,6 +314,60 @@ const formatConfigs: FormatProfileConfig[] = [
       totalEstimate: "$0 provider cost in the current Fish fair-use window, usually 10-25 min",
       output: "One horizontal 1280 × 720 MP4, exactly 30 seconds",
       firstQuestion: "What event, launch, or promotion should the Squilliam News desk declare an emergency over, and which verified presenter should anchor it?",
+    },
+  },
+  {
+    slug: "bikini-bottom-dance-off",
+    promise: "Turn one song into a four-character dance battle with taunts, five-second solos, a nine-second finale, and a replay loop built for Reels.",
+    lastUpdated: "August 2026",
+    technicalHref: "/format-lab/character-dance-lab",
+    repositoryHref: "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip",
+    manifestPath: "format-repositories/bikini-bottom-dance-off-v1/format.json",
+    whatStays: [
+      "A three-beep countdown with no music underneath",
+      "Four taunting characters with five-second solo showcases",
+      "The dark-panel Talking Fish News newsroom background behind every performer",
+      "A nine-second all-character finale that keeps everyone moving",
+      "A scored inspection and replay bridge into the opening frame",
+    ],
+    whatChanges: [
+      "The supplied song and best thirty-second excerpt",
+      "Solo, reaction, and finale motions chosen from the 25 starters or user imports",
+      "The character order, taunts, opening line, and closing chorus",
+      "The approved voice performances and character colors",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One local song file the user is allowed to use",
+        "A song title and preferred excerpt, or permission for the packaged analyzer to choose",
+        "Motion preferences, or permission to audition and recommend from the catalog",
+        "Approved dialogue or Fish Audio access for the four registered voices",
+      ],
+      deliverables: [
+        "One validated episode input and motion assignment",
+        "One inspected contact sheet and technical quality report",
+        "One final 1080 × 1920 MP4",
+        "One A-F eval with criterion scores, measurements, explanations, and human-review status",
+      ],
+      instructions: [
+        "Download the runnable Repo and run npm install, npm run check, and npm run smoke before editing an episode",
+        "Use npm run list-motions to choose separate solo, reaction, and finale motions; finale motions must cover nine seconds",
+        "Keep the frozen 25-motion starter library intact; normalize operator-downloaded Mixamo DAE files into the separate user library",
+        "Initialize a run with the local song, then edit only that run's input.json",
+        "Validate before Fish Audio; ask once before uncached provider calls and reuse valid cached dialogue",
+        "Render with the packaged compositor and official character-motion renderer, then run inspect",
+        "Show the playable render and contact sheet for human review before finalize --human-review=pass",
+        "Return final.mp4 together with eval-report.md and delivery.json; do not stop at a local path or raw pass/fail badge",
+      ],
+      estimates: [
+        { label: "Song analysis + choreography", cost: "$0 provider cost", time: "about 3-8 min" },
+        { label: "Voice dialogue", cost: "Fish Audio usage only when uncached", time: "about 2-6 min" },
+        { label: "Local render + scored inspection", cost: "$0 provider cost", time: "about 5-12 min" },
+        { label: "Human review + delivery", cost: "$0", time: "about 2-5 min" },
+      ],
+      totalEstimate: "Usually 12-30 min plus any approved Fish Audio usage",
+      output: "One 47-second vertical MP4 plus a friendly and machine-readable scored eval",
+      firstQuestion: "What song should the four characters dance to? Attach the local audio file you are allowed to use.",
     },
   },
   {
@@ -2121,6 +2176,7 @@ export function getDiscoveryFormatProfile(slug: string): DiscoveryFormatProfile 
     promise: config.promise,
     lastUpdated: config.lastUpdated,
     technicalHref: config.technicalHref,
+    repositoryHref: config.repositoryHref,
     proofEntries,
     whatStays: config.whatStays,
     whatChanges: config.whatChanges,

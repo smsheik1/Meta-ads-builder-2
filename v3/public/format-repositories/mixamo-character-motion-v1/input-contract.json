@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "required": ["characterId", "motionId", "title"],
+  "properties": {
+    "characterId": {"type": "string", "enum": ["spongebob", "squilliam", "mr-krabs", "patrick"]},
+    "motionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 60},
+    "background": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"}
+  },
+  "additionalProperties": false
+}

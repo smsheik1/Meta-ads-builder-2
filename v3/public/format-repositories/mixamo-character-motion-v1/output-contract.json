@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "interactiveLab": {
+    "entry": "runtime/renderer/index.html?mode=lab",
+    "characters": 4,
+    "motions": 25,
+    "startupPayload": "manifest plus one active character and one active motion",
+    "controls": ["character selector", "motion selector", "pause", "restart", "MP4 download", "GIF download"]
+  },
+  "video": {"container": "mp4", "videoCodec": "h264", "width": 1280, "height": 720, "fps": 30, "audio": false},
+  "gif": {"width": 640, "fps": 15, "loop": true, "audio": false},
+  "duration": {
+    "mp4": "Exactly one pass over every normalized source frame; no implicit truncation, padding, or looping.",
+    "gif": "The exact source clip duration sampled at 15 fps, with looping declared in the GIF container."
+  },
+  "evidence": ["motion-report.json", "contact-sheet.png", "quality-report.json", "state.json"]
+}

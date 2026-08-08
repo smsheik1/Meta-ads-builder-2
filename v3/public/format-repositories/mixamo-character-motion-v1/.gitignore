@@ -1,0 +1,7 @@
+node_modules/
+agent-runs/*
+!agent-runs/.gitkeep
+downloads/*.zip
+downloads/*.sha256
+user-motions/*
+!user-motions/.gitkeep

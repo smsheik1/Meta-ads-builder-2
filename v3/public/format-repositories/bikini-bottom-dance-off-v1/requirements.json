@@ -1,0 +1,22 @@
+{
+  "localTools": ["node", "npm", "ffmpeg", "ffprobe", "Google Chrome", "sharp"],
+  "formatRepoDependencies": ["mixamo-character-motion-v1"],
+  "providers": [
+    {
+      "name": "Fish Audio",
+      "model": "s2.1-pro-free",
+      "purpose": "Generate one opening, three taunts, and the same closing CTA in all four assigned character voices after validation and approval.",
+      "estimatedCost": "$0 through August 31, 2026 under Fish Audio's published fair-use window; recheck before later use",
+      "pricingSource": "https://fish.audio/blog/s2-1-pro-free-api/"
+    }
+  ],
+  "environmentVariables": ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"],
+  "notes": [
+    "Character pixels are rendered by the existing Character Dance Lab renderer.",
+    "Mixamo is not a runtime provider and has no supported public API in this Repo. A new motion is downloaded by the operator and normalized locally with import-motion.",
+    "The unsupported gnuton/mixamo_anims_downloader browser-token script is not packaged or executed.",
+    "Song files are copied into local run folders and are not packaged.",
+    "The SpongeBob, Patrick, and Mr. Krabs public reference presets are packaged; Squilliam's approved private clone stays environment-only.",
+    "Validation completes before any Fish Audio call, and render requires --approve-provider whenever a dialogue cache entry is missing or stale."
+  ]
+}

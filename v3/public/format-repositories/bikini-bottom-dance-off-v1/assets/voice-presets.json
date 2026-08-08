@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "provider": "Fish Audio",
+  "model": "s2.1-pro-free",
+  "privateReferenceEnvironmentVariable": "SQUILLIAM_VOICE_ID",
+  "voices": [
+    {
+      "characterId": "spongebob",
+      "referenceId": "9845e056f37b470d9a1005e41c864e25",
+      "delivery": "explosively excited",
+      "speed": 1.18
+    },
+    {
+      "characterId": "patrick",
+      "referenceId": "d1520b60870b4e9aa01eab5bfefb1c45",
+      "delivery": "smug but slightly clueless",
+      "speed": 1.12
+    },
+    {
+      "characterId": "mr-krabs",
+      "referenceId": "394d3112f0da41049c42177f3ca31c5a",
+      "delivery": "offended and dismissive",
+      "speed": 1.16
+    },
+    {
+      "characterId": "squilliam",
+      "referenceId": null,
+      "delivery": "elegant, condescending, and certain he won",
+      "speed": 1.14
+    }
+  ]
+}

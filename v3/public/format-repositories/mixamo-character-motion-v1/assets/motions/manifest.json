@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "motions": [
+    {
+      "id": "hip-hop-dancing",
+      "label": "Hip Hop Dancing",
+      "file": "assets/motions/hip-hop-dancing.json",
+      "fps": 30,
+      "frameCount": 135,
+      "durationSeconds": 4.5,
+      "sourceFileName": "Hip Hop Dancing.dae",
+      "sourceSha256": "1082323b497715865555afda684ad97b88a688ecf20a177f96d80fb04d6dd10a",
+      "normalizedSha256": "19f98bc7cbc8ee1b337dca8f9ce5ef9ef64e4a2149b1043e427354d3b655a718"
+    },
+    {
+      "id": "joyful-jump",
+      "label": "Joyful Jump",
+      "file": "assets/motions/joyful-jump.json",
+      "fps": 30,
+      "frameCount": 57,
+      "durationSeconds": 1.9,
+      "sourceFileName": "Joyful Jump.dae",
+      "sourceSha256": "fc1fededcef692ee56b3f9f6bea45d6fef49079cc7a9cdbf0beddf4f0c362bc7",
+      "normalizedSha256": "94b5619b171445a0b7ba802b7a44ed0e0af4829c1324e4c5295e29eb118b5015"
+    },
+    {
+      "id": "taunt",
+      "label": "Taunt",
+      "file": "assets/motions/taunt.json",
+      "fps": 30,
+      "frameCount": 86,
+      "durationSeconds": 2.866667,
+      "sourceFileName": "Taunt.dae",
+      "sourceSha256": "601896850120d26a6b92978afc185bbc433e3f3964a50c59d51afd07a6213571",
+      "normalizedSha256": "81d9d2f3ef6707437abd44246874a5f7a55e22b11fbfc7f90090d1a3ae7fa11d"
+    },
+    {
+      "id": "silly-dancing",
+      "label": "Silly Dancing",
+      "file": "assets/motions/silly-dancing.json",
+      "fps": 30,
+      "frameCount": 116,
+      "durationSeconds": 3.866667,
+      "sourceFileName": "Silly Dancing.dae",
+      "sourceSha256": "e37784500f71b61aa2df6e3c353fca3b5aeceb10c0c6346f663e2280bf6b13bd",
+      "normalizedSha256": "8de5d12a0ef22c1386cc3dd792b358786c1ca52a667aabb83b8f457c617286ce"
+    },
+    {
+      "id": "arms-hip-hop-dance",
+      "label": "Arms Hip Hop Dance",
+      "file": "assets/motions/arms-hip-hop-dance.json",
+      "fps": 30,
+      "frameCount": 660,
+      "durationSeconds": 22,
+      "sourceFileName": "Arms Hip Hop Dance.dae",
+      "sourceSha256": "df84a6061a9ab74e525d16164baef0a824c873ea9a06a0bb9db56b0c324787dd",
+      "normalizedSha256": "f361d8f89dedd6d29183bd521285418d0e610218949093c4f294ab813ebd5a00"
+    },
+    {
+      "id": "belly-dance",
+      "label": "Belly Dance",
+      "file": "assets/motions/belly-dance.json",
+      "fps": 30,
+      "frameCount": 590,
+      "durationSeconds": 19.666667,
+      "sourceFileName": "Belly Dance.dae",
+      "sourceSha256": "dd9160d593415733f04cb53aeda3b5f8c1320b75defacc501360f03e48db5dd3",
+      "normalizedSha256": "edf4e2a413327780defec655f3c3d2997df178d4b63463a4da9c20df3d5f8c88"
+    },
+    {
+      "id": "booty-hip-hop-dance",
+      "label": "Booty Hip Hop Dance",
+      "file": "assets/motions/booty-hip-hop-dance.json",
+      "fps": 30,
+      "frameCount": 148,
+      "durationSeconds": 4.933333,
+      "sourceFileName": "Booty Hip Hop Dance.dae",
+      "sourceSha256": "00e2154331ca7bfef9ea9c9bd842250855756aa9994f28f54db2dcebe3107705",
+      "normalizedSha256": "25d52704b5220efb533ab9cbd2944259764271e79af1fde61ae5be610a7a6c44"
+    },
+    {
+      "id": "chicken-dance",
+      "label": "Chicken Dance",
+      "file": "assets/motions/chicken-dance.json",
+      "fps": 30,
+      "frameCount": 144,
+      "durationSeconds": 4.8,
+      "sourceFileName": "Chicken Dance.dae",
+      "sourceSha256": "71842589d43625e381c3b80d7f8dbf074f6d6c86451b447b44a8530e343cf893",
+      "normalizedSha256": "ffd3b7262478bed8dcb49b1cf88c004f64162933906fd42cab67c602c1c8c3e6"
+    },
+    {
+      "id": "runningman-hip-hop-dancing",
+      "label": "Runningman Hip Hop Dancing",
+      "file": "assets/motions/runningman-hip-hop-dancing.json",
+      "fps": 30,
+      "frameCount": 184,
+      "durationSeconds": 6.133333,
+      "sourceFileName": "Hip Hop Dancing.dae",
+      "sourceSha256": "f4b1e9b5bf44ffcc2224a06c33fd8d99667285118fc0fdc28a77e50f1097013c",
+      "normalizedSha256": "ac5d278d25e5f196e64ba064f49c6929fbcaf5d142998e93e0e8698064023a0a"
+    },
+    {
+      "id": "house-dancing",
+      "label": "House Dancing",
+      "file": "assets/motions/house-dancing.json",
+      "fps": 30,
+      "frameCount": 786,
+      "durationSeconds": 26.2,
+      "sourceFileName": "House Dancing.dae",
+      "sourceSha256": "f765edce50b1feb269a53e5d8560c6c2adeb7d1bd29db8ae573a8f50d9b78cd8",
+      "normalizedSha256": "39fbf60cf34347c9d83b6bc8c79ef990ace624beae54d47f2c60254361839189"
+    },
+    {
+      "id": "macarena-dance",
+      "label": "Macarena Dance",
+      "file": "assets/motions/macarena-dance.json",
+      "fps": 30,
+      "frameCount": 248,
+      "durationSeconds": 8.266667,
+      "sourceFileName": "Macarena Dance.dae",
+      "sourceSha256": "d306f44be93b537027d3c577d1d0f2d1a7580a1977ffa23710898a3327497087",
+      "normalizedSha256": "8f59d08c42ed69567fb766710a396a53f9763871745dd50cece5972bcf1d15d2"
+    },
+    {
+      "id": "northern-soul-dance",
+      "label": "Northern Soul Dance",
+      "file": "assets/motions/northern-soul-dance.json",
+      "fps": 30,
+      "frameCount": 483,
+      "durationSeconds": 16.1,
+      "sourceFileName": "Northern Soul Dance.dae",
+      "sourceSha256": "2eda6c7f86edb97bdc41c3b2a0c5ed0142cafe05eab5ee4792b9b8554d48b2e3",
+      "normalizedSha256": "bb378afe11b77104eb017ceff53840256b279930005acf57836408019d198d92"
+    },
+    {
+      "id": "northern-soul-spin-combo",
+      "label": "Northern Soul Spin Combo",
+      "file": "assets/motions/northern-soul-spin-combo.json",
+      "fps": 30,
+      "frameCount": 266,
+      "durationSeconds": 8.866667,
+      "sourceFileName": "Northern Soul Spin Combo.dae",
+      "sourceSha256": "055691b84f4ab9224d24e127f911872d2df35682a396ef2021e2e07590ddaadb",
+      "normalizedSha256": "43ac28972ff49b4b0ff6b0eec0c42076e5cde6b33a1133ae382f42e5c7e7ec78"
+    },
+    {
+      "id": "robot-hip-hop-dance",
+      "label": "Robot Hip Hop Dance",
+      "file": "assets/motions/robot-hip-hop-dance.json",
+      "fps": 30,
+      "frameCount": 464,
+      "durationSeconds": 15.466667,
+      "sourceFileName": "Robot Hip Hop Dance.dae",
+      "sourceSha256": "fd92936e2ee7673c64b5a834664e8b7cf72920fcf0017b0bacbc65336641087d",
+      "normalizedSha256": "0b6ff3384793772e2c3673e069d5d42e0a0ffc4464cfeb6314aeba3c9d1a7529"
+    },
+    {
+      "id": "rumba-dancing",
+      "label": "Rumba Dancing",
+      "file": "assets/motions/rumba-dancing.json",
+      "fps": 30,
+      "frameCount": 72,
+      "durationSeconds": 2.4,
+      "sourceFileName": "Rumba Dancing.dae",
+      "sourceSha256": "7b38828fc664e7b4f0f07a9421bda543059b38ee8e34ce7e3e87d6bf725e7d95",
+      "normalizedSha256": "8fb0c3de3b5a85aba5b4ce0eccfc4e445e4619044b20e84db3346dcec3e7013f"
+    },
+    {
+      "id": "samba-dancing",
+      "label": "Samba Dancing",
+      "file": "assets/motions/samba-dancing.json",
+      "fps": 30,
+      "frameCount": 547,
+      "durationSeconds": 18.233333,
+      "sourceFileName": "Samba Dancing.dae",
+      "sourceSha256": "dbfe3f5145afc9d8cd094a82b384b4405cbf0eed936692cf251ef2a4e77749ad",
+      "normalizedSha256": "b165a89be9f1c31fc2b696e0240f25397c88f0b4018b56c925ad0dd460f7da73"
+    },
+    {
+      "id": "shopping-cart-dance",
+      "label": "Shopping Cart Dance",
+      "file": "assets/motions/shopping-cart-dance.json",
+      "fps": 30,
+      "frameCount": 479,
+      "durationSeconds": 15.966667,
+      "sourceFileName": "Shopping Cart Dance.dae",
+      "sourceSha256": "0f42c7f99a20b8d3909e9e577d190ee085f1290f135d48765d89dc4cd05130f4",
+      "normalizedSha256": "ca01e054cea17915aa18d4979a171a512f46d5f3ecbc2561475be89cc433d679"
+    },
+    {
+      "id": "slide-hip-hop-dance",
+      "label": "Slide Hip Hop Dance",
+      "file": "assets/motions/slide-hip-hop-dance.json",
+      "fps": 30,
+      "frameCount": 520,
+      "durationSeconds": 17.333333,
+      "sourceFileName": "Slide Hip Hop Dance.dae",
+      "sourceSha256": "9e8809d4740ade6031fdb4fb921bb2e1923ffab110288bf41c50274e6246c68f",
+      "normalizedSha256": "6f134c89e1ab00963dbbd86eb51d802d4bb6b634c5e04967c15d71d3c8ac15ba"
+    },
+    {
+      "id": "snake-hip-hop-dance",
+      "label": "Snake Hip Hop Dance",
+      "file": "assets/motions/snake-hip-hop-dance.json",
+      "fps": 30,
+      "frameCount": 459,
+      "durationSeconds": 15.3,
+      "sourceFileName": "Snake Hip Hop Dance.dae",
+      "sourceSha256": "7c31ba1f1b2bcc7a8d2e5a23a5b1a1230c3026168ef84a81b69c48bd91f8cee5",
+      "normalizedSha256": "6e9dd2ad380c9b3698eb92627b3514c971bb513844c3c898f43ac32628c4aff0"
+    },
+    {
+      "id": "step-hip-hop-dance",
+      "label": "Step Hip Hop Dance",
+      "file": "assets/motions/step-hip-hop-dance.json",
+      "fps": 30,
+      "frameCount": 235,
+      "durationSeconds": 7.833333,
+      "sourceFileName": "Step Hip Hop Dance.dae",
+      "sourceSha256": "3fc6cbc62a31b671adfbd1e00dc882ea621b5be8622b33fbfb143a66a741bea7",
+      "normalizedSha256": "c215b06a05ed54b1ed8e5f3449753cfc240fcaa42255bacc339691039acd529b"
+    },
+    {
+      "id": "swing-dancing",
+      "label": "Swing Dancing",
+      "file": "assets/motions/swing-dancing.json",
+      "fps": 30,
+      "frameCount": 628,
+      "durationSeconds": 20.933333,
+      "sourceFileName": "Swing Dancing.dae",
+      "sourceSha256": "78ebd6ccabc3b4e1eb419dc3ae5670d2e9ad23b2922a3d07af03e18189b58325",
+      "normalizedSha256": "1809086c5ca66ab6b80fc156ca4938536878e655224ea6b8908afafffa09df27"
+    },
+    {
+      "id": "thriller-part-2",
+      "label": "Thriller Part 2",
+      "file": "assets/motions/thriller-part-2.json",
+      "fps": 30,
+      "frameCount": 566,
+      "durationSeconds": 18.866667,
+      "sourceFileName": "Thriller Part 2.dae",
+      "sourceSha256": "debc20076c5fe90ff74233a00973e0ce7f0fb690a15d2ff7f1c0bca6965c38bc",
+      "normalizedSha256": "66dd0fc5a168dfda5011bb4252fc622787eecd0fc21c8de4a6a6a133b036bec4"
+    },
+    {
+      "id": "thriller-part-4",
+      "label": "Thriller Part 4",
+      "file": "assets/motions/thriller-part-4.json",
+      "fps": 30,
+      "frameCount": 1113,
+      "durationSeconds": 37.1,
+      "sourceFileName": "Thriller Part 4.dae",
+      "sourceSha256": "6a19aed86a5fa8eaacc719d0dfa0b0ae436d6fa832cc23fbd1c3789604dcdcf0",
+      "normalizedSha256": "7855f4f3e9daf6acea3668f5a4faa058149711fa50a6edda89d22a9dd2f0c28f"
+    },
+    {
+      "id": "twist-dance",
+      "label": "Twist Dance",
+      "file": "assets/motions/twist-dance.json",
+      "fps": 30,
+      "frameCount": 284,
+      "durationSeconds": 9.466667,
+      "sourceFileName": "Twist Dance.dae",
+      "sourceSha256": "600b83bfddb60d681723cd9ffeb6327fff2d7cc2c3000b99aac6890b99bdc5d1",
+      "normalizedSha256": "8c08a0bca9bbd526c20301aa980a710118c3b0ceadc3740b86d52534acdf277a"
+    },
+    {
+      "id": "ymca-dance",
+      "label": "Ymca Dance",
+      "file": "assets/motions/ymca-dance.json",
+      "fps": 30,
+      "frameCount": 136,
+      "durationSeconds": 4.533333,
+      "sourceFileName": "Ymca Dance.dae",
+      "sourceSha256": "6b666099542acd1eac11012f32592bb63755b2845fa38a335dda60707a2096ac",
+      "normalizedSha256": "a75f0f7921ba6822ce49f5d087fdfdaf1351a4ab4b1c571e2556cf60269858f7"
+    }
+  ]
+}

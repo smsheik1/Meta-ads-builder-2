@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "video": {
+    "container": "mp4",
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 47
+  },
+  "timeline": {
+    "timingRule": "Eight dialogue clips are measured: one opening, three taunts, and four versions of the closing line. The final character's closing duration sets the chorus window and the other three voices are time-matched to it; the remaining solo budget is divided evenly among four dancers. Every solo lasts at least 5 seconds, the countdown is 3 seconds, the uninterrupted group showcase is 9 seconds, the replay bridge is 1 second, and the complete timeline is exactly 47 seconds.",
+    "minimumSoloSeconds": 5,
+    "sequence": [
+      {"beat": "countdown-beeps", "song": false, "voice": false},
+      {"beat": "opening-character-hype", "song": false, "voice": true},
+      {"beat": "dance-character-1", "song": true, "voice": false},
+      {"beat": "character-2-taunts-character-1", "song": false, "voice": true},
+      {"beat": "dance-character-2", "song": true, "voice": false},
+      {"beat": "character-3-taunts-character-2", "song": false, "voice": true},
+      {"beat": "dance-character-3", "song": true, "voice": false},
+      {"beat": "character-4-taunts-character-3", "song": false, "voice": true},
+      {"beat": "dance-character-4", "song": true, "voice": false},
+      {"beat": "all-character-finale", "song": true, "voice": false},
+      {"beat": "four-character-comment-cta-chorus", "song": false, "voice": true},
+      {"beat": "replay-loop-bridge", "song": false, "voice": false}
+    ]
+  },
+  "motionAssignments": {
+    "perCharacter": ["motionId", "finaleMotionId", "reactionMotionId"],
+    "source": "the local normalized motion catalog",
+    "newMotionPath": "operator-downloaded DAE normalized by runner.mjs import-motion",
+    "runtimeProviderCalls": 0
+  },
+  "delivery": {
+    "finalVideo": "final.mp4",
+    "manifest": "delivery.json",
+    "machineReadableEval": "eval-report.json",
+    "friendlyEval": "eval-report.md",
+    "rule": "finalize emits one ready-to-return bundle only after automatic inspection and human approval"
+  },
+  "evidence": ["analysis.json", ".validation.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "eval-report.json", "eval-report.md", "delivery.json", "state.json"]
+}

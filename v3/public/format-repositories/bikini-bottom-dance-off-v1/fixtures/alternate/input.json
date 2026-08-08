@@ -1,0 +1,14 @@
+{
+  "title": "Bikini Bottom Dance Off: Remix",
+  "songTitle": "Remix Proof",
+  "songFile": "source.mp3",
+  "songExcerptStart": 0,
+  "openingLine": "Round two!",
+  "closingLine": "Comment your winner, if you have taste.",
+  "characters": [
+    {"characterId": "spongebob", "motionId": "macarena-dance", "finaleMotionId": "northern-soul-dance", "reactionMotionId": "joyful-jump", "label": "SPONGEBOB", "taunt": "", "color": "#5de2ff"},
+    {"characterId": "patrick", "motionId": "silly-dancing", "finaleMotionId": "samba-dancing", "reactionMotionId": "taunt", "label": "PATRICK", "taunt": "SpongeBob, that was warm-up territory.", "color": "#ff79bd"},
+    {"characterId": "mr-krabs", "motionId": "runningman-hip-hop-dancing", "finaleMotionId": "shopping-cart-dance", "reactionMotionId": "joyful-jump", "label": "MR. KRABS", "taunt": "Patrick, these moves are worth real money.", "color": "#ff704d"},
+    {"characterId": "squilliam", "motionId": "ymca-dance", "finaleMotionId": "thriller-part-2", "reactionMotionId": "taunt", "label": "SQUILLIAM", "taunt": "Krabs, refinement clearly remains unaffordable.", "color": "#8af5cf"}
+  ]
+}

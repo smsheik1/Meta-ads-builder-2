@@ -1,0 +1,14 @@
+{
+  "title": "Bikini Bottom Dance Off",
+  "songTitle": "Wiggle",
+  "songFile": "source.mp3",
+  "songExcerptStart": 0,
+  "openingLine": "I'm ready!",
+  "closingLine": "Comment your winner, if you have taste.",
+  "characters": [
+    {"characterId": "spongebob", "motionId": "booty-hip-hop-dance", "finaleMotionId": "house-dancing", "reactionMotionId": "taunt", "label": "SPONGEBOB", "taunt": "", "color": "#f8dd40"},
+    {"characterId": "patrick", "motionId": "rumba-dancing", "finaleMotionId": "belly-dance", "reactionMotionId": "taunt", "label": "PATRICK", "taunt": "Cute moves, SpongeBob. Watch a real star.", "color": "#ff86b7"},
+    {"characterId": "mr-krabs", "motionId": "chicken-dance", "finaleMotionId": "robot-hip-hop-dance", "reactionMotionId": "taunt", "label": "MR. KRABS", "taunt": "Patrick, I wouldn't pay a dime for that.", "color": "#ff5454"},
+    {"characterId": "squilliam", "motionId": "hip-hop-dancing", "finaleMotionId": "arms-hip-hop-dance", "reactionMotionId": "taunt", "label": "SQUILLIAM", "taunt": "Krabs, that was painfully pedestrian. Observe.", "color": "#58dbc9"}
+  ]
+}

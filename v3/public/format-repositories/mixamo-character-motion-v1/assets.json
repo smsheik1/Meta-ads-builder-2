@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    {"path": "assets/character-packs.json", "role": "verified character rig profiles"},
+    {"path": "assets/motions/manifest.json", "role": "frozen registry for 25 bundled normalized exact-frame starter motions"},
+    {"path": "user-motions/manifest.json", "role": "runtime-created extensible registry for operator-imported normalized motions", "required": false},
+    {"path": "assets/characters/spongebob/chr_bob_bindpose.dae", "role": "proof character model"},
+    {"path": "assets/characters/spongebob/tex_0000_spongebob_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/spongebob/tx1_0000_lashes.PNG", "role": "transparent facial overlay"},
+    {"path": "assets/characters/spongebob/tx8_0000_spongecheeks_32.PNG", "role": "transparent facial overlay"},
+    {"path": "assets/characters/spongebob/tx8_0000_spongeeyes_128.PNG", "role": "transparent eye overlay"},
+    {"path": "assets/characters/squilliam/chr_squilliam_bindpose.dae", "role": "paired-tentacle proof character model"},
+    {"path": "assets/characters/squilliam/tex_0000_squilliam_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/squilliam/tex_0000_squilliam_256.PNG", "role": "character texture"},
+    {"path": "assets/characters/squilliam/tx8_0000_squideyes_128.PNG", "role": "transparent eye overlay"},
+    {"path": "assets/characters/mr-krabs/chr_krabs_bindpose.dae", "role": "clawed proof character model"},
+    {"path": "assets/characters/mr-krabs/tex_0000_mrkrabs_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/mr-krabs/tx1_0000_krabslids_128.PNG", "role": "transparent eyelid overlay"},
+    {"path": "assets/characters/patrick/chr_pat_bindpose.dae", "role": "short-leg biped proof character model"},
+    {"path": "assets/characters/patrick/tex_0000_patrick_128.PNG", "role": "character texture"},
+    {"path": "assets/characters/patrick/tx1_0000_lidpatrick.PNG", "role": "transparent eyelid overlay"}
+  ],
+  "generated": ["newly imported normalized Mixamo motion JSON", "downloaded MP4", "downloaded looping GIF", "motion report", "contact sheet", "quality report", "lab smoke screenshot"],
+  "sourceNotes": "Character assets come from the user-provided game archive. Motion JSON files are locally normalized from user-downloaded Mixamo Collada clips; source DAE files are not packaged."
+}
