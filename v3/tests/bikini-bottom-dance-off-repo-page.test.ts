@@ -77,11 +77,13 @@ assert.equal(
 );
 
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
+const connectionsComponent = readFileSync("features/discovery/BikiniBottomDanceOffConnections.tsx", "utf8");
 const trustComponent = readFileSync("features/discovery/BikiniBottomDanceOffTrust.tsx", "utf8");
 const convexProvider = readFileSync("app/ConvexClientProvider.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);
 assert.match(consumerRoute, /format\.repositoryHref/);
 assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
+assert.match(consumerRoute, /<BikiniBottomDanceOffConnections data=\{danceOffTrust\} \/>/);
 assert.match(consumerRoute, /<DiscoveryFormatHandoff format=\{format\} variant="inline" \/>/);
 assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
 assert.match(consumerRoute, /!danceOffTrust/);
@@ -104,6 +106,11 @@ assert.match(trustComponent, /How this Format works\./);
 assert.doesNotMatch(trustComponent, /fake green statuses/);
 assert.doesNotMatch(trustComponent, /does not maintain a second proof asset/);
 assert.doesNotMatch(trustComponent, /You’ve seen the system/);
+assert.match(connectionsComponent, /Accounts you’ll connect\./);
+assert.match(connectionsComponent, /What’s an API key\?/);
+assert.match(connectionsComponent, /Required for new dialogue/);
+assert.match(connectionsComponent, /Never paste the key into Wiggly/);
+assert.match(connectionsComponent, /No API key needed for/);
 assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
@@ -124,6 +131,8 @@ assert.deepEqual(trustData.annotations.map((annotation) => annotation.title), [
 ]);
 assert.equal(trustData.proof.grade, "A+");
 assert.equal(trustData.proof.score, 100);
+assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
+assert.deepEqual(trustData.requirements.environmentVariables, ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"]);
 assert.equal(trustData.commands.includes("npm run render -- --run=episode-01 --approve-provider"), true);
 assert.equal(trustData.commands.includes("npm run finalize -- --run=episode-01 --human-review=pass"), true);
 assert.equal(trustData.fileGroups.flatMap((group) => group.files).some((file) => file.path === "PROOF-REPORT.md"), true);

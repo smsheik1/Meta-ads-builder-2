@@ -51,6 +51,17 @@ type EvalReport = {
   };
 };
 
+type RequirementsContract = {
+  providers: Array<{
+    name: string;
+    model: string;
+    purpose: string;
+    estimatedCost: string;
+    pricingSource: string;
+  }>;
+  environmentVariables: string[];
+};
+
 export type BikiniBottomDanceOffTrustData = {
   version: string;
   stats: {
@@ -80,6 +91,7 @@ export type BikiniBottomDanceOffTrustData = {
     description: string;
     color: "cyan" | "pink" | "lime" | "yellow";
   }>;
+  requirements: RequirementsContract;
   commands: string[];
   fileGroups: Array<{
     title: string;
@@ -110,6 +122,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     backgrounds,
     motions,
     packageManifest,
+    requirements,
     renderReport,
     evalReport,
   ] = await Promise.all([
@@ -125,6 +138,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       ),
     ),
     readJson<PackageManifest>(path.join(repoRoot, "package.json")),
+    readJson<RequirementsContract>(path.join(repoRoot, "requirements.json")),
     readJson<RenderReport>(
       path.join(
         repoRoot,
@@ -220,6 +234,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         color: "yellow",
       },
     ],
+    requirements,
     commands,
     fileGroups: [
       {

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
 import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
 import { DiscoveryCharacterOptions } from "@/features/discovery/DiscoveryCharacterOptions";
+import { BikiniBottomDanceOffConnections } from "@/features/discovery/BikiniBottomDanceOffConnections";
 import { BikiniBottomDanceOffTrust } from "@/features/discovery/BikiniBottomDanceOffTrust";
 import { getBikiniBottomDanceOffTrustData } from "@/features/discovery/bikiniBottomDanceOffTrust.server";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
@@ -167,6 +168,10 @@ export default async function FormatPage({
             <DiscoveryCharacterOptions options={format.characterOptions} />
           </div>
         </section>
+      ) : null}
+
+      {danceOffTrust ? (
+        <BikiniBottomDanceOffConnections data={danceOffTrust} />
       ) : null}
 
       {danceOffTrust && format.handoff ? (
