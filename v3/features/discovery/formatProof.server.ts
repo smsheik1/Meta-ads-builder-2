@@ -367,7 +367,7 @@ const formatConfigs: FormatProfileConfig[] = [
         { label: "Human review + delivery", cost: "$0", time: "about 2-5 min" },
       ],
       totalEstimate: "Usually 12-30 min plus any approved Fish Audio usage",
-      output: "One 47-second vertical MP4 plus a friendly and machine-readable scored eval",
+      output: "One 47-second vertical MP4 plus a quality report",
       firstQuestion: "What song should the four characters dance to? Attach the local audio file you are allowed to use.",
     },
   },

@@ -190,25 +190,25 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       {
         seconds: firstSolo,
         timeLabel: timestamp(firstSolo),
-        title: "Every solo gets room to read.",
+        title: "Each character gets a full solo.",
         description:
-          "The first five-second showcase starts here; the remaining three receive the same protected dance budget.",
+          "The first five-second solo starts here; the other three receive the same time.",
         color: "cyan",
       },
       {
         seconds: finale,
         timeLabel: timestamp(finale),
-        title: "All four stay alive for nine seconds.",
+        title: "All four characters keep moving.",
         description:
-          "The uninterrupted finale uses four dedicated motion clips and rejects freezes longer than 0.75 seconds.",
+          "The nine-second finale keeps everyone dancing, while freeze detection blocks stalls longer than 0.75 seconds.",
         color: "pink",
       },
       {
         seconds: closing,
         timeLabel: timestamp(closing),
-        title: "The CTA is a four-voice performance.",
+        title: "All four deliver the closing line.",
         description:
-          "All four voices enter together while selected reaction motions keep the closing frame alive.",
+          "The voices enter together while reaction motions keep the closing frame alive.",
         color: "lime",
       },
       {

@@ -254,11 +254,13 @@ export default async function FormatPage({
               <h2 className="text-4xl font-black leading-none sm:text-6xl">
                 {format.handoff ? "Know the run before you start." : "Handoff is not live yet."}
               </h2>
-              <p className="mt-5 max-w-xl text-lg font-bold leading-7 text-[#596176]">
-                {format.handoff
-                  ? "The task is pinned to this exact public version. Codex asks one short question at a time and names the current step."
-                  : "This Format has public proof, but Wiggly is not offering a broken agent option before the runbook is ready."}
-              </p>
+              {!danceOffTrust ? (
+                <p className="mt-5 max-w-xl text-lg font-bold leading-7 text-[#596176]">
+                  {format.handoff
+                    ? "The task is pinned to this exact public version. Codex asks one short question at a time and names the current step."
+                    : "This Format has public proof, but Wiggly is not offering a broken agent option before the runbook is ready."}
+                </p>
+              ) : null}
               {format.handoff ? <div className="mt-7"><DiscoveryFormatHandoff format={format} /></div> : null}
             </div>
 

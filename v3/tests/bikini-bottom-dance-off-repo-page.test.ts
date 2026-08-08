@@ -56,6 +56,7 @@ assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 assert.ok(profile?.handoff);
 assert.equal(profile.version, "0.8.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
+assert.equal(profile.handoff.output, "One 47-second vertical MP4 plus a quality report");
 assert.equal(profile.repositoryHref, "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(existsSync(download), true);
@@ -77,14 +78,23 @@ assert.equal(
 
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 const trustComponent = readFileSync("features/discovery/BikiniBottomDanceOffTrust.tsx", "utf8");
+const convexProvider = readFileSync("app/ConvexClientProvider.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);
 assert.match(consumerRoute, /format\.repositoryHref/);
 assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
 assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
+assert.match(consumerRoute, /!danceOffTrust/);
 assert.match(trustComponent, /videoRef\.current\.currentTime = annotation\.seconds/);
 assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
 assert.match(trustComponent, /What the Repo refuses to ship/);
 assert.match(trustComponent, /Read from the published v\s*\{data\.version\} Repo/);
+assert.match(trustComponent, /<section id="how-it-works"/);
+assert.match(trustComponent, /id="proof"/);
+assert.match(trustComponent, /How this Format works\./);
+assert.doesNotMatch(trustComponent, /fake green statuses/);
+assert.doesNotMatch(trustComponent, /does not maintain a second proof asset/);
+assert.doesNotMatch(trustComponent, /You’ve seen the system/);
+assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
 assert.equal(trustData.version, "0.8.0");
@@ -96,6 +106,12 @@ assert.deepEqual(trustData.stats, {
   rendererCount: 1,
 });
 assert.deepEqual(trustData.annotations.map((annotation) => annotation.timeLabel), ["00:04", "00:34", "00:43", "00:46"]);
+assert.deepEqual(trustData.annotations.map((annotation) => annotation.title), [
+  "Each character gets a full solo.",
+  "All four characters keep moving.",
+  "All four deliver the closing line.",
+  "The ending deliberately creates the replay.",
+]);
 assert.equal(trustData.proof.grade, "A+");
 assert.equal(trustData.proof.score, 100);
 assert.equal(trustData.commands.includes("npm run render -- --run=episode-01 --approve-provider"), true);

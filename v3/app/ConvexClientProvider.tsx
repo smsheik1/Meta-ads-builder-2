@@ -9,8 +9,14 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
   const url = getV3ConvexUrl();
   const pathname = usePathname();
   const [client] = useState(() => (url ? new ConvexReactClient(url) : null));
+  const isPublicDiscoverySurface =
+    pathname.startsWith("/formats/") ||
+    pathname.startsWith("/s/") ||
+    pathname.startsWith("/creators/");
 
   if (!client) {
+    if (isPublicDiscoverySurface) return children;
+
     return (
       <>
         <div className="fixed inset-x-0 top-0 z-50 border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-black uppercase tracking-[0.14em] text-amber-800">

@@ -69,15 +69,15 @@ export function BikiniBottomDanceOffTrust({
   }
 
   return (
-    <section id="proof" className={styles.root}>
+    <section id="how-it-works" className={styles.root}>
       <div className={styles.shell}>
         <header className={styles.intro}>
           <div>
             <span className={styles.kicker}>Inside this Format</span>
-            <h2>Everything that makes this Repo repeatable.</h2>
+            <h2>How this Format works.</h2>
             <p>
-              See how the Format runs, what its finished proof demonstrates,
-              which failures it blocks, and every important file you receive.
+              Follow the workflow, inspect the finished proof, and see exactly
+              what comes with the Repo.
             </p>
           </div>
           <ol
@@ -113,8 +113,7 @@ export function BikiniBottomDanceOffTrust({
                 One job. Six transformations.
               </h3>
               <p>
-                The same production packet moves down one connected line, pauses
-                for approval, and exits as an inspected final video.
+                See how your song and cast become a finished, inspected Reel.
               </p>
             </div>
             <span className={styles.sourcePill}>
@@ -127,7 +126,7 @@ export function BikiniBottomDanceOffTrust({
             aria-label="Six connected production stages with a required approval gate before generation"
           >
             <div className={styles.conveyorLabel}>
-              <span>Production packet · episode-01</span>
+              <span>One episode</span>
               <span className={styles.direction}>
                 <span className={styles.directionDesktop}>
                   Moves in one direction
@@ -210,6 +209,7 @@ export function BikiniBottomDanceOffTrust({
         </section>
 
         <section
+          id="proof"
           className={styles.panel}
           aria-labelledby="dance-off-proof-title"
         >
@@ -265,10 +265,6 @@ export function BikiniBottomDanceOffTrust({
                   </span>
                 </button>
               ))}
-              <p className={styles.proofNote}>
-                The timestamps seek the existing proof player; this page does
-                not maintain a second proof asset.
-              </p>
             </div>
           </div>
         </section>
@@ -283,10 +279,6 @@ export function BikiniBottomDanceOffTrust({
               <h3 id="dance-off-failures-title">
                 What the Repo refuses to ship.
               </h3>
-              <p>
-                Permanent workflow rules are shown here instead of fake green
-                statuses that imply a run happened.
-              </p>
             </div>
             <span className={styles.sourcePill}>
               <ShieldCheck aria-hidden="true" /> From quality.json
@@ -343,23 +335,15 @@ export function BikiniBottomDanceOffTrust({
           <div className={styles.panelHeading}>
             <div>
               <p className={styles.eyebrow}>04 · What’s inside the Repo</p>
-              <h3 id="dance-off-repo-title">
-                The actual system, not a mystery ZIP.
-              </h3>
-              <p>
-                Browse the playbook, contracts, creative system, tests, assets,
-                and official runtime before downloading.
-              </p>
+              <h3 id="dance-off-repo-title">Everything included in the Repo.</h3>
             </div>
           </div>
 
           <div className={styles.repoSummary}>
             <span>
               <strong>
-                {data.stats.motions} motions · {data.stats.backgrounds}{" "}
-                backgrounds · {data.stats.automaticCriteria} automatic criteria
-                · {data.stats.humanCriteria} human criteria ·{" "}
-                {data.stats.rendererCount} renderer
+                {data.stats.motions} dances · {data.stats.backgrounds}{" "}
+                backgrounds · automatic + human quality checks
               </strong>
               <small>
                 <RefreshCw aria-hidden="true" /> Read from the published v
@@ -476,20 +460,6 @@ export function BikiniBottomDanceOffTrust({
           </div>
         </details>
 
-        <section className={styles.cta} aria-label="Format actions">
-          <div>
-            <h3>You’ve seen the system. Now run it.</h3>
-            <p>
-              Start with the guided handoff or take the exact Repo into Codex.
-            </p>
-          </div>
-          <div>
-            <a href="#run-with-agent">Use this Format</a>
-            <a href={repositoryHref} download>
-              <Download aria-hidden="true" /> Download Repo
-            </a>
-          </div>
-        </section>
       </div>
     </section>
   );

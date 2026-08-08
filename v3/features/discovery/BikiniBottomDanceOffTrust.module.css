@@ -572,15 +572,6 @@
   line-height: 1.5;
 }
 
-.proofNote {
-  border-left: 4px solid #8876ff;
-  background: #f0ecff;
-  padding: 0.8rem 0.9rem;
-  color: #596176;
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-
 .gateGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -682,8 +673,7 @@
   height: 0.8rem;
 }
 
-.repoSummary > a,
-.cta a {
+.repoSummary > a {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
@@ -698,8 +688,7 @@
   font-weight: 900;
 }
 
-.repoSummary > a svg,
-.cta a svg {
+.repoSummary > a svg {
   width: 1rem;
   height: 1rem;
 }
@@ -946,46 +935,6 @@
   font-weight: 900;
 }
 
-.cta {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1.5rem;
-  align-items: center;
-  margin-top: 1.25rem;
-  border: 2px solid #080817;
-  border-radius: 1.25rem;
-  background: #52d6ff;
-  padding: clamp(1.35rem, 4vw, 2.4rem);
-  box-shadow: 7px 7px 0 #080817;
-}
-
-.cta h3 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-.cta p {
-  margin-top: 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.cta > div:last-child {
-  display: flex;
-  gap: 0.55rem;
-}
-
-.cta a:first-child {
-  background: #080817;
-}
-
-.cta a:last-child {
-  background: transparent;
-  color: #080817;
-}
-
 @media (max-width: 900px) {
   .intro {
     grid-template-columns: 1fr;
@@ -1017,8 +966,7 @@
     font-size: clamp(2.7rem, 13vw, 4rem);
   }
 
-  .panel,
-  .cta {
+  .panel {
     padding: 1.25rem;
     border-radius: 1rem;
     box-shadow: 5px 5px 0 #080817;
@@ -1151,8 +1099,7 @@
   .proofGrid,
   .gateGrid,
   .fileGroups,
-  .advancedBody,
-  .cta {
+  .advancedBody {
     grid-template-columns: 1fr;
   }
 
@@ -1165,18 +1112,10 @@
     flex-direction: column;
   }
 
-  .cta > div:last-child {
-    flex-direction: column;
-  }
-
-  .cta a {
-    width: 100%;
-  }
 }
 
 @media (max-width: 390px) {
-  .panel,
-  .cta {
+  .panel {
     padding: 1.05rem;
   }
 
