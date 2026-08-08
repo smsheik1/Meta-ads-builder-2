@@ -101,7 +101,7 @@ async function initializeRenderer() {
   const characterPack = catalog.packs.find((pack) => pack.id === input.characterId);
   if (!characterPack) throw new Error(`Unknown character: ${input.characterId}`);
 
-  if (input.backgroundPreset === "talking-fish-news") {
+  if (input.backgroundPreset === "talking-fish-news" || input.backgroundPreset === "fish-news") {
     document.body.dataset.backgroundPreset = input.backgroundPreset;
   } else if (input.backgroundPreset) {
     throw new Error(`Unknown background preset: ${input.backgroundPreset}`);

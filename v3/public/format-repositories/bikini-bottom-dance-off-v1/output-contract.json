@@ -9,6 +9,10 @@
     "fps": 30,
     "durationSeconds": 47
   },
+  "visuals": {
+    "outerBackground": "the selected packaged outerBackground plate",
+    "characterPanelBackground": "the fixed Fish News flower-and-bubble set"
+  },
   "timeline": {
     "timingRule": "Eight dialogue clips are measured: one opening, three taunts, and four versions of the closing line. The final character's closing duration sets the chorus window and the other three voices are time-matched to it; the remaining solo budget is divided evenly among four dancers. Every solo lasts at least 5 seconds, the countdown is 3 seconds, the uninterrupted group showcase is 9 seconds, the replay bridge is 1 second, and the complete timeline is exactly 47 seconds.",
     "minimumSoloSeconds": 5,

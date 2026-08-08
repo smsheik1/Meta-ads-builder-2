@@ -3,6 +3,7 @@
   "songTitle": "Remix Proof",
   "songFile": "source.mp3",
   "songExcerptStart": 0,
+  "outerBackground": "dance-club",
   "openingLine": "Round two!",
   "closingLine": "Comment your winner, if you have taste.",
   "characters": [

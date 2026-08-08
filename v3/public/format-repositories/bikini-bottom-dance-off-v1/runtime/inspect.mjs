@@ -56,11 +56,11 @@ async function loopSeamSimilarity(videoPath, runDirectory, [endTime, startTime])
   ]);
   const output = await execute("ffmpeg", [
     "-hide_banner", "-i", endFrame, "-i", startFrame,
-    "-lavfi", "[0:v][1:v]ssim", "-f", "null", "-",
+    "-lavfi", "[0:v]scale=540:960:flags=lanczos,format=gray[end];[1:v]scale=540:960:flags=lanczos,format=gray[start];[end][start]ssim", "-f", "null", "-",
   ], { capture: true });
   const match = output.match(/All:([\d.]+)/);
   if (!match) throw new Error("Could not measure the replay seam similarity.");
-  return { score: Number(match[1]), endFrame: path.basename(endFrame), startFrame: path.basename(startFrame) };
+  return { metric: "half-scale-luma-ssim", score: Number(match[1]), endFrame: path.basename(endFrame), startFrame: path.basename(startFrame) };
 }
 
 export async function inspectVideo({ videoPath, runDirectory, qualityContractPath }) {

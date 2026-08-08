@@ -3,6 +3,7 @@
   "songTitle": "Wiggle",
   "songFile": "source.mp3",
   "songExcerptStart": 0,
+  "outerBackground": "deep-ocean",
   "openingLine": "I'm ready!",
   "closingLine": "Comment your winner, if you have taste.",
   "characters": [

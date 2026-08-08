@@ -5,13 +5,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { renderDownload } from "../../mixamo-character-motion-v1/runtime/export.mjs";
+import { resolveOuterBackground } from "./backgrounds.mjs";
 import { CAPTION_HEIGHT, CAPTION_Y, CELL_HEIGHT, CELL_POSITIONS, CELL_WIDTH } from "./layout.mjs";
 import { buildTimeline, DURATION } from "./timeline.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const IDLE_SPEED = 0.36;
 const RIGHT_COLUMN_SAFE_SHIFT = 76;
-const CHARACTER_BACKGROUND_PRESET = "talking-fish-news";
+const CHARACTER_BACKGROUND_PRESET = "fish-news";
 
 function characterClipName(character, motionId, suffix = "") {
   return `${character.characterId}-${motionId}-${CHARACTER_BACKGROUND_PRESET}${suffix}.mp4`;
@@ -77,7 +78,7 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
   };
 
   const chrome = [
-    '<rect x="0" y="0" width="1080" height="225" fill="#061829" fill-opacity="0.96"/>',
+    '<rect x="0" y="0" width="1080" height="225" fill="#061829" fill-opacity="0.34"/>',
     centeredText({ value: "BIKINI BOTTOM", y: 64, size: 48, fill: "#59dece", strokeWidth: 3 }),
     centeredText({ value: "DANCE OFF", y: 145, size: 82, fill: "#f8dd40", strokeWidth: 5 }),
     centeredText({ value: `WHO CAN DANCE BEST TO ${input.songTitle.toUpperCase()}?`, y: 205, size: 30, strokeWidth: 3 }),
@@ -162,6 +163,7 @@ async function sha256(file) {
 
 export async function composeRun({ input, dialogueAssets, runDirectory, outputPath }) {
   const timeline = buildTimeline(input, dialogueAssets);
+  const outerBackground = await resolveOuterBackground(input.outerBackground);
   const clipsDirectory = path.join(runDirectory, "character-clips");
   await mkdir(clipsDirectory, { recursive: true });
   const characterClips = await Promise.all(input.characters.map(async (character) => {
@@ -213,7 +215,6 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     return destination;
   }));
 
-  const filters = [`color=c=0x061829:s=1080x1920:r=30:d=${DURATION}[base]`];
   const cellPositions = CELL_POSITIONS;
   const graphics = await renderGraphics({
     input,
@@ -223,7 +224,9 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
   });
   const songInputIndex = input.characters.length * 3;
   const dialogueInputIndex = songInputIndex + 1;
-  const graphicsInputIndex = dialogueInputIndex + dialogueAssets.length;
+  const backgroundInputIndex = dialogueInputIndex + dialogueAssets.length;
+  const graphicsInputIndex = backgroundInputIndex + 1;
+  const filters = [`[${backgroundInputIndex}:v]scale=1080:1920:flags=lanczos,trim=duration=${DURATION},setpts=PTS-STARTPTS[base]`];
 
   input.characters.forEach((character, index) => {
     const round = timeline.rounds[index];
@@ -317,11 +320,13 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     ...reactionClips.flatMap((clip) => ["-stream_loop", "-1", "-i", clip]),
     "-ss", String(input.songExcerptStart), "-i", songPath,
     ...dialogueAssets.flatMap((asset) => ["-i", asset.file]),
+    "-loop", "1", "-framerate", "30", "-i", outerBackground.file,
     ...graphics.flatMap((graphic) => ["-loop", "1", "-framerate", "30", "-i", graphic.file]),
     "-filter_complex_script", filterPath,
     "-map", "[vout]", "-map", "[music]",
     "-t", String(DURATION),
     "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+    "-force_key_frames", `0,${timeline.loopBridge.end - 0.2}`,
     "-c:a", "aac", "-b:a", "192k",
     "-movflags", "+faststart",
     outputPath,
@@ -334,6 +339,12 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     dimensions: { width: 1080, height: 1920, fps: 30, durationSeconds: DURATION },
     timeline,
     song: { file: input.songFile, excerptStart: input.songExcerptStart, sha256: await sha256(songPath) },
+    outerBackground: {
+      id: outerBackground.id,
+      label: outerBackground.label,
+      path: outerBackground.path,
+      sha256: await sha256(outerBackground.file),
+    },
     dialogue: dialogueAssets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(runDirectory, file) })),
     characters: await Promise.all(input.characters.map(async (character, index) => ({
       ...character,

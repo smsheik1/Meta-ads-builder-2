@@ -2,12 +2,18 @@
   "schemaVersion": 1,
   "fixed": [
     {"path": "../mixamo-character-motion-v1/runtime/renderer/app.js", "role": "official character renderer"},
-    {"path": "../mixamo-character-motion-v1/runtime/renderer/index.html", "role": "Talking Fish News newsroom background preset"},
+    {"path": "../mixamo-character-motion-v1/runtime/renderer/index.html", "role": "Fish News underwater background preset"},
+    {"path": "../mixamo-character-motion-v1/assets/backgrounds/fish-news-underwater-studio.png", "role": "exact Talking Fish News flower-and-bubble background"},
     {"path": "../mixamo-character-motion-v1/assets/character-packs.json", "role": "verified character rig profiles"},
     {"path": "../mixamo-character-motion-v1/assets/motions/manifest.json", "role": "frozen 25-motion starter catalog"},
     {"path": "../mixamo-character-motion-v1/user-motions/manifest.json", "role": "optional operator-imported motion catalog", "required": false},
+    {"path": "assets/background-options.json", "role": "selectable outer-canvas background catalog"},
+    {"path": "assets/backgrounds/deep-ocean-studio.png", "role": "default deep-ocean outer canvas"},
+    {"path": "assets/backgrounds/retro-underwater-tv.png", "role": "retro television outer canvas"},
+    {"path": "assets/backgrounds/underwater-dance-club.png", "role": "dance-club outer canvas"},
+    {"path": "assets/backgrounds/nautical-control-room.png", "role": "nautical control-room outer canvas"},
     {"path": "assets/voice-presets.json", "role": "Fish Audio voice assignments and delivery settings"}
   ],
   "generated": ["local song analysis", "eight Fish Audio dialogue clips and receipts", "four solo clips, four uninterrupted finale clips, and four configurable reaction clips", "47-second looping Reel MP4", "contact sheet", "quality report"],
-  "sourceNotes": "The operator supplies the song and any newly downloaded Mixamo Collada file locally. The Repo records hashes and normalized timing data but does not package the local song or source motion DAE. Public Fish reference presets were supplied by the operator; the private Squilliam clone ID and API key are never packaged."
+  "sourceNotes": "The operator supplies the song and any newly downloaded Mixamo Collada file locally. The Repo records hashes and normalized timing data but does not package the local song or source motion DAE. Public Fish reference presets were supplied by the operator; the private Squilliam clone ID and API key are never packaged. The four outer-canvas plates were generated with OpenAI's built-in image-generation workflow from user-approved concept mockups and normalized to 1080x1920 PNG files."
 }

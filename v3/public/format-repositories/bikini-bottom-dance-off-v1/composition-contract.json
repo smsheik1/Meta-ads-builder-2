@@ -4,7 +4,8 @@
     "1080x1920 Instagram Reel canvas at 30 fps",
     "Three-second old-film countdown with one beep per number and no music",
     "Two-by-two character grid",
-    "Talking Fish News dark-panel newsroom background inside every character clip",
+    "Exact Fish News underwater flower-and-bubble background inside every character clip",
+    "One selectable outer-canvas background from the four packaged 1080x1920 plates",
     "The first character speaks a short hype line; each later character audibly taunts the dancer directly before them, then dances",
     "The supplied song plays only while one or more characters are dancing",
     "Each individual solo lasts at least five seconds",
@@ -14,7 +15,7 @@
     "Dedicated caption lane below the character grid",
     "Character pixels rendered only by the Character Dance Lab renderer"
   ],
-  "replaceable": ["song and excerpt", "verified four-character roster and order", "solo, finale, and reaction motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],
+  "replaceable": ["song and excerpt", "outer-canvas background", "verified four-character roster and order", "solo, finale, and reaction motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],
   "outOfScope": ["automatic rights clearance", "creating new voice clones", "motion-specific rig patches", "timeline editor"],
   "rendererInvariant": "The compositor may crop, dim, sequence, label, and frame clips, but every animated character frame must come from mixamo-character-motion-v1/runtime/renderer/app.js."
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { wrapWords } from "../runtime/compose.mjs";
@@ -7,6 +8,10 @@ import { buildTimeline } from "../runtime/timeline.mjs";
 
 const root = new URL("../", import.meta.url);
 const readJson = async (file) => JSON.parse(await readFile(new URL(file, root), "utf8"));
+
+function pngDimensions(bytes) {
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+}
 
 test("the timeline is exactly 47 seconds with no gaps, five-second solos, and a replay bridge", async () => {
   const input = await readJson("fixtures/smoke/input.json");
@@ -48,6 +53,33 @@ test("a second proof input replaces every solo and finale without runtime change
     assert.notEqual(character.finaleMotionId, original.characters[index].finaleMotionId);
     assert.ok(character.reactionMotionId);
   }
+  assert.equal(original.outerBackground, "deep-ocean");
+  assert.equal(alternate.outerBackground, "dance-club");
+});
+
+test("four packaged outer backgrounds are selectable without changing the character renderer", async () => {
+  const [contract, manifest] = await Promise.all([
+    readJson("input-contract.json"),
+    readJson("assets/background-options.json"),
+  ]);
+  const ids = ["deep-ocean", "retro-tv", "dance-club", "control-room"];
+  assert.equal(manifest.default, "deep-ocean");
+  assert.deepEqual(manifest.options.map((option) => option.id), ids);
+  assert.deepEqual(contract.properties.outerBackground.enum, ids);
+  assert.equal(contract.properties.outerBackground.default, manifest.default);
+  for (const option of manifest.options) {
+    const bytes = await readFile(new URL(option.path, root));
+    assert.deepEqual(pngDimensions(bytes), { width: 1080, height: 1920 });
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), option.sha256);
+  }
+  const [runner, compositor] = await Promise.all([
+    readFile(new URL("runner.mjs", root), "utf8"),
+    readFile(new URL("runtime/compose.mjs", root), "utf8"),
+  ]);
+  assert.match(runner, /resolveOuterBackground/);
+  assert.match(runner, /Outer background checksum mismatch/);
+  assert.match(compositor, /outerBackground\.file/);
+  assert.match(compositor, /outerBackground: \{/);
 });
 
 test("each incoming challenger taunts the dancer directly before them", async () => {
@@ -136,12 +168,16 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /finale[\s\S]*rect x="0" y="164" width="1080" height="64" fill="#061829"/);
   assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
+  assert.match(compositor, /-force_key_frames/);
   assert.match(compositor, /atempo=/);
   assert.match(compositor, /volume=0\.5/);
   assert.match(compositor, /character\.finaleMotionId/);
   assert.match(compositor, /middleDuration > 1 \/ 30/);
   const inspector = await readFile(new URL("runtime/inspect.mjs", root), "utf8");
   assert.match(inspector, /freezedetect/);
+  assert.match(inspector, /format=gray/);
+  assert.match(inspector, /scale=540:960:flags=lanczos/);
+  assert.match(inspector, /metric: "half-scale-luma-ssim"/);
   assert.match(inspector, /CELL_POSITIONS\.map/);
   assert.match(inspector, /closingChorusVoices/);
   assert.match(inspector, /closingCharacterMovesDuringCta/);
@@ -156,9 +192,9 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
 test("the compositor delegates character pixels to the motion repo", async () => {
   const composition = await readJson("composition-contract.json");
   assert.match(composition.rendererInvariant, /mixamo-character-motion-v1\/runtime\/renderer\/app\.js/);
-  assert.ok(composition.fixed.some((rule) => rule.includes("Talking Fish News")));
+  assert.ok(composition.fixed.some((rule) => rule.includes("Fish News underwater flower-and-bubble")));
   const compositor = await readFile(new URL("runtime/compose.mjs", root), "utf8");
-  assert.match(compositor, /CHARACTER_BACKGROUND_PRESET = "talking-fish-news"/);
+  assert.match(compositor, /CHARACTER_BACKGROUND_PRESET = "fish-news"/);
   assert.match(compositor, /backgroundPreset: CHARACTER_BACKGROUND_PRESET/);
   assert.match(compositor, /characterClipName/);
 });
