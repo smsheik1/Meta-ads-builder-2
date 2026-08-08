@@ -3,8 +3,10 @@
 import { spawn } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ensureWorktreeEnv } from "./sync-worktree-env.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+ensureWorktreeEnv({ repoRoot, optional: true });
 
 const commands = [
   {

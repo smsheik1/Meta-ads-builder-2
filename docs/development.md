@@ -48,6 +48,21 @@ ready when the `worker:queue` check passes.
 Use `v3/.env.local` for local v3 development. The root `.env` is legacy and
 should stay empty. Never commit real API keys.
 
+Git worktrees do not inherit ignored environment files. `npm run dev` now
+looks for another configured Wiggly worktree and links its `v3/.env.local`
+before starting. It never overwrites an existing file and never prints secret
+values. Run the setup directly when needed:
+
+```bash
+npm run setup:worktree-env
+```
+
+To keep a worktree on a different backend, create its own `v3/.env.local`
+before running setup. To select a specific source explicitly, run
+`node scripts/sync-worktree-env.mjs --source=/absolute/path/to/v3/.env.local`.
+Because the default is a symlink, edits to the shared environment affect every
+linked worktree; use a regular local file when isolation is required.
+
 Common local keys:
 
 ```bash
