@@ -64,7 +64,8 @@ export function BikiniBottomDanceOffConnections({
               </ServiceValue>
               <ServiceValue label="Used for">Character voices</ServiceValue>
               <ServiceValue label="Need">
-                <span className="inline-flex rounded-full border-2 border-[#080817] bg-[#ff78bd] px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em]">
+                <span className="inline-flex items-center gap-2 text-sm font-black">
+                  <span className="size-3 rounded-full border-2 border-[#080817] bg-[#ff78bd]" aria-hidden="true" />
                   Required
                 </span>
               </ServiceValue>
@@ -104,7 +105,8 @@ export function BikiniBottomDanceOffConnections({
                 </small>
               </ServiceValue>
               <ServiceValue label="Need">
-                <span className="inline-flex rounded-full border-2 border-[#080817] bg-[#ffd84c] px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em]">
+                <span className="inline-flex items-center gap-2 text-sm font-black">
+                  <span className="size-3 rounded-full border-2 border-[#080817] bg-[#ffd84c]" aria-hidden="true" />
                   Optional
                 </span>
               </ServiceValue>
