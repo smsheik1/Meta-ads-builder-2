@@ -1,5 +1,7 @@
 import type { DiscoveryFormatProfile } from "./types";
 
+export type DiscoveryCliAgent = "claude-code" | "cursor" | "github-copilot" | "gemini-cli";
+
 function absoluteUrl(origin: string, path: string): string {
   return new URL(path, origin).toString();
 }
@@ -45,4 +47,27 @@ Working rules:
 
 Your first reply must ask only:
 "${format.handoff.firstQuestion}"`;
+}
+
+function quoteForPosixShell(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+export function buildCodexHandoffUrl(prompt: string): string {
+  return `codex://new?prompt=${encodeURIComponent(prompt)}`;
+}
+
+export function buildDiscoveryCliCommand(agent: DiscoveryCliAgent, prompt: string): string {
+  const quotedPrompt = quoteForPosixShell(prompt);
+
+  switch (agent) {
+    case "claude-code":
+      return `claude ${quotedPrompt}`;
+    case "cursor":
+      return `cursor-agent ${quotedPrompt}`;
+    case "github-copilot":
+      return `copilot -p ${quotedPrompt}`;
+    case "gemini-cli":
+      return `gemini -i ${quotedPrompt}`;
+  }
 }

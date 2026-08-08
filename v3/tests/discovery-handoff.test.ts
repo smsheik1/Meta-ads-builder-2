@@ -7,7 +7,11 @@ import {
   getDiscoveryEntriesByCreator,
 } from "../features/discovery/creators";
 import { getDiscoveryFormatProfile } from "../features/discovery/formatProof.server";
-import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
+import {
+  buildCodexHandoffUrl,
+  buildDiscoveryCliCommand,
+  buildDiscoveryHandoffPrompt,
+} from "../features/discovery/handoff";
 
 assert.deepEqual(
   discoveryCreators.map((creator) => creator.handle),
@@ -38,6 +42,14 @@ assert.ok(
   threeDPrompt.trim().endsWith('"What brand or website is this for?"'),
   "The handoff should end with one short first question.",
 );
+assert.equal(
+  buildCodexHandoffUrl("Make this & verify it"),
+  "codex://new?prompt=Make%20this%20%26%20verify%20it",
+);
+assert.equal(buildDiscoveryCliCommand("claude-code", "It's ready"), `claude 'It'"'"'s ready'`);
+assert.equal(buildDiscoveryCliCommand("cursor", "Ship it"), "cursor-agent 'Ship it'");
+assert.equal(buildDiscoveryCliCommand("github-copilot", "Ship it"), "copilot -p 'Ship it'");
+assert.equal(buildDiscoveryCliCommand("gemini-cli", "Ship it"), "gemini -i 'Ship it'");
 
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon?.handoff, "Cartoon Explainer should offer its packaged agent run.");
@@ -78,8 +90,10 @@ assert.ok(
     discoveryClientSource.includes('href={savedOnly ? "/discover" : "/saved"}'),
   "Saved ads should reuse the existing anonymous browser storage.",
 );
-assert.ok(handoffSource.includes("<Sheet") && handoffSource.includes("Start with Codex"));
-assert.ok(handoffSource.includes('window.location.href = "codex://"'));
+assert.equal(handoffSource.includes("<Sheet"), false);
+assert.ok(handoffSource.includes("Send to Agent") && handoffSource.includes("Send to Codex"));
+assert.ok(handoffSource.includes('label: "Claude Code"') && handoffSource.includes("Copy prompt for any agent"));
+assert.ok(handoffSource.includes("window.location.href = buildCodexHandoffUrl(prompt())"));
 assert.equal(/fetch\(|Replicate|Seedance|Fish Audio/.test(handoffSource), false);
 assert.ok(formatPageSource.includes("You provide") && formatPageSource.includes("Typical run"));
 
