@@ -106,11 +106,13 @@ assert.match(trustComponent, /How this Format works\./);
 assert.doesNotMatch(trustComponent, /fake green statuses/);
 assert.doesNotMatch(trustComponent, /does not maintain a second proof asset/);
 assert.doesNotMatch(trustComponent, /You’ve seen the system/);
-assert.match(connectionsComponent, /Accounts you’ll connect\./);
+assert.match(connectionsComponent, /One account needed\./);
 assert.match(connectionsComponent, /What’s an API key\?/);
-assert.match(connectionsComponent, /Required for new dialogue/);
+assert.match(connectionsComponent, /Creates the character voices\./);
 assert.match(connectionsComponent, /Never paste the key into Wiggly/);
-assert.match(connectionsComponent, /No API key needed for/);
+assert.doesNotMatch(connectionsComponent, /Current estimate/);
+assert.doesNotMatch(connectionsComponent, /No API key needed for/);
+assert.doesNotMatch(connectionsComponent, /valid dialogue is already cached/);
 assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
