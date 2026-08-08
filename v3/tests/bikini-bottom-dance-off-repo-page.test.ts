@@ -201,18 +201,29 @@ assert.doesNotMatch(connectionsComponent, /Current estimate/);
 assert.doesNotMatch(connectionsComponent, /No API key needed for/);
 assert.doesNotMatch(connectionsComponent, /valid dialogue is already cached/);
 assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
-assert.match(runSummaryComponent, /What you need\.[\s\S]*What you get\./);
+assert.match(runSummaryComponent, /Make your Dance Off\./);
 assert.match(
   runSummaryComponent,
-  /Pick an agent\. Wiggly sends it this exact Format version\./,
+  /Add one song and optionally choose the dances or dialogue\.[\s\S]*The\s+agent handles everything else\./,
 );
-assert.match(runSummaryComponent, /One song you are allowed to use/);
-assert.match(runSummaryComponent, /A scored quality report with explanations/);
-assert.match(runSummaryComponent, /Usually 12–30 minutes/);
+assert.match(runSummaryComponent, /label="You provide">One song/);
+assert.match(
+  runSummaryComponent,
+  /label="You get">\{format\.handoff\.output\}/,
+);
+assert.match(runSummaryComponent, /label="Usually ready">12–30 minutes/);
 assert.match(runSummaryComponent, /max-w-\[980px\]/);
 assert.match(runSummaryComponent, /min-\[701px\]:grid-cols-3/);
 assert.doesNotMatch(runSummaryComponent, /shadow-\[5px_5px_0_#080817\]/);
-assert.match(runSummaryComponent, /nothing paid runs without\s+approval/);
+assert.equal(
+  (runSummaryComponent.match(/<DiscoveryFormatHandoff/g) ?? []).length,
+  1,
+  "The run summary should have one clear Send to Agent action.",
+);
+assert.doesNotMatch(runSummaryComponent, /checked episode plan/i);
+assert.doesNotMatch(runSummaryComponent, /preview contact sheet/i);
+assert.doesNotMatch(runSummaryComponent, /Final output/);
+assert.doesNotMatch(runSummaryComponent, /format\.handoff\.estimates\.map/);
 assert.doesNotMatch(runSummaryComponent, /validated episode input/);
 assert.doesNotMatch(runSummaryComponent, /provider cost/);
 assert.doesNotMatch(runSummaryComponent, /A-F eval/);
