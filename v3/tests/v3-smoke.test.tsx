@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import "./branding.test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PhonePreviewFrame } from "../app/create/CreatePreviewChrome";
