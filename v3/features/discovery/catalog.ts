@@ -2317,7 +2317,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "otaku-explainer",
       name: "Cartoon Explainer",
-      version: "1.2.0-experiment",
+      version: "1.2.1-experiment",
       owner: "Shaz",
     },
   },
@@ -2339,7 +2339,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "otaku-explainer",
       name: "Cartoon Explainer",
-      version: "1.2.0-experiment",
+      version: "1.2.1-experiment",
       owner: "Shaz",
     },
   },
@@ -2360,7 +2360,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "otaku-explainer",
       name: "Cartoon Explainer",
-      version: "1.2.0-experiment",
+      version: "1.2.1-experiment",
       owner: "Shaz",
     },
   },
@@ -2381,7 +2381,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "otaku-explainer",
       name: "Cartoon Explainer",
-      version: "1.2.0-experiment",
+      version: "1.2.1-experiment",
       owner: "Shaz",
     },
   },
@@ -2403,7 +2403,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "otaku-explainer",
       name: "Cartoon Explainer",
-      version: "1.2.0-experiment",
+      version: "1.2.1-experiment",
       owner: "Shaz",
     },
   },
@@ -2424,7 +2424,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "otaku-explainer",
       name: "Cartoon Explainer",
-      version: "1.2.0-experiment",
+      version: "1.2.1-experiment",
       owner: "Shaz",
     },
   },
