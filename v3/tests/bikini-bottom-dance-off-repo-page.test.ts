@@ -232,14 +232,23 @@ assert.doesNotMatch(trustComponent, /Inside this Format/);
 assert.doesNotMatch(trustComponent, /How this Format works\./);
 assert.doesNotMatch(trustComponent, /Follow the workflow/);
 assert.doesNotMatch(trustComponent, /Format system sections/);
-assert.match(trustComponent, /Open SKILL\.md/);
 assert.match(trustComponent, /Open proof report/);
 assert.match(trustComponent, /Open quality\.json/);
-assert.match(trustComponent, /One request moves straight to a finished Reel\./);
+assert.match(trustComponent, /The assembly line/);
+assert.match(
+  trustComponent,
+  /Song analysis → Dance plan → Voice lines → Render → Deliver/,
+);
+assert.match(trustComponent, /Finds the beat, the best excerpt, and exact timing\./);
+assert.match(trustComponent, /Waits for your approval/);
+assert.match(trustComponent, /Waits for your review/);
+assert.match(trustComponent, /Free tier/);
+assert.doesNotMatch(trustComponent, /FlowStation|Brief enters|Timed scene map/);
+assert.doesNotMatch(trustComponent, /One request moves straight to a finished Reel\./);
 assert.match(trustComponent, /className=\{styles\.fileCount\}/);
 assert.doesNotMatch(trustComponent, /styles\.repoSummary/);
 assert.doesNotMatch(trustComponent, /styles\.fileIcon/);
-assert.match(trustComponent, /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/);
+assert.doesNotMatch(trustComponent, /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/);
 assert.doesNotMatch(trustComponent, /From SKILL\.md/);
 assert.doesNotMatch(trustComponent, /From PROOF-REPORT\.md/);
 assert.doesNotMatch(trustComponent, /From quality\.json/);
@@ -319,8 +328,9 @@ assert.match(
 assert.match(trustStyles, /width: min\(100%, 980px\)/);
 assert.match(
   trustStyles,
-  /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/,
+  /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/,
 );
+assert.doesNotMatch(trustStyles, /\.conveyor|\.machine|\.gateState/);
 assert.match(trustStyles, /\.fileGroups \{\s*border-top: 1\.5px solid #080817/);
 assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);

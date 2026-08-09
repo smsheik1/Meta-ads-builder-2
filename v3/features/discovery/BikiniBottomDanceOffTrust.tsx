@@ -6,7 +6,6 @@ import {
   ChevronDown,
   Download,
   ShieldCheck,
-  Workflow,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import type { BikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
@@ -19,6 +18,39 @@ type Props = {
   repositoryHref: string;
   videoSrc: string;
 };
+
+const assemblySteps = [
+  {
+    title: "Song analysis",
+    cost: "Free",
+    description: "Finds the beat, the best excerpt, and exact timing.",
+  },
+  {
+    title: "Dance plan",
+    cost: "Free",
+    description:
+      "Assigns solo, reaction, and finale dances to all four characters.",
+  },
+  {
+    title: "Voice lines",
+    cost: "Free tier",
+    description:
+      "Creates the opening, taunts, and closing line in four voices.",
+    waiting: "Waits for your approval",
+  },
+  {
+    title: "Render",
+    cost: "Free",
+    description: "Builds one 1080 × 1920 Reel with captions and music.",
+  },
+  {
+    title: "Review and deliver",
+    cost: "Free",
+    description:
+      "Checks the video, gets an independent grade, and returns the MP4.",
+    waiting: "Waits for your review",
+  },
+] as const;
 
 export function BikiniBottomDanceOffTrust({
   data,
@@ -57,78 +89,31 @@ export function BikiniBottomDanceOffTrust({
           className={styles.panel}
           aria-labelledby="dance-off-assembly-title"
         >
-          <div className={styles.panelHeading}>
-            <div>
-              <p id="dance-off-assembly-title" className={styles.eyebrow}>
-                01 · Assembly line
-              </p>
-              <h3>One request moves straight to a finished Reel.</h3>
-            </div>
-            <a
-              className={styles.sourceLink}
-              href={`#${sourceFileId("SKILL.md")}`}
-              onClick={() => revealSource("SKILL.md")}
-            >
-              <Workflow aria-hidden="true" /> Open SKILL.md
-              <ArrowRight aria-hidden="true" />
-            </a>
+          <div className={styles.assemblyHeader}>
+            <h3 id="dance-off-assembly-title">The assembly line</h3>
+            <p className={styles.assemblyPath}>
+              Song analysis → Dance plan → Voice lines → Render → Deliver
+            </p>
           </div>
 
           <div
-            className={styles.conveyor}
-            aria-label="Six connected production stages with a required approval gate before generation"
+            className={styles.assemblyGrid}
+            aria-label="Five steps from song analysis to final delivery"
           >
-            <div className={styles.conveyorLabel}>
-              <span>One episode</span>
-              <span className={styles.direction}>
-                <span className={styles.directionDesktop}>
-                  Moves in one direction
-                </span>
-                <span className={styles.directionMobile}>
-                  Moves down the line
-                </span>
-                <ArrowRight aria-hidden="true" />
-              </span>
-            </div>
-            <div className={styles.flow}>
-              <FlowStation
-                number="01"
-                title="Brief enters"
-                artifact="Song + cast + direction"
-                color="cyan"
-              />
-              <FlowStation
-                number="02"
-                title="Plan"
-                artifact="Timed scene map"
-                color="pink"
-              />
-              <FlowStation
-                number="03"
-                title="Approve"
-                artifact="Human sign-off"
-                color="lime"
-                approval
-              />
-              <FlowStation
-                number="04"
-                title="Generate"
-                artifact="Voice + motion + edit"
-                color="yellow"
-              />
-              <FlowStation
-                number="05"
-                title="Inspect"
-                artifact="Checks + watch-through"
-                color="coral"
-              />
-              <FlowStation
-                number="06"
-                title="Deliver"
-                artifact="MP4 + grade + evidence"
-                color="violet"
-              />
-            </div>
+            {assemblySteps.map((step, index) => (
+              <article key={step.title} className={styles.assemblyStep}>
+                <div className={styles.assemblyStepHead}>
+                  <h4>
+                    {index + 1}. {step.title}
+                  </h4>
+                  <span>{step.cost}</span>
+                </div>
+                <p>{step.description}</p>
+                {"waiting" in step ? (
+                  <strong className={styles.stepWait}>{step.waiting}</strong>
+                ) : null}
+              </article>
+            ))}
           </div>
         </section>
 
@@ -402,31 +387,4 @@ function sourceFileId(filePath: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")}`;
-}
-
-function FlowStation({
-  approval = false,
-  artifact,
-  color,
-  number,
-  title,
-}: {
-  approval?: boolean;
-  artifact: string;
-  color: string;
-  number: string;
-  title: string;
-}) {
-  return (
-    <article className={styles.station}>
-      <span className={styles.machine} data-color={color}>
-        {number}
-      </span>
-      {approval ? <span className={styles.gateState}>Approval</span> : null}
-      <div className={styles.stationCopy}>
-        <h4>{title}</h4>
-        <span>{artifact}</span>
-      </div>
-    </article>
-  );
 }

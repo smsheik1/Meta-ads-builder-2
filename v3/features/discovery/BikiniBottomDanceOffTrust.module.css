@@ -86,110 +86,79 @@
   text-decoration: none;
 }
 
-.conveyor {
-  position: relative;
-  border: 1.5px solid #080817;
-  background: #fffdf8;
-  padding: 30px 12px 18px;
+.assemblyHeader {
+  margin-bottom: 24px;
 }
 
-.conveyorLabel {
-  display: none;
+.assemblyHeader h3 {
+  font-size: clamp(1.9rem, 3.5vw, 2.65rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-.directionMobile {
-  display: none;
+.assemblyPath {
+  margin-top: 12px;
+  color: #4c5c74;
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  font-weight: 800;
+  line-height: 1.45;
 }
 
-.flow {
-  position: relative;
+.assemblyGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.assemblyStep {
+  display: flex;
+  min-width: 0;
+  min-height: 210px;
+  flex-direction: column;
+  border: 1px solid #c9d3e0;
+  border-radius: 10px;
+  background: white;
+  padding: 18px;
+  box-shadow: 0 3px 6px rgb(8 8 23 / 10%);
+}
+
+.assemblyStepHead {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
   gap: 8px;
 }
 
-.flow::before {
-  position: absolute;
-  top: 25px;
-  right: 6%;
-  left: 6%;
-  height: 3px;
-  background: #080817;
-  content: "";
-}
-
-.station {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  text-align: center;
-}
-
-.machine {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 12px;
-  place-items: center;
-  border: 1.5px solid #080817;
-  border-radius: 10px;
-  color: #080817;
-  font-size: 1rem;
+.assemblyStepHead h4 {
+  font-size: 0.98rem;
   font-weight: 900;
+  line-height: 1.2;
 }
 
-.machine[data-color="cyan"] {
-  background: #52d6ff;
-}
-
-.machine[data-color="pink"] {
-  background: #ff78bd;
-}
-
-.machine[data-color="lime"] {
-  background: #c9ff55;
-}
-
-.machine[data-color="yellow"] {
-  background: #ffd84c;
-}
-
-.machine[data-color="coral"] {
-  background: #ff6f55;
-}
-
-.machine[data-color="violet"] {
-  background: #8876ff;
-}
-
-.stationCopy h4 {
-  font-size: 0.8rem;
-  font-weight: 900;
-  line-height: 1.15;
-}
-
-.stationCopy > span {
-  display: block;
-  margin-top: 5px;
-  color: #5e5e70;
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.gateState {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
+.assemblyStepHead > span {
+  flex: 0 0 auto;
   border: 1px solid #080817;
-  border-radius: 999px;
-  background: #fffdf8;
-  padding: 2px 5px;
-  font-size: 0.5rem;
+  border-radius: 7px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
   font-weight: 900;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+}
+
+.assemblyStep > p {
+  margin-top: 16px;
+  color: #334258;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.stepWait {
+  margin-top: auto;
+  padding-top: 12px;
+  color: #6e00ff;
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .proofGrid {
@@ -690,6 +659,12 @@
   line-height: 1.45;
 }
 
+@media (max-width: 900px) {
+  .assemblyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 700px) {
   .root {
     padding: 42px 16px;
@@ -708,40 +683,12 @@
     margin-top: 14px;
   }
 
-  .flow {
+  .assemblyGrid {
     grid-template-columns: 1fr;
-    gap: 0;
   }
 
-  .flow::before {
-    top: 26px;
-    right: auto;
-    bottom: 26px;
-    left: 26px;
-    width: 3px;
-    height: auto;
-  }
-
-  .station {
-    display: grid;
-    grid-template-columns: 62px 1fr;
-    align-items: center;
-    min-height: 66px;
-    text-align: left;
-  }
-
-  .machine {
-    margin: 0;
-  }
-
-  .stationCopy > span {
-    margin-top: 3px;
-  }
-
-  .gateState {
-    top: 47px;
-    left: 6px;
-    transform: none;
+  .assemblyStep {
+    min-height: 0;
   }
 
   .proofGrid,
