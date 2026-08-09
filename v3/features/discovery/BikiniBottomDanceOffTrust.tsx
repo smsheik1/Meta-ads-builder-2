@@ -52,6 +52,17 @@ const assemblySteps = [
   },
 ] as const;
 
+const agentCommands = [
+  "npm run check",
+  "npm run smoke",
+  "npm run list-motions",
+  "node runner.mjs init --run=<id> --song=<file>",
+  "node runner.mjs validate --run=<id>",
+  "node runner.mjs render --run=<id> --approve-provider",
+  "node runner.mjs inspect --run=<id>",
+  "node runner.mjs finalize --run=<id> --review=<review.json>",
+] as const;
+
 export function BikiniBottomDanceOffTrust({
   data,
   openProofHref,
@@ -115,6 +126,13 @@ export function BikiniBottomDanceOffTrust({
               </article>
             ))}
           </div>
+
+          <article className={styles.agentCommands}>
+            <h4>What the coding agent runs</h4>
+            <pre aria-label="Exact Dance Off runtime commands">
+              <code>{agentCommands.join("\n")}</code>
+            </pre>
+          </article>
         </section>
 
         <section

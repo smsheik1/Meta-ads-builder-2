@@ -243,6 +243,17 @@ assert.match(trustComponent, /Finds the beat, the best excerpt, and exact timing
 assert.match(trustComponent, /Waits for your approval/);
 assert.match(trustComponent, /Waits for your review/);
 assert.match(trustComponent, /Free tier/);
+assert.match(trustComponent, /What the coding agent runs/);
+assert.match(trustComponent, /Exact Dance Off runtime commands/);
+assert.match(trustComponent, /npm run list-motions/);
+assert.match(
+  trustComponent,
+  /node runner\.mjs render --run=<id> --approve-provider/,
+);
+assert.match(
+  trustComponent,
+  /node runner\.mjs finalize --run=<id> --review=<review\.json>/,
+);
 assert.doesNotMatch(trustComponent, /FlowStation|Brief enters|Timed scene map/);
 assert.doesNotMatch(trustComponent, /One request moves straight to a finished Reel\./);
 assert.match(trustComponent, /className=\{styles\.fileCount\}/);

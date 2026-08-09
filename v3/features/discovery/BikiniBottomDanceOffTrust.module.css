@@ -161,6 +161,38 @@
   font-weight: 900;
 }
 
+.agentCommands {
+  margin-top: 24px;
+  border: 1px solid #c9d3e0;
+  border-radius: 12px;
+  background: white;
+  padding: 28px;
+  box-shadow: 0 3px 6px rgb(8 8 23 / 10%);
+}
+
+.agentCommands h4 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+}
+
+.agentCommands pre {
+  overflow-x: auto;
+  margin-top: 22px;
+  border-radius: 10px;
+  background: #030718;
+  padding: 24px;
+  color: #f7f8ff;
+  font-size: clamp(0.78rem, 1.6vw, 1rem);
+  line-height: 1.75;
+}
+
+.agentCommands code {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 650;
+}
+
 .proofGrid {
   display: grid;
   grid-template-columns: minmax(230px, 0.72fr) minmax(0, 1.28fr);
@@ -689,6 +721,17 @@
 
   .assemblyStep {
     min-height: 0;
+  }
+
+  .agentCommands {
+    padding: 20px;
+  }
+
+  .agentCommands pre {
+    margin-top: 16px;
+    padding: 18px;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
   }
 
   .proofGrid,
