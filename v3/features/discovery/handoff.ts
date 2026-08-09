@@ -26,7 +26,9 @@ export function buildDiscoveryHandoffPrompt(
     ? "Download and extract the Repo into a new workspace. Read its root agent instructions, then follow the packaged SKILL.md and contracts as the source of truth. Report the exact Format version recorded in KIT-MANIFEST.json before beginning its intake flow."
     : "Open the Format page and follow its published files and technical instructions as the source of truth. Report the exact published Format version before beginning its intake flow.";
 
-  return `Let's create this with the latest published Wiggly Format: ${format.name}.
+  return `CODING AGENT REQUIRED: If you cannot access this computer's terminal, filesystem, and media files, do not analyze or simulate. Reply only: "Open this in Codex, Claude Code, Antigravity, Cursor, or Copilot CLI."
+
+Let's create this with the latest published Wiggly Format: ${format.name}.
 
 Format page: ${formatUrl}
 ${repositoryLine}

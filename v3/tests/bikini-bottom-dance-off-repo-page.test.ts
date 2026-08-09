@@ -128,10 +128,13 @@ assert.match(
 assert.match(prompt, /root agent instructions/);
 assert.match(prompt, /KIT-MANIFEST\.json/);
 assert.match(prompt, /latest published Wiggly Format/);
+assert.ok(prompt.startsWith("CODING AGENT REQUIRED:"));
+assert.match(prompt, /do not analyze or simulate/);
+assert.match(prompt, /Reply only: "Open this in Codex, Claude Code, Antigravity, Cursor, or Copilot CLI\."/);
 assert.match(prompt, /return its defined deliverables/);
 assert.doesNotMatch(prompt, /Exact public version: 0\.10\.0/);
 assert.doesNotMatch(prompt, /Required inputs:|Format instructions:|Working rules:/);
-assert.ok(prompt.length < 800);
+assert.ok(prompt.length < 1000);
 
 const shelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries()).find(
   (candidate) => candidate.id === "character-dance-offs",

@@ -87,10 +87,10 @@ export function DiscoveryFormatHandoff({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start">
-          <div className="max-w-64 px-3 pb-2 pt-1">
-            <p className="text-xs font-black uppercase tracking-[0.14em]">Coding agents only</p>
+          <div className="max-w-72 px-3 pb-2 pt-1">
+            <p className="text-xs font-black uppercase tracking-[0.14em]">Coding agent required</p>
             <p className="mt-1 text-xs font-bold leading-4 text-[#667087]">
-              Not intended for regular ChatGPT or Claude chat.
+              Regular ChatGPT and Claude chat cannot run this. Choose a coding agent below.
             </p>
           </div>
           <DropdownMenuSeparator />

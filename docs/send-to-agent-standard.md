@@ -12,11 +12,12 @@ This prevents the website prompt, Codex deep link, shell commands, and agent-spe
 
 Every launcher contains only:
 
-1. The creative goal and Format name.
-2. The stable Format page.
-3. The stable latest-package URL when a runnable Repo exists.
-4. A direction to read the package-owned instructions and report the manifest version.
-5. The hard boundaries that must survive transport: use the packaged runtime, obtain explicit approval before paid providers, pass validation and quality checks, and return the Repo-defined deliverables.
+1. A capability gate requiring terminal, filesystem, and access to the user's local media, with one fixed redirect response when those capabilities are unavailable.
+2. The creative goal and Format name.
+3. The stable Format page.
+4. The stable latest-package URL when a runnable Repo exists.
+5. A direction to read the package-owned instructions and report the manifest version.
+6. The hard boundaries that must survive transport: use the packaged runtime, obtain explicit approval before paid providers, pass validation and quality checks, and return the Repo-defined deliverables.
 
 Do not copy required-input lists, command sequences, proof links, provider recipes, first-question scripts, or exact public versions into the launcher. Those belong in the package and change more often than the transport.
 
@@ -52,7 +53,7 @@ For every runnable Format:
 2. Generate the root instruction layout above during packaging.
 3. Keep one canonical `SKILL.md`; make all adapters route to it.
 4. Add a package check that compares root `package.json` with `KIT-MANIFEST.json`, confirms every entrypoint exists, and rejects detailed adapter copies.
-5. Test that the website launcher is concise, says latest, omits a hard-coded version, and retains paid-provider and definition-of-done boundaries.
+5. Test that the website launcher rejects non-coding chat surfaces, stays concise, says latest, omits a hard-coded version, and retains paid-provider and definition-of-done boundaries.
 6. Rebuild the ZIP and checksum.
 7. Extract into a clean directory, install, check, smoke, and hand it to a fresh agent with only the launcher.
 8. Verify the agent reports the exact manifest version, reads the canonical skill, begins the correct intake, and does not invent another workflow.

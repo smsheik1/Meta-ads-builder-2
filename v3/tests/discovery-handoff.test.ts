@@ -33,6 +33,13 @@ assert.equal(threeD.handoff.firstQuestion, "What brand or website is this for?")
 assert.equal(threeD.handoff.estimates.length, 4);
 
 const threeDPrompt = buildDiscoveryHandoffPrompt(threeD, origin);
+assert.ok(threeDPrompt.startsWith("CODING AGENT REQUIRED:"));
+assert.match(threeDPrompt, /cannot access this computer's terminal, filesystem, and media files/);
+assert.match(threeDPrompt, /do not analyze or simulate/);
+assert.match(
+  threeDPrompt,
+  /Reply only: "Open this in Codex, Claude Code, Antigravity, Cursor, or Copilot CLI\."/,
+);
 assert.match(threeDPrompt, /latest published Wiggly Format/);
 assert.match(threeDPrompt, /https:\/\/wiggly\.agentenamel\.com\/formats\/three-d-breakdown/);
 assert.match(threeDPrompt, /exact published Format version/);
@@ -40,7 +47,7 @@ assert.match(threeDPrompt, /Never use a paid provider without my explicit approv
 assert.match(threeDPrompt, /validation and quality checks pass/);
 assert.doesNotMatch(threeDPrompt, /Exact public version:|Required inputs:|Format instructions:|Working rules:/);
 assert.doesNotMatch(threeDPrompt, /final-straw-pocket-problem|What brand or website is this for/);
-assert.ok(threeDPrompt.length < 700, "The handoff should remain a concise launcher.");
+assert.ok(threeDPrompt.length < 750, "The handoff should remain a concise launcher.");
 assert.equal(
   buildCodexHandoffUrl("Make this & verify it"),
   "codex://new?prompt=Make%20this%20%26%20verify%20it",
@@ -97,7 +104,8 @@ assert.ok(
   handoffSource.includes("Open Antigravity app") &&
     handoffSource.includes('label: "Antigravity CLI"') &&
     handoffSource.includes("Copy for another coding agent") &&
-    handoffSource.includes("Not intended for regular ChatGPT or Claude chat."),
+    handoffSource.includes("Coding agent required") &&
+    handoffSource.includes("Regular ChatGPT and Claude chat cannot run this."),
 );
 assert.equal(handoffSource.includes('feedback ?? "Send to Agent"'), false);
 assert.equal(handoffSource.includes("Copy prompt for any agent"), false);
