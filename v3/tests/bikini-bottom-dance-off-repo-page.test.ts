@@ -216,7 +216,9 @@ assert.match(
   /videoRef\.current\.currentTime = annotation\.seconds/,
 );
 assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
-assert.match(trustComponent, /See it work\./);
+assert.match(trustComponent, /02 · Finished example/);
+assert.match(trustComponent, /Watch the final video\./);
+assert.doesNotMatch(trustComponent, /Proof explained|See it work\.|\u2014/);
 assert.match(trustComponent, /How your finished video is graded\./);
 assert.match(trustComponent, /The blind judge scores seven things/);
 assert.match(trustComponent, /Archived visual\/caption-assisted pilot/);
@@ -234,7 +236,6 @@ assert.match(trustComponent, /Open SKILL\.md/);
 assert.match(trustComponent, /Open proof report/);
 assert.match(trustComponent, /Open quality\.json/);
 assert.match(trustComponent, /One request moves straight to a finished Reel\./);
-assert.match(trustComponent, /02 · Proof explained/);
 assert.match(trustComponent, /className=\{styles\.fileCount\}/);
 assert.doesNotMatch(trustComponent, /styles\.repoSummary/);
 assert.doesNotMatch(trustComponent, /styles\.fileIcon/);

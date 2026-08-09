@@ -1863,7 +1863,7 @@ const darkAestheticFilterDiscoveryEntries: DiscoveryEntry[] = [
     id: "graffiti-prayer",
     brand: "SKAI source example",
     title: "Crush the blacks without losing detail",
-    curatorNote: "Hands, clothes, and background remain readable in shadow—the contrast is intentional rather than a black overlay.",
+    curatorNote: "Hands, clothes, and background remain readable in shadow. The contrast is intentional rather than a black overlay.",
     image: "skai-carousel-10",
   },
   {
@@ -2456,7 +2456,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     order: 11.6,
     brand: "Bikini Bottom",
     title: "Four characters enter. One comment section decides.",
-    curatorNote: "Choose from 25 starter dances—or import another locally—then let SpongeBob, Patrick, Mr. Krabs, and Squilliam taunt, solo, and collide in a scored 47-second Reel.",
+    curatorNote: "Choose from 25 starter dances, or import another locally. Then let SpongeBob, Patrick, Mr. Krabs, and Squilliam taunt, solo, and collide in a scored 47-second Reel.",
     goal: "entertain",
     media: {
       kind: "video",

@@ -139,8 +139,8 @@ export function BikiniBottomDanceOffTrust({
         >
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>02 · Proof explained</p>
-              <h3 id="dance-off-proof-title">See it work.</h3>
+              <p className={styles.eyebrow}>02 · Finished example</p>
+              <h3 id="dance-off-proof-title">Watch the final video.</h3>
             </div>
             <a
               className={styles.sourceLink}
@@ -235,8 +235,9 @@ export function BikiniBottomDanceOffTrust({
             <ShieldCheck aria-hidden="true" />
             <p>
               <strong>Blind means independent.</strong> The judge receives the
-              final MP4, intended cast and dialogue, and this rubric—not the
-              source, render history, previous score, or known defects.
+              final MP4, intended cast and dialogue, and this rubric. It does
+              not receive the source, render history, previous score, or known
+              defects.
             </p>
           </div>
 
