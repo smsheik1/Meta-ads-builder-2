@@ -258,7 +258,7 @@ assert.doesNotMatch(runSummaryComponent, /shadow-\[5px_5px_0_#080817\]/);
 assert.equal(
   (runSummaryComponent.match(/<DiscoveryFormatHandoff/g) ?? []).length,
   1,
-  "The run summary should have one clear Send to Agent action.",
+  "The run summary should have one clear Send to Coding Agent action.",
 );
 assert.doesNotMatch(runSummaryComponent, /checked episode plan/i);
 assert.doesNotMatch(runSummaryComponent, /preview contact sheet/i);

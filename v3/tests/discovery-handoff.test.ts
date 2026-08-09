@@ -92,12 +92,15 @@ assert.ok(
   "Saved ads should reuse the existing anonymous browser storage.",
 );
 assert.equal(handoffSource.includes("<Sheet"), false);
-assert.ok(handoffSource.includes("Send to Agent") && handoffSource.includes("Send to Codex"));
+assert.ok(handoffSource.includes("Send to Coding Agent") && handoffSource.includes("Send to Codex"));
 assert.ok(
   handoffSource.includes("Open Antigravity app") &&
     handoffSource.includes('label: "Antigravity CLI"') &&
-    handoffSource.includes("Copy prompt for any agent"),
+    handoffSource.includes("Copy for another coding agent") &&
+    handoffSource.includes("Not intended for regular ChatGPT or Claude chat."),
 );
+assert.equal(handoffSource.includes('feedback ?? "Send to Agent"'), false);
+assert.equal(handoffSource.includes("Copy prompt for any agent"), false);
 assert.equal(handoffSource.includes("Gemini CLI"), false);
 assert.ok(handoffSource.includes("window.location.href = buildCodexHandoffUrl(prompt())"));
 assert.ok(handoffSource.includes("window.location.href = buildAntigravityAppUrl()"));

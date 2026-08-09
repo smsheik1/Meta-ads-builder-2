@@ -82,11 +82,18 @@ export function DiscoveryFormatHandoff({
             } ${tone === "dark" ? "bg-[#080817] text-white shadow-[5px_5px_0_#52d6ff]" : "bg-[#c9ff55] text-[#080817]"}`}
           >
             {feedback ? <Check className="size-4" aria-hidden="true" /> : <Bot className="size-4" aria-hidden="true" />}
-            <span>{feedback ?? "Send to Agent"}</span>
+            <span>{feedback ?? "Send to Coding Agent"}</span>
             <ChevronUp className="size-4" aria-hidden="true" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start">
+          <div className="max-w-64 px-3 pb-2 pt-1">
+            <p className="text-xs font-black uppercase tracking-[0.14em]">Coding agents only</p>
+            <p className="mt-1 text-xs font-bold leading-4 text-[#667087]">
+              Not intended for regular ChatGPT or Claude chat.
+            </p>
+          </div>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={openCodex}>
             <ExternalLink className="size-4" aria-hidden="true" />
             Send to Codex
@@ -102,9 +109,9 @@ export function DiscoveryFormatHandoff({
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => void copyText(prompt(), "Agent prompt copied")}>
+          <DropdownMenuItem onSelect={() => void copyText(prompt(), "Coding agent prompt copied")}>
             <Clipboard className="size-4" aria-hidden="true" />
-            Copy prompt for any agent
+            Copy for another coding agent
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

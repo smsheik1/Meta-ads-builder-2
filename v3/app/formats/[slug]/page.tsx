@@ -353,7 +353,7 @@ export default async function FormatPage({
           <div className="mx-auto flex max-w-[980px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#52d6ff]">
-                Run it with an agent
+                Run it with a coding agent
               </p>
               <h2 className="mt-2 text-[34px] font-black leading-none">
                 Ready to make one?
@@ -373,7 +373,7 @@ export default async function FormatPage({
         >
           <div className="mx-auto max-w-[1100px]">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-              Run it with an agent
+              Run it with a coding agent
             </p>
             <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
               <div>
