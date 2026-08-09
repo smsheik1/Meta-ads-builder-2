@@ -52,46 +52,6 @@ export function BikiniBottomDanceOffTrust({
   return (
     <section id="how-it-works" className={styles.root}>
       <div className={styles.shell}>
-        <header className={styles.intro}>
-          <div>
-            <span className={styles.kicker}>Inside this Format</span>
-            <h2>How this Format works.</h2>
-            <p>
-              Follow the workflow, inspect the finished proof, and see exactly
-              what comes with the Repo.
-            </p>
-          </div>
-          <nav aria-label="Format system sections">
-            <ol className={styles.sectionIndex}>
-              <li>
-                <a href="#dance-off-assembly">
-                  <span>1</span>Assembly line
-                </a>
-              </li>
-              <li>
-                <a href="#proof">
-                  <span>2</span>Proof explained
-                </a>
-              </li>
-              <li>
-                <a href="#dance-off-quality">
-                  <span>3</span>How it is graded
-                </a>
-              </li>
-              <li>
-                <a href="#dance-off-repo">
-                  <span>4</span>Repo contents
-                </a>
-              </li>
-              <li>
-                <a href="#dance-off-advanced">
-                  <span>5</span>Advanced details
-                </a>
-              </li>
-            </ol>
-          </nav>
-        </header>
-
         <section
           id="dance-off-assembly"
           className={styles.panel}

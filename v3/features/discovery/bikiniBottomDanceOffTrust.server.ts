@@ -31,11 +31,25 @@ type QualityContract = {
 };
 
 type BackgroundManifest = {
-  options: Array<{ id: string }>;
+  default: string;
+  options: Array<{
+    id: string;
+    label: string;
+    description: string;
+    path: string;
+  }>;
 };
 
 type MotionManifest = {
-  motions: Array<{ id: string }>;
+  motions: Array<{ id: string; label: string }>;
+};
+
+type CharacterManifest = {
+  packs: Array<{
+    id: string;
+    label: string;
+    status: string;
+  }>;
 };
 
 type RenderReport = {
@@ -77,6 +91,26 @@ export type BikiniBottomDanceOffTrustData = {
     technicalGates: number;
     blindCriteria: number;
     rendererCount: number;
+  };
+  includedAssets: {
+    characters: Array<{
+      id: string;
+      label: string;
+      modelSrc: string;
+      posterSrc: string;
+    }>;
+    performerStage: {
+      label: string;
+      src: string;
+    };
+    backgrounds: Array<{
+      id: string;
+      label: string;
+      description: string;
+      src: string;
+    }>;
+    defaultBackgroundId: string;
+    motionLabels: string[];
   };
   grading: {
     rubricVersion: string;
@@ -122,6 +156,11 @@ const repoRoot = path.join(
   process.cwd(),
   "public/format-repositories/bikini-bottom-dance-off-v1",
 );
+const motionRepoRoot = path.join(repoRoot, "../mixamo-character-motion-v1");
+const danceOffPublicRoot = "/format-repositories/bikini-bottom-dance-off-v1";
+const motionPublicRoot = "/format-repositories/mixamo-character-motion-v1";
+const characterPreviewRoot =
+  "/discovery/bikini-bottom-dance-off/character-previews";
 
 async function readJson<T>(filePath: string): Promise<T> {
   return JSON.parse(await readFile(filePath, "utf8")) as T;
@@ -138,6 +177,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     quality,
     backgrounds,
     motions,
+    characters,
     packageManifest,
     requirements,
     renderReport,
@@ -149,10 +189,10 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       path.join(repoRoot, "assets/background-options.json"),
     ),
     readJson<MotionManifest>(
-      path.join(
-        repoRoot,
-        "../mixamo-character-motion-v1/assets/motions/manifest.json",
-      ),
+      path.join(motionRepoRoot, "assets/motions/manifest.json"),
+    ),
+    readJson<CharacterManifest>(
+      path.join(motionRepoRoot, "assets/character-packs.json"),
     ),
     readJson<PackageManifest>(path.join(repoRoot, "package.json")),
     readJson<RequirementsContract>(path.join(repoRoot, "requirements.json")),
@@ -171,6 +211,26 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   const finale = renderReport.timeline.finale.start;
   const closing = renderReport.timeline.closingChorus.start;
   const replay = renderReport.timeline.loopBridge.start;
+  const characterOrder = ["spongebob", "patrick", "mr-krabs", "squilliam"];
+  const includedCharacters = characterOrder.map((id) => {
+    const character = characters.packs.find((pack) => pack.id === id);
+    if (!character) throw new Error(`Missing packaged character ${id}.`);
+    if (character.status !== "motion-ready") {
+      throw new Error(`Packaged character ${id} is not motion-ready.`);
+    }
+    return {
+      id: character.id,
+      label: character.label,
+      modelSrc: `${characterPreviewRoot}/${id}.glb`,
+      posterSrc: `${characterPreviewRoot}/${id}.png`,
+    };
+  });
+  const sampleMotionIds = new Set([
+    "macarena-dance",
+    "ymca-dance",
+    "runningman-hip-hop-dancing",
+    "silly-dancing",
+  ]);
 
   const commandOrder = [
     "check",
@@ -203,6 +263,23 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       technicalGates: quality.technicalGates.length,
       blindCriteria: quality.grading.blindCriteria.length,
       rendererCount: 1,
+    },
+    includedAssets: {
+      characters: includedCharacters,
+      performerStage: {
+        label: "Fish News character stage",
+        src: `${motionPublicRoot}/assets/backgrounds/fish-news-underwater-studio.png`,
+      },
+      backgrounds: backgrounds.options.map((background) => ({
+        id: background.id,
+        label: background.label,
+        description: background.description,
+        src: `${danceOffPublicRoot}/${background.path}`,
+      })),
+      defaultBackgroundId: backgrounds.default,
+      motionLabels: motions.motions
+        .filter((motion) => sampleMotionIds.has(motion.id))
+        .map((motion) => motion.label),
     },
     grading: {
       rubricVersion: quality.rubricVersion,

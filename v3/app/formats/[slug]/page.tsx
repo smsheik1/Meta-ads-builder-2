@@ -12,6 +12,7 @@ import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
 import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
 import { DiscoveryCharacterOptions } from "@/features/discovery/DiscoveryCharacterOptions";
 import { BikiniBottomDanceOffConnections } from "@/features/discovery/BikiniBottomDanceOffConnections";
+import { BikiniBottomDanceOffIncludedAssets } from "@/features/discovery/BikiniBottomDanceOffIncludedAssets";
 import { BikiniBottomDanceOffRunSummary } from "@/features/discovery/BikiniBottomDanceOffRunSummary";
 import { BikiniBottomDanceOffTrust } from "@/features/discovery/BikiniBottomDanceOffTrust";
 import { getBikiniBottomDanceOffTrustData } from "@/features/discovery/bikiniBottomDanceOffTrust.server";
@@ -235,6 +236,10 @@ export default async function FormatPage({
 
       {danceOffTrust && format.handoff ? (
         <BikiniBottomDanceOffRunSummary format={format} />
+      ) : null}
+
+      {danceOffTrust ? (
+        <BikiniBottomDanceOffIncludedAssets data={danceOffTrust} />
       ) : null}
 
       {danceOffTrust &&

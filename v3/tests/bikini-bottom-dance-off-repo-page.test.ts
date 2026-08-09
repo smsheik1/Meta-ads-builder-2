@@ -161,6 +161,10 @@ const runSummaryComponent = readFileSync(
   "features/discovery/BikiniBottomDanceOffRunSummary.tsx",
   "utf8",
 );
+const includedAssetsComponent = readFileSync(
+  "features/discovery/BikiniBottomDanceOffIncludedAssets.tsx",
+  "utf8",
+);
 const trustComponent = readFileSync(
   "features/discovery/BikiniBottomDanceOffTrust.tsx",
   "utf8",
@@ -180,6 +184,20 @@ assert.match(
 assert.match(
   consumerRoute,
   /<BikiniBottomDanceOffRunSummary format=\{format\} \/>/,
+);
+assert.match(
+  consumerRoute,
+  /<BikiniBottomDanceOffIncludedAssets data=\{danceOffTrust\} \/>/,
+);
+assert.ok(
+  consumerRoute.indexOf("<BikiniBottomDanceOffRunSummary") <
+    consumerRoute.indexOf("<BikiniBottomDanceOffIncludedAssets"),
+  "Included assets should follow the short run summary.",
+);
+assert.ok(
+  consumerRoute.indexOf("<BikiniBottomDanceOffIncludedAssets") <
+    consumerRoute.indexOf("<BikiniBottomDanceOffTrust"),
+  "Included assets should appear before the proof and technical details.",
 );
 assert.doesNotMatch(consumerRoute, /variant="inline"/);
 assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
@@ -208,11 +226,10 @@ assert.doesNotMatch(trustComponent, /The real proof, annotated\./);
 assert.doesNotMatch(trustComponent, /What the Repo refuses to ship\./);
 assert.match(trustComponent, /<section id="how-it-works"/);
 assert.match(trustComponent, /id="proof"/);
-assert.match(trustComponent, /How this Format works\./);
-assert.match(trustComponent, /href="#dance-off-assembly"/);
-assert.match(trustComponent, /href="#dance-off-quality"/);
-assert.match(trustComponent, /href="#dance-off-repo"/);
-assert.match(trustComponent, /href="#dance-off-advanced"/);
+assert.doesNotMatch(trustComponent, /Inside this Format/);
+assert.doesNotMatch(trustComponent, /How this Format works\./);
+assert.doesNotMatch(trustComponent, /Follow the workflow/);
+assert.doesNotMatch(trustComponent, /Format system sections/);
 assert.match(trustComponent, /Open SKILL\.md/);
 assert.match(trustComponent, /Open proof report/);
 assert.match(trustComponent, /Open quality\.json/);
@@ -258,6 +275,18 @@ assert.match(runSummaryComponent, /label="Usually ready">12–30 minutes/);
 assert.match(runSummaryComponent, /max-w-\[980px\]/);
 assert.match(runSummaryComponent, /min-\[701px\]:grid-cols-3/);
 assert.doesNotMatch(runSummaryComponent, /shadow-\[5px_5px_0_#080817\]/);
+assert.match(includedAssetsComponent, /The cast, stages, and moves\./);
+assert.doesNotMatch(includedAssetsComponent, /already inside/);
+assert.doesNotMatch(includedAssetsComponent, /Production-ready Repo assets/);
+assert.match(includedAssetsComponent, /DiscoveryCharacterModelViewer/);
+assert.match(includedAssetsComponent, /Drag to inspect in 3D/);
+assert.doesNotMatch(includedAssetsComponent, /Included in Repo/);
+assert.match(includedAssetsComponent, />\s*3D model\s*</);
+assert.match(includedAssetsComponent, /1 fixed character stage/);
+assert.match(includedAssetsComponent, /aria-pressed=\{isSelected\}/);
+assert.doesNotMatch(includedAssetsComponent, /No Mixamo download required/);
+assert.doesNotMatch(includedAssetsComponent, /createElement\("model-viewer"/);
+assert.doesNotMatch(includedAssetsComponent, /ColladaLoader|WebGLRenderer|iframe/);
 assert.equal(
   (runSummaryComponent.match(/<DiscoveryFormatHandoff/g) ?? []).length,
   1,
@@ -304,6 +333,48 @@ assert.deepEqual(trustData.stats, {
   blindCriteria: 7,
   rendererCount: 1,
 });
+assert.deepEqual(
+  trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
+  [
+    { id: "spongebob", label: "SpongeBob SquarePants" },
+    { id: "patrick", label: "Patrick Star" },
+    { id: "mr-krabs", label: "Mr. Krabs" },
+    { id: "squilliam", label: "Squilliam Fancyson" },
+  ],
+);
+assert.equal(
+  trustData.includedAssets.performerStage.src,
+  "/format-repositories/mixamo-character-motion-v1/assets/backgrounds/fish-news-underwater-studio.png",
+);
+assert.equal(trustData.includedAssets.backgrounds.length, 4);
+assert.equal(trustData.includedAssets.defaultBackgroundId, "deep-ocean");
+assert.deepEqual(trustData.includedAssets.motionLabels, [
+  "Silly Dancing",
+  "Runningman Hip Hop Dancing",
+  "Macarena Dance",
+  "Ymca Dance",
+]);
+for (const character of trustData.includedAssets.characters) {
+  assert.equal(existsSync(`public${character.modelSrc}`), true);
+  assert.equal(existsSync(`public${character.posterSrc}`), true);
+  const previewModel = readFileSync(`public${character.modelSrc}`);
+  assert.equal(previewModel.subarray(0, 4).toString("ascii"), "glTF");
+  assert.ok(previewModel.byteLength > 250_000);
+  assert.ok(statSync(`public${character.posterSrc}`).size > 30_000);
+}
+assert.equal(
+  existsSync(
+    "public/discovery/bikini-bottom-dance-off/character-previews/provenance.json",
+  ),
+  true,
+);
+for (const background of trustData.includedAssets.backgrounds) {
+  assert.equal(existsSync(`public${background.src}`), true);
+}
+assert.equal(
+  existsSync(`public${trustData.includedAssets.performerStage.src}`),
+  true,
+);
 assert.deepEqual(
   trustData.annotations.map((annotation) => annotation.timeLabel),
   ["00:04", "00:34", "00:43", "00:46"],
