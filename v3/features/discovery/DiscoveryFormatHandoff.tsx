@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  buildAntigravityAppUrl,
   buildCodexHandoffUrl,
   buildDiscoveryCliCommand,
   buildDiscoveryHandoffPrompt,
@@ -18,10 +19,10 @@ import {
 import type { DiscoveryFormatProfile } from "./types";
 
 const cliAgents: Array<{ id: DiscoveryCliAgent; label: string }> = [
+  { id: "antigravity-cli", label: "Antigravity CLI" },
   { id: "claude-code", label: "Claude Code" },
   { id: "cursor", label: "Cursor" },
   { id: "github-copilot", label: "GitHub Copilot CLI" },
-  { id: "gemini-cli", label: "Gemini CLI" },
 ];
 
 export function DiscoveryFormatHandoff({
@@ -45,6 +46,16 @@ export function DiscoveryFormatHandoff({
 
   const openCodex = () => {
     window.location.href = buildCodexHandoffUrl(prompt());
+  };
+
+  const openAntigravity = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt());
+      showFeedback("Prompt copied · opening Antigravity");
+    } catch {
+      showFeedback("Opening Antigravity");
+    }
+    window.location.href = buildAntigravityAppUrl();
   };
 
   const copyText = async (value: string, message: string) => {
@@ -79,6 +90,10 @@ export function DiscoveryFormatHandoff({
           <DropdownMenuItem onSelect={openCodex}>
             <ExternalLink className="size-4" aria-hidden="true" />
             Send to Codex
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => void openAntigravity()}>
+            <ExternalLink className="size-4" aria-hidden="true" />
+            Open Antigravity app
           </DropdownMenuItem>
           {cliAgents.map((agent) => (
             <DropdownMenuItem key={agent.id} onSelect={() => void copyCliCommand(agent.id, agent.label)}>

@@ -8,6 +8,7 @@ import {
 } from "../features/discovery/creators";
 import { getDiscoveryFormatProfile } from "../features/discovery/formatProof.server";
 import {
+  buildAntigravityAppUrl,
   buildCodexHandoffUrl,
   buildDiscoveryCliCommand,
   buildDiscoveryHandoffPrompt,
@@ -46,10 +47,11 @@ assert.equal(
   buildCodexHandoffUrl("Make this & verify it"),
   "codex://new?prompt=Make%20this%20%26%20verify%20it",
 );
+assert.equal(buildAntigravityAppUrl(), "antigravity://");
+assert.equal(buildDiscoveryCliCommand("antigravity-cli", "Ship it"), "agy -p 'Ship it'");
 assert.equal(buildDiscoveryCliCommand("claude-code", "It's ready"), `claude 'It'"'"'s ready'`);
 assert.equal(buildDiscoveryCliCommand("cursor", "Ship it"), "cursor-agent 'Ship it'");
 assert.equal(buildDiscoveryCliCommand("github-copilot", "Ship it"), "copilot -p 'Ship it'");
-assert.equal(buildDiscoveryCliCommand("gemini-cli", "Ship it"), "gemini -i 'Ship it'");
 
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon?.handoff, "Cartoon Explainer should offer its packaged agent run.");
@@ -92,8 +94,14 @@ assert.ok(
 );
 assert.equal(handoffSource.includes("<Sheet"), false);
 assert.ok(handoffSource.includes("Send to Agent") && handoffSource.includes("Send to Codex"));
-assert.ok(handoffSource.includes('label: "Claude Code"') && handoffSource.includes("Copy prompt for any agent"));
+assert.ok(
+  handoffSource.includes("Open Antigravity app") &&
+    handoffSource.includes('label: "Antigravity CLI"') &&
+    handoffSource.includes("Copy prompt for any agent"),
+);
+assert.equal(handoffSource.includes("Gemini CLI"), false);
 assert.ok(handoffSource.includes("window.location.href = buildCodexHandoffUrl(prompt())"));
+assert.ok(handoffSource.includes("window.location.href = buildAntigravityAppUrl()"));
 assert.equal(/fetch\(|Replicate|Seedance|Fish Audio/.test(handoffSource), false);
 assert.ok(formatPageSource.includes("You provide") && formatPageSource.includes("Typical run"));
 

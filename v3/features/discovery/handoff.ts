@@ -1,6 +1,10 @@
 import type { DiscoveryFormatProfile } from "./types";
 
-export type DiscoveryCliAgent = "claude-code" | "cursor" | "github-copilot" | "gemini-cli";
+export type DiscoveryCliAgent =
+  | "antigravity-cli"
+  | "claude-code"
+  | "cursor"
+  | "github-copilot";
 
 function absoluteUrl(origin: string, path: string): string {
   return new URL(path, origin).toString();
@@ -57,17 +61,21 @@ export function buildCodexHandoffUrl(prompt: string): string {
   return `codex://new?prompt=${encodeURIComponent(prompt)}`;
 }
 
+export function buildAntigravityAppUrl(): string {
+  return "antigravity://";
+}
+
 export function buildDiscoveryCliCommand(agent: DiscoveryCliAgent, prompt: string): string {
   const quotedPrompt = quoteForPosixShell(prompt);
 
   switch (agent) {
+    case "antigravity-cli":
+      return `agy -p ${quotedPrompt}`;
     case "claude-code":
       return `claude ${quotedPrompt}`;
     case "cursor":
       return `cursor-agent ${quotedPrompt}`;
     case "github-copilot":
       return `copilot -p ${quotedPrompt}`;
-    case "gemini-cli":
-      return `gemini -i ${quotedPrompt}`;
   }
 }
