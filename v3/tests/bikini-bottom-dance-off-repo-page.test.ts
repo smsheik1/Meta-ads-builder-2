@@ -256,7 +256,12 @@ assert.match(
 );
 assert.doesNotMatch(trustComponent, /FlowStation|Brief enters|Timed scene map/);
 assert.doesNotMatch(trustComponent, /One request moves straight to a finished Reel\./);
-assert.match(trustComponent, /className=\{styles\.fileCount\}/);
+assert.match(trustComponent, /Every file, what it does, and where it lives\./);
+assert.match(trustComponent, /className=\{styles\.fileGroupTitle\}/);
+assert.match(trustComponent, /className=\{styles\.fileRow\}/);
+assert.match(trustComponent, /\{file\.label\}/);
+assert.match(trustComponent, /<p>\{file\.description\}<\/p>/);
+assert.doesNotMatch(trustComponent, /styles\.fileCount|group\.summary/);
 assert.doesNotMatch(trustComponent, /styles\.repoSummary/);
 assert.doesNotMatch(trustComponent, /styles\.fileIcon/);
 assert.doesNotMatch(trustComponent, /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/);
@@ -342,7 +347,13 @@ assert.match(
   /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/,
 );
 assert.doesNotMatch(trustStyles, /\.conveyor|\.machine|\.gateState/);
-assert.match(trustStyles, /\.fileGroups \{\s*border-top: 1\.5px solid #080817/);
+assert.match(trustStyles, /\.fileGroups \{\s*display: grid;\s*gap: 28px/);
+assert.match(trustStyles, /\.fileRow \{[\s\S]*border: 1px solid #c9d3e0/);
+assert.match(
+  trustStyles,
+  /grid-template-columns: minmax\(190px, 0\.42fr\) minmax\(0, 1fr\) 18px/,
+);
+assert.doesNotMatch(trustStyles, /\.fileCount|\.fileGroup summary small/);
 assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
@@ -435,6 +446,16 @@ assert.equal(
   trustData.fileGroups
     .flatMap((group) => group.files)
     .some((file) => file.path === "PROOF-REPORT.md"),
+  true,
+);
+assert.equal(
+  trustData.fileGroups.flatMap((group) => group.files).length,
+  24,
+);
+assert.equal(
+  trustData.fileGroups
+    .flatMap((group) => group.files)
+    .every((file) => file.label.trim().length > 0),
   true,
 );
 assert.equal(

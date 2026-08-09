@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BadgeCheck,
   ChevronDown,
+  ChevronRight,
   Download,
   ShieldCheck,
 } from "lucide-react";
@@ -71,7 +72,7 @@ export function BikiniBottomDanceOffTrust({
   videoSrc,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const fileGroupRefs = useRef<Array<HTMLDetailsElement | null>>([]);
+  const fileRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
   const [activeAnnotation, setActiveAnnotation] = useState(0);
 
   function seekToAnnotation(index: number) {
@@ -85,11 +86,8 @@ export function BikiniBottomDanceOffTrust({
   }
 
   function revealSource(filePath: string) {
-    const groupIndex = data.fileGroups.findIndex((group) =>
-      group.files.some((file) => file.path === filePath),
-    );
-    const group = fileGroupRefs.current[groupIndex];
-    if (group) group.open = true;
+    const file = fileRefs.current[filePath];
+    if (file) file.open = true;
   }
 
   return (
@@ -288,6 +286,9 @@ export function BikiniBottomDanceOffTrust({
             <div>
               <p className={styles.eyebrow}>04 · Everything included</p>
               <h3 id="dance-off-repo-title">The exact Repo files.</h3>
+              <p className={styles.fileIntro}>
+                Every file, what it does, and where it lives.
+              </p>
             </div>
             <a className={styles.repoDownload} href={repositoryHref} download>
               <Download aria-hidden="true" /> Download exact Repo
@@ -295,34 +296,36 @@ export function BikiniBottomDanceOffTrust({
           </div>
 
           <div className={styles.fileGroups}>
-            {data.fileGroups.map((group, index) => (
-              <details
+            {data.fileGroups.map((group) => (
+              <section
                 key={group.title}
                 className={styles.fileGroup}
-                ref={(node) => {
-                  fileGroupRefs.current[index] = node;
-                }}
-                open={index === 0}
+                aria-labelledby={sourceFileId(`${group.title}-group`)}
               >
-                <summary>
-                  <span>
-                    <strong>{group.title}</strong>
-                    <small>{group.summary}</small>
-                  </span>
-                  <span className={styles.fileCount}>
-                    {group.files.length} files
-                  </span>
-                  <ChevronDown aria-hidden="true" />
-                </summary>
-                <ul>
-                  {group.files.map((file) => (
-                    <li key={file.path} id={sourceFileId(file.path)}>
+                <h4
+                  id={sourceFileId(`${group.title}-group`)}
+                  className={styles.fileGroupTitle}
+                >
+                  {group.title}
+                </h4>
+                {group.files.map((file) => (
+                  <details
+                    key={file.path}
+                    id={sourceFileId(file.path)}
+                    className={styles.fileRow}
+                    ref={(node) => {
+                      fileRefs.current[file.path] = node;
+                    }}
+                  >
+                    <summary>
+                      <strong className={styles.fileLabel}>{file.label}</strong>
                       <code>{file.path}</code>
-                      <span>{file.description}</span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
+                      <ChevronRight aria-hidden="true" />
+                    </summary>
+                    <p>{file.description}</p>
+                  </details>
+                ))}
+              </section>
             ))}
           </div>
         </section>

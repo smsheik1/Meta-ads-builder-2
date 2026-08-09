@@ -458,98 +458,95 @@
   line-height: 1.5;
 }
 
+.fileIntro {
+  margin-top: 10px;
+  color: #596176;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .fileGroups {
-  border-top: 1.5px solid #080817;
+  display: grid;
+  gap: 28px;
 }
 
-.fileGroup {
-  border-bottom: 1px solid #b9b5ad;
-  background: transparent;
+.fileGroupTitle {
+  margin-bottom: 10px;
+  color: #667087;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
 }
 
-.fileGroup summary,
+.fileRow + .fileRow {
+  margin-top: 10px;
+}
+
+.fileRow {
+  scroll-margin-top: 1.5rem;
+  border: 1px solid #c9d3e0;
+  border-radius: 10px;
+  background: #fffdf8;
+  box-shadow: 0 2px 5px rgb(8 8 23 / 10%);
+}
+
+.fileRow summary,
 .advanced summary {
   cursor: pointer;
   list-style: none;
 }
 
-.fileGroup summary::-webkit-details-marker,
+.fileRow summary::-webkit-details-marker,
 .advanced summary::-webkit-details-marker {
   display: none;
 }
 
-.fileGroup summary {
+.fileRow summary {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) minmax(220px, 2fr) auto 18px;
+  grid-template-columns: minmax(190px, 0.42fr) minmax(0, 1fr) 18px;
   gap: 16px;
   align-items: center;
-  padding: 15px 0;
+  min-height: 64px;
+  padding: 15px 18px;
 }
 
-.fileGroup summary > span:first-child {
-  display: contents;
-}
-
-.fileGroup summary strong {
-  font-size: 1.05rem;
-}
-
-.fileGroup summary small {
-  color: #5e5e70;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.fileCount {
+.fileLabel {
   color: #080817;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 900;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
-.fileGroup summary > svg,
+.fileRow summary code {
+  overflow-wrap: anywhere;
+  color: #667087;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.fileRow summary > svg,
 .advanced summary > svg {
   width: 1.1rem;
   height: 1.1rem;
   transition: transform 150ms ease;
 }
 
-.fileGroup[open] summary > svg,
+.fileRow[open] summary > svg {
+  transform: rotate(90deg);
+}
+
 .advanced[open] summary > svg {
   transform: rotate(180deg);
 }
 
-.fileGroup ul {
-  margin: 0 0 14px;
-  border: 1px solid #d2cdc3;
-  background: #fffdf8;
-  padding: 4px 14px;
-}
-
-.fileGroup li {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) 1.2fr;
-  gap: 14px;
-  border-top: 1px solid rgb(8 8 23 / 14%);
-  padding-block: 9px;
-  font-size: 0.72rem;
-}
-
-.fileGroup li:first-child {
-  border-top: 0;
-}
-
-.fileGroup code {
-  overflow-wrap: anywhere;
-  color: #080817;
-  font-size: 0.7rem;
-  font-weight: 900;
-}
-
-.fileGroup li span {
+.fileRow > p {
+  margin: 0;
+  border-top: 1px solid #c9d3e0;
+  padding: 14px 18px 16px;
   color: #596176;
+  font-size: 0.78rem;
   font-weight: 700;
+  line-height: 1.5;
 }
 
 .advanced {
@@ -765,22 +762,19 @@
     margin-top: 3px;
   }
 
-  .fileGroup summary {
-    grid-template-columns: 1fr auto 18px;
+  .fileRow summary {
+    grid-template-columns: minmax(0, 1fr) 18px;
+    gap: 6px 12px;
   }
 
-  .fileGroup summary > span:first-child {
-    display: block;
+  .fileRow summary code {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
-  .fileGroup summary small {
-    display: block;
-    margin-top: 3px;
-  }
-
-  .fileGroup li {
-    grid-template-columns: 1fr;
-    gap: 3px;
+  .fileRow summary > svg {
+    grid-column: 2;
+    grid-row: 1;
   }
 }
 
@@ -790,11 +784,4 @@
     padding: 11px;
   }
 
-  .fileCount {
-    display: none;
-  }
-
-  .fileGroup summary {
-    grid-template-columns: 1fr 18px;
-  }
 }

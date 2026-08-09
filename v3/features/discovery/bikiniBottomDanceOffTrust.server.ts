@@ -146,9 +146,7 @@ export type BikiniBottomDanceOffTrustData = {
   commands: string[];
   fileGroups: Array<{
     title: string;
-    summary: string;
-    color: "cyan" | "pink" | "lime" | "yellow" | "coral" | "violet";
-    files: Array<{ path: string; description: string }>;
+    files: Array<{ label: string; path: string; description: string }>;
   }>;
 };
 
@@ -343,14 +341,14 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     fileGroups: [
       {
         title: "Agent playbook",
-        summary: "How the agent runs the Format",
-        color: "cyan",
         files: [
           {
+            label: "Agent instructions",
             path: "SKILL.md",
             description: "Exact agent workflow and approval rules.",
           },
           {
+            label: "Human setup",
             path: "README.md",
             description: "Human setup, commands, and examples.",
           },
@@ -358,18 +356,19 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       },
       {
         title: "Inputs & outputs",
-        summary: "Machine-readable boundaries",
-        color: "pink",
         files: [
           {
+            label: "Required inputs",
             path: "input-contract.json",
             description: "Required episode inputs and limits.",
           },
           {
+            label: "Final deliverables",
             path: "output-contract.json",
             description: "The final video and evidence bundle.",
           },
           {
+            label: "Services and tools",
             path: "requirements.json",
             description: "Local tools, providers, and environment.",
           },
@@ -377,18 +376,19 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       },
       {
         title: "Creative system",
-        summary: "What stays fixed and what changes",
-        color: "lime",
         files: [
           {
+            label: "Timeline rules",
             path: "composition-contract.json",
             description: "Timeline and rendering invariants.",
           },
           {
+            label: "Fixed vs customizable",
             path: "content-boundary.json",
             description: "Packaged mechanics versus episode inputs.",
           },
           {
+            label: "Asset manifest",
             path: "assets.json",
             description: "Versioned assets, roles, and source notes.",
           },
@@ -396,38 +396,44 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       },
       {
         title: "Quality & evals",
-        summary: "Scoring, tests, and proof",
-        color: "yellow",
         files: [
           {
+            label: "Quality rubric",
             path: "quality.json",
             description: "Technical gates and the blind creative rubric.",
           },
           {
+            label: "Evaluation framework",
             path: "EVALUATION-FRAMEWORK.md",
             description: "Review procedure, evidence rules, and calibration plan.",
           },
           {
+            label: "Calibration results",
             path: "CALIBRATION-REPORT.md",
             description: "Blind-review pilots, negative controls, and the remaining acceptance gate.",
           },
           {
+            label: "Blind judge prompt",
             path: "prompts/blind-review.md",
             description: "The isolated instructions given to the final judge.",
           },
           {
+            label: "Contract tests",
             path: "tests/contracts.test.mjs",
             description: "Contract regression coverage.",
           },
           {
+            label: "Evaluation tests",
             path: "tests/evaluate.test.mjs",
             description: "Eval and grading coverage.",
           },
           {
+            label: "Review integrity tests",
             path: "tests/review-packet.test.mjs",
             description: "Packet integrity and anti-tamper coverage.",
           },
           {
+            label: "Published proof",
             path: "PROOF-REPORT.md",
             description: "Why the published example is trustworthy.",
           },
@@ -435,26 +441,29 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       },
       {
         title: "Official runtime",
-        summary: "One production path",
-        color: "coral",
         files: [
           {
+            label: "Main runner",
             path: "runner.mjs",
             description: "Validates and orchestrates every stage.",
           },
           {
+            label: "Video compositor",
             path: "runtime/compose.mjs",
             description: "Builds the 47-second Reel.",
           },
           {
+            label: "Output inspection",
             path: "runtime/inspect.mjs",
             description: "Measures final output quality.",
           },
           {
+            label: "Blind review scoring",
             path: "runtime/review.mjs",
             description: "Binds, validates, and scores blind-review evidence.",
           },
           {
+            label: "Timeline engine",
             path: "runtime/timeline.mjs",
             description: "Allocates speech, solos, finale, and loop.",
           },
@@ -462,18 +471,19 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       },
       {
         title: "Assets",
-        summary: "Backgrounds, voices, and motions",
-        color: "violet",
         files: [
           {
+            label: "Background options",
             path: "assets/background-options.json",
             description: "Four selectable outer backgrounds.",
           },
           {
+            label: "Voice presets",
             path: "assets/voice-presets.json",
             description: "Non-secret Fish Audio assignments.",
           },
           {
+            label: "Dance library",
             path: "mixamo-character-motion-v1/assets/motions/manifest.json",
             description: "Frozen 25-motion starter catalog.",
           },
