@@ -5,15 +5,10 @@ import {
   BadgeCheck,
   ChevronDown,
   Download,
-  FileX2,
-  Hand,
-  ImageOff,
-  OctagonAlert,
   ShieldCheck,
-  VideoOff,
   Workflow,
 } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import type { BikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
 import styles from "./BikiniBottomDanceOffTrust.module.css";
 
@@ -80,7 +75,7 @@ export function BikiniBottomDanceOffTrust({
               </li>
               <li>
                 <a href="#dance-off-quality">
-                  <span>3</span>Quality checks
+                  <span>3</span>How it is graded
                 </a>
               </li>
               <li>
@@ -242,12 +237,14 @@ export function BikiniBottomDanceOffTrust({
         <section
           id="dance-off-quality"
           className={styles.panel}
-          aria-labelledby="dance-off-failures-title"
+          aria-labelledby="dance-off-grading-title"
         >
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>03 · Quality checks</p>
-              <h3 id="dance-off-failures-title">What gets stopped.</h3>
+              <p className={styles.eyebrow}>03 · Final evaluation</p>
+              <h3 id="dance-off-grading-title">
+                How your finished video is graded.
+              </h3>
             </div>
             <a
               className={styles.sourceLink}
@@ -259,35 +256,63 @@ export function BikiniBottomDanceOffTrust({
             </a>
           </div>
 
-          <div className={styles.gateGrid}>
-            <FailureGate color="cyan" icon={FileX2} title="Invalid requests">
-              A missing song, dialogue, video size, or dance assignment stops
-              before generation.
-            </FailureGate>
-            <FailureGate color="pink" icon={ImageOff} title="Mismatched assets">
-              Unknown character, motion, background, and voice IDs fail contract
-              validation.
-            </FailureGate>
-            <FailureGate color="lime" icon={Hand} title="Unapproved spending">
-              Fish Audio remains locked until dialogue is validated and the
-              provider call is explicitly approved.
-            </FailureGate>
-            <FailureGate
-              color="coral"
-              icon={VideoOff}
-              title="Broken final video"
-            >
-              Freezes, missing audio, bad dimensions, failed replay seams, or
-              missing human approval block delivery.
-            </FailureGate>
+          <div className={styles.gradeSummary}>
+            <div>
+              <strong>{data.stats.technicalGates}/{data.stats.technicalGates}</strong>
+              <span>Technical gates must pass</span>
+            </div>
+            <div>
+              <strong>{data.grading.passingScore}/100</strong>
+              <span>Minimum blind score</span>
+            </div>
+            <div>
+              <strong>0</strong>
+              <span>Critical failures allowed</span>
+            </div>
           </div>
-          <div className={styles.exampleStop}>
-            <OctagonAlert aria-hidden="true" />
+
+          <div className={styles.blindNote}>
+            <ShieldCheck aria-hidden="true" />
             <p>
-              <strong>Example stop:</strong> a taunt exceeds its 58-character
-              contract. Voice generation does not run, so nothing is spent.
+              <strong>Blind means independent.</strong> The judge receives the
+              final MP4, intended cast and dialogue, and this rubric—not the
+              source, render history, previous score, or known defects.
             </p>
           </div>
+
+          <div className={styles.rubric}>
+            <div className={styles.rubricHeading}>
+              <strong>The blind judge scores seven things</strong>
+              <span>Every rating needs time-coded evidence</span>
+            </div>
+            <ol>
+              {data.grading.criteria.map((criterion) => (
+                <li key={criterion.id}>
+                  <span className={styles.criterionWeight}>{criterion.weight}</span>
+                  <strong>{criterion.label}</strong>
+                  {criterion.critical ? <small>Critical</small> : null}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className={styles.ratingScale} aria-label="Five-level blind review scale">
+            {data.grading.ratingScale
+              .slice()
+              .reverse()
+              .map((rating) => (
+                <div key={rating.rating}>
+                  <strong>{rating.rating}</strong>
+                  <span>{rating.label}</span>
+                </div>
+              ))}
+          </div>
+          <p className={styles.gradeRule}>
+            A technically valid video still fails below {data.grading.passingScore},
+            or when character integrity, motion, audio, or composition falls
+            below its critical floor. Missing playback or low-confidence
+            evidence is inconclusive and requires another judge.
+          </p>
         </section>
 
         <section
@@ -382,16 +407,14 @@ export function BikiniBottomDanceOffTrust({
                   </dd>
                 </div>
                 <div>
-                  <dt>Automatic</dt>
+                  <dt>Technical</dt>
                   <dd>
-                    {data.proof.automaticScore}/{data.proof.automaticMaximum}
+                    {data.proof.technicalPassed}/{data.proof.technicalTotal} gates
                   </dd>
                 </div>
                 <div>
-                  <dt>Human review</dt>
-                  <dd>
-                    {data.proof.humanScore}/{data.proof.humanMaximum}
-                  </dd>
+                  <dt>Blind rubric</dt>
+                  <dd>Version {data.proof.rubricVersion}</dd>
                 </div>
                 <div>
                   <dt>Output</dt>
@@ -438,30 +461,6 @@ function FlowStation({
       <div className={styles.stationCopy}>
         <h4>{title}</h4>
         <span>{artifact}</span>
-      </div>
-    </article>
-  );
-}
-
-function FailureGate({
-  children,
-  color,
-  icon: Icon,
-  title,
-}: {
-  children: ReactNode;
-  color: string;
-  icon: typeof FileX2;
-  title: string;
-}) {
-  return (
-    <article className={styles.failureGate}>
-      <span data-color={color}>
-        <Icon aria-hidden="true" />
-      </span>
-      <div>
-        <h4>{title}</h4>
-        <p>{children}</p>
       </div>
     </article>
   );

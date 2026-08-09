@@ -75,13 +75,22 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
   const fpsParts = String(video?.avg_frame_rate || "0/1").split("/").map(Number);
   const fps = fpsParts[1] ? fpsParts[0] / fpsParts[1] : 0;
   const duration = Number(probe.format.duration);
-  const beepVolumes = await Promise.all(automatic.beepWindows.map((window) => meanVolume(videoPath, window)));
   const inset = automatic.measurementInsetSeconds;
   const songWindows = renderReport.timeline.events.filter((event) => event.song).map((event) => [event.start + inset, event.end - inset]);
   const dialogueWindows = renderReport.timeline.events.filter((event) => ["opening", "taunt", "closing"].includes(event.type)).map((event) => [event.start + 0.03, event.end - 0.03]);
-  const songVolumes = await Promise.all(songWindows.map((window) => meanVolume(videoPath, window)));
-  const dialogueVolumes = await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)));
-  const silentVolumes = await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)));
+  const noAudioMeasurements = (windows) => windows.map(() => -Infinity);
+  const beepVolumes = audio
+    ? await Promise.all(automatic.beepWindows.map((window) => meanVolume(videoPath, window)))
+    : noAudioMeasurements(automatic.beepWindows);
+  const songVolumes = audio
+    ? await Promise.all(songWindows.map((window) => meanVolume(videoPath, window)))
+    : noAudioMeasurements(songWindows);
+  const dialogueVolumes = audio
+    ? await Promise.all(dialogueWindows.map((window) => meanVolume(videoPath, window)))
+    : noAudioMeasurements(dialogueWindows);
+  const silentVolumes = audio
+    ? await Promise.all(automatic.silentWindows.map((window) => meanVolume(videoPath, window)))
+    : noAudioMeasurements(automatic.silentWindows);
   const closing = renderReport.timeline.events.find((event) => event.type === "closing");
   const closingChorusAssets = renderReport.dialogue.filter((asset) => (asset.timelineEventId || asset.id) === "closing");
   const panelCrops = CELL_POSITIONS.map(({ x, y }) => ({ x, y, width: CELL_WIDTH, height: CELL_HEIGHT }));
@@ -123,9 +132,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       && new Set(closingChorusAssets.map((asset) => asset.characterId)).size === automatic.closingChorusVoiceCount,
     seamlessReplayFrame: loopSeam.score >= automatic.minimumLoopSeamSsim,
   };
-  if (Object.values(checks).some((passed) => !passed)) {
-    throw new Error(`Automatic inspection failed: ${JSON.stringify({ checks, duration, fps, video, audio }, null, 2)}`);
-  }
+  const technicalPassed = Object.values(checks).every(Boolean);
   const contactSheet = path.join(runDirectory, "contact-sheet.png");
   await execute("ffmpeg", [
     "-y", "-i", videoPath,
@@ -133,7 +140,7 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
     "-frames:v", "1", contactSheet,
   ]);
   const report = {
-    status: "automatic-pass-human-pending",
+    status: technicalPassed ? "technical-pass-blind-review-pending" : "technical-fail",
     inspectedAt: new Date().toISOString(),
     checks,
     measured: {
@@ -141,8 +148,8 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       height: video.height,
       fps,
       durationSeconds: duration,
-      audioCodec: audio.codec_name,
-      audioSampleRate: Number(audio.sample_rate),
+      audioCodec: audio?.codec_name ?? null,
+      audioSampleRate: audio ? Number(audio.sample_rate) : null,
       beepWindowMeanDb: beepVolumes,
       songWindowMeanDb: songVolumes,
       dialogueWindowMeanDb: dialogueVolumes,
@@ -157,10 +164,13 @@ export async function inspectVideo({ videoPath, runDirectory, qualityContractPat
       loopSeamTimes,
       loopSeam,
     },
-    humanReview: { status: "pending", criteria: contract.human },
+    blindReview: { status: "pending", criteria: contract.grading.blindCriteria },
     contactSheet: path.basename(contactSheet),
   };
   await writeFile(path.join(runDirectory, "quality-report.json"), `${JSON.stringify(report, null, 2)}\n`);
   await writeEvaluation({ runDirectory, qualityReport: report, contract });
+  if (!technicalPassed) {
+    throw new Error(`Automatic inspection failed: ${JSON.stringify({ checks, duration, fps, video, audio }, null, 2)}`);
+  }
   return report;
 }

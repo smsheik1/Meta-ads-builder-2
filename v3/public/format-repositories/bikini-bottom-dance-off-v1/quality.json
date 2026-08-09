@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "rubricVersion": "1.1.0",
   "automatic": {
     "width": 1080,
     "height": 1920,
@@ -18,50 +19,162 @@
     "silentWindows": [[0.5, 0.95], [1.5, 1.95], [2.6, 2.95]],
     "maximumAttempts": 3
   },
+  "technicalGates": [
+    {"id": "width", "label": "Reel width", "threshold": "exactly 1080 px", "measurementPath": "measured.width"},
+    {"id": "height", "label": "Reel height", "threshold": "exactly 1920 px", "measurementPath": "measured.height"},
+    {"id": "fps", "label": "Frame rate", "threshold": "30 fps ±0.01", "measurementPath": "measured.fps"},
+    {"id": "duration", "label": "Complete runtime", "threshold": "47 sec ±0.08", "measurementPath": "measured.durationSeconds"},
+    {"id": "audio", "label": "Playable audio track", "threshold": "audio stream present", "measurementPath": "measured.audioCodec"},
+    {"id": "countdownBeeps", "label": "Three audible countdown beeps", "threshold": "every beep window at least -45 dB", "measurementPath": "measured.beepWindowMeanDb"},
+    {"id": "danceMusic", "label": "Music during every dance", "threshold": "every dance window at least -45 dB", "measurementPath": "measured.songWindowMeanDb"},
+    {"id": "dialogueVoices", "label": "Dialogue is audible", "threshold": "every dialogue window at least -45 dB", "measurementPath": "measured.dialogueWindowMeanDb"},
+    {"id": "countdownGapsSilent", "label": "Countdown has clean gaps", "threshold": "silent windows at most -65 dB", "measurementPath": "measured.silentWindowMeanDb"},
+    {"id": "fiveSecondSolos", "label": "Every solo has showcase time", "threshold": "each solo at least 5 sec", "measurementPath": "measured.soloDurationSeconds"},
+    {"id": "nineSecondGroupFinale", "label": "Full group finale", "threshold": "exactly 9 sec", "measurementPath": "measured.groupFinaleDurationSeconds"},
+    {"id": "uninterruptedFinaleSources", "label": "Dedicated finale motions", "threshold": "all four finale clips rendered", "measurementPath": "measured.finaleRenderedClipCount"},
+    {"id": "finaleMotionContinuity", "label": "Nobody freezes in the finale", "threshold": "zero freeze events over 0.75 sec", "measurementPath": "measured.finaleFreezeEventCounts"},
+    {"id": "closingCharacterMovesDuringCta", "label": "Closing performer stays alive", "threshold": "CTA frame hashes differ", "measurementPath": "measured.closingMotionFrameHashes"},
+    {"id": "closingChorusVoices", "label": "Four-character closing chorus", "threshold": "four distinct voices", "measurementPath": "measured.closingChorusVoiceCount"},
+    {"id": "seamlessReplayFrame", "label": "Replay seam", "threshold": "half-scale luma SSIM at least 0.995", "measurementPath": "measured.loopSeam.score"}
+  ],
   "grading": {
+    "scoreMeaning": "blind creative quality only; technical validity is reported separately as pass or fail",
     "passingScore": 85,
+    "ratingScale": [
+      {"rating": 4, "label": "Excellent", "factor": 1, "anchor": "Clearly strengthens the Reel; no meaningful issue observed."},
+      {"rating": 3, "label": "Ready", "factor": 0.85, "anchor": "Works as intended; only minor polish could improve it."},
+      {"rating": 2, "label": "Mixed", "factor": 0.6, "anchor": "Understandable, but an observable weakness reduces impact."},
+      {"rating": 1, "label": "Poor", "factor": 0.3, "anchor": "Repeated or major problems make the Reel feel unfinished."},
+      {"rating": 0, "label": "Broken", "factor": 0, "anchor": "The requirement fails or cannot be assessed from the supplied media."}
+    ],
     "gradeScale": [
       {"minimum": 97, "grade": "A+"},
       {"minimum": 93, "grade": "A"},
       {"minimum": 90, "grade": "A-"},
       {"minimum": 87, "grade": "B+"},
-      {"minimum": 83, "grade": "B"},
-      {"minimum": 80, "grade": "B-"},
+      {"minimum": 85, "grade": "B"},
       {"minimum": 70, "grade": "C"},
-      {"minimum": 60, "grade": "D"},
+      {"minimum": 55, "grade": "D"},
       {"minimum": 0, "grade": "F"}
     ],
-    "automaticCriteria": [
-      {"id": "width", "label": "Reel width", "weight": 2, "threshold": "exactly 1080 px", "measurementPath": "measured.width"},
-      {"id": "height", "label": "Reel height", "weight": 2, "threshold": "exactly 1920 px", "measurementPath": "measured.height"},
-      {"id": "fps", "label": "Frame rate", "weight": 3, "threshold": "30 fps ±0.01", "measurementPath": "measured.fps"},
-      {"id": "duration", "label": "Complete runtime", "weight": 5, "threshold": "47 sec ±0.08", "measurementPath": "measured.durationSeconds"},
-      {"id": "audio", "label": "Playable audio track", "weight": 4, "threshold": "audio stream present", "measurementPath": "measured.audioCodec"},
-      {"id": "countdownBeeps", "label": "Three audible countdown beeps", "weight": 4, "threshold": "every beep window at least -45 dB", "measurementPath": "measured.beepWindowMeanDb"},
-      {"id": "danceMusic", "label": "Music during every dance", "weight": 5, "threshold": "every dance window at least -45 dB", "measurementPath": "measured.songWindowMeanDb"},
-      {"id": "dialogueVoices", "label": "Dialogue is audible", "weight": 5, "threshold": "every dialogue window at least -45 dB", "measurementPath": "measured.dialogueWindowMeanDb"},
-      {"id": "countdownGapsSilent", "label": "Countdown has clean gaps", "weight": 4, "threshold": "silent windows at most -65 dB", "measurementPath": "measured.silentWindowMeanDb"},
-      {"id": "fiveSecondSolos", "label": "Every solo has showcase time", "weight": 5, "threshold": "each solo at least 5 sec", "measurementPath": "measured.soloDurationSeconds"},
-      {"id": "nineSecondGroupFinale", "label": "Full group finale", "weight": 5, "threshold": "exactly 9 sec", "measurementPath": "measured.groupFinaleDurationSeconds"},
-      {"id": "uninterruptedFinaleSources", "label": "Dedicated finale motions", "weight": 4, "threshold": "all four finale clips rendered", "measurementPath": "measured.finaleRenderedClipCount"},
-      {"id": "finaleMotionContinuity", "label": "Nobody freezes in the finale", "weight": 6, "threshold": "zero freeze events over 0.75 sec", "measurementPath": "measured.finaleFreezeEventCounts"},
-      {"id": "closingCharacterMovesDuringCta", "label": "Closing performer stays alive", "weight": 5, "threshold": "CTA frame hashes differ", "measurementPath": "measured.closingMotionFrameHashes"},
-      {"id": "closingChorusVoices", "label": "Four-character closing chorus", "weight": 5, "threshold": "four distinct voices", "measurementPath": "measured.closingChorusVoiceCount"},
-      {"id": "seamlessReplayFrame", "label": "Replay seam", "weight": 6, "threshold": "half-scale luma SSIM at least 0.995", "measurementPath": "measured.loopSeam.score"}
+    "blindCriteria": [
+      {
+        "id": "character-integrity",
+        "label": "Character integrity",
+        "weight": 20,
+        "criticalFloor": 2,
+        "question": "Do faces, eyes, silhouettes, limbs, intersections, and framing preserve each character's recognizable identity throughout the Reel?",
+        "anchors": {
+          "4": "Every character remains immediately recognizable in motion; anatomy and intersections stay clean even in demanding poses.",
+          "3": "Identity and anatomy remain stable; only brief cosmetic oddities appear and none distract from the performance.",
+          "2": "Characters remain recognizable, but repeated clipping, eye drift, limb confusion, or awkward framing is visibly distracting.",
+          "1": "A major or repeated deformation makes at least one character feel unfinished or intermittently unrecognizable.",
+          "0": "Identity breaks, destructive melting, missing anatomy, or unusable framing prevents honest assessment."
+        }
+      },
+      {
+        "id": "motion-performance",
+        "label": "Motion quality and performance",
+        "weight": 20,
+        "criticalFloor": 2,
+        "question": "Does the retargeted movement look intentional, continuous, and expressive without freezing, melting, foot chaos, dead poses, or meaningless sway?",
+        "anchors": {
+          "4": "Movement is continuous, controlled, characterful, and clearly sells the performance; transitions feel authored.",
+          "3": "Movement reads as intentional and stable with only brief stiffness or low-amplitude moments.",
+          "2": "The routine is understandable, but repeated stiffness, foot sliding, empty sway, or weak gestures reduce impact.",
+          "1": "Freezes, severe sliding, dead poses, or chaotic retargeting repeatedly interrupt the performance.",
+          "0": "Motion is absent, broken, or impossible to assess."
+        }
+      },
+      {
+        "id": "dance-readability",
+        "label": "Dance readability and variety",
+        "weight": 15,
+        "question": "Does every solo read as a distinct showcase, fit its panel, and give way to a finale where all four dancers register?",
+        "anchors": {
+          "4": "Every solo has a memorable, distinct movement idea and the finale lets all four dancers register at once.",
+          "3": "Every solo and the finale are easy to follow and sufficiently distinct; minor repetition does not confuse the contest.",
+          "2": "The order is legible, but at least two routines feel too similar, too small, cropped, or underperformed.",
+          "1": "Multiple showcases are hard to distinguish or follow, or the finale fails to register all four dancers.",
+          "0": "The dance-off structure cannot be identified or assessed."
+        }
+      },
+      {
+        "id": "edit-story-flow",
+        "label": "Edit, pacing, and story flow",
+        "weight": 15,
+        "question": "Do the countdown, handoffs, taunts, solos, finale, CTA, and replay bridge form one clear and energetic sequence?",
+        "anchors": {
+          "4": "Every beat advances the contest; handoffs are crisp, pacing escalates, and no section overstays its purpose.",
+          "3": "The complete sequence is clear and energetic with only one or two minor pacing or transition blemishes.",
+          "2": "The story remains understandable, but repeated staging, awkward transitions, or a long hold creates a noticeable energy drop.",
+          "1": "Confusing order, missing beats, or repeated pacing stalls make the edit feel unfinished.",
+          "0": "The required sequence is absent or cannot be assessed."
+        }
+      },
+      {
+        "id": "audio-voice-performance",
+        "label": "Audio and voice performance",
+        "weight": 10,
+        "criticalFloor": 2,
+        "question": "Is dialogue intelligible and well paced, are voices associated with the right characters, and do music entrances and exits feel deliberate?",
+        "anchors": {
+          "4": "Every line is clear, expressive, correctly associated, and cleanly mixed; music and silence strengthen each handoff.",
+          "3": "All required speech is intelligible and correctly associated; only minor synthetic tone, pacing, or mix polish remains.",
+          "2": "The story can be heard, but at least one repeated mix, timing, pronunciation, or performance weakness reduces clarity or energy.",
+          "1": "Primary dialogue is repeatedly hard to understand, assigned to the wrong character, badly timed, or overwhelmed by music.",
+          "0": "Required audio is absent, unusable, or not perceptible in the review environment."
+        }
+      },
+      {
+        "id": "reels-composition",
+        "label": "Reels composition and captions",
+        "weight": 10,
+        "criticalFloor": 2,
+        "question": "Do important faces, movement, labels, and captions remain readable in the vertical frame and clear of expected Reels overlays?",
+        "anchors": {
+          "4": "The vertical composition feels intentionally filled, every important element is instantly readable, and overlay-safe negative space looks designed.",
+          "3": "Faces, motion, labels, and captions stay readable and overlay-safe; deliberate outer-background breathing room is not a defect by itself.",
+          "2": "Important content remains understandable, but repeated small scale, clipping, weak contrast, or excessive visually empty space reduces impact.",
+          "1": "A major composition problem repeatedly hides, crops, or miniaturizes important performance or captions.",
+          "0": "The intended vertical presentation is unusable or cannot be assessed."
+        }
+      },
+      {
+        "id": "hook-payoff-replay",
+        "label": "Hook, payoff, and replay desire",
+        "weight": 10,
+        "question": "Does the opening create curiosity, does the finale and CTA deliver a payoff, and does the ending make another viewing feel natural?",
+        "anchors": {
+          "4": "The hook creates immediate curiosity, the finale clearly raises the energy, the CTA invites participation, and the seam rewards replay.",
+          "3": "Hook, payoff, CTA, and loop are all clear and effective; only minor polish limits replay desire.",
+          "2": "The required pieces exist, but a weak climax, long ending, or obvious seam noticeably lowers the urge to rewatch.",
+          "1": "The opening is slow or confusing, the payoff is missing, or the ending actively discourages replay.",
+          "0": "The hook-to-loop experience is absent or cannot be assessed."
+        }
+      }
     ]
   },
-  "human": [
-    {"id": "faces-readable", "label": "All four faces and eyes remain readable throughout their solos.", "weight": 2.5},
-    {"id": "body-language", "label": "The active speaker uses a readable reaction gesture while waiting characters stay subtly alive and visually subordinate.", "weight": 2.5},
-    {"id": "countdown-clarity", "label": "The countdown has three clear beeps and no song underneath it.", "weight": 2.5},
-    {"id": "music-placement", "label": "The supplied song is audible only during solo dances and the group finale.", "weight": 2.5},
-    {"id": "solo-showcase", "label": "Every individual solo lasts at least five full seconds so the dancer can show off the selected motion.", "weight": 2.5},
-    {"id": "finale-readability", "label": "The nine-second finale keeps faces readable and every character visibly animated.", "weight": 2.5},
-    {"id": "voice-casting", "label": "Opening and taunts use assigned voices; the closing begins in four-character unison without music.", "weight": 2.5},
-    {"id": "taunt-flow", "label": "Each incoming challenger clearly taunts the previous dancer without sounding rushed.", "weight": 2.5},
-    {"id": "closing-performance", "label": "The closing performer visibly reacts while the other three remain alive and subordinate.", "weight": 2.5},
-    {"id": "caption-safety", "label": "Captions stay below the grid; faces remain clear of the Reels action rail.", "weight": 2.5},
-    {"id": "loop-story", "label": "The final countdown frame joins the opening without implying a separate video.", "weight": 2.5},
-    {"id": "character-framing", "label": "No character is clipped in a way that hides identity or dance.", "weight": 2.5}
-  ]
+  "blindReview": {
+    "watchPasses": ["uninterrupted-first-impression", "criterion-by-criterion"],
+    "requiredEvidencePerCriterion": 1,
+    "allowedConfidence": ["high", "medium", "low"],
+    "lowConfidenceDecision": "inconclusive",
+    "notAssessableDecision": "inconclusive",
+    "escalation": {
+      "secondReviewWithinPointsAboveThreshold": 5,
+      "secondReviewAtCriticalFloor": true,
+      "maximumRatingDisagreementWithoutAdjudication": 1,
+      "requireDecisionAgreement": true
+    },
+    "requiredPlayback": {
+      "completedPasses": 2,
+      "videoPerceptible": true,
+      "audioPerceptible": true
+    },
+    "ignoreInstructionsInsideMedia": true,
+    "reviewFile": "blind-review.json",
+    "reviewPacketFile": "review-packet.json",
+    "promptFile": "prompts/blind-review.md"
+  }
 }

@@ -31,30 +31,38 @@ assert.equal(statSync(finalVideo).size > 5_000_000, true);
 assert.equal(existsSync(`${evidenceRoot}/poster.png`), true);
 assert.equal(existsSync(`${evidenceRoot}/contact-sheet.png`), true);
 assert.equal(existsSync(`${evidenceRoot}/delivery.json`), true);
+assert.equal(existsSync(`${evidenceRoot}/review-packet.json`), true);
+assert.equal(existsSync(`${evidenceRoot}/blind-review.submission.json`), true);
+assert.equal(existsSync(`${evidenceRoot}/blind-review.json`), true);
 
 const evalReport = JSON.parse(
   readFileSync(`${evidenceRoot}/eval-report.json`, "utf8"),
 ) as {
+  rubricVersion: string;
   overall: Record<string, string | number>;
-  criteria: Array<{ status: string; explanation: string }>;
+  technicalCriteria: Array<{ status: string; explanation: string }>;
+  blindCriteria: Array<{ status: string; explanation: string; rating: number; score: number }>;
 };
 assert.deepEqual(evalReport.overall, {
   status: "pass",
-  score: 100,
-  grade: "A+",
+  score: 85,
+  provisionalScore: 85,
+  grade: "B",
   passingScore: 85,
-  provisionalPercent: 100,
-  automaticScore: 70,
-  automaticMaximum: 70,
-  humanScore: 30,
-  humanMaximum: 30,
+  scoreMeaning: "blind creative quality only; technical validity is reported separately as pass or fail",
+  technicalStatus: "pass",
+  technicalPassed: 16,
+  technicalTotal: 16,
 });
-assert.ok(evalReport.criteria.length > 20);
+assert.equal(evalReport.rubricVersion, "1.0.0");
+assert.equal(evalReport.technicalCriteria.length, 16);
 assert.ok(
-  evalReport.criteria.every(
+  evalReport.technicalCriteria.every(
     (criterion) => criterion.status === "pass" && criterion.explanation,
   ),
 );
+assert.equal(evalReport.blindCriteria.length, 7);
+assert.ok(evalReport.blindCriteria.every((criterion) => criterion.status === "scored" && criterion.rating === 3));
 const delivery = JSON.parse(
   readFileSync(`${evidenceRoot}/delivery.json`, "utf8"),
 ) as {
@@ -63,14 +71,14 @@ const delivery = JSON.parse(
   eval: { grade: string; score: number; status: string };
 };
 assert.equal(delivery.status, "ready");
-assert.equal(delivery.eval.grade, "A+");
-assert.equal(delivery.eval.score, 100);
+assert.equal(delivery.eval.grade, "B");
+assert.equal(delivery.eval.score, 85);
 assert.equal(delivery.eval.status, "pass");
 assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.8.0");
+assert.equal(profile.version, "0.9.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -92,7 +100,7 @@ assert.match(
 );
 assert.match(
   prompt,
-  /Return final\.mp4 together with eval-report\.md and delivery\.json/,
+  /return final\.mp4 together with eval-report\.md and delivery\.json/,
 );
 assert.match(prompt, /What song should the four characters dance to\?/);
 
@@ -159,7 +167,8 @@ assert.match(
 );
 assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
 assert.match(trustComponent, /See it work\./);
-assert.match(trustComponent, /What gets stopped\./);
+assert.match(trustComponent, /How your finished video is graded\./);
+assert.match(trustComponent, /The blind judge scores seven things/);
 assert.doesNotMatch(trustComponent, /One job\. Six transformations\./);
 assert.doesNotMatch(trustComponent, /The real proof, annotated\./);
 assert.doesNotMatch(trustComponent, /What the Repo refuses to ship\./);
@@ -253,12 +262,12 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.8.0");
+assert.equal(trustData.version, "0.9.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   backgrounds: 4,
-  automaticCriteria: 16,
-  humanCriteria: 12,
+  technicalGates: 16,
+  blindCriteria: 7,
   rendererCount: 1,
 });
 assert.deepEqual(
@@ -274,8 +283,10 @@ assert.deepEqual(
     "The ending deliberately creates the replay.",
   ],
 );
-assert.equal(trustData.proof.grade, "A+");
-assert.equal(trustData.proof.score, 100);
+assert.equal(trustData.proof.grade, "B");
+assert.equal(trustData.proof.score, 85);
+assert.equal(trustData.proof.rubricVersion, "1.0.0");
+assert.equal(trustData.grading.rubricVersion, "1.1.0");
 assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
 assert.deepEqual(trustData.requirements.environmentVariables, [
   "FISH_STUDIO_APIKEY",
@@ -289,7 +300,7 @@ assert.equal(
 );
 assert.equal(
   trustData.commands.includes(
-    "npm run finalize -- --run=episode-01 --human-review=pass",
+    "npm run finalize -- --run=episode-01 --review=/absolute/path/to/blind-review.json --second-review=/absolute/path/to/second-review.json",
   ),
   true,
 );
@@ -297,6 +308,12 @@ assert.equal(
   trustData.fileGroups
     .flatMap((group) => group.files)
     .some((file) => file.path === "PROOF-REPORT.md"),
+  true,
+);
+assert.equal(
+  trustData.fileGroups
+    .flatMap((group) => group.files)
+    .some((file) => file.path === "CALIBRATION-REPORT.md"),
   true,
 );
 

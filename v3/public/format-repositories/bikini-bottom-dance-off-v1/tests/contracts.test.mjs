@@ -187,6 +187,12 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(inspector, /groupFinaleDurationSeconds/);
   assert.match(inspector, /finaleRenderedClipCount/);
   assert.match(inspector, /finaleFreezeEventCounts/);
+  assert.match(inspector, /noAudioMeasurements/);
+  assert.match(inspector, /audio\?\.codec_name \?\? null/);
+  assert.ok(
+    inspector.indexOf('writeFile(path.join(runDirectory, "quality-report.json"') < inspector.indexOf("if (!technicalPassed)"),
+    "failed technical inspections must preserve their evidence report before throwing",
+  );
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {
@@ -217,16 +223,28 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   assert.doesNotMatch(buildKit, /version: "0\.7/);
 });
 
-test("finalization returns one delivery bundle with a scored eval", async () => {
+test("finalization requires a hash-bound blind review and returns one scored delivery bundle", async () => {
   const output = await readJson("output-contract.json");
   assert.equal(output.delivery.finalVideo, "final.mp4");
   assert.equal(output.delivery.machineReadableEval, "eval-report.json");
   assert.equal(output.delivery.friendlyEval, "eval-report.md");
+  assert.equal(output.delivery.blindReview, "blind-review.json");
   const quality = await readJson("quality.json");
-  assert.equal(quality.grading.automaticCriteria.reduce((sum, criterion) => sum + criterion.weight, 0), 70);
-  assert.equal(quality.human.reduce((sum, criterion) => sum + criterion.weight, 0), 30);
+  assert.equal(quality.schemaVersion, 2);
+  assert.equal(quality.technicalGates.length, 16);
+  assert.equal(quality.grading.blindCriteria.reduce((sum, criterion) => sum + criterion.weight, 0), 100);
+  assert.equal(quality.grading.ratingScale.length, 5);
+  assert.equal(quality.grading.passingScore, 85);
+  assert.ok(quality.grading.blindCriteria.every((criterion) => Object.keys(criterion.anchors).length === 5));
+  assert.equal(quality.blindReview.requiredPlayback.audioPerceptible, true);
+  assert.equal(quality.blindReview.escalation.requireDecisionAgreement, true);
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
   assert.match(runner, /delivery\.json/);
   assert.match(runner, /eval-report\.md/);
+  assert.match(runner, /--review=\/absolute\/path\/to\/blind-review\.json/);
+  assert.match(runner, /review-packet\.json/);
+  assert.match(runner, /--second-review=\/absolute\/path\/to\/an-independent-review\.json/);
+  assert.match(runner, /compareBlindReviews/);
+  assert.doesNotMatch(runner, /human-review=pass/);
   assert.match(runner, /grade: evaluation\.overall\.grade/);
 });

@@ -16,10 +16,18 @@ type QualityContract = {
     height: number;
     width: number;
   };
+  rubricVersion: string;
+  technicalGates: Array<{ id: string }>;
   grading: {
-    automaticCriteria: Array<{ id: string }>;
+    passingScore: number;
+    ratingScale: Array<{ rating: number; label: string }>;
+    blindCriteria: Array<{
+      id: string;
+      label: string;
+      weight: number;
+      criticalFloor?: number;
+    }>;
   };
-  human: Array<{ id: string }>;
 };
 
 type BackgroundManifest = {
@@ -40,14 +48,13 @@ type RenderReport = {
 };
 
 type EvalReport = {
+  rubricVersion: string;
   overall: {
     grade: string;
     score: number;
     status: string;
-    automaticScore: number;
-    automaticMaximum: number;
-    humanScore: number;
-    humanMaximum: number;
+    technicalPassed: number;
+    technicalTotal: number;
   };
 };
 
@@ -67,22 +74,32 @@ export type BikiniBottomDanceOffTrustData = {
   stats: {
     motions: number;
     backgrounds: number;
-    automaticCriteria: number;
-    humanCriteria: number;
+    technicalGates: number;
+    blindCriteria: number;
     rendererCount: number;
+  };
+  grading: {
+    rubricVersion: string;
+    passingScore: number;
+    ratingScale: Array<{ rating: number; label: string }>;
+    criteria: Array<{
+      id: string;
+      label: string;
+      weight: number;
+      critical: boolean;
+    }>;
   };
   proof: {
     grade: string;
     score: number;
     status: string;
-    automaticScore: number;
-    automaticMaximum: number;
-    humanScore: number;
-    humanMaximum: number;
+    technicalPassed: number;
+    technicalTotal: number;
     width: number;
     height: number;
     durationSeconds: number;
     renderer: string;
+    rubricVersion: string;
   };
   annotations: Array<{
     seconds: number;
@@ -172,7 +189,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       if (script === "render")
         return "npm run render -- --run=episode-01 --approve-provider";
       if (script === "finalize")
-        return "npm run finalize -- --run=episode-01 --human-review=pass";
+        return "npm run finalize -- --run=episode-01 --review=/absolute/path/to/blind-review.json --second-review=/absolute/path/to/second-review.json";
       if (["validate", "inspect"].includes(script))
         return `npm run ${script} -- --run=episode-01`;
       return `npm run ${script}`;
@@ -183,22 +200,32 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     stats: {
       motions: motions.motions.length,
       backgrounds: backgrounds.options.length,
-      automaticCriteria: quality.grading.automaticCriteria.length,
-      humanCriteria: quality.human.length,
+      technicalGates: quality.technicalGates.length,
+      blindCriteria: quality.grading.blindCriteria.length,
       rendererCount: 1,
+    },
+    grading: {
+      rubricVersion: quality.rubricVersion,
+      passingScore: quality.grading.passingScore,
+      ratingScale: quality.grading.ratingScale.map(({ rating, label }) => ({ rating, label })),
+      criteria: quality.grading.blindCriteria.map(({ id, label, weight, criticalFloor }) => ({
+        id,
+        label,
+        weight,
+        critical: Number.isFinite(criticalFloor),
+      })),
     },
     proof: {
       grade: evalReport.overall.grade,
       score: evalReport.overall.score,
       status: evalReport.overall.status,
-      automaticScore: evalReport.overall.automaticScore,
-      automaticMaximum: evalReport.overall.automaticMaximum,
-      humanScore: evalReport.overall.humanScore,
-      humanMaximum: evalReport.overall.humanMaximum,
+      technicalPassed: evalReport.overall.technicalPassed,
+      technicalTotal: evalReport.overall.technicalTotal,
       width: quality.automatic.width,
       height: quality.automatic.height,
       durationSeconds: quality.automatic.durationSeconds,
       renderer: format.renderer,
+      rubricVersion: evalReport.rubricVersion,
     },
     annotations: [
       {
@@ -297,7 +324,19 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         files: [
           {
             path: "quality.json",
-            description: "Automatic and human scoring criteria.",
+            description: "Technical gates and the blind creative rubric.",
+          },
+          {
+            path: "EVALUATION-FRAMEWORK.md",
+            description: "Review procedure, evidence rules, and calibration plan.",
+          },
+          {
+            path: "CALIBRATION-REPORT.md",
+            description: "Blind-review pilots, negative controls, and the remaining acceptance gate.",
+          },
+          {
+            path: "prompts/blind-review.md",
+            description: "The isolated instructions given to the final judge.",
           },
           {
             path: "tests/contracts.test.mjs",
@@ -306,6 +345,10 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
           {
             path: "tests/evaluate.test.mjs",
             description: "Eval and grading coverage.",
+          },
+          {
+            path: "tests/review-packet.test.mjs",
+            description: "Packet integrity and anti-tamper coverage.",
           },
           {
             path: "PROOF-REPORT.md",
@@ -329,6 +372,10 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
           {
             path: "runtime/inspect.mjs",
             description: "Measures final output quality.",
+          },
+          {
+            path: "runtime/review.mjs",
+            description: "Binds, validates, and scores blind-review evidence.",
           },
           {
             path: "runtime/timeline.mjs",

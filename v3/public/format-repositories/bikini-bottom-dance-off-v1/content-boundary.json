@@ -5,7 +5,7 @@
     "verified character motion profiles, grounding, paired limbs, and protected face bones",
     "the 9:16 four-panel compositor, timing model, caption lane, countdown, finale, chorus, and replay bridge",
     "motion selection, local motion import, MP4 composition, inspection, and finalization",
-    "weighted technical and human-review evals, delivery manifest, and two proof input fixtures"
+    "deterministic technical gates, a hash-bound blind-review contract, delivery manifest, and two proof input fixtures"
   ],
   "packagedReplaceableContent": [
     "the frozen 25-motion normalized starter catalog",

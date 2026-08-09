@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "packetId": "2b3f05cff14fdba4fdf5e446899675e311df27e7b097c7786f968d6e47af2ea7",
+  "videoSha256": "9410930282548bc052dc9123d5b84ea7df9b1a4d9809f491b3441a2cc7ca5620",
+  "reviewedAt": "2026-08-09T00:24:08Z",
+  "reviewer": {
+    "kind": "agent",
+    "id": "blind-eval-beta"
+  },
+  "playback": null,
+  "firstPass": {
+    "verdict": "ready",
+    "replayFeelsNatural": true,
+    "observation": "The competition premise, color-coded handoffs, taunts, finale, and CTA are immediately legible, and the countdown makes the loop feel intentional. The choreography reads clearly but relies on relatively small sways, turns, and arm gestures, so the payoff feels polished rather than spectacular."
+  },
+  "criteria": [
+    {
+      "id": "character-integrity",
+      "label": "Character integrity",
+      "weight": 20,
+      "criticalFloor": 2,
+      "question": "Do faces, eyes, silhouettes, limbs, intersections, and framing preserve each character's recognizable identity throughout the Reel?",
+      "anchors": {
+        "0": "Identity breaks, destructive melting, missing anatomy, or unusable framing prevents honest assessment.",
+        "1": "A major or repeated deformation makes at least one character feel unfinished or intermittently unrecognizable.",
+        "2": "Characters remain recognizable, but repeated clipping, eye drift, limb confusion, or awkward framing is visibly distracting.",
+        "3": "Identity and anatomy remain stable; only brief cosmetic oddities appear and none distract from the performance.",
+        "4": "Every character remains immediately recognizable in motion; anatomy and intersections stay clean even in demanding poses."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "high",
+      "evidence": [
+        {
+          "startSeconds": 3.2,
+          "endSeconds": 14.5,
+          "observation": "SpongeBob and Patrick remain immediately recognizable through the opening, handoff, tilts, and body sways; their eyes, faces, silhouettes, and clothing stay coherent inside their panels."
+        },
+        {
+          "startSeconds": 17.5,
+          "endSeconds": 31,
+          "observation": "Mr. Krabs keeps a stable eye-stalk, claw, shirt, and round-body silhouette while leaning and turning, and Squilliam's head, eyes, nose, arms, and torso remain coherent during his bends and arm poses."
+        },
+        {
+          "startSeconds": 34.5,
+          "endSeconds": 40,
+          "observation": "All four characters remain identifiable during the finale, including side and back-facing turns, without visible melting, limb loss, or destructive intersections."
+        }
+      ],
+      "rationale": "Identity and anatomy hold throughout the finished Reel. A few poses are simplified and stylized, but they remain readable and do not create a meaningful integrity failure.",
+      "score": 17
+    },
+    {
+      "id": "motion-performance",
+      "label": "Motion quality and performance",
+      "weight": 20,
+      "criticalFloor": 2,
+      "question": "Does the retargeted movement look intentional, continuous, and expressive without freezing, melting, foot chaos, dead poses, or meaningless sway?",
+      "anchors": {
+        "0": "Motion is absent, broken, or impossible to assess.",
+        "1": "Freezes, severe sliding, dead poses, or chaotic retargeting repeatedly interrupt the performance.",
+        "2": "The routine is understandable, but repeated stiffness, foot sliding, empty sway, or weak gestures reduce impact.",
+        "3": "Movement reads as intentional and stable with only brief stiffness or low-amplitude moments.",
+        "4": "Movement is continuous, controlled, characterful, and clearly sells the performance; transitions feel authored."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "high",
+      "evidence": [
+        {
+          "startSeconds": 4,
+          "endSeconds": 14.5,
+          "observation": "SpongeBob performs a compact arm-and-body sequence before Patrick takes over with broad leans and sways; the changes are continuous and intentionally staged."
+        },
+        {
+          "startSeconds": 17.5,
+          "endSeconds": 31,
+          "observation": "Mr. Krabs works his claws and torso through a distinct routine, while Squilliam bends, turns, and raises his arms in a separate performance style without freezing or foot chaos."
+        },
+        {
+          "startSeconds": 34.5,
+          "endSeconds": 40,
+          "observation": "The finale keeps all four moving through coordinated turns and gestures, though several moves are low-amplitude and read more as sways or pose changes than full-bodied dancing."
+        }
+      ],
+      "rationale": "The movement is stable, intentional, and expressive enough to ship. Its main limitation is restrained amplitude and occasional rigid-body simplicity, which keeps it from feeling exceptional.",
+      "score": 17
+    },
+    {
+      "id": "dance-readability",
+      "label": "Dance readability and variety",
+      "weight": 15,
+      "question": "Does every solo read as a distinct showcase, fit its panel, and give way to a finale where all four dancers register?",
+      "anchors": {
+        "0": "The dance-off structure cannot be identified or assessed.",
+        "1": "Multiple showcases are hard to distinguish or follow, or the finale fails to register all four dancers.",
+        "2": "The order is legible, but at least two routines feel too similar, too small, cropped, or underperformed.",
+        "3": "Every solo and the finale are easy to follow and sufficiently distinct; minor repetition does not confuse the contest.",
+        "4": "Every solo has a memorable, distinct movement idea and the finale lets all four dancers register at once."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "high",
+      "evidence": [
+        {
+          "startSeconds": 3.2,
+          "endSeconds": 31,
+          "observation": "Each solo is clearly handed off with a bright character-colored border, a fixed name and dance label, and a visibly different movement vocabulary for SpongeBob, Patrick, Mr. Krabs, and Squilliam."
+        },
+        {
+          "startSeconds": 34.5,
+          "endSeconds": 40,
+          "observation": "The 'FINAL ROUND - EVERYBODY WIGGLE!' section shows all four panels active at once, and each dancer continues to register independently."
+        }
+      ],
+      "rationale": "The grid and highlight system make the showcase order unmistakable, and the routines have enough variety to distinguish the competitors. The fixed four-panel view keeps the performers relatively small and reduces the impact of individual moves.",
+      "score": 12.75
+    },
+    {
+      "id": "edit-story-flow",
+      "label": "Edit, pacing, and story flow",
+      "weight": 15,
+      "question": "Do the countdown, handoffs, taunts, solos, finale, CTA, and replay bridge form one clear and energetic sequence?",
+      "anchors": {
+        "0": "The required sequence is absent or cannot be assessed.",
+        "1": "Confusing order, missing beats, or repeated pacing stalls make the edit feel unfinished.",
+        "2": "The story remains understandable, but repeated staging, awkward transitions, or a long hold creates a noticeable energy drop.",
+        "3": "The complete sequence is clear and energetic with only one or two minor pacing or transition blemishes.",
+        "4": "Every beat advances the contest; handoffs are crisp, pacing escalates, and no section overstays its purpose."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "high",
+      "evidence": [
+        {
+          "startSeconds": 0,
+          "endSeconds": 3.2,
+          "observation": "A bold three-count establishes the dance-off and flows directly into SpongeBob's opening line."
+        },
+        {
+          "startSeconds": 7.5,
+          "endSeconds": 31,
+          "observation": "Patrick, Mr. Krabs, and Squilliam hand off in a clear taunt-then-solo pattern, supported by captions, colored panel emphasis, and rhythmic slide transitions."
+        },
+        {
+          "startSeconds": 34.5,
+          "endSeconds": 47,
+          "observation": "The group finale resolves into a large 'WHO WON?' CTA, then the file returns cleanly to the countdown when replayed."
+        }
+      ],
+      "rationale": "The Reel has a coherent escalation from premise to rounds to finale and CTA. The full-board slide transitions briefly crop headlines and labels around several handoffs, but the sequence remains easy to follow.",
+      "score": 12.75
+    },
+    {
+      "id": "audio-voice-performance",
+      "label": "Audio and voice performance",
+      "weight": 10,
+      "criticalFloor": 2,
+      "question": "Is dialogue intelligible and well paced, are voices associated with the right characters, and do music entrances and exits feel deliberate?",
+      "anchors": {
+        "0": "Required audio is absent, unusable, or not perceptible in the review environment.",
+        "1": "Primary dialogue is repeatedly hard to understand, assigned to the wrong character, badly timed, or overwhelmed by music.",
+        "2": "The story can be heard, but at least one repeated mix, timing, pronunciation, or performance weakness reduces clarity or energy.",
+        "3": "All required speech is intelligible and correctly associated; only minor synthetic tone, pacing, or mix polish remains.",
+        "4": "Every line is clear, expressive, correctly associated, and cleanly mixed; music and silence strengthen each handoff."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "startSeconds": 3,
+          "endSeconds": 10.8,
+          "observation": "SpongeBob's opening and Patrick's taunt are intelligible over the music and align with the matching caption and highlighted character panel."
+        },
+        {
+          "startSeconds": 15,
+          "endSeconds": 27.6,
+          "observation": "Mr. Krabs's and Squilliam's taunts remain understandable, are paced to their visual handoffs, and are associated with the correct color-coded captions and active panels."
+        },
+        {
+          "startSeconds": 41,
+          "endSeconds": 47,
+          "observation": "The closing line lands above the music, followed by a deliberate brief audio release that supports the loop back into the countdown."
+        }
+      ],
+      "rationale": "Dialogue, music, and handoffs work together without an intelligibility failure, and the voices are clearly associated with the intended characters. Delivery is somewhat synthetic and less expressive than the visual taunts, leaving room for polish.",
+      "score": 8.5
+    },
+    {
+      "id": "reels-composition",
+      "label": "Reels composition and captions",
+      "weight": 10,
+      "criticalFloor": 2,
+      "question": "Do important faces, movement, labels, and captions remain readable in the vertical frame and clear of expected Reels overlays?",
+      "anchors": {
+        "0": "The intended vertical presentation is unusable or cannot be assessed.",
+        "1": "A major composition problem repeatedly hides, crops, or miniaturizes important performance or captions.",
+        "2": "Important content remains understandable, but repeated small scale, clipping, weak contrast, or excessive visually empty space reduces impact.",
+        "3": "Faces, motion, labels, and captions stay readable and overlay-safe; deliberate outer-background breathing room is not a defect by itself.",
+        "4": "The vertical composition feels intentionally filled, every important element is instantly readable, and overlay-safe negative space looks designed."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "high",
+      "evidence": [
+        {
+          "startSeconds": 3.2,
+          "endSeconds": 31,
+          "observation": "The 2x2 grid keeps every face, colored name tag, active border, and dance label readable, while taunt captions use high-contrast type in a dedicated lane below the panels."
+        },
+        {
+          "startSeconds": 34.5,
+          "endSeconds": 46.5,
+          "observation": "The finale headline and oversized CTA remain centered and readable, and the lower portion of the 9:16 frame retains generous breathing room for expected Reels overlays."
+        }
+      ],
+      "rationale": "The layout is clear and overlay-conscious, with strong contrast and stable labels. The persistent four-panel grid makes performers smaller than ideal, and transition frames briefly clip peripheral text, but important information stays understandable.",
+      "score": 8.5
+    },
+    {
+      "id": "hook-payoff-replay",
+      "label": "Hook, payoff, and replay desire",
+      "weight": 10,
+      "question": "Does the opening create curiosity, does the finale and CTA deliver a payoff, and does the ending make another viewing feel natural?",
+      "anchors": {
+        "0": "The hook-to-loop experience is absent or cannot be assessed.",
+        "1": "The opening is slow or confusing, the payoff is missing, or the ending actively discourages replay.",
+        "2": "The required pieces exist, but a weak climax, long ending, or obvious seam noticeably lowers the urge to rewatch.",
+        "3": "Hook, payoff, CTA, and loop are all clear and effective; only minor polish limits replay desire.",
+        "4": "The hook creates immediate curiosity, the finale clearly raises the energy, the CTA invites participation, and the seam rewards replay."
+      },
+      "status": "scored",
+      "rating": 3,
+      "ratingLabel": "Ready",
+      "confidence": "high",
+      "evidence": [
+        {
+          "startSeconds": 0,
+          "endSeconds": 3.2,
+          "observation": "The large countdown and 'WHO CAN DANCE BEST?' question create an immediate, understandable competition hook."
+        },
+        {
+          "startSeconds": 34.5,
+          "endSeconds": 46.5,
+          "observation": "All four dancers return for the final round, followed by the direct 'WHO WON?' and comment-your-winner CTA."
+        },
+        {
+          "startSeconds": 46.5,
+          "endSeconds": 47,
+          "observation": "The darkened CTA ending cuts naturally back to the same four-panel board and countdown at the opening, making replay feel intentional."
+        }
+      ],
+      "rationale": "The hook, group payoff, and loop are structurally strong and make another viewing natural. The relatively restrained choreography prevents the finale from becoming a truly standout payoff.",
+      "score": 8.5
+    }
+  ],
+  "criticalFailures": [],
+  "reviewIssues": [],
+  "score": 85,
+  "provisionalScore": 85,
+  "passingScore": 85,
+  "status": "pass"
+}

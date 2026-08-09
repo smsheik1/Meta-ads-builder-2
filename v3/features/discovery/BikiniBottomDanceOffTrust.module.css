@@ -197,18 +197,15 @@
   font-weight: 900;
 }
 
-.machine[data-color="cyan"],
-.failureGate > span[data-color="cyan"] {
+.machine[data-color="cyan"] {
   background: #52d6ff;
 }
 
-.machine[data-color="pink"],
-.failureGate > span[data-color="pink"] {
+.machine[data-color="pink"] {
   background: #ff78bd;
 }
 
-.machine[data-color="lime"],
-.failureGate > span[data-color="lime"] {
+.machine[data-color="lime"] {
   background: #c9ff55;
 }
 
@@ -216,8 +213,7 @@
   background: #ffd84c;
 }
 
-.machine[data-color="coral"],
-.failureGate > span[data-color="coral"] {
+.machine[data-color="coral"] {
   background: #ff6f55;
 }
 
@@ -368,74 +364,156 @@
   line-height: 1.45;
 }
 
-.gateGrid {
+.gradeSummary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   border: 1.5px solid #080817;
   background: #fffdf8;
 }
 
-.failureGate {
-  display: grid;
-  grid-template-columns: 42px 1fr;
-  gap: 12px;
+.gradeSummary > div {
   padding: 18px;
   border-right: 1px solid #b9b5ad;
-  border-bottom: 1px solid #b9b5ad;
 }
 
-.failureGate:nth-child(even) {
+.gradeSummary > div:last-child {
   border-right: 0;
 }
 
-.failureGate:nth-last-child(-n + 2) {
-  border-bottom: 0;
+.gradeSummary strong,
+.gradeSummary span {
+  display: block;
 }
 
-.failureGate > span {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1.5px solid #080817;
-  border-radius: 7px;
-}
-
-.failureGate > span svg {
-  width: 1.2rem;
-  height: 1.2rem;
-}
-
-.failureGate h4 {
-  font-size: 1rem;
+.gradeSummary strong {
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
   font-weight: 900;
+  letter-spacing: -0.04em;
 }
 
-.failureGate p {
+.gradeSummary span {
   margin-top: 4px;
-  color: #5e5e70;
-  font-size: 0.8rem;
-  font-weight: 700;
-  line-height: 1.5;
+  color: #596176;
+  font-size: 0.76rem;
+  font-weight: 800;
 }
 
-.exampleStop {
+.blindNote {
   display: flex;
   gap: 10px;
   align-items: start;
   margin-top: 12px;
-  border: 1.5px dashed #080817;
-  background: #fff0ec;
+  border: 1.5px solid #080817;
+  background: #dff8ff;
   padding: 12px 14px;
   font-size: 0.8rem;
   font-weight: 700;
 }
 
-.exampleStop svg {
+.blindNote svg {
   flex: 0 0 auto;
   width: 1rem;
   height: 1rem;
   margin-top: 2px;
+}
+
+.rubric {
+  margin-top: 18px;
+  border: 1.5px solid #080817;
+  background: #fffdf8;
+}
+
+.rubricHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  background: #c9ff55;
+}
+
+.rubricHeading strong {
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.rubricHeading span {
+  color: #404052;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.rubric li {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border-top: 1px solid #c7c2b9;
+  padding: 11px 16px;
+}
+
+.criterionWeight {
+  font-size: 1rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.rubric li > strong {
+  font-size: 0.84rem;
+}
+
+.rubric li small {
+  border: 1px solid #080817;
+  border-radius: 999px;
+  background: #ffb5d9;
+  padding: 3px 7px;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ratingScale {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 12px;
+  border: 1.5px solid #080817;
+  background: #fffdf8;
+}
+
+.ratingScale > div {
+  padding: 10px;
+  border-right: 1px solid #c7c2b9;
+  text-align: center;
+}
+
+.ratingScale > div:last-child {
+  border-right: 0;
+}
+
+.ratingScale strong,
+.ratingScale span {
+  display: block;
+}
+
+.ratingScale strong {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.ratingScale span {
+  margin-top: 2px;
+  color: #596176;
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.gradeRule {
+  max-width: 780px;
+  margin-top: 12px;
+  color: #4f5669;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .fileGroups {
@@ -716,7 +794,6 @@
   }
 
   .proofGrid,
-  .gateGrid,
   .advancedBody {
     grid-template-columns: 1fr;
   }
@@ -725,12 +802,26 @@
     padding: 16px;
   }
 
-  .failureGate {
-    border-right: 0;
+  .gradeSummary {
+    grid-template-columns: 1fr;
   }
 
-  .failureGate:nth-last-child(2) {
+  .gradeSummary > div {
+    border-right: 0;
     border-bottom: 1px solid #b9b5ad;
+  }
+
+  .gradeSummary > div:last-child {
+    border-bottom: 0;
+  }
+
+  .rubricHeading {
+    display: block;
+  }
+
+  .rubricHeading span {
+    display: block;
+    margin-top: 3px;
   }
 
   .fileGroup summary {

@@ -348,7 +348,7 @@ const formatConfigs: FormatProfileConfig[] = [
         "One validated episode input and motion assignment",
         "One inspected contact sheet and technical quality report",
         "One final 1080 × 1920 MP4",
-        "One A-F eval with criterion scores, measurements, explanations, and human-review status",
+        "One blind creative grade with criterion scores, time-coded evidence, and technical-gate status",
       ],
       instructions: [
         "Download the runnable Repo and run npm install, npm run check, and npm run smoke before editing an episode",
@@ -357,8 +357,9 @@ const formatConfigs: FormatProfileConfig[] = [
         "Initialize a run with the local song, then edit only that run's input.json",
         "Validate before Fish Audio; ask once before uncached provider calls and reuse valid cached dialogue",
         "Render with the packaged compositor and official character-motion renderer, then run inspect",
-        "Show the playable render and contact sheet for human review before finalize --human-review=pass",
-        "Return final.mp4 together with eval-report.md and delivery.json; do not stop at a local path or raw pass/fail badge",
+        "Give a fresh reviewer only the MP4, blind-review prompt, review packet, and template; hide source, logs, automatic results, and prior grades",
+        "If a passing score is 85-90 or touches a critical floor, collect an independent second review; never average disagreement",
+        "Finalize with the hash-bound blind-review JSON and return final.mp4 together with eval-report.md and delivery.json",
       ],
       estimates: [
         { label: "Song analysis + choreography", cost: "$0 provider cost", time: "about 3-8 min" },

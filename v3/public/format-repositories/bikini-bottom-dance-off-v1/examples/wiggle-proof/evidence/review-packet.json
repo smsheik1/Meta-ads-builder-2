@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "packetId": "2b3f05cff14fdba4fdf5e446899675e311df27e7b097c7786f968d6e47af2ea7",
+  "createdAt": "2026-08-09T00:17:34.063Z",
+  "format": "bikini-bottom-dance-off-v1",
+  "formatVersion": "0.9.0",
+  "rubricVersion": "1.0.0",
+  "runId": "wiggle-alt-choreography-v2",
+  "video": {
+    "path": "render.mp4",
+    "sha256": "9410930282548bc052dc9123d5b84ea7df9b1a4d9809f491b3441a2cc7ca5620",
+    "durationSeconds": 47
+  },
+  "intent": {
+    "target": "One replayable 9:16 Instagram Reel",
+    "sequence": "countdown, opening, four taunt-and-dance rounds, group finale, closing chorus, replay bridge",
+    "songTitle": "Wiggle",
+    "castOrder": [
+      "spongebob",
+      "patrick",
+      "mr-krabs",
+      "squilliam"
+    ],
+    "openingLine": "I'm ready!",
+    "taunts": [
+      {
+        "characterId": "patrick",
+        "text": "Cute moves, SpongeBob. Watch a real star."
+      },
+      {
+        "characterId": "mr-krabs",
+        "text": "Patrick, I wouldn't pay a dime for that."
+      },
+      {
+        "characterId": "squilliam",
+        "text": "Krabs, that was painfully pedestrian. Observe."
+      }
+    ],
+    "closingLine": "Comment your winner, if you have taste."
+  },
+  "procedure": [
+    "uninterrupted-first-impression",
+    "criterion-by-criterion"
+  ],
+  "rubric": {
+    "ratingScale": [
+      {
+        "rating": 4,
+        "label": "Excellent",
+        "anchor": "Clearly strengthens the Reel; no meaningful issue observed."
+      },
+      {
+        "rating": 3,
+        "label": "Ready",
+        "anchor": "Works as intended; only minor polish could improve it."
+      },
+      {
+        "rating": 2,
+        "label": "Mixed",
+        "anchor": "Understandable, but an observable weakness reduces impact."
+      },
+      {
+        "rating": 1,
+        "label": "Poor",
+        "anchor": "Repeated or major problems make the Reel feel unfinished."
+      },
+      {
+        "rating": 0,
+        "label": "Broken",
+        "anchor": "The requirement fails or cannot be assessed from the supplied media."
+      }
+    ],
+    "criteria": [
+      {
+        "id": "character-integrity",
+        "label": "Character integrity",
+        "weight": 20,
+        "criticalFloor": 2,
+        "question": "Do faces, eyes, silhouettes, limbs, intersections, and framing preserve each character's recognizable identity throughout the Reel?"
+      },
+      {
+        "id": "motion-performance",
+        "label": "Motion quality and performance",
+        "weight": 20,
+        "criticalFloor": 2,
+        "question": "Does the retargeted movement look intentional, continuous, and expressive without freezing, melting, foot chaos, dead poses, or meaningless sway?"
+      },
+      {
+        "id": "dance-readability",
+        "label": "Dance readability and variety",
+        "weight": 15,
+        "question": "Does every solo read as a distinct showcase, fit its panel, and give way to a finale where all four dancers register?"
+      },
+      {
+        "id": "edit-story-flow",
+        "label": "Edit, pacing, and story flow",
+        "weight": 15,
+        "question": "Do the countdown, handoffs, taunts, solos, finale, CTA, and replay bridge form one clear and energetic sequence?"
+      },
+      {
+        "id": "audio-voice-performance",
+        "label": "Audio and voice performance",
+        "weight": 10,
+        "criticalFloor": 2,
+        "question": "Is dialogue intelligible and well paced, are voices associated with the right characters, and do music entrances and exits feel deliberate?"
+      },
+      {
+        "id": "reels-composition",
+        "label": "Reels composition and captions",
+        "weight": 10,
+        "criticalFloor": 2,
+        "question": "Do important faces, movement, labels, and captions remain readable in the vertical frame and clear of expected Reels overlays?"
+      },
+      {
+        "id": "hook-payoff-replay",
+        "label": "Hook, payoff, and replay desire",
+        "weight": 10,
+        "question": "Does the opening create curiosity, does the finale and CTA deliver a payoff, and does the ending make another viewing feel natural?"
+      }
+    ]
+  },
+  "instructions": "prompts/blind-review.md",
+  "submissionTemplate": "blind-review.template.json"
+}

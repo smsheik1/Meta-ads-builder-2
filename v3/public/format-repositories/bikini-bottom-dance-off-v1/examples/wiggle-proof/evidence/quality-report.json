@@ -1,0 +1,99 @@
+{
+  "status": "pass",
+  "inspectedAt": "2026-08-09T00:17:34.056Z",
+  "checks": {
+    "width": true,
+    "height": true,
+    "fps": true,
+    "duration": true,
+    "audio": true,
+    "countdownBeeps": true,
+    "danceMusic": true,
+    "dialogueVoices": true,
+    "countdownGapsSilent": true,
+    "fiveSecondSolos": true,
+    "nineSecondGroupFinale": true,
+    "uninterruptedFinaleSources": true,
+    "finaleMotionContinuity": true,
+    "closingCharacterMovesDuringCta": true,
+    "closingChorusVoices": true,
+    "seamlessReplayFrame": true
+  },
+  "measured": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 47,
+    "audioCodec": "aac",
+    "audioSampleRate": 48000,
+    "beepWindowMeanDb": [
+      -36.1,
+      -36.1,
+      -33.9
+    ],
+    "songWindowMeanDb": [
+      -17.1,
+      -16.4,
+      -16.1,
+      -15.9,
+      -16.1
+    ],
+    "dialogueWindowMeanDb": [
+      -20.8,
+      -19.6,
+      -20.6,
+      -20.4,
+      -20.2
+    ],
+    "silentWindowMeanDb": [
+      -91,
+      -91,
+      -91
+    ],
+    "soloDurationSeconds": [
+      5.120619749999999,
+      5.1206197499999995,
+      5.1206197499999995,
+      5.120619749999996
+    ],
+    "groupFinaleDurationSeconds": 9,
+    "finaleRenderedClipCount": 4,
+    "finaleFreezeEventCounts": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "closingMotionFrameHashes": [
+      "02c080b9059c5902edb4dc4d0fd11fdc8446c964a80571a1e33c24d3fe2fd0c1",
+      "ad076aa7d109d8639599f9a67cec3819d2571c02b0ab51089b21eccdaa36a1b7"
+    ],
+    "closingChorusVoiceCount": 4,
+    "finaleFreezeEvents": [
+      [],
+      [],
+      [],
+      []
+    ],
+    "loopSeamTimes": [
+      46.95,
+      0.05
+    ],
+    "loopSeam": {
+      "metric": "half-scale-luma-ssim",
+      "score": 0.999489,
+      "endFrame": "loop-seam-end.png",
+      "startFrame": "loop-seam-start.png"
+    }
+  },
+  "blindReview": {
+    "status": "pass",
+    "reviewedAt": "2026-08-09T00:24:08Z",
+    "reviewer": {
+      "kind": "agent",
+      "id": "blind-eval-beta"
+    },
+    "score": 85
+  },
+  "contactSheet": "contact-sheet.png"
+}
