@@ -40,11 +40,11 @@ assert.equal(
 );
 
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Format: Doodle Art/);
+assert.match(prompt, /Wiggly Format: Doodle Art/);
 assert.match(prompt, /formats\/doodle-art/);
-assert.match(prompt, /download the runnable kit/i);
-assert.match(prompt, /Nano Banana 2 by default/i);
-assert.match(prompt, /GPT Image 2 as creator provenance/i);
-assert.ok(prompt.trim().endsWith(`"${profile.handoff.firstQuestion}"`));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Doodle Art Repo page tests passed.");

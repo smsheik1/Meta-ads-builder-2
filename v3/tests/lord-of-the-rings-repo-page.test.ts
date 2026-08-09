@@ -65,10 +65,11 @@ assert.match(exactPrompt, /iPhone 16 Pro Smart HDR/);
 assert.match(exactPrompt, /not AI-generated artwork\.\s*$/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Format: Lord of the Rings/);
+assert.match(prompt, /Wiggly Format: Lord of the Rings/);
 assert.match(prompt, /formats\/lord-of-the-rings/);
-assert.match(prompt, /download the runnable kit/i);
-assert.match(prompt, /Nano Banana 2 by default/i);
-assert.ok(prompt.trim().endsWith(`"${profile.handoff.firstQuestion}"`));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Lord of the Rings Repo page tests passed.");

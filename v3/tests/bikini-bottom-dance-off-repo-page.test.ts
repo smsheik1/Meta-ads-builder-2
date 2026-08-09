@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import {
   getPublishedDiscoveryEntries,
@@ -78,7 +79,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.9.1");
+assert.equal(profile.version, "0.10.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -90,6 +91,32 @@ assert.equal(
 );
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(existsSync(download), true);
+const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
+const zipEntries = execFileSync("unzip", ["-Z1", download], { encoding: "utf8" });
+for (const entry of [
+  "AGENTS.md",
+  "CLAUDE.md",
+  ".cursor/rules/wiggly-format.mdc",
+  "verify-entrypoints.mjs",
+  "KIT-MANIFEST.json",
+  "bikini-bottom-dance-off-v1/SKILL.md",
+]) {
+  assert.match(zipEntries, new RegExp(`${kitRoot}/${entry.replaceAll(".", "\\.")}`));
+}
+const archivedManifest = JSON.parse(
+  execFileSync("unzip", ["-p", download, `${kitRoot}/KIT-MANIFEST.json`], {
+    encoding: "utf8",
+  }),
+) as { formatVersion: string };
+assert.equal(archivedManifest.formatVersion, "0.10.0");
+const archivedAgents = execFileSync(
+  "unzip",
+  ["-p", download, `${kitRoot}/AGENTS.md`],
+  { encoding: "utf8" },
+);
+assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
+assert.match(archivedAgents, /exact resolved version/);
+assert.match(archivedAgents, /Codex, Antigravity app and CLI, and GitHub Copilot/);
 const prompt = buildDiscoveryHandoffPrompt(
   profile,
   "https://wiggly.agentenamel.com",
@@ -98,11 +125,13 @@ assert.match(
   prompt,
   /Runnable Repo: https:\/\/wiggly\.agentenamel\.com\/format-repositories\/bikini-bottom-dance-off-v1\/downloads/,
 );
-assert.match(
-  prompt,
-  /return final\.mp4 together with eval-report\.md and delivery\.json/,
-);
-assert.match(prompt, /What song should the four characters dance to\?/);
+assert.match(prompt, /root agent instructions/);
+assert.match(prompt, /KIT-MANIFEST\.json/);
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /return its defined deliverables/);
+assert.doesNotMatch(prompt, /Exact public version: 0\.10\.0/);
+assert.doesNotMatch(prompt, /Required inputs:|Format instructions:|Working rules:/);
+assert.ok(prompt.length < 800);
 
 const shelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries()).find(
   (candidate) => candidate.id === "character-dance-offs",
@@ -264,7 +293,7 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.9.1");
+assert.equal(trustData.version, "0.10.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   backgrounds: 4,

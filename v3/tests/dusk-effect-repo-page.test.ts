@@ -38,10 +38,11 @@ assert.equal(
 );
 
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Format: Dusk Effect/);
+assert.match(prompt, /Wiggly Format: Dusk Effect/);
 assert.match(prompt, /formats\/dusk-effect/);
-assert.match(prompt, /download the runnable kit/i);
-assert.match(prompt, /Nano Banana 2 by default/i);
-assert.ok(prompt.trim().endsWith(`"${profile.handoff.firstQuestion}"`));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Dusk Effect Repo page tests passed.");

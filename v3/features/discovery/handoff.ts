@@ -18,39 +18,21 @@ export function buildDiscoveryHandoffPrompt(
     throw new Error(`Agent handoff is not available for ${format.name}.`);
   }
 
-  const proof = format.proofEntries
-    .slice(0, 3)
-    .map((entry) => `- ${entry.brand}: ${absoluteUrl(origin, `/s/${entry.id}`)}`)
-    .join("\n");
-  const requiredInputs = format.handoff.requiredInputs.map((item) => `- ${item}`).join("\n");
-  const instructions = format.handoff.instructions.map((item) => `- ${item}`).join("\n");
+  const formatUrl = absoluteUrl(origin, `/formats/${format.slug}`);
+  const repositoryLine = format.repositoryHref
+    ? `Runnable Repo: ${absoluteUrl(origin, format.repositoryHref)}\n`
+    : "";
+  const sourceOfTruth = format.repositoryHref
+    ? "Download and extract the Repo into a new workspace. Read its root agent instructions, then follow the packaged SKILL.md and contracts as the source of truth. Report the exact Format version recorded in KIT-MANIFEST.json before beginning its intake flow."
+    : "Open the Format page and follow its published files and technical instructions as the source of truth. Report the exact published Format version before beginning its intake flow.";
 
-  return `Use this exact Wiggly Format with me.
+  return `Let's create this with the latest published Wiggly Format: ${format.name}.
 
-Format: ${format.name}
-Exact public version: ${format.version}
-Stable Format URL: ${absoluteUrl(origin, `/formats/${format.slug}`)}
-Creator: ${format.creator}
-${format.technicalHref ? `Technical instructions: ${absoluteUrl(origin, format.technicalHref)}\n` : ""}
-${format.repositoryHref ? `Runnable Repo: ${absoluteUrl(origin, format.repositoryHref)}\n` : ""}
-Required inputs:
-${requiredInputs}
+Format page: ${formatUrl}
+${repositoryLine}
+${sourceOfTruth}
 
-Format instructions:
-${instructions}
-
-Finished proof:
-${proof}
-
-Working rules:
-- Ask me one short question at a time.
-- Start every progress update with the current step name.
-- Show a simple cost and time estimate before any paid media call.
-- Never make a paid media call without my approval.
-- Use the packaged Format and renderer. Do not rebuild them.
-
-Your first reply must ask only:
-"${format.handoff.firstQuestion}"`;
+Use the packaged runtime; do not rebuild it. Never use a paid provider without my explicit approval. Continue until the Format's validation and quality checks pass, then return its defined deliverables.`;
 }
 
 function quoteForPosixShell(value: string): string {

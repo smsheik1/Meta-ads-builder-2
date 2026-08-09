@@ -21,8 +21,9 @@ assert.ok(profile?.handoff);
 assert.equal(profile.version, "1.0.0");
 assert.equal(profile.technicalHref, "/format-lab/talking-fish-news");
 const handoff = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(handoff, /Exact public version: 1\.0\.0/);
-assert.match(handoff, /five concepts/i);
-assert.ok(handoff.trim().endsWith('"What should tonight\'s fish report cover? Send a topic or source link, or say pick for me."'));
+assert.match(handoff, /latest published Wiggly Format/);
+assert.match(handoff, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(handoff, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(handoff.length < 700);
 
 console.log("Talking Fish News repo page tests passed.");

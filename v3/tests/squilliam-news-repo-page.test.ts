@@ -176,10 +176,11 @@ assert.match(characterModelViewer, /viewer\.cameraOrbit = RESTING_CAMERA_ORBIT/)
 assert.match(characterModelViewer, /Drag to rotate/);
 assert.match(characterModelViewer, /Returns in 3 sec/);
 const handoffPrompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(handoffPrompt, /Format: Squilliam News/);
+assert.match(handoffPrompt, /Wiggly Format: Squilliam News/);
 assert.match(handoffPrompt, /formats\/squilliam-news/);
-assert.match(handoffPrompt, /packaged runner, renderer, gestures, lip sync/);
-assert.match(handoffPrompt, /SpongeBob, Squidward, and Mr\. Krabs presets are packaged/);
-assert.match(handoffPrompt, /Patrick and Sandy voices are registered but their models remain unavailable pending QA/);
+assert.match(handoffPrompt, /latest published Wiggly Format/);
+assert.match(handoffPrompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(handoffPrompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(handoffPrompt.length < 700);
 
 console.log("Squilliam News repo page tests passed.");

@@ -9,12 +9,13 @@ import { fileURLToPath } from "node:url";
 
 const danceRoot = path.dirname(fileURLToPath(import.meta.url));
 const motionRoot = path.resolve(danceRoot, "../mixamo-character-motion-v1");
+const entrypointRoot = path.join(danceRoot, "kit-entrypoints");
 const kitName = "wiggly-bikini-bottom-dance-off-format-kit";
 const downloads = path.join(danceRoot, "downloads");
 const output = path.join(downloads, `${kitName}.zip`);
 const checksumFile = `${output}.sha256`;
 const formatVersion = JSON.parse(await readFile(path.join(danceRoot, "format.json"), "utf8")).version;
-const excludedRoots = new Set(["agent-runs", "downloads", "node_modules", "user-motions"]);
+const excludedRoots = new Set(["agent-runs", "downloads", "kit-entrypoints", "node_modules", "user-motions"]);
 const excludedNames = new Set([".DS_Store", ".env", ".env.local", "__pycache__"]);
 
 function execute(program, args, cwd) {
@@ -51,13 +52,16 @@ try {
   await mkdir(staged, { recursive: true });
   await cp(danceRoot, path.join(staged, "bikini-bottom-dance-off-v1"), { recursive: true, filter: includeFrom(danceRoot) });
   await cp(motionRoot, path.join(staged, "mixamo-character-motion-v1"), { recursive: true, filter: includeFrom(motionRoot) });
+  for (const entry of await readdir(entrypointRoot, { withFileTypes: true })) {
+    await cp(path.join(entrypointRoot, entry.name), path.join(staged, entry.name), { recursive: entry.isDirectory() });
+  }
   await writeFile(path.join(staged, "package.json"), `${JSON.stringify({
     name: kitName,
     private: true,
     version: formatVersion,
     workspaces: ["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"],
     scripts: {
-      check: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run check",
+      check: "node verify-entrypoints.mjs && npm --workspace wiggly-bikini-bottom-dance-off-format-kit run check",
       smoke: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run smoke",
       "list-motions": "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run list-motions"
     }

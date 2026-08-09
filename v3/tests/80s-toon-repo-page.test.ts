@@ -67,10 +67,11 @@ const packagedSkill = readFileSync(
 assert.match(packagedSkill, /Return the finished image and `quality-report\.json` to the user/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Format: 80s Toon/);
+assert.match(prompt, /Wiggly Format: 80s Toon/);
 assert.match(prompt, /formats\/80s-toon/);
-assert.match(prompt, /download the runnable kit/i);
-assert.match(prompt, /exact gathered prompt/i);
-assert.ok(prompt.trim().endsWith(`"${profile.handoff.firstQuestion}"`));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("80s Toon Repo page tests passed.");

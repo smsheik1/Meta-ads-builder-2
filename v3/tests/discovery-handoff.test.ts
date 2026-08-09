@@ -33,16 +33,14 @@ assert.equal(threeD.handoff.firstQuestion, "What brand or website is this for?")
 assert.equal(threeD.handoff.estimates.length, 4);
 
 const threeDPrompt = buildDiscoveryHandoffPrompt(threeD, origin);
-assert.match(threeDPrompt, /Exact public version: 1\.5\.0/);
+assert.match(threeDPrompt, /latest published Wiggly Format/);
 assert.match(threeDPrompt, /https:\/\/wiggly\.agentenamel\.com\/formats\/three-d-breakdown/);
-assert.match(threeDPrompt, /https:\/\/wiggly\.agentenamel\.com\/s\/final-straw-pocket-problem/);
-assert.match(threeDPrompt, /Ask me one short question at a time/);
-assert.match(threeDPrompt, /Start every progress update with the current step name/);
-assert.match(threeDPrompt, /Never make a paid media call without my approval/);
-assert.ok(
-  threeDPrompt.trim().endsWith('"What brand or website is this for?"'),
-  "The handoff should end with one short first question.",
-);
+assert.match(threeDPrompt, /exact published Format version/);
+assert.match(threeDPrompt, /Never use a paid provider without my explicit approval/);
+assert.match(threeDPrompt, /validation and quality checks pass/);
+assert.doesNotMatch(threeDPrompt, /Exact public version:|Required inputs:|Format instructions:|Working rules:/);
+assert.doesNotMatch(threeDPrompt, /final-straw-pocket-problem|What brand or website is this for/);
+assert.ok(threeDPrompt.length < 700, "The handoff should remain a concise launcher.");
 assert.equal(
   buildCodexHandoffUrl("Make this & verify it"),
   "codex://new?prompt=Make%20this%20%26%20verify%20it",
@@ -56,15 +54,16 @@ assert.equal(buildDiscoveryCliCommand("github-copilot", "Ship it"), "copilot -p 
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon?.handoff, "Cartoon Explainer should offer its packaged agent run.");
 assert.equal(cartoon.handoff.firstQuestion, "What topic should the video explain?");
-assert.match(buildDiscoveryHandoffPrompt(cartoon, origin), /Exact public version: 1\.2\.0-experiment/);
+assert.match(buildDiscoveryHandoffPrompt(cartoon, origin), /latest published Wiggly Format/);
 
 const meme = getDiscoveryFormatProfile("meme");
 assert.ok(meme?.handoff, "Meme should offer its packaged agent run.");
 assert.equal(meme.handoff.firstQuestion, "What website should I use?");
 assert.equal(meme.handoff.estimates.length, 3);
 const memePrompt = buildDiscoveryHandoffPrompt(meme, origin);
-assert.match(memePrompt, /Inspect all twelve local PNGs before delivery/);
-assert.ok(memePrompt.trim().endsWith('"What website should I use?"'));
+assert.doesNotMatch(memePrompt, /Inspect all twelve local PNGs before delivery/);
+assert.doesNotMatch(memePrompt, /What website should I use/);
+assert.ok(memePrompt.length < 700);
 
 for (const slug of ["hybrid-news"]) {
   const profile = getDiscoveryFormatProfile(slug);

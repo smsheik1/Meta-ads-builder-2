@@ -166,6 +166,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Rubric `1.1.1` records direct, indirect, or unavailable perception for both channels. Its validator converts anything but direct audiovisual perception to `inconclusive`; a regression test proves that captions and unmuted player controls cannot impersonate hearing.
 
+### 19. Send a launcher; keep one workflow in the Repo
+
+**Rule:** A website or deep link sends only the goal, stable latest-package location, package-reading instruction, paid-provider boundary, and definition of done. The downloaded Repo reports its exact manifest version and routes every supported agent through thin root entrypoints to one canonical `SKILL.md`. Never duplicate the operating manual across the website prompt, shell commands, `AGENTS.md`, `CLAUDE.md`, Cursor rules, or Copilot instructions.
+
+**Why:** Bikini Bottom Dance Off's first Send to Agent prompt repeated inputs, commands, proof links, working rules, an exact version, and the first question. The user could not tell why most of it was being sent, while the ZIP itself had no root instructions and buried the real skill one folder down. That made the longest, fastest-staling copy the entrypoint.
+
+**Evidence:** The `0.10.0` pilot replaces the duplicated prompt with a concise launcher, resolves the exact version from `KIT-MANIFEST.json`, and packages checked root adapters for Codex, Claude Code, Antigravity app and CLI, Cursor, and GitHub Copilot. A clean-package check rejects adapter copies that contain commands, provider recipes, or deliverables.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

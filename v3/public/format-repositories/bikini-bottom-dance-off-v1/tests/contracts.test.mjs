@@ -218,6 +218,9 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   assert.match(runner, /execute\("npm", \["test"\], \{ cwd: motionRoot \}\)/);
   const buildKit = await readFile(new URL("build-kit.mjs", root), "utf8");
   assert.match(buildKit, /workspaces: \["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"\]/);
+  assert.match(buildKit, /node verify-entrypoints\.mjs/);
+  assert.match(buildKit, /entrypointRoot/);
+  assert.match(buildKit, /"kit-entrypoints"/);
   assert.match(buildKit, /await cp\(motionRoot/);
   assert.match(buildKit, /formatVersion = JSON\.parse/);
   assert.doesNotMatch(buildKit, /version: "0\.7/);

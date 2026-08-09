@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.9.1`
+Format version: `0.10.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -10,6 +10,8 @@ Current rubric: `1.1.1`
 - Fish Audio is the only runtime provider and remains approval-gated. Mixamo is an operator-time source for local Collada import, not a runtime API.
 
 The machine-readable boundary is `content-boundary.json`.
+
+Version `0.10.0` adds the package-owned cross-agent entrypoint used by Codex, Claude Code, Antigravity app and CLI, Cursor, and GitHub Copilot. Each adapter routes to this Repo's one `SKILL.md`; the website launcher no longer duplicates the operating manual. The finished-video proof below was rendered under `0.9.1`; `0.10.0` changes handoff and instruction packaging, not the runtime, contracts, or media pixels.
 
 ## Two independent format fixtures
 
