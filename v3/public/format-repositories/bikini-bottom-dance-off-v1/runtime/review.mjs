@@ -74,15 +74,17 @@ export async function writeReviewPacket({
   const packetId = hashBytes(Buffer.from(JSON.stringify(packetCore)));
   const packet = { ...packetCore, packetId };
   const template = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     packetId,
     videoSha256,
     reviewedAt: "REPLACE_WITH_ISO_TIMESTAMP",
     reviewer: { kind: "agent", id: "REPLACE_WITH_OPAQUE_REVIEWER_ID" },
     playback: {
       completedPasses: 2,
-      videoPerceptible: true,
-      audioPerceptible: true,
+      perceptionBasis: {
+        video: { mode: "direct | indirect | unavailable", detail: "REPLACE_WITH_WHAT_THE_REVIEWER_DIRECTLY_SAW" },
+        audio: { mode: "direct | indirect | unavailable", detail: "REPLACE_WITH_WHAT_THE_REVIEWER_DIRECTLY_HEARD" },
+      },
       environment: "REPLACE_WITH_PLAYER_OR_REVIEW_ENVIRONMENT",
       deviations: [],
     },
@@ -115,7 +117,7 @@ export function validateBlindReview({ submission, packet, contract }) {
   if (packet.rubricVersion !== contract.rubricVersion) {
     errors.push(`review packet rubricVersion ${packet.rubricVersion} does not match current ${contract.rubricVersion}.`);
   }
-  if (submission?.schemaVersion !== 1) errors.push("blind review schemaVersion must be 1.");
+  if (submission?.schemaVersion !== 2) errors.push("blind review schemaVersion must be 2.");
   if (submission?.packetId !== packet.packetId) errors.push("blind review packetId does not match this run.");
   if (submission?.videoSha256 !== packet.video.sha256) errors.push("blind review videoSha256 does not match the inspected MP4.");
   if (!Number.isFinite(Date.parse(submission?.reviewedAt))) errors.push("blind review reviewedAt must be an ISO timestamp.");
@@ -124,14 +126,20 @@ export function validateBlindReview({ submission, packet, contract }) {
   requireString(submission?.reviewer?.id, "reviewer.id", errors);
   if (submission?.playback || packet.packetHashAlgorithm === "sha256-json-v1") {
     const completedPasses = submission?.playback?.completedPasses;
+    const allowedPerceptionModes = ["direct", "indirect", "unavailable"];
     if (!Number.isInteger(completedPasses) || completedPasses < 0 || completedPasses > contract.blindReview.requiredPlayback.completedPasses) {
       errors.push(`playback.completedPasses must be an integer from 0 to ${contract.blindReview.requiredPlayback.completedPasses}.`);
     }
-    if (typeof submission?.playback?.videoPerceptible !== "boolean") errors.push("playback.videoPerceptible must be boolean.");
-    if (typeof submission?.playback?.audioPerceptible !== "boolean") errors.push("playback.audioPerceptible must be boolean.");
-    if (submission?.playback?.videoPerceptible && submission?.playback?.audioPerceptible
+    for (const channel of ["video", "audio"]) {
+      const basis = submission?.playback?.perceptionBasis?.[channel];
+      if (!allowedPerceptionModes.includes(basis?.mode)) {
+        errors.push(`playback.perceptionBasis.${channel}.mode must be direct, indirect, or unavailable.`);
+      }
+      requireString(basis?.detail, `playback.perceptionBasis.${channel}.detail`, errors);
+    }
+    if (["video", "audio"].every((channel) => submission?.playback?.perceptionBasis?.[channel]?.mode === "direct")
       && completedPasses !== contract.blindReview.requiredPlayback.completedPasses) {
-      errors.push(`playback.completedPasses must be ${contract.blindReview.requiredPlayback.completedPasses} when both channels are perceptible.`);
+      errors.push(`playback.completedPasses must be ${contract.blindReview.requiredPlayback.completedPasses} when both channels are directly perceived.`);
     }
     requireString(submission?.playback?.environment, "playback.environment", errors);
     if (!Array.isArray(submission?.playback?.deviations)) errors.push("playback.deviations must be an array.");
@@ -156,8 +164,10 @@ export function validateBlindReview({ submission, packet, contract }) {
   const scoredCriteria = [];
   const criticalFailures = [];
   const reviewIssues = [];
-  if (submission?.playback && (!submission.playback.videoPerceptible || !submission.playback.audioPerceptible)) {
-    reviewIssues.push({ reason: "The review environment did not expose the complete audiovisual experience." });
+  if (submission?.playback && ["video", "audio"].some((channel) => (
+    submission.playback.perceptionBasis?.[channel]?.mode !== contract.blindReview.requiredPlayback.perceptionMode
+  ))) {
+    reviewIssues.push({ reason: "The reviewer did not directly perceive both moving video and audible sound; player controls, captions, transcripts, metadata, and inference do not qualify." });
   }
   for (const criterion of expected) {
     const item = supplied.find((candidate) => candidate.id === criterion.id);
@@ -218,7 +228,7 @@ export function validateBlindReview({ submission, packet, contract }) {
       ? "pass"
       : "fail";
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     packetId: packet.packetId,
     videoSha256: packet.video.sha256,
     reviewedAt: submission.reviewedAt,

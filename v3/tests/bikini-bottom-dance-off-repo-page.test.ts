@@ -78,7 +78,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.9.0");
+assert.equal(profile.version, "0.9.1");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -169,6 +169,8 @@ assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
 assert.match(trustComponent, /See it work\./);
 assert.match(trustComponent, /How your finished video is graded\./);
 assert.match(trustComponent, /The blind judge scores seven things/);
+assert.match(trustComponent, /Archived visual\/caption-assisted pilot/);
+assert.match(trustComponent, /requires direct moving-video and audio perception/);
 assert.doesNotMatch(trustComponent, /One job\. Six transformations\./);
 assert.doesNotMatch(trustComponent, /The real proof, annotated\./);
 assert.doesNotMatch(trustComponent, /What the Repo refuses to ship\./);
@@ -262,7 +264,7 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.9.0");
+assert.equal(trustData.version, "0.9.1");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   backgrounds: 4,
@@ -286,7 +288,7 @@ assert.deepEqual(
 assert.equal(trustData.proof.grade, "B");
 assert.equal(trustData.proof.score, 85);
 assert.equal(trustData.proof.rubricVersion, "1.0.0");
-assert.equal(trustData.grading.rubricVersion, "1.1.0");
+assert.equal(trustData.grading.rubricVersion, "1.1.1");
 assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
 assert.deepEqual(trustData.requirements.environmentVariables, [
   "FISH_STUDIO_APIKEY",

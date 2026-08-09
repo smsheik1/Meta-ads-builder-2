@@ -310,8 +310,8 @@ export function BikiniBottomDanceOffTrust({
           <p className={styles.gradeRule}>
             A technically valid video still fails below {data.grading.passingScore},
             or when character integrity, motion, audio, or composition falls
-            below its critical floor. Missing playback or low-confidence
-            evidence is inconclusive and requires another judge.
+            below its critical floor. Missing, indirect, or low-confidence
+            playback evidence is inconclusive and requires another judge.
           </p>
         </section>
 
@@ -424,6 +424,10 @@ export function BikiniBottomDanceOffTrust({
                   </dd>
                 </div>
               </dl>
+              <p className={styles.receiptNote}>
+                Archived visual/caption-assisted pilot. Current rubric {data.grading.rubricVersion}{" "}
+                requires direct moving-video and audio perception before a score can ship.
+              </p>
             </div>
           </div>
         </details>

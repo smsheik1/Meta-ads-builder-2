@@ -739,6 +739,16 @@
   font-weight: 900;
 }
 
+.receiptNote {
+  margin: 8px 0 0;
+  border-top: 1px solid rgb(8 8 23 / 18%);
+  padding-top: 10px;
+  color: #596176;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 @media (max-width: 700px) {
   .root {
     padding: 42px 16px;

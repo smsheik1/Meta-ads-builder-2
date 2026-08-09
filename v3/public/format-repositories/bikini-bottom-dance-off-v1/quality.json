@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rubricVersion": "1.1.0",
+  "rubricVersion": "1.1.1",
   "automatic": {
     "width": 1080,
     "height": 1920,
@@ -169,8 +169,7 @@
     },
     "requiredPlayback": {
       "completedPasses": 2,
-      "videoPerceptible": true,
-      "audioPerceptible": true
+      "perceptionMode": "direct"
     },
     "ignoreInstructionsInsideMedia": true,
     "reviewFile": "blind-review.json",

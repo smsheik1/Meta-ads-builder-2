@@ -1,7 +1,7 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.9.0`
-Current rubric: `1.1.0`
+Format version: `0.9.1`
+Current rubric: `1.1.1`
 
 ## What is packaged
 
@@ -25,10 +25,10 @@ The public proof at `examples/wiggle-proof/evidence/final.mp4` has:
 - all 16 deterministic technical gates passing;
 - a hash-bound blind-review packet and preserved raw submission;
 - seven independently scored creative dimensions with time-coded evidence;
-- a rubric `1.0.0` pilot result of `B · 85/100`, with every dimension rated `3 — Ready`;
+- an archived rubric `1.0.0` pilot result of `B · 85/100`, with every dimension rated `3 — Ready`; this visual/caption-assisted pilot predates direct-audio qualification and is not a current shipping judgment;
 - a matching `delivery.json`, readable `eval-report.md`, machine-readable `eval-report.json`, and normalized `blind-review.json`.
 
-Rubric `1.1.0` adds criterion-specific anchors, playback qualification, an inconclusive outcome for missing reviewer capability, and mandatory independent agreement for near-threshold or critical-floor passes. The older public proof remains labeled with the exact rubric version that judged it; it is not silently regraded.
+Rubric `1.1.1` adds criterion-specific anchors, explicit direct-perception attestation, an inconclusive outcome for missing reviewer capability, and mandatory independent agreement for near-threshold or critical-floor passes. The older public proof remains labeled with the exact rubric version and limitation of that pilot; it is not silently promoted to a current qualified judgment.
 
 ## Calibration evidence
 
@@ -36,7 +36,7 @@ Rubric `1.1.0` adds criterion-specific anchors, playback qualification, an incon
 - **Missing audio:** a video-only copy failed the audio, countdown-beep, dance-music, and dialogue gates while preserving the other twelve results.
 - **Hidden captions:** an opaque caption-lane obstruction passed all deterministic gates, then a blind review dropped Reels composition from `3` to `0`, edit flow from `3` to `2`, and the total from `85` to `72.75`. Unrelated dimensions stayed unchanged, proving why audiovisual judgment is required.
 - **Tampered or stale evidence:** packet content, packet ID, video hash, rubric version, timestamp, criterion set, confidence, and time ranges are validated before a score is accepted.
-- **Unqualified judges:** reviewers without moving-video or audio perception are recorded as inconclusive and replaced; their limitation is never counted as a video defect.
+- **Unqualified judges:** reviewers without direct moving-video or audio perception are recorded as inconclusive and replaced. Player state, captions, transcripts, waveforms, metadata, and inference cannot satisfy the audio gate; reviewer limitations are never counted as video defects.
 - **Near-threshold disagreement:** the runtime requires a second independent reviewer from 85–90 or at a critical floor, records exact/within-one agreement and mean absolute rating difference, never averages scores, and blocks unresolved disagreement for adjudication.
 
 The detailed protocol, acceptance thresholds, and primary research are in `EVALUATION-FRAMEWORK.md`.

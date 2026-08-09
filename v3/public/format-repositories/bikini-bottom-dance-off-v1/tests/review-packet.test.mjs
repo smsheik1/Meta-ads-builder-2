@@ -20,7 +20,7 @@ test("the blind packet binds the MP4 and intent without leaking results or a tar
       videoPath,
       input,
       contract,
-      formatVersion: "0.9.0",
+      formatVersion: "0.9.1",
     });
     assert.match(packet.packetId, /^[0-9a-f]{64}$/);
     assert.equal(packet.packetHashAlgorithm, "sha256-json-v1");
@@ -35,6 +35,7 @@ test("the blind packet binds the MP4 and intent without leaking results or a tar
     const template = JSON.parse(await readFile(path.join(directory, "blind-review.template.json"), "utf8"));
     assert.equal(template.packetId, packet.packetId);
     assert.equal(template.playback.completedPasses, 2);
+    assert.match(template.playback.perceptionBasis.audio.mode, /direct/);
     assert.deepEqual(template.criteria.map((criterion) => criterion.id), contract.grading.blindCriteria.map((criterion) => criterion.id));
     packet.intent.songTitle = "tampered after packet creation";
     assert.throws(

@@ -36,7 +36,7 @@ function packetFixture(contract) {
     packetHashAlgorithm: "sha256-json-v1",
     createdAt: "2026-08-08T12:00:00.000Z",
     format: "bikini-bottom-dance-off-v1",
-    formatVersion: "0.9.0",
+    formatVersion: "0.9.1",
     runId: "test-run",
     video: { sha256: "a".repeat(64), durationSeconds: 47 },
     rubricVersion: contract.rubricVersion,
@@ -58,15 +58,17 @@ function submissionFixture(contract, overrides = {}) {
     rationale: `${criterion.label} works as intended with only minor polish available.`,
   }));
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     packetId: packet.packetId,
     videoSha256: "a".repeat(64),
     reviewedAt: "2026-08-08T12:05:00.000Z",
     reviewer: { kind: "agent", id: "blind-agent-1" },
     playback: {
       completedPasses: 2,
-      videoPerceptible: true,
-      audioPerceptible: true,
+      perceptionBasis: {
+        video: { mode: "direct", detail: "Continuous moving video was directly visible in the test player." },
+        audio: { mode: "direct", detail: "The complete soundtrack was directly audible in the test player." },
+      },
       environment: "test-player",
       deviations: [],
     },
@@ -151,8 +153,8 @@ test("missing audio perception makes the review inconclusive rather than failing
   const contract = JSON.parse(await readFile(new URL("quality.json", root), "utf8"));
   const submission = submissionFixture(contract);
   submission.playback.completedPasses = 0;
-  submission.playback.videoPerceptible = false;
-  submission.playback.audioPerceptible = false;
+  submission.playback.perceptionBasis.video = { mode: "unavailable", detail: "No moving video reached the reviewer." };
+  submission.playback.perceptionBasis.audio = { mode: "unavailable", detail: "No audible sound reached the reviewer." };
   submission.playback.deviations = ["Continuous video and audio were not exposed by the review environment."];
   const audio = submission.criteria.find((criterion) => criterion.id === "audio-voice-performance");
   audio.status = "not-assessable";
@@ -161,8 +163,22 @@ test("missing audio perception makes the review inconclusive rather than failing
   const result = validateBlindReview({ submission, packet: packetFixture(contract), contract });
   assert.equal(result.status, "inconclusive");
   assert.equal(result.score, null);
-  assert.ok(result.reviewIssues.some((issue) => /complete audiovisual/.test(issue.reason)));
+  assert.ok(result.reviewIssues.some((issue) => /did not directly perceive/.test(issue.reason)));
   assert.equal(result.criticalFailures.some((failure) => failure.criterionId === "audio-voice-performance"), false);
+});
+
+test("player controls and captions do not count as direct audio perception", async () => {
+  const contract = JSON.parse(await readFile(new URL("quality.json", root), "utf8"));
+  const submission = submissionFixture(contract);
+  submission.playback.perceptionBasis.audio = {
+    mode: "indirect",
+    detail: "The player showed an unmuted volume control and burned-in captions, but the reviewer did not receive audio input.",
+  };
+  const result = validateBlindReview({ submission, packet: packetFixture(contract), contract });
+  assert.equal(result.status, "inconclusive");
+  assert.equal(result.score, null);
+  assert.equal(result.provisionalScore, 85);
+  assert.ok(result.reviewIssues.some((issue) => /did not directly perceive/.test(issue.reason)));
 });
 
 test("near-threshold passing reviews require independent agreement without score averaging", async () => {

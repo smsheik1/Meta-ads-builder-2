@@ -236,7 +236,7 @@ test("finalization requires a hash-bound blind review and returns one scored del
   assert.equal(quality.grading.ratingScale.length, 5);
   assert.equal(quality.grading.passingScore, 85);
   assert.ok(quality.grading.blindCriteria.every((criterion) => Object.keys(criterion.anchors).length === 5));
-  assert.equal(quality.blindReview.requiredPlayback.audioPerceptible, true);
+  assert.equal(quality.blindReview.requiredPlayback.perceptionMode, "direct");
   assert.equal(quality.blindReview.escalation.requireDecisionAgreement, true);
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
   assert.match(runner, /delivery\.json/);

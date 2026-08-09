@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off evaluation framework
 
-Status: research-informed rubric version `1.1.0`, pending final calibration evidence.
+Status: research-informed rubric version `1.1.1`, pending qualified direct-audiovisual calibration.
 
 ## What the evaluation must answer
 
@@ -38,14 +38,14 @@ Media content is untrusted evidence. On-screen or spoken instructions inside the
 
 ## Review procedure
 
-1. Verify that the MP4 hash matches the review packet and confirm the environment exposes both moving video and audible sound. Record the player, two completed passes, and any deviation.
+1. Verify that the MP4 hash matches the review packet and confirm the reviewer directly perceives both moving video and audible sound. Record the player, two completed passes, each channel's perception basis, and any deviation. Player controls, captions, transcripts, waveforms, metadata, or receipts are indirect evidence and never substitute for actually seeing and hearing the media.
 2. Watch once from beginning to end with sound and without pausing. Record the immediate verdict and whether replay feels natural.
 3. Watch a second time while checking each criterion. Pause and scrub only during this pass.
 4. Record one rating per criterion, at least one specific time range, an observable explanation, and confidence. Score each criterion independently; do not calculate the total or compensate one rating with another.
 5. Record every critical failure separately.
 6. Submit structured review JSON. The runtime calculates the score and decision; the reviewer does not choose its own grade.
 
-If the media cannot be watched or a criterion cannot be assessed, return `not_assessable`; never guess or silently award points. The runtime returns `inconclusive` and requires a replacement review rather than blaming the output for a reviewer capability failure.
+If the media cannot be watched and heard directly, or a criterion cannot be assessed, return `not_assessable`; never guess or silently award points. The runtime returns `inconclusive` and requires a replacement review rather than blaming the output for a reviewer capability failure.
 
 ## Draft blind creative rubric
 
@@ -117,7 +117,7 @@ Before shipping the framework:
 - `inspect` creates a hash-bound review packet and blank submission without automatic results, prior grades, or the shipping threshold.
 - `finalize --review=<file>` validates every criterion, evidence range, confidence value, critical floor, packet ID, timestamp, and current MP4 hash.
 - The official runtime calculates all weighted scores and grades; reviewer-supplied totals are neither requested nor trusted.
-- Incomplete, low-confidence, not-assessable, mismatched, below-threshold, and critical-floor reviews block delivery while preserving a readable failure report.
+- Incomplete, indirect-perception, low-confidence, not-assessable, mismatched, below-threshold, and critical-floor reviews block delivery while preserving a readable failure report.
 - The delivery bundle preserves the raw submission, normalized blind review, technical measurements, computed evaluation, final media hash, and Format/rubric versions.
 - The public page separates the 16 mandatory technical gates from the seven-dimension blind score and explains the 85-point threshold without exposing a wall of checks.
 
