@@ -106,9 +106,16 @@ test("the song and Fish voices occupy mutually exclusive timeline beats", async 
 test("the approved Fish voice presets are registered and provider calls require approval", async () => {
   const voices = await readJson("assets/voice-presets.json");
   assert.deepEqual(voices.voices.map((voice) => voice.characterId), ["spongebob", "patrick", "mr-krabs", "squilliam"]);
-  assert.equal(voices.voices.at(-1).referenceId, null);
-  assert.equal(voices.privateReferenceEnvironmentVariable, "SQUILLIAM_VOICE_ID");
+  assert.deepEqual(voices.voices.map((voice) => voice.referenceId), [
+    "9845e056f37b470d9a1005e41c864e25",
+    "d1520b60870b4e9aa01eab5bfefb1c45",
+    "394d3112f0da41049c42177f3ca31c5a",
+    "f12d545dcc1149bab3b68bba84822a1e",
+  ]);
+  assert.equal(voices.voices.every((voice) => /^[0-9a-f]{32}$/.test(voice.referenceId)), true);
+  assert.equal("privateReferenceEnvironmentVariable" in voices, false);
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
+  assert.doesNotMatch(runner, /SQUILLIAM_VOICE_ID/);
   assert.match(runner, /approve-provider/);
   assert.match(runner, /api\.fish\.audio\/v1\/tts/);
   assert.match(runner, /sample_rate: 44100/);
@@ -118,8 +125,8 @@ test("the approved Fish voice presets are registered and provider calls require 
   assert.ok(runner.indexOf("const cache = await dialogueCacheStatus") < runner.indexOf("await loadLocalEnv()"));
   assert.ok(
     runner.indexOf("const cached = receipt && await exists(output)") <
-      runner.indexOf("for uncached ${spec.id} audio"),
-    "cached private voice clips must be reusable without reloading the private provider reference",
+      runner.indexOf("Missing packaged Fish Audio reference"),
+    "cached voice clips must be reusable before a missing preset can stop generation",
   );
 });
 

@@ -129,8 +129,7 @@ async function generateDialogue(input, directory) {
   const resolved = specs.map((spec) => {
     const preset = presets.get(spec.characterId);
     if (!preset) throw new Error(`No Fish Audio preset for ${spec.characterId}.`);
-    const referenceId = preset.referenceId || (spec.characterId === "squilliam" ? process.env.SQUILLIAM_VOICE_ID : null);
-    return { ...spec, referenceId, speed: preset.speed };
+    return { ...spec, referenceId: preset.referenceId, speed: preset.speed };
   });
   await mkdir(dialogueDirectory, { recursive: true });
   const assets = [];
@@ -147,7 +146,7 @@ async function generateDialogue(input, directory) {
       && receipt.characterId === spec.characterId && receipt.text === spec.text
       && (!contentHash || receipt.contentHash === contentHash);
     if (!cached) {
-      if (!spec.referenceId) throw new Error(`Missing ${catalog.privateReferenceEnvironmentVariable} for uncached ${spec.id} audio.`);
+      if (!spec.referenceId) throw new Error(`Missing packaged Fish Audio reference for ${spec.characterId}.`);
       if (!args["approve-provider"]) throw new Error(`Fish Audio generation is required for ${spec.id}. Re-run render with --approve-provider after reviewing the script.`);
       const response = await fetch("https://api.fish.audio/v1/tts", {
         method: "POST",

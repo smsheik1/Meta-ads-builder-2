@@ -79,7 +79,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.10.0");
+assert.equal(profile.version, "0.10.1");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -108,7 +108,7 @@ const archivedManifest = JSON.parse(
     encoding: "utf8",
   }),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.10.0");
+assert.equal(archivedManifest.formatVersion, "0.10.1");
 const archivedAgents = execFileSync(
   "unzip",
   ["-p", download, `${kitRoot}/AGENTS.md`],
@@ -363,7 +363,7 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.10.0");
+assert.equal(trustData.version, "0.10.1");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   backgrounds: 4,
@@ -433,7 +433,6 @@ assert.equal(trustData.grading.rubricVersion, "1.1.1");
 assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
 assert.deepEqual(trustData.requirements.environmentVariables, [
   "FISH_STUDIO_APIKEY",
-  "SQUILLIAM_VOICE_ID",
 ]);
 assert.equal(
   trustData.commands.includes(

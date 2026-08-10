@@ -42,7 +42,7 @@ See `EVALUATION-FRAMEWORK.md` for the protocol and primary research, and `CALIBR
 
 The supplied song is copied into the local run folder and remains untracked. It plays only during dance windows. Countdown gaps remain silent except for beeps; opening, taunts, and CTA contain Fish Audio dialogue with no song underneath. Generated voice clips are measured before the runtime divides the solo budget evenly among the four dancers; the group showcase then receives nine uninterrupted seconds from dedicated finale motions that are never clip-looped.
 
-Set `FISH_STUDIO_APIKEY` locally. SpongeBob, Patrick, and Mr. Krabs use the packaged public reference presets; set `SQUILLIAM_VOICE_ID` to the operator-approved private Squilliam clone. Missing or stale dialogue requires explicit `--approve-provider`; accepted clips are cached with non-secret receipts in the ignored run folder.
+Set `FISH_STUDIO_APIKEY` locally. The approved reference presets for SpongeBob, Patrick, Mr. Krabs, and Squilliam are packaged with the Format. Missing or stale dialogue requires explicit `--approve-provider`; accepted clips are cached with non-secret receipts in the ignored run folder.
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|

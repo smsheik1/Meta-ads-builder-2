@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.10.0`
+Format version: `0.10.1`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -11,7 +11,7 @@ Current rubric: `1.1.1`
 
 The machine-readable boundary is `content-boundary.json`.
 
-Version `0.10.0` adds the package-owned cross-agent entrypoint used by Codex, Claude Code, Antigravity app and CLI, Cursor, and GitHub Copilot. Each adapter routes to this Repo's one `SKILL.md`; the website launcher no longer duplicates the operating manual. The finished-video proof below was rendered under `0.9.1`; `0.10.0` changes handoff and instruction packaging, not the runtime, contracts, or media pixels.
+Version `0.10.1` packages all four user-approved Fish Audio voice references, so operators need only their own Fish Audio API key. It retains the package-owned cross-agent entrypoint added in `0.10.0`; each adapter routes to this Repo's one `SKILL.md`. The finished-video proof below was rendered under `0.9.1`; `0.10.1` changes voice configuration and instruction packaging, not the renderer, contracts, or media pixels.
 
 ## Two independent format fixtures
 

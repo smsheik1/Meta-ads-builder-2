@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "provider": "Fish Audio",
   "model": "s2.1-pro-free",
-  "privateReferenceEnvironmentVariable": "SQUILLIAM_VOICE_ID",
   "voices": [
     {
       "characterId": "spongebob",
@@ -24,7 +23,7 @@
     },
     {
       "characterId": "squilliam",
-      "referenceId": null,
+      "referenceId": "f12d545dcc1149bab3b68bba84822a1e",
       "delivery": "elegant, condescending, and certain he won",
       "speed": 1.14
     }

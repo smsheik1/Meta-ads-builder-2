@@ -36,7 +36,7 @@
       "provider": "Fish Audio",
       "when": "a required dialogue clip is missing or stale",
       "approval": "render requires --approve-provider",
-      "secretNames": ["FISH_STUDIO_APIKEY", "SQUILLIAM_VOICE_ID"],
+      "secretNames": ["FISH_STUDIO_APIKEY"],
       "outputs": "ignored run-local WAV files and non-secret receipts"
     }
   ],
