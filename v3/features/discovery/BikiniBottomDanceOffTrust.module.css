@@ -467,20 +467,7 @@
 
 .fileGroups {
   display: grid;
-  gap: 28px;
-}
-
-.fileGroupTitle {
-  margin-bottom: 10px;
-  color: #667087;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.fileRow + .fileRow {
-  margin-top: 10px;
+  gap: 10px;
 }
 
 .fileRow {
@@ -539,14 +526,25 @@
   transform: rotate(180deg);
 }
 
-.fileRow > p {
-  margin: 0;
-  border-top: 1px solid #c9d3e0;
-  padding: 14px 18px 16px;
-  color: #596176;
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.5;
+.fileContent {
+  max-height: 24rem;
+  overflow: auto;
+  margin: 0 14px 14px;
+  border-radius: 7px;
+  background: #080817;
+  padding: 16px;
+  color: #f7f8ff;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.fileContent code {
+  color: inherit;
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: inherit;
+  font-weight: 600;
 }
 
 .advanced {

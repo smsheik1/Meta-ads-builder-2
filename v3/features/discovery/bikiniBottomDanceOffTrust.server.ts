@@ -146,7 +146,12 @@ export type BikiniBottomDanceOffTrustData = {
   commands: string[];
   fileGroups: Array<{
     title: string;
-    files: Array<{ label: string; path: string; description: string }>;
+    files: Array<{
+      label: string;
+      path: string;
+      description: string;
+      content: string;
+    }>;
   }>;
 };
 
@@ -162,6 +167,12 @@ const characterPreviewRoot =
 
 async function readJson<T>(filePath: string): Promise<T> {
   return JSON.parse(await readFile(filePath, "utf8")) as T;
+}
+
+function resolveRepoFile(filePath: string) {
+  return filePath.startsWith("mixamo-character-motion-v1/")
+    ? path.join(repoRoot, "..", filePath)
+    : path.join(repoRoot, filePath);
 }
 
 function timestamp(seconds: number) {
@@ -338,7 +349,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     ],
     requirements,
     commands,
-    fileGroups: [
+    fileGroups: await Promise.all([
       {
         title: "Agent playbook",
         files: [
@@ -489,6 +500,14 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
           },
         ],
       },
-    ],
+    ].map(async (group) => ({
+      ...group,
+      files: await Promise.all(
+        group.files.map(async (file) => ({
+          ...file,
+          content: await readFile(resolveRepoFile(file.path), "utf8"),
+        })),
+      ),
+    }))),
   };
 }

@@ -285,9 +285,9 @@ export function BikiniBottomDanceOffTrust({
           <div className={styles.panelHeading}>
             <div>
               <p className={styles.eyebrow}>04 · Everything included</p>
-              <h3 id="dance-off-repo-title">The exact Repo files.</h3>
+              <h3 id="dance-off-repo-title">Repo files</h3>
               <p className={styles.fileIntro}>
-                Every file, what it does, and where it lives.
+                Open any file to read its actual contents.
               </p>
             </div>
             <a className={styles.repoDownload} href={repositoryHref} download>
@@ -296,36 +296,24 @@ export function BikiniBottomDanceOffTrust({
           </div>
 
           <div className={styles.fileGroups}>
-            {data.fileGroups.map((group) => (
-              <section
-                key={group.title}
-                className={styles.fileGroup}
-                aria-labelledby={sourceFileId(`${group.title}-group`)}
+            {data.fileGroups.flatMap((group) => group.files).map((file) => (
+              <details
+                key={file.path}
+                id={sourceFileId(file.path)}
+                className={styles.fileRow}
+                ref={(node) => {
+                  fileRefs.current[file.path] = node;
+                }}
               >
-                <h4
-                  id={sourceFileId(`${group.title}-group`)}
-                  className={styles.fileGroupTitle}
-                >
-                  {group.title}
-                </h4>
-                {group.files.map((file) => (
-                  <details
-                    key={file.path}
-                    id={sourceFileId(file.path)}
-                    className={styles.fileRow}
-                    ref={(node) => {
-                      fileRefs.current[file.path] = node;
-                    }}
-                  >
-                    <summary>
-                      <strong className={styles.fileLabel}>{file.label}</strong>
-                      <code>{file.path}</code>
-                      <ChevronRight aria-hidden="true" />
-                    </summary>
-                    <p>{file.description}</p>
-                  </details>
-                ))}
-              </section>
+                <summary>
+                  <strong className={styles.fileLabel}>{file.label}</strong>
+                  <code>{file.path}</code>
+                  <ChevronRight aria-hidden="true" />
+                </summary>
+                <pre className={styles.fileContent}>
+                  <code>{file.content}</code>
+                </pre>
+              </details>
             ))}
           </div>
         </section>

@@ -256,12 +256,16 @@ assert.match(
 );
 assert.doesNotMatch(trustComponent, /FlowStation|Brief enters|Timed scene map/);
 assert.doesNotMatch(trustComponent, /One request moves straight to a finished Reel\./);
-assert.match(trustComponent, /Every file, what it does, and where it lives\./);
-assert.match(trustComponent, /className=\{styles\.fileGroupTitle\}/);
+assert.match(trustComponent, />Repo files<\/h3>/);
+assert.match(trustComponent, /Open any file to read its actual contents\./);
 assert.match(trustComponent, /className=\{styles\.fileRow\}/);
+assert.match(trustComponent, /className=\{styles\.fileContent\}/);
 assert.match(trustComponent, /\{file\.label\}/);
-assert.match(trustComponent, /<p>\{file\.description\}<\/p>/);
-assert.doesNotMatch(trustComponent, /styles\.fileCount|group\.summary/);
+assert.match(trustComponent, /\{file\.content\}/);
+assert.doesNotMatch(
+  trustComponent,
+  /styles\.fileCount|styles\.fileGroupTitle|group\.summary|\{file\.description\}/,
+);
 assert.doesNotMatch(trustComponent, /styles\.repoSummary/);
 assert.doesNotMatch(trustComponent, /styles\.fileIcon/);
 assert.doesNotMatch(trustComponent, /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/);
@@ -347,8 +351,9 @@ assert.match(
   /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/,
 );
 assert.doesNotMatch(trustStyles, /\.conveyor|\.machine|\.gateState/);
-assert.match(trustStyles, /\.fileGroups \{\s*display: grid;\s*gap: 28px/);
+assert.match(trustStyles, /\.fileGroups \{\s*display: grid;\s*gap: 10px/);
 assert.match(trustStyles, /\.fileRow \{[\s\S]*border: 1px solid #c9d3e0/);
+assert.match(trustStyles, /\.fileContent \{[\s\S]*max-height: 24rem/);
 assert.match(
   trustStyles,
   /grid-template-columns: minmax\(190px, 0\.42fr\) minmax\(0, 1fr\) 18px/,
@@ -457,6 +462,18 @@ assert.equal(
     .flatMap((group) => group.files)
     .every((file) => file.label.trim().length > 0),
   true,
+);
+assert.equal(
+  trustData.fileGroups
+    .flatMap((group) => group.files)
+    .every((file) => file.content.trim().length > 0),
+  true,
+);
+assert.match(
+  trustData.fileGroups
+    .flatMap((group) => group.files)
+    .find((file) => file.path === "SKILL.md")?.content ?? "",
+  /# Bikini Bottom Dance Off/,
 );
 assert.equal(
   trustData.fileGroups
