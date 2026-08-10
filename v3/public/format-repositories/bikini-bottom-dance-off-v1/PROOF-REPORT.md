@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.10.1`
+Format version: `0.10.2`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -11,7 +11,7 @@ Current rubric: `1.1.1`
 
 The machine-readable boundary is `content-boundary.json`.
 
-Version `0.10.1` packages all four user-approved Fish Audio voice references, so operators need only their own Fish Audio API key. It retains the package-owned cross-agent entrypoint added in `0.10.0`; each adapter routes to this Repo's one `SKILL.md`. The finished-video proof below was rendered under `0.9.1`; `0.10.1` changes voice configuration and instruction packaging, not the renderer, contracts, or media pixels.
+Version `0.10.2` retains all four user-approved Fish Audio voice references and the package-owned cross-agent entrypoint. It enlarges the four-character stage, removes the crop-like handoff flash, adds one-second H.264 keyframes for reliable browser and Reels seek/resume playback, and counts only completed videos against the render-attempt budget. The finished-video proof below remains the archived `0.9.1` calibration proof and is labeled accordingly.
 
 ## Two independent format fixtures
 

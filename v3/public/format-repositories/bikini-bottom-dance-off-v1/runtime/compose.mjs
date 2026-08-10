@@ -101,10 +101,6 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     const round = timeline.rounds[index];
     await add(`active-${index}`, `between(t,${round.roundStart},${round.roundEnd})`,
       `<rect x="${position.x}" y="${position.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${character.color}" stroke-width="18"/>`);
-    await add(`dance-punch-${index}`, `between(t,${round.danceStart},${round.danceStart + 0.24})`, [
-      `<rect x="${position.x + 5}" y="${position.y + 5}" width="500" height="${CELL_HEIGHT - 10}" fill="${character.color}" fill-opacity="0.12" stroke="white" stroke-width="28"/>`,
-      `<rect x="${position.x + 13}" y="${position.y + 13}" width="484" height="${CELL_HEIGHT - 26}" fill="none" stroke="${character.color}" stroke-width="12"/>`,
-    ].join(""));
     const speech = index === 0 ? input.openingLine : character.taunt;
     const speakerLabel = index === 0 ? `${character.label}:` : `${character.label} TO ${previousCharacter.label}:`;
     const speechLines = speech.length > 30 ? wrapWords(speech) : [speech.toUpperCase()];
@@ -326,6 +322,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     "-map", "[vout]", "-map", "[music]",
     "-t", String(DURATION),
     "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+    "-g", "30", "-keyint_min", "30", "-sc_threshold", "0",
     "-force_key_frames", `0,${timeline.loopBridge.end - 0.2}`,
     "-c:a", "aac", "-b:a", "192k",
     "-movflags", "+faststart",

@@ -318,10 +318,22 @@ async function renderRun() {
   const statePath = path.join(directory, "state.json");
   const state = await readJson(statePath);
   const maximumAttempts = (await readJson(path.join(root, "quality.json"))).automatic.maximumAttempts;
-  if ((state.attempts || 0) >= maximumAttempts) throw new Error(`Run reached the ${maximumAttempts}-attempt limit.`);
-  const attempts = (state.attempts || 0) + 1;
-  await writeJson(statePath, { ...state, status: "rendering", attempts, renderStartedAt: new Date().toISOString() });
-  await composeRun({ input, dialogueAssets, runDirectory: directory, outputPath: path.join(directory, "render.mp4") });
+  const completedAttempts = state.attempts || 0;
+  if (completedAttempts >= maximumAttempts) throw new Error(`Run reached the ${maximumAttempts}-attempt limit.`);
+  const attempts = completedAttempts + 1;
+  await writeJson(statePath, { ...state, status: "rendering", attempts: completedAttempts, renderStartedAt: new Date().toISOString() });
+  try {
+    await composeRun({ input, dialogueAssets, runDirectory: directory, outputPath: path.join(directory, "render.mp4") });
+  } catch (error) {
+    await writeJson(statePath, {
+      ...state,
+      status: "render-failed",
+      attempts: completedAttempts,
+      renderFailedAt: new Date().toISOString(),
+      renderFailure: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
   await writeJson(statePath, { ...state, status: "rendered", attempts, renderedAt: new Date().toISOString() });
   console.log(path.join(directory, "render.mp4"));
 }

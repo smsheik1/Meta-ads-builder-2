@@ -139,6 +139,14 @@ test("long spoken captions wrap inside the Reel-safe card", async () => {
   }
 });
 
+test("failed compositions do not consume a completed render attempt", async () => {
+  const runner = await readFile(new URL("runner.mjs", root), "utf8");
+  assert.match(runner, /const completedAttempts = state\.attempts \|\| 0/);
+  assert.match(runner, /status: "rendering", attempts: completedAttempts/);
+  assert.match(runner, /catch \(error\)[\s\S]*status: "render-failed"[\s\S]*attempts: completedAttempts/);
+  assert.match(runner, /status: "rendered", attempts, renderedAt/);
+});
+
 test("the nine-second group showcase uses uninterrupted motions and hands off to a looping CTA", async () => {
   const output = await readJson("output-contract.json");
   assert.equal(output.video.durationSeconds, 47);
@@ -162,8 +170,8 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /character\.reactionMotionId/);
   assert.match(compositor, /IDLE_SPEED = 0\.36/);
   assert.match(compositor, /RIGHT_COLUMN_SAFE_SHIFT = 76/);
-  assert.equal(CELL_HEIGHT, 515);
-  assert.equal(CAPTION_Y, 1300);
+  assert.equal(CELL_HEIGHT, 600);
+  assert.equal(CAPTION_Y, 1440);
   assert.equal(CAPTION_HEIGHT, 130);
   assert.equal(CELL_POSITIONS.length, 4);
   assert.match(compositor, /stillSegment/);
@@ -171,11 +179,12 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /countdownGraphic[\s\S]*fill-opacity="0\.68"[\s\S]*WHO CAN DANCE BEST\?/);
   assert.doesNotMatch(compositor, /RUN IT BACK/);
   assert.doesNotMatch(compositor, /ROUND TWO/);
-  assert.match(compositor, /dance-punch/);
+  assert.doesNotMatch(compositor, /dance-punch/, "handoffs must not flash a crop-like panel overlay");
   assert.match(compositor, /finale[\s\S]*rect x="0" y="164" width="1080" height="64" fill="#061829"/);
   assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
   assert.match(compositor, /-force_key_frames/);
+  assert.match(compositor, /"-g", "30", "-keyint_min", "30", "-sc_threshold", "0"/, "delivery encoding must be seek-safe in browsers and Reels");
   assert.match(compositor, /atempo=/);
   assert.match(compositor, /volume=0\.5/);
   assert.match(compositor, /character\.finaleMotionId/);

@@ -1,7 +1,7 @@
 export const CELL_WIDTH = 510;
-export const CELL_HEIGHT = 515;
-export const GRID_TOP = 250;
-export const CAPTION_Y = 1300;
+export const CELL_HEIGHT = 600;
+export const GRID_TOP = 220;
+export const CAPTION_Y = 1440;
 export const CAPTION_HEIGHT = 130;
 
 export const CELL_POSITIONS = [
