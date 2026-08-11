@@ -1,0 +1,11 @@
+[package]
+name = "harmony-scene"
+version = "0.1.0"
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+nom = "7.1"
+quick-xml = { version = "0.31", features = ["serialize"] }
+serde = { workspace = true }
+thiserror.workspace = true
