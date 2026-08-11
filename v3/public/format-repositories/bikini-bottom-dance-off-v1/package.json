@@ -1,7 +1,7 @@
 {
   "name": "wiggly-bikini-bottom-dance-off-format-kit",
   "private": true,
-  "version": "0.10.4",
+  "version": "0.10.7",
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",

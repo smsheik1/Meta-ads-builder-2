@@ -125,19 +125,15 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     await add(`countdown-${number}`, `between(t,${index},${index + 0.98})`, countdownGraphic(number));
   }
 
-  await add("loop-bridge-prompt", `between(t,${timeline.loopBridge.start},${timeline.loopBridge.end - 0.2})`, [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
-    centeredText({ value: "WHO WON?", y: 790, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
-    centeredText({ value: "COMMENT YOUR WINNER.", y: 900, size: 48, strokeWidth: 4 }),
-  ].join(""));
-  await add("loop-bridge-countdown", `between(t,${timeline.loopBridge.end - 0.2},${timeline.loopBridge.end})`, countdownGraphic(3));
+  await add("loop-bridge-countdown", `between(t,${timeline.loopBridge.end - 0.7},${timeline.loopBridge.end})`, countdownGraphic(3));
 
   const closing = timeline.events.find((event) => event.type === "closing");
   const closingLines = wrapWords(input.closingLine);
   const closingPosition = cellPositions.at(-1);
   const closingCharacter = input.characters.at(-1);
-  await add("cta", `between(t,${closing.start},${closing.end})`, [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
+  const ctaStart = timeline.finale.end - 1.5;
+  const ctaEnd = timeline.loopBridge.end - 0.7;
+  await add("cta", `between(t,${ctaStart},${ctaEnd})`, [
     `<rect x="${closingPosition.x}" y="${closingPosition.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${closingCharacter.color}" stroke-width="18"/>`,
     centeredText({ value: "WHO WON?", y: 750, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
     ...closingLines.map((line, index) => centeredText({ value: line, y: 865 + index * 65, size: 48, strokeWidth: 4 })),
@@ -321,6 +317,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     "-filter_complex_script", filterPath,
     "-map", "[vout]", "-map", "[music]",
     "-t", String(DURATION),
+    "-threads", "1",
     "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
     "-profile:v", "baseline", "-level:v", "4.0", "-refs", "1",
     "-g", "30", "-keyint_min", "30", "-sc_threshold", "0", "-bf", "0",

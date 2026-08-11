@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.10.4`
+Format version: `0.10.7`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -11,7 +11,7 @@ Current rubric: `1.1.1`
 
 The machine-readable boundary is `content-boundary.json`.
 
-Version `0.10.4` retains all four user-approved Fish Audio voice references and the package-owned cross-agent entrypoint. It enlarges the four-character stage, removes the crop-like handoff flash, and uses one-second keyframes with the H.264 Baseline profile, one reference frame, and no bidirectional frames for reliable browser and Reels playback. It also counts only completed videos against the render-attempt budget. The finished-video proof below remains the archived `0.9.1` calibration proof and is labeled accordingly.
+Version `0.10.7` retains all four user-approved Fish Audio voice references and the package-owned cross-agent entrypoint. It enlarges the four-character stage, removes the crop-like handoff flash, uses maximum-compatibility H.264 delivery settings, holds the complete winner CTA for more than five seconds, and gives the replay countdown enough screen time to register. It also counts only completed videos against the render-attempt budget and uses deterministic single-threaded H.264 encoding to prevent isolated transition-frame corruption. The finished-video proof below remains the archived `0.9.1` calibration proof and is labeled accordingly.
 
 ## Two independent format fixtures
 

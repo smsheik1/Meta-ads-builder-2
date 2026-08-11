@@ -181,6 +181,11 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.doesNotMatch(compositor, /ROUND TWO/);
   assert.doesNotMatch(compositor, /dance-punch/, "handoffs must not flash a crop-like panel overlay");
   assert.match(compositor, /finale[\s\S]*rect x="0" y="164" width="1080" height="64" fill="#061829"/);
+  assert.match(compositor, /const ctaStart = timeline\.finale\.end - 1\.5/);
+  assert.match(compositor, /"-threads", "1"/, "the delivery encoder must remain single-threaded to prevent corrupted transition frames");
+  assert.match(compositor, /const ctaEnd = timeline\.loopBridge\.end - 0\.7/);
+  assert.match(compositor, /loopBridge\.end - 0\.7/);
+  assert.doesNotMatch(compositor, /loop-bridge-prompt/, "the full CTA must remain visible until the countdown bridge");
   assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
   assert.match(compositor, /-force_key_frames/);
