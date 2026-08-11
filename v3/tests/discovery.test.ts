@@ -438,7 +438,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "character-dance-offs")?.entries.map((entry) => entry.id),
-  ["bikini-bottom-dance-off-wiggle"],
+  ["bikini-bottom-dance-off-ghetto-love-story", "bikini-bottom-dance-off-wiggle"],
   "Bikini Bottom Dance Off should live outside the explainer shelf.",
 );
 assert.ok(
