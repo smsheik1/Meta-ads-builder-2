@@ -11,6 +11,7 @@ import { buildDiscoveryHandoffPrompt } from "../features/discovery/handoff";
 
 const repositoryRoot = "public/format-repositories/bikini-bottom-dance-off-v1";
 const evidenceRoot = `${repositoryRoot}/examples/wiggle-proof/evidence`;
+const latestExampleRoot = `${repositoryRoot}/examples/ghetto-love-story/evidence`;
 const download = `${repositoryRoot}/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip`;
 const finalVideo = `${evidenceRoot}/final.mp4`;
 const profile = getDiscoveryFormatProfile("bikini-bottom-dance-off");
@@ -20,14 +21,17 @@ const entries = getPublishedDiscoveryEntries().filter(
 
 assert.deepEqual(
   entries.map((entry) => entry.id),
-  ["bikini-bottom-dance-off-wiggle"],
+  ["bikini-bottom-dance-off-ghetto-love-story", "bikini-bottom-dance-off-wiggle"],
 );
-assert.equal(entries[0]?.media.src, `/${finalVideo.replace(/^public\//, "")}`);
+assert.equal(entries[0]?.media.src, `/${latestExampleRoot.replace(/^public\//, "")}/final.mp4`);
 assert.equal(
   entries[0]?.media.poster,
-  `/${evidenceRoot.replace(/^public\//, "")}/poster.png`,
+  `/${latestExampleRoot.replace(/^public\//, "")}/poster.png`,
 );
 assert.equal(entries[0]?.media.aspectRatio, "9:16");
+assert.equal(statSync(`${latestExampleRoot}/final.mp4`).size > 5_000_000, true);
+assert.equal(existsSync(`${latestExampleRoot}/poster.png`), true);
+assert.equal(entries[1]?.media.src, `/${finalVideo.replace(/^public\//, "")}`);
 assert.equal(statSync(finalVideo).size > 5_000_000, true);
 assert.equal(existsSync(`${evidenceRoot}/poster.png`), true);
 assert.equal(existsSync(`${evidenceRoot}/contact-sheet.png`), true);
@@ -90,7 +94,7 @@ assert.equal(
   profile.repositoryHref,
   "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip",
 );
-assert.equal(profile.proofEntries.length, 1);
+assert.equal(profile.proofEntries.length, 2);
 assert.equal(existsSync(download), true);
 const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
 const archive = await JSZip.loadAsync(readFileSync(download));
