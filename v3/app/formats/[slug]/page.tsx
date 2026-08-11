@@ -59,6 +59,9 @@ export default async function FormatPage({
     slug === "bikini-bottom-dance-off"
       ? await getBikiniBottomDanceOffTrustData()
       : null;
+  const detailedProof = danceOffTrust
+    ? format.proofEntries.find((entry) => entry.id === "bikini-bottom-dance-off-wiggle") || heroProof
+    : heroProof;
 
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-[#080817]">
@@ -242,15 +245,59 @@ export default async function FormatPage({
         <BikiniBottomDanceOffIncludedAssets data={danceOffTrust} />
       ) : null}
 
+      {danceOffTrust ? (
+        <section
+          id="examples"
+          className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16"
+        >
+          <div className="mx-auto max-w-[980px]">
+            <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">Examples</p>
+                <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">Finished Dance Offs.</h2>
+              </div>
+              <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
+                {format.proofEntries.length} finished videos made with this Format.
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2">
+              {format.proofEntries.map((entry, index) => (
+                <article
+                  key={entry.id}
+                  className="overflow-hidden rounded-lg border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]"
+                >
+                  <DiscoveryProofMedia
+                    entry={entry}
+                    autoPlay={false}
+                    className="block aspect-[9/16] w-full bg-[#080817] object-cover"
+                  />
+                  <div className="p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
+                      Example {String(index + 1).padStart(2, "0")} · {entry.brand}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-black leading-none">{entry.title}</h3>
+                    <Link href={`/s/${entry.id}`} className="mt-4 inline-flex items-center gap-2 text-sm font-black">
+                      Open finished ad
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {danceOffTrust &&
-      heroProof.media.kind === "video" &&
+      detailedProof.media.kind === "video" &&
       format.repositoryHref ? (
         <BikiniBottomDanceOffTrust
           data={danceOffTrust}
-          openProofHref={`/s/${heroProof.id}`}
-          poster={heroProof.media.poster}
+          openProofHref={`/s/${detailedProof.id}`}
+          poster={detailedProof.media.poster}
           repositoryHref={format.repositoryHref}
-          videoSrc={heroProof.media.src}
+          videoSrc={detailedProof.media.src}
         />
       ) : (
         <section
