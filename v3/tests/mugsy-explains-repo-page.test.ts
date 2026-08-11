@@ -57,8 +57,9 @@ assert.equal(profile?.handoff?.firstQuestion, "What should this video explain or
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 0\.1\.1-proof/);
-assert.match(prompt, /Use the bundled host, renderer, and pose pack/);
-assert.ok(prompt.trim().endsWith('"What should this video explain or compare?"'));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Mugsy Explains repo page tests passed.");

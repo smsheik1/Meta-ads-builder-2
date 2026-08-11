@@ -83,10 +83,11 @@ assert.match(rainPrompt, /heavy nighttime rainfall/);
 assert.match(rainPrompt, /pulling the Spider-Man mask upward/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Format: Cinematic Portrait Pack/);
+assert.match(prompt, /Wiggly Format: Cinematic Portrait Pack/);
 assert.match(prompt, /formats\/cinematic-portrait-pack/);
-assert.match(prompt, /download the runnable kit/i);
-assert.match(prompt, /eight packaged looks/i);
-assert.ok(prompt.trim().endsWith(`"${profile.handoff.firstQuestion}"`));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Cinematic Portrait Pack Repo page tests passed.");

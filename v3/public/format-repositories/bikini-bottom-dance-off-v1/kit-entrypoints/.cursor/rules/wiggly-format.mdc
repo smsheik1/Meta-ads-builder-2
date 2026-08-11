@@ -1,0 +1,6 @@
+---
+description: Operate this Wiggly Format Kit through its canonical packaged workflow
+alwaysApply: true
+---
+
+Read and follow `AGENTS.md` at the workspace root before taking task action. It routes to the one canonical Format workflow; do not duplicate or replace that workflow here.

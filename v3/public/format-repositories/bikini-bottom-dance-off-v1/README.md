@@ -12,7 +12,7 @@ node runner.mjs init --run=wiggle-proof --song=/absolute/path/to/song.mp3
 node runner.mjs validate --run=wiggle-proof
 node runner.mjs render --run=wiggle-proof --approve-provider
 node runner.mjs inspect --run=wiggle-proof
-node runner.mjs finalize --run=wiggle-proof --human-review=pass
+node runner.mjs finalize --run=wiggle-proof --review=/absolute/path/to/blind-review.json
 ```
 
 `npm run check` verifies both the Dance Off contracts and the bundled character-motion foundation, including an isolated local `import-motion` round trip.
@@ -34,11 +34,15 @@ Choose the outer canvas with `outerBackground` in `input.json`. The Fish News fl
 | `dance-club` | Indigo club with cyan and magenta spotlights |
 | `control-room` | Teal metal porthole and restrained rivets |
 
-`inspect` writes both `eval-report.json` and a readable `eval-report.md`. The 100-point score is 70 points of measured technical checks and 30 points of explicit human review. Before a person watches the video, the grade stays pending and reports the automatic percentage separately. `finalize --human-review=pass` creates `final.mp4`, the final A-F grade, and `delivery.json`, then prints all three paths as one return-ready bundle.
+`inspect` first applies 16 deterministic technical gates, then writes `review-packet.json`, `blind-review.template.json`, `eval-report.json`, and a readable `eval-report.md`. Give the packet, template, `prompts/blind-review.md`, and exact MP4 to an independent reviewer without source code, logs, automatic results, or an earlier grade. The reviewer must directly see the moving video and hear its sound, records the basis for both channels, watches the full output twice, and scores seven criterion-specific anchors with time-coded evidence. An unmuted player, captions, transcript, waveform, metadata, or receipt does not qualify as hearing the audio. `finalize --review=/absolute/path/to/blind-review.json` validates the review against the MP4 hash, computes the 100-point blind score, enforces critical floors and the 85-point shipping threshold, and creates `final.mp4` plus the delivery evidence only when every gate passes. Missing or indirect playback and low-confidence evidence return an inconclusive review and require a replacement reviewer; they do not falsely fail the video.
+
+A passing score from 85–90, or a rating exactly on a critical floor, requires `--second-review=/absolute/path/to/another-review.json`. The two reviewers must be independent. The runtime reports agreement without averaging their scores; a decision disagreement or a criterion gap above one rating point blocks delivery for adjudication.
+
+See `EVALUATION-FRAMEWORK.md` for the protocol and primary research, and `CALIBRATION-REPORT.md` for the controlled failures, blind-review findings, and current acceptance status.
 
 The supplied song is copied into the local run folder and remains untracked. It plays only during dance windows. Countdown gaps remain silent except for beeps; opening, taunts, and CTA contain Fish Audio dialogue with no song underneath. Generated voice clips are measured before the runtime divides the solo budget evenly among the four dancers; the group showcase then receives nine uninterrupted seconds from dedicated finale motions that are never clip-looped.
 
-Set `FISH_STUDIO_APIKEY` locally. SpongeBob, Patrick, and Mr. Krabs use the packaged public reference presets; set `SQUILLIAM_VOICE_ID` to the operator-approved private Squilliam clone. Missing or stale dialogue requires explicit `--approve-provider`; accepted clips are cached with non-secret receipts in the ignored run folder.
+Set `FISH_STUDIO_APIKEY` locally. The approved reference presets for SpongeBob, Patrick, Mr. Krabs, and Squilliam are packaged with the Format. Missing or stale dialogue requires explicit `--approve-provider`; accepted clips are cached with non-secret receipts in the ignored run folder.
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|

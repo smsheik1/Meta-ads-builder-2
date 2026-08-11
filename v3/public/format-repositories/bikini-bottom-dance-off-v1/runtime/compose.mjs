@@ -101,10 +101,6 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     const round = timeline.rounds[index];
     await add(`active-${index}`, `between(t,${round.roundStart},${round.roundEnd})`,
       `<rect x="${position.x}" y="${position.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${character.color}" stroke-width="18"/>`);
-    await add(`dance-punch-${index}`, `between(t,${round.danceStart},${round.danceStart + 0.24})`, [
-      `<rect x="${position.x + 5}" y="${position.y + 5}" width="500" height="${CELL_HEIGHT - 10}" fill="${character.color}" fill-opacity="0.12" stroke="white" stroke-width="28"/>`,
-      `<rect x="${position.x + 13}" y="${position.y + 13}" width="484" height="${CELL_HEIGHT - 26}" fill="none" stroke="${character.color}" stroke-width="12"/>`,
-    ].join(""));
     const speech = index === 0 ? input.openingLine : character.taunt;
     const speakerLabel = index === 0 ? `${character.label}:` : `${character.label} TO ${previousCharacter.label}:`;
     const speechLines = speech.length > 30 ? wrapWords(speech) : [speech.toUpperCase()];
@@ -129,19 +125,15 @@ async function renderGraphics({ input, timeline, directory, cellPositions }) {
     await add(`countdown-${number}`, `between(t,${index},${index + 0.98})`, countdownGraphic(number));
   }
 
-  await add("loop-bridge-prompt", `between(t,${timeline.loopBridge.start},${timeline.loopBridge.end - 0.2})`, [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
-    centeredText({ value: "WHO WON?", y: 790, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
-    centeredText({ value: "COMMENT YOUR WINNER.", y: 900, size: 48, strokeWidth: 4 }),
-  ].join(""));
-  await add("loop-bridge-countdown", `between(t,${timeline.loopBridge.end - 0.2},${timeline.loopBridge.end})`, countdownGraphic(3));
+  await add("loop-bridge-countdown", `between(t,${timeline.loopBridge.end - 0.7},${timeline.loopBridge.end})`, countdownGraphic(3));
 
   const closing = timeline.events.find((event) => event.type === "closing");
   const closingLines = wrapWords(input.closingLine);
   const closingPosition = cellPositions.at(-1);
   const closingCharacter = input.characters.at(-1);
-  await add("cta", `between(t,${closing.start},${closing.end})`, [
-    '<rect x="0" y="0" width="1080" height="1920" fill="#02050a" fill-opacity="0.68"/>',
+  const ctaStart = timeline.finale.end - 1.5;
+  const ctaEnd = timeline.loopBridge.end - 0.7;
+  await add("cta", `between(t,${ctaStart},${ctaEnd})`, [
     `<rect x="${closingPosition.x}" y="${closingPosition.y}" width="${CELL_WIDTH}" height="${CELL_HEIGHT}" fill="none" stroke="${closingCharacter.color}" stroke-width="18"/>`,
     centeredText({ value: "WHO WON?", y: 750, size: 120, fill: "#f8dd40", strokeWidth: 6 }),
     ...closingLines.map((line, index) => centeredText({ value: line, y: 865 + index * 65, size: 48, strokeWidth: 4 })),
@@ -325,7 +317,10 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     "-filter_complex_script", filterPath,
     "-map", "[vout]", "-map", "[music]",
     "-t", String(DURATION),
+    "-threads", "1",
     "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+    "-profile:v", "baseline", "-level:v", "4.0", "-refs", "1",
+    "-g", "30", "-keyint_min", "30", "-sc_threshold", "0", "-bf", "0",
     "-force_key_frames", `0,${timeline.loopBridge.end - 0.2}`,
     "-c:a", "aac", "-b:a", "192k",
     "-movflags", "+faststart",

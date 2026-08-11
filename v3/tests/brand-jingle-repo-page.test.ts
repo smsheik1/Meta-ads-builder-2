@@ -24,9 +24,9 @@ assert.equal(profile.technicalHref, "/format-lab/brand-jingle");
 assert.equal(profile.handoff.firstQuestion, "What website is this for? If you do not have one, just say so.");
 assert.equal(profile.handoff.estimates.length, 3);
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 1\.0\.0/);
-assert.match(prompt, /Ask me one short question at a time/);
-assert.match(prompt, /Never make a paid media call without my approval/);
-assert.ok(prompt.trim().endsWith('"What website is this for? If you do not have one, just say so."'));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Brand Jingle Repo page tests passed.");

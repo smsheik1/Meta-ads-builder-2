@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "renderer": "../mixamo-character-motion-v1/runtime/renderer/app.js",
+  "compositor": "runtime/compose.mjs",
+  "dimensions": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 47
+  },
+  "timeline": {
+    "durationSeconds": 47,
+    "danceDuration": 5.1206197499999995,
+    "rounds": [
+      {
+        "roundStart": 3,
+        "roundEnd": 9.127223749999999,
+        "speechStart": 3,
+        "speechEnd": 4.006604,
+        "danceStart": 4.006604,
+        "danceEnd": 9.127223749999999
+      },
+      {
+        "roundStart": 9.127223749999999,
+        "roundEnd": 17.5530935,
+        "speechStart": 9.127223749999999,
+        "speechEnd": 12.43247375,
+        "danceStart": 12.43247375,
+        "danceEnd": 17.5530935
+      },
+      {
+        "roundStart": 17.5530935,
+        "roundEnd": 24.72313025,
+        "speechStart": 17.5530935,
+        "speechEnd": 19.6025105,
+        "danceStart": 19.6025105,
+        "danceEnd": 24.72313025
+      },
+      {
+        "roundStart": 24.72313025,
+        "roundEnd": 33.957708,
+        "speechStart": 24.72313025,
+        "speechEnd": 28.83708825,
+        "danceStart": 28.83708825,
+        "danceEnd": 33.957708
+      }
+    ],
+    "finale": {
+      "start": 33.957708,
+      "end": 42.957708
+    },
+    "closingChorus": {
+      "start": 42.957708,
+      "end": 46,
+      "characterIds": [
+        "spongebob",
+        "patrick",
+        "mr-krabs",
+        "squilliam"
+      ]
+    },
+    "loopBridge": {
+      "start": 46,
+      "end": 47
+    },
+    "events": [
+      {
+        "type": "countdown",
+        "id": "countdown",
+        "start": 0,
+        "end": 3,
+        "song": false
+      },
+      {
+        "type": "opening",
+        "id": "opening",
+        "characterId": "spongebob",
+        "start": 3,
+        "end": 4.006604,
+        "song": false
+      },
+      {
+        "type": "dance",
+        "id": "dance-spongebob",
+        "characterId": "spongebob",
+        "start": 4.006604,
+        "end": 9.127223749999999,
+        "song": true
+      },
+      {
+        "type": "taunt",
+        "id": "taunt-patrick",
+        "characterId": "patrick",
+        "start": 9.127223749999999,
+        "end": 12.43247375,
+        "song": false
+      },
+      {
+        "type": "dance",
+        "id": "dance-patrick",
+        "characterId": "patrick",
+        "start": 12.43247375,
+        "end": 17.5530935,
+        "song": true
+      },
+      {
+        "type": "taunt",
+        "id": "taunt-mr-krabs",
+        "characterId": "mr-krabs",
+        "start": 17.5530935,
+        "end": 19.6025105,
+        "song": false
+      },
+      {
+        "type": "dance",
+        "id": "dance-mr-krabs",
+        "characterId": "mr-krabs",
+        "start": 19.6025105,
+        "end": 24.72313025,
+        "song": true
+      },
+      {
+        "type": "taunt",
+        "id": "taunt-squilliam",
+        "characterId": "squilliam",
+        "start": 24.72313025,
+        "end": 28.83708825,
+        "song": false
+      },
+      {
+        "type": "dance",
+        "id": "dance-squilliam",
+        "characterId": "squilliam",
+        "start": 28.83708825,
+        "end": 33.957708,
+        "song": true
+      },
+      {
+        "type": "finale",
+        "id": "all-character-finale",
+        "start": 33.957708,
+        "end": 42.957708,
+        "song": true
+      },
+      {
+        "type": "closing",
+        "id": "closing",
+        "characterIds": [
+          "spongebob",
+          "patrick",
+          "mr-krabs",
+          "squilliam"
+        ],
+        "start": 42.957708,
+        "end": 46,
+        "song": false
+      },
+      {
+        "type": "loop-bridge",
+        "id": "replay-loop-bridge",
+        "start": 46,
+        "end": 47,
+        "song": false
+      }
+    ]
+  },
+  "song": {
+    "file": "source.mp3",
+    "excerptStart": 30.759,
+    "sha256": "028109a7274ed69e70034b5721c566d66e056654904f3acf5bf7b7694b218b74"
+  },
+  "dialogue": [
+    {
+      "id": "opening",
+      "timelineEventId": "opening",
+      "characterId": "spongebob",
+      "text": "I'm ready!",
+      "durationSeconds": 1.006604,
+      "sha256": "c955bf136506f41c4e6df7cff4c1f5c4013d9f01280910f7c8d7296b91b82e2a",
+      "file": "dialogue/opening.wav"
+    },
+    {
+      "id": "taunt-patrick",
+      "timelineEventId": "taunt-patrick",
+      "characterId": "patrick",
+      "text": "Cute moves, SpongeBob. Watch a real star.",
+      "durationSeconds": 3.30525,
+      "sha256": "ffa645dd7bade5603c6e2e5e88c08e36e59697328748202efea6c1abc9ad2a6e",
+      "file": "dialogue/taunt-patrick.wav"
+    },
+    {
+      "id": "taunt-mr-krabs",
+      "timelineEventId": "taunt-mr-krabs",
+      "characterId": "mr-krabs",
+      "text": "Patrick, I wouldn't pay a dime for that.",
+      "durationSeconds": 2.049417,
+      "sha256": "b0ed61c4698b20f9ef7aefdf753d36ccef9735ea5cf68daa4f07130c718e7ba7",
+      "file": "dialogue/taunt-mr-krabs.wav"
+    },
+    {
+      "id": "taunt-squilliam",
+      "timelineEventId": "taunt-squilliam",
+      "characterId": "squilliam",
+      "text": "Krabs, that was painfully pedestrian. Observe.",
+      "durationSeconds": 4.113958,
+      "sha256": "88b460310656d6946e059e15d677e2aa502bb3bbeec95421efed1a1d5b22c396",
+      "file": "dialogue/taunt-squilliam.wav"
+    },
+    {
+      "id": "closing-spongebob",
+      "timelineEventId": "closing",
+      "characterId": "spongebob",
+      "text": "Comment your winner, if you have taste.",
+      "durationSeconds": 1.913396,
+      "sha256": "74d67f522b12eff7a1b34a0f3e6b7709f3198e676c87ea2e7091a4e7f4ac0a27",
+      "file": "dialogue/closing-spongebob.wav"
+    },
+    {
+      "id": "closing-patrick",
+      "timelineEventId": "closing",
+      "characterId": "patrick",
+      "text": "Comment your winner, if you have taste.",
+      "durationSeconds": 2.164292,
+      "sha256": "1854321783e5b67c46eeb5f600556ce2a771843e9e3d7cb1564db8395b5e658d",
+      "file": "dialogue/closing-patrick.wav"
+    },
+    {
+      "id": "closing-mr-krabs",
+      "timelineEventId": "closing",
+      "characterId": "mr-krabs",
+      "text": "Comment your winner, if you have taste.",
+      "durationSeconds": 2.022375,
+      "sha256": "d199c4ba42f0dcba527767e5e957a7be3c259497ca698a271c3a89af0f8e3587",
+      "file": "dialogue/closing-mr-krabs.wav"
+    },
+    {
+      "id": "closing",
+      "timelineEventId": "closing",
+      "characterId": "squilliam",
+      "text": "Comment your winner, if you have taste.",
+      "durationSeconds": 3.042292,
+      "sha256": "5d4658eaed98ad33e64debdc77c599e36705bfbf942fdbe6473821ae32df8fcb",
+      "file": "dialogue/closing.wav"
+    }
+  ],
+  "characters": [
+    {
+      "characterId": "spongebob",
+      "motionId": "macarena-dance",
+      "finaleMotionId": "northern-soul-dance",
+      "reactionMotionId": "joyful-jump",
+      "label": "SPONGEBOB",
+      "taunt": "",
+      "color": "#5de2ff",
+      "taunts": null,
+      "round": {
+        "roundStart": 3,
+        "roundEnd": 9.127223749999999,
+        "speechStart": 3,
+        "speechEnd": 4.006604,
+        "danceStart": 4.006604,
+        "danceEnd": 9.127223749999999
+      },
+      "finale": {
+        "start": 33.957708,
+        "end": 42.957708
+      },
+      "renderedClipSha256": "074a35ecad67720bf3a4fa1e22b7a03e1321c10f9d82785306ed22135ada804d",
+      "finaleRenderedClipSha256": "ff529804e469a8bd4670b68bde2b42cf742b48e9f3d2e0b41ff2e0feeacb6b30",
+      "reactionRenderedClipSha256": "268ee3457ef07f6e90fee0c4ca0cae66b400195407396cfe9784ba004ed0a722"
+    },
+    {
+      "characterId": "patrick",
+      "motionId": "silly-dancing",
+      "finaleMotionId": "samba-dancing",
+      "reactionMotionId": "taunt",
+      "label": "PATRICK",
+      "taunt": "Cute moves, SpongeBob. Watch a real star.",
+      "color": "#ff79bd",
+      "taunts": "spongebob",
+      "round": {
+        "roundStart": 9.127223749999999,
+        "roundEnd": 17.5530935,
+        "speechStart": 9.127223749999999,
+        "speechEnd": 12.43247375,
+        "danceStart": 12.43247375,
+        "danceEnd": 17.5530935
+      },
+      "finale": {
+        "start": 33.957708,
+        "end": 42.957708
+      },
+      "renderedClipSha256": "296228d9ca6ff55d0b16d115dbc3b35166e6cbd02c76c4f42945e39731094cca",
+      "finaleRenderedClipSha256": "f7b8fbf6cb6c6d77687cff5a967606d2646ffe74323b48292e546ee216063a1e",
+      "reactionRenderedClipSha256": "690e5662aa41e614db267d6397a94c9ba917226eb0486a6182a87a6a36a2c442"
+    },
+    {
+      "characterId": "mr-krabs",
+      "motionId": "runningman-hip-hop-dancing",
+      "finaleMotionId": "shopping-cart-dance",
+      "reactionMotionId": "joyful-jump",
+      "label": "MR. KRABS",
+      "taunt": "Patrick, I wouldn't pay a dime for that.",
+      "color": "#ff704d",
+      "taunts": "patrick",
+      "round": {
+        "roundStart": 17.5530935,
+        "roundEnd": 24.72313025,
+        "speechStart": 17.5530935,
+        "speechEnd": 19.6025105,
+        "danceStart": 19.6025105,
+        "danceEnd": 24.72313025
+      },
+      "finale": {
+        "start": 33.957708,
+        "end": 42.957708
+      },
+      "renderedClipSha256": "a04dc34522a9e800ef764b82ecc5a76745a75c04a2ae494d2904ea2efdaa324a",
+      "finaleRenderedClipSha256": "52535339b288df925298631b0224514dc12aef865be055d32dd27e7c3767934b",
+      "reactionRenderedClipSha256": "177a586abce093ab099bf4867b7f20760370c24397fde1253866ace5773e407f"
+    },
+    {
+      "characterId": "squilliam",
+      "motionId": "ymca-dance",
+      "finaleMotionId": "thriller-part-2",
+      "reactionMotionId": "taunt",
+      "label": "SQUILLIAM",
+      "taunt": "Krabs, that was painfully pedestrian. Observe.",
+      "color": "#8af5cf",
+      "taunts": "mr-krabs",
+      "round": {
+        "roundStart": 24.72313025,
+        "roundEnd": 33.957708,
+        "speechStart": 24.72313025,
+        "speechEnd": 28.83708825,
+        "danceStart": 28.83708825,
+        "danceEnd": 33.957708
+      },
+      "finale": {
+        "start": 33.957708,
+        "end": 42.957708
+      },
+      "renderedClipSha256": "55f46749f760386ad52303cf15f0eb46f88ff5129c582a9063c9b407dedf1240",
+      "finaleRenderedClipSha256": "b13f3bc4506411f2c09b4c2d3380de7c6059978abd53b4ad9a76dbb2924f0006",
+      "reactionRenderedClipSha256": "f5c2b4e2609b27b94c108488cd36bf2cc1f8e89d47279ec6921eb9574c05fd4f"
+    }
+  ],
+  "outputSha256": "9410930282548bc052dc9123d5b84ea7df9b1a4d9809f491b3441a2cc7ca5620"
+}

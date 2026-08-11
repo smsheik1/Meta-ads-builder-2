@@ -25,8 +25,9 @@ assert.equal(
 );
 assert.equal(profile.handoff.estimates.length, 3);
 const prompt = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 1\.0\.0/);
-assert.match(prompt, /Ask me one short question at a time/);
-assert.ok(prompt.trim().endsWith('"What website has the customer reviews you want to turn into ads?"'));
+assert.match(prompt, /latest published Wiggly Format/);
+assert.match(prompt, /Never use a paid provider without my explicit approval/);
+assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
+assert.ok(prompt.length < 700);
 
 console.log("Reviews Repo page tests passed.");

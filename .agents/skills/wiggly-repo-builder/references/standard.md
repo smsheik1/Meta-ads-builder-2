@@ -158,6 +158,22 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Bikini Bottom Dance Off's exact Fish News flower background produced visually matching loop frames but failed RGB SSIM. The forced replay keyframe plus luma SSIM scored 0.996239 against the unchanged 0.995 gate. Its later dance-club canvas produced another visibly matching pair that scored 0.993305 at full-resolution luma and 0.996416 at half scale, again without lowering the gate.
 
+### 18. Qualify what the creative reviewer can directly perceive
+
+**Rule:** A finished-video review may ship only when the reviewer directly perceives every required channel. Record the perception basis for moving video and audio. Player state, mute or volume controls, captions, transcripts, waveforms, metadata, and provider receipts are indirect evidence; they cannot substitute for actually seeing motion or hearing sound. Missing or indirect perception makes the review inconclusive and requires a replacement reviewer, not a failed video score.
+
+**Why:** A Bikini Bottom Dance Off blind agent watched the moving video in QuickTime but had no audio input. It initially inferred intelligibility from burned-in captions and an unmuted full-volume player, producing an unsupported audio score. A later capability audit retracted the judgment, while another agent correctly refused to score the same playback environment.
+
+**Evidence:** Rubric `1.1.1` records direct, indirect, or unavailable perception for both channels. Its validator converts anything but direct audiovisual perception to `inconclusive`; a regression test proves that captions and unmuted player controls cannot impersonate hearing.
+
+### 19. Send a launcher; keep one workflow in the Repo
+
+**Rule:** A website or deep link sends only a coding-agent capability gate, the goal, stable latest-package location, package-reading instruction, paid-provider boundary, and definition of done. When terminal, filesystem, or local-media access is unavailable, the launcher must stop the chat from simulating the run and redirect the user to a supported coding agent. The downloaded Repo reports its exact manifest version and routes every supported agent through thin root entrypoints to one canonical `SKILL.md`. Never duplicate the operating manual across the website prompt, shell commands, `AGENTS.md`, `CLAUDE.md`, Cursor rules, or Copilot instructions.
+
+**Why:** Bikini Bottom Dance Off's first Send to Agent prompt repeated inputs, commands, proof links, working rules, an exact version, and the first question. The user could not tell why most of it was being sent, while the ZIP itself had no root instructions and buried the real skill one folder down. That made the longest, fastest-staling copy the entrypoint.
+
+**Evidence:** The `0.10.0` pilot replaces the duplicated prompt with a concise launcher, resolves the exact version from `KIT-MANIFEST.json`, and packages checked root adapters for Codex, Claude Code, Antigravity app and CLI, Cursor, and GitHub Copilot. A clean-package check rejects adapter copies that contain commands, provider recipes, or deliverables.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

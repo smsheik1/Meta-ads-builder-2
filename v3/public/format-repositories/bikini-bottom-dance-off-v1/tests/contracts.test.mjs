@@ -106,9 +106,16 @@ test("the song and Fish voices occupy mutually exclusive timeline beats", async 
 test("the approved Fish voice presets are registered and provider calls require approval", async () => {
   const voices = await readJson("assets/voice-presets.json");
   assert.deepEqual(voices.voices.map((voice) => voice.characterId), ["spongebob", "patrick", "mr-krabs", "squilliam"]);
-  assert.equal(voices.voices.at(-1).referenceId, null);
-  assert.equal(voices.privateReferenceEnvironmentVariable, "SQUILLIAM_VOICE_ID");
+  assert.deepEqual(voices.voices.map((voice) => voice.referenceId), [
+    "9845e056f37b470d9a1005e41c864e25",
+    "d1520b60870b4e9aa01eab5bfefb1c45",
+    "394d3112f0da41049c42177f3ca31c5a",
+    "f12d545dcc1149bab3b68bba84822a1e",
+  ]);
+  assert.equal(voices.voices.every((voice) => /^[0-9a-f]{32}$/.test(voice.referenceId)), true);
+  assert.equal("privateReferenceEnvironmentVariable" in voices, false);
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
+  assert.doesNotMatch(runner, /SQUILLIAM_VOICE_ID/);
   assert.match(runner, /approve-provider/);
   assert.match(runner, /api\.fish\.audio\/v1\/tts/);
   assert.match(runner, /sample_rate: 44100/);
@@ -118,8 +125,8 @@ test("the approved Fish voice presets are registered and provider calls require 
   assert.ok(runner.indexOf("const cache = await dialogueCacheStatus") < runner.indexOf("await loadLocalEnv()"));
   assert.ok(
     runner.indexOf("const cached = receipt && await exists(output)") <
-      runner.indexOf("for uncached ${spec.id} audio"),
-    "cached private voice clips must be reusable without reloading the private provider reference",
+      runner.indexOf("Missing packaged Fish Audio reference"),
+    "cached voice clips must be reusable before a missing preset can stop generation",
   );
 });
 
@@ -130,6 +137,14 @@ test("long spoken captions wrap inside the Reel-safe card", async () => {
     assert.equal(wrapped.length, 2);
     assert.ok(wrapped.every((part) => part.length <= 28));
   }
+});
+
+test("failed compositions do not consume a completed render attempt", async () => {
+  const runner = await readFile(new URL("runner.mjs", root), "utf8");
+  assert.match(runner, /const completedAttempts = state\.attempts \|\| 0/);
+  assert.match(runner, /status: "rendering", attempts: completedAttempts/);
+  assert.match(runner, /catch \(error\)[\s\S]*status: "render-failed"[\s\S]*attempts: completedAttempts/);
+  assert.match(runner, /status: "rendered", attempts, renderedAt/);
 });
 
 test("the nine-second group showcase uses uninterrupted motions and hands off to a looping CTA", async () => {
@@ -155,8 +170,8 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /character\.reactionMotionId/);
   assert.match(compositor, /IDLE_SPEED = 0\.36/);
   assert.match(compositor, /RIGHT_COLUMN_SAFE_SHIFT = 76/);
-  assert.equal(CELL_HEIGHT, 515);
-  assert.equal(CAPTION_Y, 1300);
+  assert.equal(CELL_HEIGHT, 600);
+  assert.equal(CAPTION_Y, 1440);
   assert.equal(CAPTION_HEIGHT, 130);
   assert.equal(CELL_POSITIONS.length, 4);
   assert.match(compositor, /stillSegment/);
@@ -164,11 +179,18 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(compositor, /countdownGraphic[\s\S]*fill-opacity="0\.68"[\s\S]*WHO CAN DANCE BEST\?/);
   assert.doesNotMatch(compositor, /RUN IT BACK/);
   assert.doesNotMatch(compositor, /ROUND TWO/);
-  assert.match(compositor, /dance-punch/);
+  assert.doesNotMatch(compositor, /dance-punch/, "handoffs must not flash a crop-like panel overlay");
   assert.match(compositor, /finale[\s\S]*rect x="0" y="164" width="1080" height="64" fill="#061829"/);
+  assert.match(compositor, /const ctaStart = timeline\.finale\.end - 1\.5/);
+  assert.match(compositor, /"-threads", "1"/, "the delivery encoder must remain single-threaded to prevent corrupted transition frames");
+  assert.match(compositor, /const ctaEnd = timeline\.loopBridge\.end - 0\.7/);
+  assert.match(compositor, /loopBridge\.end - 0\.7/);
+  assert.doesNotMatch(compositor, /loop-bridge-prompt/, "the full CTA must remain visible until the countdown bridge");
   assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
   assert.match(compositor, /-force_key_frames/);
+  assert.match(compositor, /"-g", "30", "-keyint_min", "30", "-sc_threshold", "0", "-bf", "0"/, "delivery encoding must be seek-safe in browsers and Reels");
+  assert.match(compositor, /"-profile:v", "baseline", "-level:v", "4\.0", "-refs", "1"/, "delivery encoding must avoid fragile advanced decoder features");
   assert.match(compositor, /atempo=/);
   assert.match(compositor, /volume=0\.5/);
   assert.match(compositor, /character\.finaleMotionId/);
@@ -187,6 +209,12 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.match(inspector, /groupFinaleDurationSeconds/);
   assert.match(inspector, /finaleRenderedClipCount/);
   assert.match(inspector, /finaleFreezeEventCounts/);
+  assert.match(inspector, /noAudioMeasurements/);
+  assert.match(inspector, /audio\?\.codec_name \?\? null/);
+  assert.ok(
+    inspector.indexOf('writeFile(path.join(runDirectory, "quality-report.json"') < inspector.indexOf("if (!technicalPassed)"),
+    "failed technical inspections must preserve their evidence report before throwing",
+  );
 });
 
 test("the compositor delegates character pixels to the motion repo", async () => {
@@ -212,21 +240,36 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   assert.match(runner, /execute\("npm", \["test"\], \{ cwd: motionRoot \}\)/);
   const buildKit = await readFile(new URL("build-kit.mjs", root), "utf8");
   assert.match(buildKit, /workspaces: \["bikini-bottom-dance-off-v1", "mixamo-character-motion-v1"\]/);
+  assert.match(buildKit, /node verify-entrypoints\.mjs/);
+  assert.match(buildKit, /entrypointRoot/);
+  assert.match(buildKit, /"kit-entrypoints"/);
   assert.match(buildKit, /await cp\(motionRoot/);
   assert.match(buildKit, /formatVersion = JSON\.parse/);
   assert.doesNotMatch(buildKit, /version: "0\.7/);
 });
 
-test("finalization returns one delivery bundle with a scored eval", async () => {
+test("finalization requires a hash-bound blind review and returns one scored delivery bundle", async () => {
   const output = await readJson("output-contract.json");
   assert.equal(output.delivery.finalVideo, "final.mp4");
   assert.equal(output.delivery.machineReadableEval, "eval-report.json");
   assert.equal(output.delivery.friendlyEval, "eval-report.md");
+  assert.equal(output.delivery.blindReview, "blind-review.json");
   const quality = await readJson("quality.json");
-  assert.equal(quality.grading.automaticCriteria.reduce((sum, criterion) => sum + criterion.weight, 0), 70);
-  assert.equal(quality.human.reduce((sum, criterion) => sum + criterion.weight, 0), 30);
+  assert.equal(quality.schemaVersion, 2);
+  assert.equal(quality.technicalGates.length, 16);
+  assert.equal(quality.grading.blindCriteria.reduce((sum, criterion) => sum + criterion.weight, 0), 100);
+  assert.equal(quality.grading.ratingScale.length, 5);
+  assert.equal(quality.grading.passingScore, 85);
+  assert.ok(quality.grading.blindCriteria.every((criterion) => Object.keys(criterion.anchors).length === 5));
+  assert.equal(quality.blindReview.requiredPlayback.perceptionMode, "direct");
+  assert.equal(quality.blindReview.escalation.requireDecisionAgreement, true);
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
   assert.match(runner, /delivery\.json/);
   assert.match(runner, /eval-report\.md/);
+  assert.match(runner, /--review=\/absolute\/path\/to\/blind-review\.json/);
+  assert.match(runner, /review-packet\.json/);
+  assert.match(runner, /--second-review=\/absolute\/path\/to\/an-independent-review\.json/);
+  assert.match(runner, /compareBlindReviews/);
+  assert.doesNotMatch(runner, /human-review=pass/);
   assert.match(runner, /grade: evaluation\.overall\.grade/);
 });

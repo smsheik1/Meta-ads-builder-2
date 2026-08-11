@@ -13,5 +13,8 @@ assert.ok(devAll.includes('args: ["run", "dev:next", "-w", "@wiggly/v3"]'));
 assert.ok(devAll.includes('args: ["run", "convex:dev", "-w", "@wiggly/v3"]'));
 assert.ok(devAll.includes('args: ["run", "render-worker:dev", "-w", "@wiggly/v3"]'));
 assert.ok(devAll.includes("const repoRoot ="));
+assert.ok(devAll.includes('import { ensureWorktreeEnv } from "./sync-worktree-env.mjs"'));
+assert.ok(devAll.includes("ensureWorktreeEnv({ repoRoot, optional: true })"));
+assert.equal(v3Package.scripts["predev:next"], "node ../scripts/sync-worktree-env.mjs --optional");
 
 console.log("dev-stack tests passed");

@@ -16,69 +16,111 @@ function display(value) {
   return String(value);
 }
 
+function timecodes(evidence = []) {
+  return evidence.map((item) => `${item.startSeconds}-${item.endSeconds}s: ${item.observation}`).join("; ");
+}
+
 function markdown(report) {
-  const overall = report.overall.score === null
-    ? `Human review pending · automatic score ${report.overall.provisionalPercent}%`
-    : `${report.overall.grade} · ${report.overall.score}/100`;
-  const rows = report.criteria.map((criterion) => (
-    `| ${criterion.category} | ${criterion.label} | ${criterion.status} | ${criterion.score}/${criterion.weight} | ${criterion.measured} |`
+  const decision = report.overall.score === null
+    ? report.overall.status === "inconclusive" ? "Blind review inconclusive" : "Blind review pending"
+    : `${report.overall.grade} · ${report.overall.score}/100 blind score`;
+  const technicalRows = report.technicalCriteria.map((criterion) => (
+    `| ${criterion.label} | ${criterion.status} | ${criterion.measured} | ${criterion.threshold} |`
   ));
-  return `# Bikini Bottom Dance Off eval\n\n`+
-    `**${overall}**\n\n`+
-    `Status: ${report.overall.status}\n\n`+
-    `Passing score: ${report.overall.passingScore}/100\n\n`+
-    `| Type | Criterion | Status | Score | Evidence |\n`+
-    `| --- | --- | --- | ---: | --- |\n${rows.join("\n")}\n\n`+
+  const blindRows = report.blindCriteria.map((criterion) => (
+    `| ${criterion.label} | ${criterion.status} | ${criterion.rating ?? "—"} | ${criterion.score ?? "—"}/${criterion.weight} | ${criterion.confidence ?? "—"} | ${criterion.evidenceSummary || criterion.explanation} |`
+  ));
+  const failures = report.criticalFailures.length
+    ? report.criticalFailures.map((failure) => `- **${failure.criterionId}:** ${failure.reason}`).join("\n")
+    : "None.";
+  const reviewIssues = report.reviewIssues.length
+    ? report.reviewIssues.map((issue) => `- ${issue.criterionId ? `**${issue.criterionId}:** ` : ""}${issue.reason}`).join("\n")
+    : "None.";
+  return `# Bikini Bottom Dance Off evaluation\n\n`+
+    `**${decision}**\n\n`+
+    `Decision: ${report.overall.status}\n\n`+
+    `Technical gates: ${report.overall.technicalPassed}/${report.overall.technicalTotal} passed\n\n`+
+    `Blind shipping threshold: ${report.overall.passingScore}/100\n\n`+
+    `## Technical gates\n\n`+
+    `| Gate | Status | Measurement | Required |\n`+
+    `| --- | --- | --- | --- |\n${technicalRows.join("\n")}\n\n`+
+    `## Blind creative review\n\n`+
+    `| Criterion | Status | Rating | Score | Confidence | Evidence |\n`+
+    `| --- | --- | ---: | ---: | --- | --- |\n${blindRows.join("\n")}\n\n`+
+    `## Critical failures\n\n${failures}\n\n`+
+    `## Review limitations\n\n${reviewIssues}\n\n`+
     `Automatic evidence: \`${report.evidence.qualityReport}\`\n\n`+
+    `Review packet: \`${report.evidence.reviewPacket}\`\n\n`+
+    `Blind submission: ${report.evidence.blindReview ? `\`${report.evidence.blindReview}\`` : "pending"}\n\n`+
     `Contact sheet: \`${report.evidence.contactSheet}\`\n`;
 }
 
-export async function writeEvaluation({ runDirectory, qualityReport, contract }) {
-  const automatic = contract.grading.automaticCriteria.map((criterion) => {
+export async function writeEvaluation({ runDirectory, qualityReport, contract, blindReview = null }) {
+  const technicalCriteria = contract.technicalGates.map((criterion) => {
     const passed = qualityReport.checks[criterion.id] === true;
     const measured = valueAt(qualityReport, criterion.measurementPath);
     return {
       ...criterion,
-      category: "automatic",
       status: passed ? "pass" : "fail",
-      score: passed ? criterion.weight : 0,
       measured: display(measured),
       explanation: passed
         ? `${criterion.label} met its threshold (${criterion.threshold}).`
         : `${criterion.label} missed its threshold (${criterion.threshold}).`,
     };
   });
-  const humanPassed = qualityReport.humanReview.status === "pass";
-  const human = contract.human.map((criterion) => ({
-    ...criterion,
-    category: "human",
-    status: humanPassed ? "pass" : "pending",
-    score: humanPassed ? criterion.weight : 0,
-    measured: humanPassed ? `Approved ${qualityReport.humanReview.approvedAt}` : "Awaiting a person watching the final render",
-    explanation: humanPassed ? "A human reviewer approved this criterion." : "This criterion cannot be inferred from technical measurements alone.",
-  }));
-  const automaticScore = automatic.reduce((sum, criterion) => sum + criterion.score, 0);
-  const automaticMaximum = automatic.reduce((sum, criterion) => sum + criterion.weight, 0);
-  const humanScore = human.reduce((sum, criterion) => sum + criterion.score, 0);
-  const score = humanPassed ? automaticScore + humanScore : null;
+  const blindCriteria = contract.grading.blindCriteria.map((criterion) => {
+    const reviewed = blindReview?.criteria.find((item) => item.id === criterion.id);
+    return reviewed ? {
+      ...reviewed,
+      evidenceSummary: timecodes(reviewed.evidence),
+      explanation: reviewed.rationale,
+    } : {
+      ...criterion,
+      status: "pending",
+      rating: null,
+      score: null,
+      confidence: null,
+      evidence: [],
+      evidenceSummary: "Awaiting an independent review of the complete MP4.",
+      explanation: "This criterion is judged from the finished audiovisual experience.",
+    };
+  });
+  const technicalPassed = technicalCriteria.filter((criterion) => criterion.status === "pass").length;
+  const technicalStatus = technicalPassed === technicalCriteria.length ? "pass" : "fail";
+  const score = blindReview?.score ?? null;
+  const criticalFailures = blindReview?.criticalFailures ?? [];
+  const reviewIssues = blindReview?.reviewIssues ?? [];
+  const status = technicalStatus === "fail"
+    ? "fail"
+    : blindReview
+      ? blindReview.status
+      : "blind-review-pending";
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     format: "bikini-bottom-dance-off-v1",
+    rubricVersion: contract.rubricVersion,
     evaluatedAt: new Date().toISOString(),
     overall: {
-      status: humanPassed ? (score >= contract.grading.passingScore ? "pass" : "fail") : "human-review-pending",
+      status,
       score,
+      provisionalScore: blindReview?.provisionalScore ?? null,
       grade: score === null ? null : gradeFor(score, contract.grading.gradeScale),
       passingScore: contract.grading.passingScore,
-      provisionalPercent: Math.round(automaticScore / automaticMaximum * 100),
-      automaticScore,
-      automaticMaximum,
-      humanScore,
-      humanMaximum: contract.human.reduce((sum, criterion) => sum + criterion.weight, 0),
+      scoreMeaning: contract.grading.scoreMeaning,
+      technicalStatus,
+      technicalPassed,
+      technicalTotal: technicalCriteria.length,
     },
-    criteria: [...automatic, ...human],
+    technicalCriteria,
+    blindCriteria,
+    criticalFailures,
+    reviewIssues,
+    firstPass: blindReview?.firstPass ?? null,
+    reviewer: blindReview?.reviewer ?? null,
     evidence: {
       qualityReport: "quality-report.json",
+      reviewPacket: contract.blindReview.reviewPacketFile,
+      blindReview: blindReview ? contract.blindReview.reviewFile : null,
       contactSheet: qualityReport.contactSheet,
     },
   };

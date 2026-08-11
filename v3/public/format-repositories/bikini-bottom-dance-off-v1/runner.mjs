@@ -10,6 +10,7 @@ import { resolveOuterBackground } from "./runtime/backgrounds.mjs";
 import { composeRun } from "./runtime/compose.mjs";
 import { inspectVideo } from "./runtime/inspect.mjs";
 import { writeEvaluation } from "./runtime/evaluate.mjs";
+import { compareBlindReviews, needsSecondReview, validateBlindReview, writeReviewPacket } from "./runtime/review.mjs";
 import { loadMotionCatalog } from "../mixamo-character-motion-v1/runtime/motion-catalog.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -128,8 +129,7 @@ async function generateDialogue(input, directory) {
   const resolved = specs.map((spec) => {
     const preset = presets.get(spec.characterId);
     if (!preset) throw new Error(`No Fish Audio preset for ${spec.characterId}.`);
-    const referenceId = preset.referenceId || (spec.characterId === "squilliam" ? process.env.SQUILLIAM_VOICE_ID : null);
-    return { ...spec, referenceId, speed: preset.speed };
+    return { ...spec, referenceId: preset.referenceId, speed: preset.speed };
   });
   await mkdir(dialogueDirectory, { recursive: true });
   const assets = [];
@@ -146,7 +146,7 @@ async function generateDialogue(input, directory) {
       && receipt.characterId === spec.characterId && receipt.text === spec.text
       && (!contentHash || receipt.contentHash === contentHash);
     if (!cached) {
-      if (!spec.referenceId) throw new Error(`Missing ${catalog.privateReferenceEnvironmentVariable} for uncached ${spec.id} audio.`);
+      if (!spec.referenceId) throw new Error(`Missing packaged Fish Audio reference for ${spec.characterId}.`);
       if (!args["approve-provider"]) throw new Error(`Fish Audio generation is required for ${spec.id}. Re-run render with --approve-provider after reviewing the script.`);
       const response = await fetch("https://api.fish.audio/v1/tts", {
         method: "POST",
@@ -318,42 +318,117 @@ async function renderRun() {
   const statePath = path.join(directory, "state.json");
   const state = await readJson(statePath);
   const maximumAttempts = (await readJson(path.join(root, "quality.json"))).automatic.maximumAttempts;
-  if ((state.attempts || 0) >= maximumAttempts) throw new Error(`Run reached the ${maximumAttempts}-attempt limit.`);
-  const attempts = (state.attempts || 0) + 1;
-  await writeJson(statePath, { ...state, status: "rendering", attempts, renderStartedAt: new Date().toISOString() });
-  await composeRun({ input, dialogueAssets, runDirectory: directory, outputPath: path.join(directory, "render.mp4") });
+  const completedAttempts = state.attempts || 0;
+  if (completedAttempts >= maximumAttempts) throw new Error(`Run reached the ${maximumAttempts}-attempt limit.`);
+  const attempts = completedAttempts + 1;
+  await writeJson(statePath, { ...state, status: "rendering", attempts: completedAttempts, renderStartedAt: new Date().toISOString() });
+  try {
+    await composeRun({ input, dialogueAssets, runDirectory: directory, outputPath: path.join(directory, "render.mp4") });
+  } catch (error) {
+    await writeJson(statePath, {
+      ...state,
+      status: "render-failed",
+      attempts: completedAttempts,
+      renderFailedAt: new Date().toISOString(),
+      renderFailure: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
   await writeJson(statePath, { ...state, status: "rendered", attempts, renderedAt: new Date().toISOString() });
   console.log(path.join(directory, "render.mp4"));
 }
 
 async function inspectRun() {
   const directory = runDirectory(args.run);
+  const [input, contract, format] = await Promise.all([
+    readJson(path.join(directory, "input.json")),
+    readJson(path.join(root, "quality.json")),
+    readJson(path.join(root, "format.json")),
+  ]);
+  const videoPath = path.join(directory, "render.mp4");
   const report = await inspectVideo({
-    videoPath: path.join(directory, "render.mp4"),
+    videoPath,
     runDirectory: directory,
     qualityContractPath: path.join(root, "quality.json"),
   });
+  const reviewPacket = await writeReviewPacket({
+    runDirectory: directory,
+    runId: args.run,
+    videoPath,
+    input,
+    contract,
+    formatVersion: format.version,
+  });
   const state = await readJson(path.join(directory, "state.json"));
   await writeJson(path.join(directory, "state.json"), { ...state, status: report.status, inspectedAt: new Date().toISOString() });
-  console.log(JSON.stringify(report, null, 2));
+  console.log(JSON.stringify({ ...report, reviewPacket: contract.blindReview.reviewPacketFile, packetId: reviewPacket.packetId }, null, 2));
 }
 
 async function finalizeRun() {
-  if (args["human-review"] !== "pass") throw new Error("Finalization requires --human-review=pass after a person watches the MP4.");
+  if (!args.review || args.review === true) throw new Error("Finalization requires --review=/absolute/path/to/blind-review.json from an independent reviewer.");
   const directory = runDirectory(args.run);
   const qualityPath = path.join(directory, "quality-report.json");
   const quality = await readJson(qualityPath);
-  if (quality.status !== "automatic-pass-human-pending") throw new Error(`Automatic quality is not ready: ${quality.status}`);
-  await copyFile(path.join(directory, "render.mp4"), path.join(directory, "final.mp4"));
-  quality.status = "pass";
-  quality.humanReview.status = "pass";
-  quality.humanReview.approvedAt = new Date().toISOString();
+  if (quality.status !== "technical-pass-blind-review-pending") throw new Error(`Technical quality is not ready: ${quality.status}`);
+  const [contract, packet, submission] = await Promise.all([
+    readJson(path.join(root, "quality.json")),
+    readJson(path.join(directory, "review-packet.json")),
+    readJson(path.resolve(String(args.review))),
+  ]);
+  const renderPath = path.join(directory, "render.mp4");
+  if (await sha256(renderPath) !== packet.video.sha256) throw new Error("The rendered MP4 changed after the blind review packet was created. Run inspect again.");
+  const primaryReview = validateBlindReview({ submission, packet, contract });
+  let blindReview = primaryReview;
+  let reviewComparison = null;
+  let secondarySubmission = null;
+  let secondaryReview = null;
+  if (needsSecondReview(primaryReview, contract)) {
+    if (!args["second-review"] || args["second-review"] === true) {
+      throw new Error("This passing score is inside the escalation band. Run finalize again with --second-review=/absolute/path/to/an-independent-review.json.");
+    }
+    secondarySubmission = await readJson(path.resolve(String(args["second-review"])));
+    secondaryReview = validateBlindReview({ submission: secondarySubmission, packet, contract });
+    reviewComparison = compareBlindReviews(primaryReview, secondaryReview, contract);
+    if (reviewComparison.status !== "agreement" || secondaryReview.status !== "pass") {
+      await writeJson(path.join(directory, "blind-review.submission.json"), submission);
+      await writeJson(path.join(directory, "blind-review.secondary.submission.json"), secondarySubmission);
+      await writeJson(path.join(directory, "blind-review.primary.json"), primaryReview);
+      await writeJson(path.join(directory, "blind-review.secondary.json"), secondaryReview);
+      await writeJson(path.join(directory, "blind-review-comparison.json"), reviewComparison);
+      throw new Error("Independent reviews disagree. Delivery is blocked until a blind adjudicator resolves the recorded criterion disagreements.");
+    }
+    blindReview = primaryReview.score <= secondaryReview.score ? primaryReview : secondaryReview;
+  }
+  await writeJson(path.join(directory, "blind-review.submission.json"), submission);
+  if (secondarySubmission) await writeJson(path.join(directory, "blind-review.secondary.submission.json"), secondarySubmission);
+  if (secondaryReview) await writeJson(path.join(directory, "blind-review.secondary.json"), secondaryReview);
+  if (reviewComparison) await writeJson(path.join(directory, "blind-review-comparison.json"), reviewComparison);
+  await writeJson(path.join(directory, contract.blindReview.reviewFile), blindReview);
+  quality.status = blindReview.status === "pass" ? "pass" : `blind-review-${blindReview.status}`;
+  quality.blindReview = {
+    status: blindReview.status,
+    reviewedAt: blindReview.reviewedAt,
+    reviewer: blindReview.reviewer,
+    score: blindReview.score,
+    reviewCount: secondaryReview ? 2 : 1,
+    comparison: reviewComparison?.status ?? null,
+  };
   await writeJson(qualityPath, quality);
   const evaluation = await writeEvaluation({
     runDirectory: directory,
     qualityReport: quality,
-    contract: await readJson(path.join(root, "quality.json")),
+    contract,
+    blindReview,
   });
+  if (evaluation.overall.status !== "pass") {
+    const state = await readJson(path.join(directory, "state.json"));
+    await writeJson(path.join(directory, "state.json"), { ...state, status: `blind-review-${blindReview.status}`, reviewedAt: blindReview.reviewedAt });
+    const reason = blindReview.status === "inconclusive"
+      ? `${evaluation.reviewIssues.length} review limitation(s); replace the reviewer or playback environment`
+      : `${evaluation.overall.score}/100 with ${evaluation.criticalFailures.length} critical failure(s)`;
+    throw new Error(`Blind review blocked delivery: ${reason}. Read eval-report.md.`);
+  }
+  await copyFile(renderPath, path.join(directory, "final.mp4"));
   const finalPath = path.join(directory, "final.mp4");
   const delivery = {
     schemaVersion: 1,
@@ -369,7 +444,11 @@ async function finalizeRun() {
       machineReadable: "eval-report.json",
       friendly: "eval-report.md",
     },
-    evidence: ["contact-sheet.png", "quality-report.json", "render-report.json", ".validation.json"],
+    evidence: [
+      "contact-sheet.png", "quality-report.json", "render-report.json", ".validation.json", "review-packet.json",
+      "blind-review.submission.json", "blind-review.json",
+      ...(secondaryReview ? ["blind-review.secondary.submission.json", "blind-review.secondary.json", "blind-review-comparison.json"] : []),
+    ],
   };
   await writeJson(path.join(directory, "delivery.json"), delivery);
   const state = await readJson(path.join(directory, "state.json"));
@@ -387,7 +466,7 @@ async function finalizeRun() {
 async function checkRepo() {
   for (const tool of ["node", "npm", "ffmpeg", "ffprobe"]) await execute(tool, tool === "node" || tool === "npm" ? ["--version"] : ["-version"], { capture: true });
   for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/voice-presets.json"]) await readJson(path.join(root, file));
-  for (const file of ["runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
+  for (const file of ["runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "runtime/review.mjs", "prompts/blind-review.md", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
   await execute("npm", ["test"]);
   await execute("npm", ["test"], { cwd: motionRoot });
   console.log(JSON.stringify({ status: "pass", renderer: "mixamo-character-motion-v1/runtime/renderer/app.js" }, null, 2));
