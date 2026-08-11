@@ -18,25 +18,25 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Input audio SHA-256: `226ffe78af88c77175c0358d4ab85360eb3eac43b185e29b1a92ff2e58517657`
 - Measured input duration: 31.137007 seconds
 - Timeline: 15 contiguous beats inferred from the supplied sample's visible captions; all three approved cameras and all four speaker modes
-- Output SHA-256: `133d87e1d4a83efbf7a245648f76027eb0ca46879dcd26169b357c30d0885593`
+- Output SHA-256: `116ee3bd2d01cedb982dfe266ea8d6d22ad724a272096a0c93cc0933a1dea22e`
 - Automated result: pass at 1080x1920, 24 fps, H.264/AAC, mean audio -18.5 dB, 14 captioned beats
-- Direct visual review: the regenerated contact sheet was inspected at original resolution. In every two-shot the left-side bunny faces right and the right-side cat faces left; their faces converge toward the frame center. Complete colored characters, captions, unchanged close-ups, mouth states, and the reaction beat remain visible.
+- Direct visual review: the regenerated contact sheet was inspected at original resolution, the full 31-second render was scanned at one-second intervals, and exact frames were inspected at 0.8, 6.9, and 24.5 seconds. Every two-shot has a clear gap with the bunny facing right and the cat facing left. Both bunny-only appearances face right with the tail on the left. Complete colored characters, captions, mouth states, and the reaction beat remain visible.
 - Audio evidence: codec, duration, stream presence, and mean level passed automated inspection. No claim of directly hearing or judging intelligibility is made from player controls or metadata.
 
 ## Variation proof
 
 - Run: `agent-runs/sample-backyard` (ignored local evidence)
 - Variation: identical user audio and timing with the packaged `backyard` background
-- Output SHA-256: `33dcf32e6880bc894e740d8547222936c100bf2b3551b7a6b75983843fb96b10`
-- Result: every automated gate passed; direct contact-sheet inspection confirmed inward-facing two-shots and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
+- Output SHA-256: `c6dba746eba7aadfc89fca47bd236905bc10aa5802ef86578b5d63d13ca28e2b`
+- Result: every automated gate passed; direct contact-sheet inspection confirmed separated inward-facing two-shots, the corrected bunny-only orientation, and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
 
-## Two-shot orientation fix
+## Reference-aligned staging correction
 
-- Observed failure: both source poses retained their original left-facing orientation, so the bunny faced out of frame when placed on the left.
-- Root cause: the two-shot layout encoded position and scale but no facing direction, and the original visual review did not include an explicit inward-facing criterion.
-- Smallest fix: horizontally mirror the bunny only while preparing `two-shot` assets. Cat and bunny close-ups preserve their original orientation.
-- Guardrail: the runtime test asserts that only the left-side two-shot bunny has `mirrorX` enabled; the composition and quality contracts now require inward-facing conversation staging.
-- Evidence: smoke, living-room, and backyard renders use renderer version 3; all automated gates pass and all three regenerated contact sheets show the two-shot characters facing each other.
+- Observed failures: renderer version 3 made the two-shot characters oversized and overlapping, and the bunny-only camera retained the converted asset's left-facing orientation instead of the supplied sample's right-facing orientation.
+- Root cause: the two-shot scale and positions were not calibrated against the supplied video, the bunny-only layout had no orientation override, and the regression test asserted only a two-shot flip flag rather than rendered spatial bounds.
+- Smallest fix: reduce and reposition only the two-shot layouts, keep their inward-facing directions, and mirror the bunny in `bunny-close`. Cat layouts are unchanged.
+- Guardrail: the runtime test calculates prepared widths from the packaged character pixels, requires at least 120 pixels between two-shot bounds, requires the cat to remain inside the canvas, and asserts the layout-specific bunny orientation. Composition and quality contracts require separation and the reference-matched bunny-only direction.
+- Evidence: smoke, living-room, and backyard renders use renderer version 4. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
 
 ## Audio-first decision
 
@@ -44,4 +44,4 @@ The reference MP4 container reports 31.251202 seconds, while its extracted AAC s
 
 ## Packaged handoff
 
-`npm run build:kit` produced a ZIP without `node_modules`, generated runs, Cargo targets, or local audio. A fresh extraction under `/private/tmp` completed `npm install`, all eight Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
+`npm run build:kit` produced a version 0.1.2 ZIP without `node_modules`, generated runs, Cargo targets, or local audio. A fresh extraction under `/private/tmp` completed `npm install`, all eight Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. Original-resolution inspection of the fresh package contact sheet confirmed the separated two-shot and right-facing bunny-only view. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.

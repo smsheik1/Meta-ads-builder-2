@@ -7,18 +7,18 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 3;
+const RENDERER_VERSION = 4;
 
 export const LAYOUTS = {
   "two-shot": {
-    bunny: { height: 800, left: 0, bottom: 1745, mirrorX: true },
-    cat: { height: 760, left: 395, bottom: 1745 },
+    bunny: { height: 560, left: 70, bottom: 1670, mirrorX: true },
+    cat: { height: 540, left: 555, bottom: 1670 },
   },
   "cat-close": {
     cat: { height: 1130, left: 1, bottom: 1810 },
   },
   "bunny-close": {
-    bunny: { height: 1600, left: 45, bottom: 1810 },
+    bunny: { height: 1600, left: 45, bottom: 1810, mirrorX: true },
   },
 };
 
