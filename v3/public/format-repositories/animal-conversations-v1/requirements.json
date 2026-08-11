@@ -6,6 +6,7 @@
   "environmentVariables": [],
   "notes": [
     "The episode audio is always supplied by the user as a local file.",
+    "Speaker identity is confirmed explicitly from local per-beat audio clips; automatic diarization is not claimed or required.",
     "No speech, music, image, or video provider call occurs at runtime.",
     "The smoke proof synthesizes a local tone only to exercise audio muxing without requiring episode content.",
     "Cargo is required only when rebuilding PNG character poses from Toon Boom Harmony projects; normal video rendering uses the packaged PNG poses."

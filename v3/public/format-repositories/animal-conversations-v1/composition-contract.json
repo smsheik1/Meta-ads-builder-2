@@ -9,12 +9,13 @@
     "the bunny faces right in two-shot and bunny-close layouts while the cat faces left in two-shot and cat-close layouts, matching the supplied three-angle reference",
     "two-shot character bounds preserve at least 120 pixels of clear conversational space and never overlap",
     "mouth substitution only for the active speaker; both characters move for speaker=both",
+    "every speaker assignment is explicitly confirmed per extracted user-audio beat and checksum-bound before rendering",
     "deterministic listener reaction bob and periodic blinks",
     "speaker-colored, high-contrast captions near the top safe area",
     "persistent episode label near the bottom safe area",
     "user audio is copied locally and muxed into the final video"
   ],
-  "replaceable": ["user audio", "timed captions", "speaker assignment", "approved camera selection per beat", "episode title and label", "one of five packaged backgrounds"],
-  "outOfScope": ["voice generation", "speech transcription", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
+  "replaceable": ["user audio", "timed captions", "explicit speaker assignment", "approved camera selection per beat", "episode title and label", "one of five packaged backgrounds"],
+  "outOfScope": ["voice generation", "speech transcription", "automatic speaker diarization", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
   "rendererInvariant": "Preview/proof/export frames are produced only by runtime/render.mjs from the validated complete episode input."
 }

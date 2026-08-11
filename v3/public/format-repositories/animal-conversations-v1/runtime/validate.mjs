@@ -1,5 +1,6 @@
 import path from "node:path";
 import { audioDuration, exists, probe, readJson, sha256, writeJson } from "./common.mjs";
+import { speakerAssignmentHash } from "./speaker-review.mjs";
 
 export const CAMERAS = new Set(["two-shot", "cat-close", "bunny-close"]);
 export const SPEAKERS = new Set(["cat", "bunny", "both", "none"]);
@@ -49,13 +50,27 @@ export async function validateRun({ root, runDirectory }) {
 
   let durationSeconds = 0;
   let audioProbe = null;
+  let audioSha256 = null;
   if (await exists(audioFile)) {
     audioProbe = await probe(audioFile);
     durationSeconds = audioDuration(audioProbe);
+    audioSha256 = await sha256(audioFile);
     if (!audioProbe.streams.some((stream) => stream.codec_type === "audio")) errors.push("The supplied file has no audio stream.");
     if (!(durationSeconds > 0)) errors.push("The supplied audio duration could not be measured.");
   }
   errors.push(...validateTimeline(input.timeline, durationSeconds));
+
+  const speakerAssignmentPath = path.join(runDirectory, ".speaker-assignment.json");
+  let speakerAssignment = null;
+  if (!(await exists(speakerAssignmentPath))) {
+    errors.push("Speaker assignment is unconfirmed. Complete speaker-review.json and run apply-speakers before validation.");
+  } else {
+    speakerAssignment = await readJson(speakerAssignmentPath);
+    if (speakerAssignment.status !== "pass") errors.push("Speaker assignment receipt must pass.");
+    if (speakerAssignment.audioSha256 !== audioSha256) errors.push("Speaker assignment is stale because the user audio changed.");
+    if (speakerAssignment.timelineHash !== speakerAssignmentHash(input)) errors.push("Speaker assignment is stale because the timeline changed.");
+    if (speakerAssignment.reviewedBeats !== input.timeline.length) errors.push("Speaker assignment must cover every timeline beat.");
+  }
 
   const verifiedAssets = [];
   for (const entry of [...assets.backgrounds, ...assets.characters.flatMap((character) => character.poses)]) {
@@ -77,13 +92,18 @@ export async function validateRun({ root, runDirectory }) {
     input: "input.json",
     audio: {
       file: input.audioFile,
-      sha256: await sha256(audioFile),
+      sha256: audioSha256,
       durationSeconds,
       codec: audioProbe.streams.find((stream) => stream.codec_type === "audio")?.codec_name,
     },
     background: background.id,
     timelineBeats: input.timeline.length,
     camerasUsed: [...new Set(input.timeline.map((beat) => beat.camera))],
+    speakerAssignment: speakerAssignment && {
+      method: speakerAssignment.method,
+      reviewedBeats: speakerAssignment.reviewedBeats,
+      evidenceCounts: speakerAssignment.evidenceCounts,
+    },
     verifiedAssets,
   };
   await writeJson(path.join(runDirectory, ".validation.json"), receipt);

@@ -4,11 +4,11 @@
     "Harmony-free Toon Boom pose conversion",
     "complete-layer character compositing and checksum receipts",
     "three-angle conversation renderer",
-    "speaker mouth switching, blinks, reactions, captions, audio muxing, inspection, and finalization"
+    "audio-hash-bound per-beat speaker review, speaker mouth switching, blinks, reactions, captions, audio muxing, inspection, and finalization"
   ],
   "packagedReplaceableContent": ["five supplied backgrounds", "cat and bunny idle, talking, and blink poses"],
-  "episodeInputs": ["user-owned or user-authorized audio file", "timed dialogue/caption JSON", "packaged background ID", "episode label"],
+  "episodeInputs": ["user-owned or user-authorized audio file", "timed dialogue/caption JSON", "explicit per-beat speaker confirmation", "packaged background ID", "episode label"],
   "providerCalls": [],
   "sourceRigPolicy": "The source Harmony projects are operator inputs to the converter and are not redistributed by this Repo.",
-  "audioPolicy": "The Repo never generates dialogue. It copies the user-supplied file into the local ignored run folder and encodes that stream as AAC in the final MP4."
+  "audioPolicy": "The Repo never generates or uploads dialogue. It copies the user-supplied file into the local ignored run folder, extracts local review clips, and encodes the original stream as AAC in the final MP4."
 }

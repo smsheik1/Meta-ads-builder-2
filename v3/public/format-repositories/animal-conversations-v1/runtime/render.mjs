@@ -179,6 +179,7 @@ export async function renderRun({ root, runDirectory }) {
     height: HEIGHT,
     fps: FPS,
     durationSeconds,
+    inputHash: hashValue(input),
     frameCount,
     uniqueVisualStates: uniqueStates.size,
     timelineBeatFrames: Object.fromEntries(eventUsage),

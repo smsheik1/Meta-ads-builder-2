@@ -19,6 +19,8 @@
     {"id": "codecs", "threshold": "H.264 video and AAC audio", "measurementPath": "measured.videoCodec,audioCodec"},
     {"id": "audibleAudio", "threshold": "mean volume above -55 dB", "measurementPath": "measured.meanVolumeDb"},
     {"id": "cameraGrammar", "threshold": "only two-shot, cat-close, bunny-close", "measurementPath": "measured.camerasUsed"},
+    {"id": "speakerAssignment", "threshold": "every beat confirmed against current user audio", "measurementPath": "measured.speakerAssignment.reviewedBeats"},
+    {"id": "renderInputParity", "threshold": "render report input hash equals inspected input hash", "measurementPath": "gates.renderMatchesInput"},
     {"id": "captions", "threshold": "at least one captioned beat", "measurementPath": "measured.captionedBeatCount"}
   ],
   "blindReview": {
@@ -30,6 +32,7 @@
       "two-shot character silhouettes remain clearly separated without touching or overlap",
       "the bunny-only camera faces right, matching the supplied reference",
       "the visible speaker receives mouth motion while the listener reacts",
+      "speaker identity comes from the explicit per-beat audio review rather than caption or camera inference",
       "camera cuts follow the supplied three-angle grammar",
       "captions are synchronized, readable, and speaker-associated",
       "the original user-provided audio remains intelligible and complete"

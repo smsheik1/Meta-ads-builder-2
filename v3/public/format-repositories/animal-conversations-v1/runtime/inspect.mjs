@@ -1,5 +1,5 @@
 import path from "node:path";
-import { execute, probe, readJson, sha256, writeJson } from "./common.mjs";
+import { execute, hashValue, probe, readJson, sha256, writeJson } from "./common.mjs";
 
 function frameRate(value) {
   const [numerator, denominator] = String(value || "0/1").split("/").map(Number);
@@ -9,6 +9,7 @@ function frameRate(value) {
 export async function inspectRun({ runDirectory }) {
   const input = await readJson(path.join(runDirectory, "input.json"));
   const validation = await readJson(path.join(runDirectory, ".validation.json"));
+  const renderReport = await readJson(path.join(runDirectory, "render-report.json"));
   const output = path.join(runDirectory, "final.mp4");
   const media = await probe(output);
   const video = media.streams.find((stream) => stream.codec_type === "video");
@@ -27,6 +28,8 @@ export async function inspectRun({ runDirectory }) {
     meanVolumeDb,
     camerasUsed: [...new Set(input.timeline.map((beat) => beat.camera))],
     speakerModesUsed: [...new Set(input.timeline.map((beat) => beat.speaker))],
+    speakerAssignment: validation.speakerAssignment,
+    inputHash: hashValue(input),
     captionedBeatCount: input.timeline.filter((beat) => beat.caption.trim()).length,
     outputSha256: await sha256(output),
   };
@@ -39,6 +42,8 @@ export async function inspectRun({ runDirectory }) {
     audioCodec: measured.audioCodec === "aac",
     audibleAudio: Number.isFinite(meanVolumeDb) && meanVolumeDb > -55,
     approvedCamerasOnly: measured.camerasUsed.every((camera) => ["two-shot", "cat-close", "bunny-close"].includes(camera)),
+    speakerAssignmentConfirmed: measured.speakerAssignment?.reviewedBeats === input.timeline.length,
+    renderMatchesInput: renderReport.inputHash === measured.inputHash,
     captionsPresent: measured.captionedBeatCount > 0,
   };
   const status = Object.values(gates).every(Boolean) ? "pass" : "fail";

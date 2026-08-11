@@ -15,17 +15,20 @@ Start a real episode with an absolute audio path and an absolute timing JSON pat
 
 ```bash
 node runner.mjs init --run=my-episode --audio=/absolute/path/dialogue.wav --input=/absolute/path/input.json
+node runner.mjs apply-speakers --run=my-episode
 node runner.mjs validate --run=my-episode
 node runner.mjs render --run=my-episode
 node runner.mjs inspect --run=my-episode
 node runner.mjs finalize --run=my-episode
 ```
 
-The timing JSON follows [input-contract.json](input-contract.json). Copy `fixtures/sample/input.json` as a starting point. Its timeline must begin at zero, stay contiguous, and finish at the measured audio duration. The only camera values are `two-shot`, `cat-close`, and `bunny-close`; speakers are `cat`, `bunny`, `both`, or `none`.
+The timing JSON follows [input-contract.json](input-contract.json). Copy `fixtures/sample/input.json` as a starting point. Its timeline must begin at zero, stay contiguous, and finish at the measured audio duration. The only camera values are `two-shot`, `cat-close`, and `bunny-close`; provisional speakers are `cat`, `bunny`, `both`, or `none`.
+
+`init` extracts every beat from the actual user audio into `agent-runs/<run>/speaker-review/` and creates `speaker-review.json`. Listen to each clip, set `confirmedSpeaker` plus `evidence` (`direct-audio-review`, `user-provided-label`, `reference-video`, or `silence`), then run `apply-speakers`. That command makes the confirmed values authoritative and writes a receipt bound to the audio checksum and full speaker timeline. `validate` refuses to proceed if any beat is unconfirmed or if the audio/timeline changed afterward. Run `review-speakers` to regenerate the clips and start the confirmation again.
 
 ## Audio policy
 
-Episode audio is always supplied by the user. `init` copies it into the ignored run folder. Rendering maps that audio stream into the MP4 as AAC; it does not synthesize, rewrite, transcribe, or upload the audio. The smoke command creates a local sine tone solely to prove the muxing path without provider spend.
+Episode audio is always supplied by the user. `init` copies it into the ignored run folder and extracts local review clips; nothing is uploaded. Rendering maps the original audio stream into the MP4 as AAC; it does not synthesize, rewrite, transcribe, or guess voice identity. The smoke command creates a local sine tone solely to prove review receipt and muxing mechanics without provider spend.
 
 ## Toon Boom conversion
 
@@ -40,4 +43,4 @@ The converter requires Cargo, Node, and Sharp but not Harmony. It writes a check
 
 ## Output
 
-Every run stays under `agent-runs/<run-id>/`. A successful inspection proves dimensions, frame rate, duration, H.264/AAC codecs, an audible audio stream, approved cameras, and captions. `finalize` then writes a hash-bound `delivery.json` beside `final.mp4`.
+Every run stays under `agent-runs/<run-id>/`. A successful inspection proves dimensions, frame rate, duration, H.264/AAC codecs, an audible audio stream, approved cameras, captions, and a current all-beat speaker-assignment receipt. `finalize` then writes a hash-bound `delivery.json` beside `final.mp4`.
