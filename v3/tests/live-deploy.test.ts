@@ -91,6 +91,10 @@ assert.ok(
   script.includes("npm ci --workspaces=false --include=optional"),
   "v3 deploy must install from the standalone v3 lockfile with optional native packages.",
 );
+assert.ok(
+  script.includes("command -v unzip") && script.includes("sudo apt-get install -y unzip"),
+  "v3 deploy must bootstrap unzip before package validation runs.",
+);
 assert.ok(script.includes("V3_PUBLIC_HOST"), "v3 deploy script must own the optional public host route.");
 assert.ok(script.includes("proxy_pass http://127.0.0.1:$V3_PORT"), "v3 public host must proxy to the v3 app port.");
 assert.ok(script.includes("/etc/letsencrypt/live/$V3_PUBLIC_HOST"), "v3 deploy script must preserve HTTPS when a cert exists.");

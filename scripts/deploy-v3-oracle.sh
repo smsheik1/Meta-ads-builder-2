@@ -74,6 +74,12 @@ RENDERER_VERSION="${RENDERER_VERSION:-$(git rev-parse --short HEAD)}"
 export RENDERER_VERSION
 export NEXT_PUBLIC_RENDERER_VERSION="$RENDERER_VERSION"
 
+# Dance Off package validation inspects ZIP contents during the production test gate.
+if ! command -v unzip >/dev/null 2>&1; then
+  sudo apt-get update
+  sudo apt-get install -y unzip
+fi
+
 # Native packages like esbuild validate downloaded binaries during install.
 # Keep v3's deploy install standalone even though the repo root has workspaces,
 # otherwise npm can mix root workspace metadata with v3's nested lockfile.
