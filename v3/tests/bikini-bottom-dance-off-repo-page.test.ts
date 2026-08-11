@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
+import JSZip from "jszip";
 import {
   getPublishedDiscoveryEntries,
   groupDiscoveryEntriesByShelf,
@@ -93,7 +93,8 @@ assert.equal(
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(existsSync(download), true);
 const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
-const zipEntries = execFileSync("unzip", ["-Z1", download], { encoding: "utf8" });
+const archive = await JSZip.loadAsync(readFileSync(download));
+const zipEntries = Object.keys(archive.files).join("\n");
 for (const entry of [
   "AGENTS.md",
   "CLAUDE.md",
@@ -105,17 +106,16 @@ for (const entry of [
 ]) {
   assert.match(zipEntries, new RegExp(`${kitRoot}/${entry.replaceAll(".", "\\.")}`));
 }
+const readArchivedText = async (relativePath: string) => {
+  const file = archive.file(`${kitRoot}/${relativePath}`);
+  assert.ok(file, `${relativePath} must exist in the downloadable kit.`);
+  return file.async("string");
+};
 const archivedManifest = JSON.parse(
-  execFileSync("unzip", ["-p", download, `${kitRoot}/KIT-MANIFEST.json`], {
-    encoding: "utf8",
-  }),
+  await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
 assert.equal(archivedManifest.formatVersion, "0.10.8");
-const archivedAgents = execFileSync(
-  "unzip",
-  ["-p", download, `${kitRoot}/AGENTS.md`],
-  { encoding: "utf8" },
-);
+const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
 assert.match(archivedAgents, /Codex, Antigravity app and CLI, and GitHub Copilot/);

@@ -98,6 +98,7 @@
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
+    "jszip": "^3.10.1",
     "playwright": "^1.60.0",
     "tsx": "^4.20.6",
     "typescript": "~5.8.2"
