@@ -15,6 +15,7 @@ const latestExampleRoot = `${repositoryRoot}/examples/ghetto-love-story/evidence
 const download = `${repositoryRoot}/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip`;
 const finalVideo = `${evidenceRoot}/final.mp4`;
 const profile = getDiscoveryFormatProfile("bikini-bottom-dance-off");
+const formatPageSource = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 const entries = getPublishedDiscoveryEntries().filter(
   (entry) => entry.format.slug === "bikini-bottom-dance-off",
 );
@@ -95,6 +96,9 @@ assert.equal(
   "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip",
 );
 assert.equal(profile.proofEntries.length, 2);
+assert.match(formatPageSource, /Finished Dance Offs\./);
+assert.match(formatPageSource, /id === "bikini-bottom-dance-off-wiggle"/);
+assert.match(formatPageSource, /id="examples"/);
 assert.equal(existsSync(download), true);
 const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
 const archive = await JSZip.loadAsync(readFileSync(download));

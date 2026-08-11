@@ -2477,7 +2477,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     status: "published",
     order: 11.61,
     brand: "Bikini Bottom",
-    title: "Four characters enter. One comment section decides.",
+    title: "Wiggle: the original Bikini Bottom Dance Off",
     curatorNote: "Choose from 25 starter dances, or import another locally. Then let SpongeBob, Patrick, Mr. Krabs, and Squilliam taunt, solo, and collide in a scored 47-second Reel.",
     goal: "entertain",
     media: {
