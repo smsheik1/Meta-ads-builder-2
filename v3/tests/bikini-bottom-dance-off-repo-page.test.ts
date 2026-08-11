@@ -33,6 +33,7 @@ assert.equal(existsSync(`${evidenceRoot}/poster.png`), true);
 assert.equal(existsSync(`${evidenceRoot}/contact-sheet.png`), true);
 assert.equal(existsSync(`${evidenceRoot}/delivery.json`), true);
 assert.equal(existsSync(`${evidenceRoot}/review-packet.json`), true);
+assert.equal(existsSync(`${evidenceRoot}/render-report.json`), true);
 assert.equal(existsSync(`${evidenceRoot}/blind-review.submission.json`), true);
 assert.equal(existsSync(`${evidenceRoot}/blind-review.json`), true);
 
@@ -79,7 +80,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.10.7");
+assert.equal(profile.version, "0.10.8");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -100,6 +101,7 @@ for (const entry of [
   "verify-entrypoints.mjs",
   "KIT-MANIFEST.json",
   "bikini-bottom-dance-off-v1/SKILL.md",
+  "bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/render-report.json",
 ]) {
   assert.match(zipEntries, new RegExp(`${kitRoot}/${entry.replaceAll(".", "\\.")}`));
 }
@@ -108,7 +110,7 @@ const archivedManifest = JSON.parse(
     encoding: "utf8",
   }),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.10.7");
+assert.equal(archivedManifest.formatVersion, "0.10.8");
 const archivedAgents = execFileSync(
   "unzip",
   ["-p", download, `${kitRoot}/AGENTS.md`],
@@ -169,6 +171,10 @@ const trustComponent = readFileSync(
   "features/discovery/BikiniBottomDanceOffTrust.tsx",
   "utf8",
 );
+const trustLoader = readFileSync(
+  "features/discovery/bikiniBottomDanceOffTrust.server.ts",
+  "utf8",
+);
 const trustStyles = readFileSync(
   "features/discovery/BikiniBottomDanceOffTrust.module.css",
   "utf8",
@@ -219,6 +225,11 @@ assert.match(trustComponent, /aria-pressed=\{activeAnnotation === index\}/);
 assert.match(trustComponent, /02 · Finished example/);
 assert.match(trustComponent, /Watch the final video\./);
 assert.doesNotMatch(trustComponent, /Proof explained|See it work\.|\u2014/);
+assert.doesNotMatch(
+  trustLoader,
+  /agent-runs\//,
+  "The public Format page must read committed proof evidence, not transient agent-run output.",
+);
 assert.match(trustComponent, /How your finished video is graded\./);
 assert.match(trustComponent, /The blind judge scores seven things/);
 assert.match(trustComponent, /Archived visual\/caption-assisted pilot/);
@@ -363,7 +374,7 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.10.7");
+assert.equal(trustData.version, "0.10.8");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   backgrounds: 4,

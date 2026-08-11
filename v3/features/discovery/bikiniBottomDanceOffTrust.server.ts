@@ -208,7 +208,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     readJson<RenderReport>(
       path.join(
         repoRoot,
-        "agent-runs/wiggle-alt-choreography-v2/render-report.json",
+        "examples/wiggle-proof/evidence/render-report.json",
       ),
     ),
     readJson<EvalReport>(
