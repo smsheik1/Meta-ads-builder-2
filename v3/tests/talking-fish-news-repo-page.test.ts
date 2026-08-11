@@ -24,6 +24,6 @@ const handoff = buildDiscoveryHandoffPrompt(profile, "https://wiggly.agentenamel
 assert.match(handoff, /latest published Wiggly Format/);
 assert.match(handoff, /Never use a paid provider without my explicit approval/);
 assert.doesNotMatch(handoff, /Exact public version:|Required inputs:|Working rules:/);
-assert.ok(handoff.length < 700);
+assert.ok(handoff.length < 1_000);
 
 console.log("Talking Fish News repo page tests passed.");

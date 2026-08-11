@@ -32,6 +32,9 @@ jobs:
         working-directory: v3
         run: npm ci --workspaces=false --include=optional --dry-run
 
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 

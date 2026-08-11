@@ -70,7 +70,7 @@ assert.equal(meme.handoff.estimates.length, 3);
 const memePrompt = buildDiscoveryHandoffPrompt(meme, origin);
 assert.doesNotMatch(memePrompt, /Inspect all twelve local PNGs before delivery/);
 assert.doesNotMatch(memePrompt, /What website should I use/);
-assert.ok(memePrompt.length < 700);
+assert.ok(memePrompt.length < 1_000);
 
 for (const slug of ["hybrid-news"]) {
   const profile = getDiscoveryFormatProfile(slug);

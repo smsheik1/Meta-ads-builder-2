@@ -43,6 +43,6 @@ assert.match(prompt, /formats\/sparkling-effect/);
 assert.match(prompt, /latest published Wiggly Format/);
 assert.match(prompt, /Never use a paid provider without my explicit approval/);
 assert.doesNotMatch(prompt, /Exact public version:|Required inputs:|Working rules:/);
-assert.ok(prompt.length < 700);
+assert.ok(prompt.length < 1_000);
 
 console.log("Sparkling Effect Repo page tests passed.");

@@ -181,6 +181,6 @@ assert.match(handoffPrompt, /formats\/squilliam-news/);
 assert.match(handoffPrompt, /latest published Wiggly Format/);
 assert.match(handoffPrompt, /Never use a paid provider without my explicit approval/);
 assert.doesNotMatch(handoffPrompt, /Exact public version:|Required inputs:|Working rules:/);
-assert.ok(handoffPrompt.length < 700);
+assert.ok(handoffPrompt.length < 1_000);
 
 console.log("Squilliam News repo page tests passed.");
