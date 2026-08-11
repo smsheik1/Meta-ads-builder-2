@@ -79,7 +79,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.10.2");
+assert.equal(profile.version, "0.10.3");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -108,7 +108,7 @@ const archivedManifest = JSON.parse(
     encoding: "utf8",
   }),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.10.2");
+assert.equal(archivedManifest.formatVersion, "0.10.3");
 const archivedAgents = execFileSync(
   "unzip",
   ["-p", download, `${kitRoot}/AGENTS.md`],
@@ -363,7 +363,7 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.10.2");
+assert.equal(trustData.version, "0.10.3");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   backgrounds: 4,

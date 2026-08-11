@@ -322,7 +322,7 @@ export async function composeRun({ input, dialogueAssets, runDirectory, outputPa
     "-map", "[vout]", "-map", "[music]",
     "-t", String(DURATION),
     "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
-    "-g", "30", "-keyint_min", "30", "-sc_threshold", "0",
+    "-g", "30", "-keyint_min", "30", "-sc_threshold", "0", "-bf", "0",
     "-force_key_frames", `0,${timeline.loopBridge.end - 0.2}`,
     "-c:a", "aac", "-b:a", "192k",
     "-movflags", "+faststart",

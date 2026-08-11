@@ -184,7 +184,7 @@ test("the nine-second group showcase uses uninterrupted motions and hands off to
   assert.doesNotMatch(compositor, /rect x="245" y="164" width="590"/);
   assert.match(compositor, /stinger/);
   assert.match(compositor, /-force_key_frames/);
-  assert.match(compositor, /"-g", "30", "-keyint_min", "30", "-sc_threshold", "0"/, "delivery encoding must be seek-safe in browsers and Reels");
+  assert.match(compositor, /"-g", "30", "-keyint_min", "30", "-sc_threshold", "0", "-bf", "0"/, "delivery encoding must be seek-safe in browsers and Reels");
   assert.match(compositor, /atempo=/);
   assert.match(compositor, /volume=0\.5/);
   assert.match(compositor, /character\.finaleMotionId/);
