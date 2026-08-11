@@ -32,6 +32,12 @@ jobs:
         working-directory: v3
         run: npm ci --workspaces=false --include=optional --dry-run
 
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
