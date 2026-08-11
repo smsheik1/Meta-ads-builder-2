@@ -1,0 +1,5 @@
+agent-runs/*
+!agent-runs/.gitkeep
+node_modules/
+downloads/
+*.zip

@@ -46,3 +46,7 @@ npm run convert -- \
   --manifest=bunny-frame1 \
   --output=/absolute/path/to/bunny-frame1.png
 ```
+
+Pass `--mouth=<drawing-number>` or `--eyes=<drawing-number>` to export the
+same registered pose with a different source expression drawing. The video
+runtime uses drawing 2 for speaking mouths and drawing 1 for blinks.

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "title": "We Listen and We Don't Judge",
+  "episodeLabel": "ANIMAL CONVERSATIONS",
+  "audioFile": "user-audio.m4a",
+  "background": "living-room",
+  "timeline": [
+    {"start": 0, "end": 2.25, "speaker": "both", "camera": "two-shot", "caption": "We listen, and we don't judge!"},
+    {"start": 2.25, "end": 6.85, "speaker": "cat", "camera": "cat-close", "caption": "Ever since you started cooking, I haven't had the heart to tell you that it's almost inedible."},
+    {"start": 6.85, "end": 7.85, "speaker": "bunny", "camera": "bunny-close", "caption": "I thought you liked it."},
+    {"start": 7.85, "end": 8.5, "speaker": "cat", "camera": "two-shot", "caption": "No, no, no!"},
+    {"start": 8.5, "end": 10.15, "speaker": "bunny", "camera": "two-shot", "caption": "No judging. No judging. No judging."},
+    {"start": 10.15, "end": 10.55, "speaker": "both", "camera": "two-shot", "caption": "We listen."},
+    {"start": 10.55, "end": 13.35, "speaker": "bunny", "camera": "bunny-close", "caption": "I only said yes to our first date because I hoped I would meet your dad."},
+    {"start": 13.35, "end": 15.2, "speaker": "cat", "camera": "cat-close", "caption": "Are you serious? That's not even funny!"},
+    {"start": 15.2, "end": 15.8, "speaker": "bunny", "camera": "two-shot", "caption": "No judging!"},
+    {"start": 15.8, "end": 20.85, "speaker": "cat", "camera": "cat-close", "caption": "I always thought that I'd end up with a southern belle country girl, but instead I wound up with the exact opposite."},
+    {"start": 20.85, "end": 22.4, "speaker": "bunny", "camera": "two-shot", "caption": "Okay. If that's what you want, go find one!"},
+    {"start": 22.4, "end": 24.15, "speaker": "both", "camera": "two-shot", "caption": "We're just listening..."},
+    {"start": 24.15, "end": 27.9, "speaker": "bunny", "camera": "bunny-close", "caption": "Whatever. I always thought I'd end up with Liam Hemsworth, not the Walmart version."},
+    {"start": 27.9, "end": 28.8, "speaker": "none", "camera": "two-shot", "caption": ""},
+    {"start": 28.8, "end": 31.137007, "speaker": "cat", "camera": "cat-close", "caption": "I don't want to play this game."}
+  ]
+}

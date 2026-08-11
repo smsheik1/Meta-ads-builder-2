@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    "1080x1920 vertical canvas at 24 fps",
+    "one official renderer at runtime/render.mjs",
+    "two supplied Toon Boom-derived characters: cat and bunny",
+    "idle, mouth-open, and blink pose substitutions for each character",
+    "exactly three approved camera IDs: two-shot, cat-close, and bunny-close",
+    "mouth substitution only for the active speaker; both characters move for speaker=both",
+    "deterministic listener reaction bob and periodic blinks",
+    "speaker-colored, high-contrast captions near the top safe area",
+    "persistent episode label near the bottom safe area",
+    "user audio is copied locally and muxed into the final video"
+  ],
+  "replaceable": ["user audio", "timed captions", "speaker assignment", "approved camera selection per beat", "episode title and label", "one of five packaged backgrounds"],
+  "outOfScope": ["voice generation", "speech transcription", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
+  "rendererInvariant": "Preview/proof/export frames are produced only by runtime/render.mjs from the validated complete episode input."
+}

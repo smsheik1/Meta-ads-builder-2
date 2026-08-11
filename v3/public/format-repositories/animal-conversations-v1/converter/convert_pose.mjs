@@ -65,6 +65,16 @@ function validateManifest(manifest) {
   }
 }
 
+function resolveLayers(manifest, variants) {
+  return manifest.layers.map((layer) => {
+    const variant = variants[layer.id];
+    if (variant === undefined) return layer;
+    if (!/^\d+$/.test(String(variant))) throw new Error(`${layer.id} variant must be a drawing number.`);
+    if (!/-\d+\.tvg$/i.test(layer.file)) throw new Error(`${layer.id} source cannot select a numbered drawing: ${layer.file}`);
+    return { ...layer, file: layer.file.replace(/-\d+\.tvg$/i, `-${variant}.tvg`) };
+  });
+}
+
 function transformArguments(transform = {}) {
   return [
     transform.positionXFields ?? 0,
@@ -127,7 +137,7 @@ async function inspectOutput(outputPath, manifest) {
 
 async function main() {
   if (!args.rig || !args.manifest || !args.output) {
-    throw new Error("usage: node convert_pose.mjs --rig=/absolute/Harmony/project --manifest=cat-frame1 --output=/absolute/pose.png [--debug]");
+    throw new Error("usage: node convert_pose.mjs --rig=/absolute/Harmony/project --manifest=cat-frame1 --output=/absolute/pose.png [--mouth=2] [--eyes=1] [--debug]");
   }
   const rigRoot = path.resolve(String(args.rig));
   const manifestPath = args.manifest.endsWith(".json")
@@ -137,9 +147,10 @@ async function main() {
   const receiptPath = outputPath.replace(/\.png$/i, ".receipt.json");
   const manifest = await readJson(manifestPath);
   validateManifest(manifest);
+  const layers = resolveLayers(manifest, { mouth: args.mouth, eyes: args.eyes });
   if (!outputPath.toLowerCase().endsWith(".png")) throw new Error("Output must be a PNG file.");
 
-  for (const layer of manifest.layers) {
+  for (const layer of layers) {
     const source = path.join(rigRoot, layer.file);
     if (!(await exists(source))) throw new Error(`Missing ${layer.id} source drawing: ${source}`);
   }
@@ -158,7 +169,7 @@ async function main() {
   const exporter = path.join(rustRoot, "target", "debug", "examples", "export_spec");
   const specPaths = [];
   const sources = [];
-  for (const [index, layer] of manifest.layers.entries()) {
+  for (const [index, layer] of layers.entries()) {
     const source = path.join(rigRoot, layer.file);
     const stem = `${String(index).padStart(2, "0")}-${layer.id}`;
     const rawSpecPath = path.join(workDirectory, `${stem}.raw.json`);

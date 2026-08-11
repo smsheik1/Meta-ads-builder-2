@@ -41,3 +41,11 @@ test("bunny body resolves the detached shadow and light color nodes", async () =
     ["0b6d656fc8edc66b", 0],
   ]);
 });
+
+test("expression layers use numbered Toon Boom drawing substitutions", async () => {
+  for (const character of ["cat", "bunny"]) {
+    const value = await manifest(`${character}-frame1`);
+    assert.match(value.layers.find((layer) => layer.id === "eyes").file, /Eyes-2\.tvg$/);
+    assert.match(value.layers.find((layer) => layer.id === "mouth").file, /Mouth-1\.tvg$/);
+  }
+});

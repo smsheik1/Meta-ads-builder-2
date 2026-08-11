@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "video": {
+    "container": "mp4",
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "width": 1080,
+    "height": 1920,
+    "fps": 24,
+    "durationRule": "within 0.08 seconds of the measured user-audio duration"
+  },
+  "delivery": {
+    "finalVideo": "final.mp4",
+    "validationReceipt": ".validation.json",
+    "renderReport": "render-report.json",
+    "qualityReport": "quality-report.json",
+    "contactSheet": "contact-sheet.png",
+    "manifest": "delivery.json",
+    "rule": "finalize writes delivery.json only after every automated technical gate passes"
+  },
+  "evidence": ["input.json", ".validation.json", "render-report.json", "quality-report.json", "contact-sheet.png", "delivery.json"]
+}

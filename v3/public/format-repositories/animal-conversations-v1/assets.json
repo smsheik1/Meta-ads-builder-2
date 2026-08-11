@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "backgrounds": [
+    {"id": "living-room", "path": "assets/backgrounds/bg7and8.png", "sha256": "66f20b4e90c39117df84ac80102e1038190a7b1fcf912fc7e03fc1919de10477", "role": "default supplied conversation room"},
+    {"id": "backyard", "path": "assets/backgrounds/backyard.png", "sha256": "21800440fd5c6feb845ace4bf94931fda27885c69d6696929f881e9a87c64c24", "role": "supplied outdoor option"},
+    {"id": "pool", "path": "assets/backgrounds/pool.png", "sha256": "7dc708d3375e03963e5d8c89f5be1621143b2a8aee73a5e96b10b82c99a5cf88", "role": "supplied pool option"},
+    {"id": "street-view", "path": "assets/backgrounds/streetview.png", "sha256": "6c3acf8f1c6c2749053d9ae039fc282f8d8e2c80a4a7395e77e86f762282ecbd", "role": "supplied street option"},
+    {"id": "store-atm", "path": "assets/backgrounds/store-atm.png", "sha256": "288c0fc618dbeda8217556d3c53f63e673fd18c29dbb8e1eac0ccc20aeb18cb0", "role": "supplied store option"}
+  ],
+  "characters": [
+    {
+      "id": "cat",
+      "source": "Harmony CAT_LOOP_1 converted locally by converter/convert_pose.mjs",
+      "poses": [
+        {"id": "idle", "path": "assets/characters/cat/idle.png", "sha256": "0bfa7329c2febbbbac01c58a518132a984320286e9ee509b71a51fddcff4f995"},
+        {"id": "mouth-open", "path": "assets/characters/cat/mouth-open.png", "sha256": "9bf36cb446b2ff40de241d2e9de53f527ef8fb9ef3e6c5b493401d56e3a7550f"},
+        {"id": "blink", "path": "assets/characters/cat/blink.png", "sha256": "94fdac22e1facaab07bfae2e161505d276815dfaba53e433e0886635e206e644"}
+      ]
+    },
+    {
+      "id": "bunny",
+      "source": "Harmony BUN_LOOP_1 converted locally by converter/convert_pose.mjs",
+      "poses": [
+        {"id": "idle", "path": "assets/characters/bunny/idle.png", "sha256": "3dca0be49b12a0a2adf82dbe0d952ac8263a680da8d5478b34174d79b6321d50"},
+        {"id": "mouth-open", "path": "assets/characters/bunny/mouth-open.png", "sha256": "9352027cde50fe0ee89886074b80e50e046fb5bc84c5f7261031ef425041c091"},
+        {"id": "blink", "path": "assets/characters/bunny/blink.png", "sha256": "49d1c767812b3d687c2dc486f4ef0e59d648a334055752fc852b8a80b3a68aa9"}
+      ]
+    }
+  ],
+  "provenance": {
+    "backgrounds": "supplied by the user for this format",
+    "characterSourceRigs": "supplied Toon Boom Harmony projects; source rigs are not redistributed in this kit",
+    "converterDecoder": "c-probably-archived20260718/tvg at 9d09471e, MIT; see converter/source/README.md"
+  }
+}
