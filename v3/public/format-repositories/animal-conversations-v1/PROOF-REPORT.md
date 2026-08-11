@@ -18,16 +18,25 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Input audio SHA-256: `226ffe78af88c77175c0358d4ab85360eb3eac43b185e29b1a92ff2e58517657`
 - Measured input duration: 31.137007 seconds
 - Timeline: 15 contiguous beats inferred from the supplied sample's visible captions; all three approved cameras and all four speaker modes
-- Output SHA-256: `a0a43dfbe6a1cc36b62057e1e5f42688e56e5292c440348388d29560836769cc`
+- Output SHA-256: `133d87e1d4a83efbf7a245648f76027eb0ca46879dcd26169b357c30d0885593`
 - Automated result: pass at 1080x1920, 24 fps, H.264/AAC, mean audio -18.5 dB, 14 captioned beats
-- Direct review: contact sheet inspected at original resolution; complete colored characters, captions, close-ups, two-shots, mouths, and reaction beat are visible. A full QuickTime playback completed with sound enabled and volume at 1.0; the midpoint and final frames matched the expected active cat captions/cameras and playback reached 31.125 seconds without stalling.
+- Direct visual review: the regenerated contact sheet was inspected at original resolution. In every two-shot the left-side bunny faces right and the right-side cat faces left; their faces converge toward the frame center. Complete colored characters, captions, unchanged close-ups, mouth states, and the reaction beat remain visible.
+- Audio evidence: codec, duration, stream presence, and mean level passed automated inspection. No claim of directly hearing or judging intelligibility is made from player controls or metadata.
 
 ## Variation proof
 
 - Run: `agent-runs/sample-backyard` (ignored local evidence)
 - Variation: identical user audio and timing with the packaged `backyard` background
-- Output SHA-256: `e07e3139615f5460bfd82fe78bdf8cd335d9bcd12e7f42a62289c323746f1320`
-- Result: every automated gate passed; direct contact-sheet inspection confirmed the replaceable background flows through the same renderer without changing character, caption, or camera behavior
+- Output SHA-256: `33dcf32e6880bc894e740d8547222936c100bf2b3551b7a6b75983843fb96b10`
+- Result: every automated gate passed; direct contact-sheet inspection confirmed inward-facing two-shots and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
+
+## Two-shot orientation fix
+
+- Observed failure: both source poses retained their original left-facing orientation, so the bunny faced out of frame when placed on the left.
+- Root cause: the two-shot layout encoded position and scale but no facing direction, and the original visual review did not include an explicit inward-facing criterion.
+- Smallest fix: horizontally mirror the bunny only while preparing `two-shot` assets. Cat and bunny close-ups preserve their original orientation.
+- Guardrail: the runtime test asserts that only the left-side two-shot bunny has `mirrorX` enabled; the composition and quality contracts now require inward-facing conversation staging.
+- Evidence: smoke, living-room, and backyard renders use renderer version 3; all automated gates pass and all three regenerated contact sheets show the two-shot characters facing each other.
 
 ## Audio-first decision
 
@@ -35,4 +44,4 @@ The reference MP4 container reports 31.251202 seconds, while its extracted AAC s
 
 ## Packaged handoff
 
-`npm run build:kit` produced a ZIP without `node_modules`, generated runs, Cargo targets, or local audio. A fresh extraction under `/private/tmp` completed `npm install`, all seven Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
+`npm run build:kit` produced a ZIP without `node_modules`, generated runs, Cargo targets, or local audio. A fresh extraction under `/private/tmp` completed `npm install`, all eight Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.

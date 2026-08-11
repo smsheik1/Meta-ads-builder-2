@@ -26,6 +26,7 @@
     "requiredPlayback": {"completedPasses": 2, "perceptionMode": "direct"},
     "criteria": [
       "cat and bunny remain complete, colored, recognizable, and correctly framed",
+      "both characters visibly face inward toward each other in every two-shot",
       "the visible speaker receives mouth motion while the listener reacts",
       "camera cuts follow the supplied three-angle grammar",
       "captions are synchronized, readable, and speaker-associated",

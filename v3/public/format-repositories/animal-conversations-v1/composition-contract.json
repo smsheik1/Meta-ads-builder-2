@@ -6,6 +6,7 @@
     "two supplied Toon Boom-derived characters: cat and bunny",
     "idle, mouth-open, and blink pose substitutions for each character",
     "exactly three approved camera IDs: two-shot, cat-close, and bunny-close",
+    "the left-side bunny is horizontally mirrored in two-shots so both characters face inward; close-ups preserve source orientation",
     "mouth substitution only for the active speaker; both characters move for speaker=both",
     "deterministic listener reaction bob and periodic blinks",
     "speaker-colored, high-contrast captions near the top safe area",

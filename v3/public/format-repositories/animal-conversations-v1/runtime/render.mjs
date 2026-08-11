@@ -7,11 +7,11 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 2;
+const RENDERER_VERSION = 3;
 
-const LAYOUTS = {
+export const LAYOUTS = {
   "two-shot": {
-    bunny: { height: 800, left: 0, bottom: 1745 },
+    bunny: { height: 800, left: 0, bottom: 1745, mirrorX: true },
     cat: { height: 760, left: 395, bottom: 1745 },
   },
   "cat-close": {
@@ -88,7 +88,9 @@ async function prepareAssets({ root, cacheDirectory, background, assets }) {
       for (const pose of character.poses) {
         const output = path.join(cacheDirectory, `${characterId}-${camera}-${pose.id}.png`);
         if (!(await exists(output))) {
-          await sharp(path.join(root, pose.path)).resize({ height: layout.height }).png().toFile(output);
+          const image = sharp(path.join(root, pose.path)).resize({ height: layout.height });
+          if (layout.mirrorX) image.flop();
+          await image.png().toFile(output);
         }
         prepared.characters[characterId][camera][pose.id] = output;
       }
