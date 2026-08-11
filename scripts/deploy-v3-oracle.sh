@@ -76,8 +76,21 @@ export NEXT_PUBLIC_RENDERER_VERSION="$RENDERER_VERSION"
 
 # Dance Off package validation inspects ZIP contents during the production test gate.
 if ! command -v unzip >/dev/null 2>&1; then
-  sudo apt-get update
-  sudo apt-get install -y unzip
+  unzip_ready=false
+  for attempt in {1..60}; do
+    if sudo apt-get update && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y unzip; then
+      unzip_ready=true
+      break
+    fi
+
+    echo "Package manager busy; retrying unzip installation in 5 seconds ($attempt/60)." >&2
+    sleep 5
+  done
+
+  if [ "$unzip_ready" != "true" ]; then
+    echo "Unable to install unzip after waiting 5 minutes for the package manager." >&2
+    exit 1
+  fi
 fi
 
 # Native packages like esbuild validate downloaded binaries during install.
