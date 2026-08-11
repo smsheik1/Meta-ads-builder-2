@@ -4,8 +4,9 @@ const sharp = require(path.join(process.argv[4], 'node_modules', 'sharp'));
 
 const [specPath, outputPath] = process.argv.slice(2, 4);
 if (!specPath || !outputPath || !process.argv[4]) {
-  throw new Error('usage: node render_tvg.cjs <spec.json> <output.png> <module-root>');
+  throw new Error('usage: node render_tvg.cjs <spec.json> <output.png> <module-root> [--debug]');
 }
+const writeDebug = process.argv.slice(5).includes('--debug');
 
 (async () => {
 const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
@@ -19,9 +20,20 @@ for (let index = 0; index + 1 < coords.length; index += 2) {
   maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
 }
 if (!Number.isFinite(minX)) throw new Error('drawing has no finite coordinates');
+if (spec.bounds) {
+  const bounds = spec.bounds;
+  if (![bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].every(Number.isFinite)) {
+    throw new Error('drawing bounds must contain finite minX/minY/maxX/maxY values');
+  }
+  minX = bounds.minX;
+  minY = bounds.minY;
+  maxX = bounds.maxX;
+  maxY = bounds.maxY;
+}
 
 const scale = 2;
 const margin = 50;
+const boundaryStrokeWidth = 1;
 const width = Math.ceil((maxX - minX + margin * 2) * scale);
 const height = Math.ceil((maxY - minY + margin * 2) * scale);
 const tx = -minX + margin;
@@ -30,13 +42,15 @@ const esc = (value) => String(value).replaceAll('&', '&amp;').replaceAll('"', '&
 const rgba = ([r, g, b, a]) => `rgba(${r},${g},${b},${a / 255})`;
 
 const svg = (contents) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><g transform="scale(${scale}) translate(${tx} ${ty})">${contents}</g></svg>`);
-const boundarySvg = svg(spec.boundaries.map((d) => `<path d="${esc(d)}" fill="none" stroke="rgb(1,2,3)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`).join(''));
+const boundarySvg = svg(spec.boundaries.map((d) => `<path d="${esc(d)}" fill="none" stroke="rgb(1,2,3)" stroke-width="${boundaryStrokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`).join(''));
 const debugSvg = svg([
   `<rect x="${minX - margin}" y="${minY - margin}" width="${maxX - minX + margin * 2}" height="${maxY - minY + margin * 2}" fill="white"/>`,
   ...spec.boundaries.map((d) => `<path d="${esc(d)}" fill="none" stroke="black" stroke-width="3"/>`),
   ...spec.seeds.map((seed) => `<circle cx="${seed.x}" cy="${seed.y}" r="12" fill="${rgba(seed.color)}" stroke="red" stroke-width="3"/>`),
 ].join(''));
-await sharp(debugSvg).resize(Math.round(width / scale), Math.round(height / scale)).png().toFile(outputPath.replace(/\.png$/i, '-debug.png'));
+if (writeDebug) {
+  await sharp(debugSvg).resize(Math.round(width / scale), Math.round(height / scale)).png().toFile(outputPath.replace(/\.png$/i, '-debug.png'));
+}
 const raw = await sharp(boundarySvg).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 const maskPixels = raw.data;
 const channels = raw.info.channels;
@@ -84,53 +98,134 @@ for (let start = 0; start < pixelCount; start++) {
   regions.push({ size: write, touchesBorder });
 }
 
-function chooseRegion(startX, startY) {
-  const x = Math.round((startX + tx) * scale);
-  const y = Math.round((startY + ty) * scale);
-  const candidates = new Map();
-  for (let radius = 0; radius <= 48; radius++) {
-    for (let dy = -radius; dy <= radius; dy++) {
-      for (let dx = -radius; dx <= radius; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx < 0 || nx >= imageWidth || ny < 0 || ny >= imageHeight) continue;
-        const label = labels[ny * imageWidth + nx];
-        if (label < 0 || candidates.has(label)) continue;
-        candidates.set(label, Math.hypot(dx, dy));
+function pathSamples(d) {
+  const tokens = d.match(/[MLC]|-?\d+(?:\.\d+)?(?:e[+-]?\d+)?/gi) || [];
+  const samples = [];
+  let index = 0;
+  let current = null;
+  const point = () => ({ x: Number(tokens[index++]), y: Number(tokens[index++]) });
+  const cubicPoint = (p0, p1, p2, p3, t) => {
+    const inverse = 1 - t;
+    return {
+      x: inverse ** 3 * p0.x + 3 * inverse ** 2 * t * p1.x + 3 * inverse * t ** 2 * p2.x + t ** 3 * p3.x,
+      y: inverse ** 3 * p0.y + 3 * inverse ** 2 * t * p1.y + 3 * inverse * t ** 2 * p2.y + t ** 3 * p3.y,
+    };
+  };
+  const cubicTangent = (p0, p1, p2, p3, t) => {
+    const inverse = 1 - t;
+    return {
+      x: 3 * inverse ** 2 * (p1.x - p0.x) + 6 * inverse * t * (p2.x - p1.x) + 3 * t ** 2 * (p3.x - p2.x),
+      y: 3 * inverse ** 2 * (p1.y - p0.y) + 6 * inverse * t * (p2.y - p1.y) + 3 * t ** 2 * (p3.y - p2.y),
+    };
+  };
+
+  while (index < tokens.length) {
+    const command = tokens[index++].toUpperCase();
+    if (command === 'M') {
+      current = point();
+      continue;
+    }
+    if (!current) throw new Error(`path command ${command} has no starting point: ${d}`);
+    if (command === 'L') {
+      const end = point();
+      for (const t of [0.25, 0.5, 0.75]) {
+        samples.push({
+          x: current.x + (end.x - current.x) * t,
+          y: current.y + (end.y - current.y) * t,
+          dx: end.x - current.x,
+          dy: end.y - current.y,
+        });
       }
+      current = end;
+      continue;
     }
-    const enclosed = [...candidates].filter(([label]) => !regions[label].touchesBorder);
-    if (enclosed.length) {
-      enclosed.sort((left, right) => left[1] - right[1]);
-      return { label: enclosed[0][0], distance: enclosed[0][1] };
+    if (command === 'C') {
+      const start = current;
+      const control1 = point();
+      const control2 = point();
+      const end = point();
+      for (const t of [0.25, 0.5, 0.75]) {
+        const at = cubicPoint(start, control1, control2, end, t);
+        const tangent = cubicTangent(start, control1, control2, end, t);
+        samples.push({ x: at.x, y: at.y, dx: tangent.x, dy: tangent.y });
+      }
+      current = end;
+      continue;
     }
+    throw new Error(`unsupported path command ${command}: ${d}`);
   }
-  const all = [...candidates];
-  if (!all.length) return null;
-  all.sort((left, right) => left[1] - right[1]);
-  return { label: all[0][0], distance: all[0][1] };
+  return samples;
 }
 
-const regionPaint = new Map();
+const boundarySamples = spec.boundaries.map(pathSamples);
+
+function labelAt(sourceX, sourceY) {
+  const x = Math.round((sourceX + tx) * scale);
+  const y = Math.round((sourceY + ty) * scale);
+  if (x < 0 || x >= imageWidth || y < 0 || y >= imageHeight) return -1;
+  return labels[y * imageWidth + x];
+}
+
+function chooseBoundarySideRegion(seed) {
+  const votes = new Map();
+  const samples = boundarySamples[seed.boundary_index] || [];
+  for (const sample of samples) {
+    const length = Math.hypot(sample.dx, sample.dy);
+    if (!Number.isFinite(length) || length < 0.001) continue;
+    // In Harmony color art, side 0 is the screen-space right side of the
+    // directed path. Side 1 is the opposite side.
+    const direction = seed.side === 0 ? 1 : -1;
+    const normalX = direction * sample.dy / length;
+    const normalY = direction * -sample.dx / length;
+    for (const distance of [1, 2, 4, 8, 12, 18, 26, 38]) {
+      const label = labelAt(sample.x + normalX * distance, sample.y + normalY * distance);
+      if (label < 0) continue;
+      if (regions[label].touchesBorder) break;
+      const vote = votes.get(label) || { count: 0, distanceTotal: 0 };
+      vote.count += 1;
+      vote.distanceTotal += distance;
+      votes.set(label, vote);
+      break;
+    }
+  }
+  const ranked = [...votes].sort((left, right) =>
+    right[1].count - left[1].count || left[1].distanceTotal - right[1].distanceTotal
+  );
+  if (!ranked.length) return null;
+  return { label: ranked[0][0], votes: ranked[0][1].count, distance: ranked[0][1].distanceTotal / ranked[0][1].count };
+}
+
+const regionVotes = new Map();
 const paintResults = [];
 for (const seed of spec.seeds) {
-  const picked = chooseRegion(seed.x, seed.y);
+  const picked = chooseBoundarySideRegion(seed);
   if (!picked) {
     paintResults.push({ ...seed, pixels: 0, region: null });
     continue;
   }
-  const previous = regionPaint.get(picked.label);
-  if (!previous || picked.distance < previous.distance) {
-    regionPaint.set(picked.label, { color: seed.color, distance: picked.distance, seed });
-  }
+  const colors = regionVotes.get(picked.label) || new Map();
+  const colorKey = seed.color.join(',');
+  const vote = colors.get(colorKey) || { color: seed.color, count: 0, distanceTotal: 0, seed };
+  vote.count += picked.votes;
+  vote.distanceTotal += picked.distance * picked.votes;
+  colors.set(colorKey, vote);
+  regionVotes.set(picked.label, colors);
   paintResults.push({
     ...seed,
     pixels: regions[picked.label].size,
     region: picked.label,
     touchesBorder: regions[picked.label].touchesBorder,
     distance: picked.distance,
+    votes: picked.votes,
   });
+}
+
+const regionPaint = new Map();
+for (const [label, colors] of regionVotes) {
+  const ranked = [...colors.values()].sort((left, right) =>
+    right.count - left.count || left.distanceTotal - right.distanceTotal
+  );
+  regionPaint.set(label, ranked[0]);
 }
 
 const pixels = Buffer.alloc(maskPixels.length);
@@ -167,7 +262,19 @@ const artSvg = svg([
 const base = await sharp(pixels, { raw: { width: imageWidth, height: imageHeight, channels } }).png().toBuffer();
 const composited = await sharp(base).composite([{ input: artSvg }]).png().toBuffer();
 await sharp(composited).resize(Math.round(imageWidth / scale), Math.round(imageHeight / scale)).png().toFile(outputPath);
-console.log(JSON.stringify({ outputPath, width: Math.round(imageWidth / scale), height: Math.round(imageHeight / scale), paintResults }));
+const diagnostics = writeDebug ? {
+  unpaintedRegions: regions
+    .map((region, label) => ({ label, pixels: region.size, touchesBorder: region.touchesBorder }))
+    .filter((region) => !region.touchesBorder && !regionPaint.has(region.label))
+    .sort((left, right) => right.pixels - left.pixels)
+    .slice(0, 20),
+  boundaryRegions: spec.boundaries.map((_, boundary_index) => ({
+    boundary_index,
+    side0: chooseBoundarySideRegion({ boundary_index, side: 0 }),
+    side1: chooseBoundarySideRegion({ boundary_index, side: 1 }),
+  })),
+} : {};
+console.log(JSON.stringify({ outputPath, width: Math.round(imageWidth / scale), height: Math.round(imageHeight / scale), paintResults, ...diagnostics }));
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

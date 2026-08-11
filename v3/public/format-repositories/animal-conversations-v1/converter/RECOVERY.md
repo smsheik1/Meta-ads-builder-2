@@ -18,11 +18,31 @@ and paint-region seed data.
 ## Current proof status
 
 - The cat and bunny Harmony projects parse at the scene level.
-- The modified TVG decoder structurally reads most supplied drawings.
-- Palette IDs and TGCO paint seed coordinates are recoverable.
-- A single cat body drawing was partially rendered, but the fill topology is
-  visibly incorrect and is not a passing proof.
-- No complete colored cat or bunny pose has passed visual comparison yet.
+- The modified TVG decoder reads the supplied active frame-one drawings.
+- TGCO color art is resolved by the encoded side of each directed boundary;
+  exterior regions are excluded instead of being treated as paint buckets.
+- The official `convert_pose.mjs` entrypoint exports each drawing, applies its
+  source PEG transform, paints it independently with common scene bounds, and
+  composites the XStage layers from bottom to top.
+- Complete colored cat and bunny poses pass dimension, alpha coverage,
+  transparent-border, required-palette, and source-layer-count checks without
+  Toon Boom Harmony.
 
-The converter is not runtime-ready until the full-pose proofs pass and the
-official runner can reproduce them from clean inputs.
+The 64 MB cat and 61 MB bunny Harmony projects remain external user-supplied
+inputs. The Repo packages only the converter, exact frame-one manifests,
+checksummed proof outputs, and receipts.
+
+## Reproduce the proofs
+
+```bash
+npm install
+npm run convert -- \
+  --rig=/absolute/path/to/CAT_LOOP_1 \
+  --manifest=cat-frame1 \
+  --output=/absolute/path/to/cat-frame1.png
+
+npm run convert -- \
+  --rig=/absolute/path/to/BUN_LOOP_1 \
+  --manifest=bunny-frame1 \
+  --output=/absolute/path/to/bunny-frame1.png
+```

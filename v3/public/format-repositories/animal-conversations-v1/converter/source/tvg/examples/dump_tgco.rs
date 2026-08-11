@@ -1,7 +1,7 @@
 use tvg::layer::{LayerData, ShapeComponentData};
 use tvg::read::FileData;
 
-fn dump(layer: &LayerData) {
+fn dump(label: &str, layer: &LayerData) {
     let LayerData::Vector(shapes) = layer else { return; };
     for (shape_index, shape) in shapes.iter().enumerate() {
         for (component_index, component) in shape.components.iter().enumerate() {
@@ -18,8 +18,7 @@ fn dump(layer: &LayerData) {
             }
             for tag in &component.tags {
                 let ShapeComponentData::Info(info) = tag else { continue; };
-                if info.raw.0.len() <= 13 { continue; }
-                println!("shape={shape_index} component={component_index} type={:?} len={} points={points:?}", shape.ty, info.raw.0.len());
+                println!("layer={label} shape={shape_index} component={component_index} type={:?} len={} points={points:?}", shape.ty, info.raw.0.len());
                 for (offset, chunk) in info.raw.0.chunks(16).enumerate() {
                     print!("{:04x}: ", offset * 16);
                     for byte in chunk { print!("{byte:02x} "); }
@@ -39,7 +38,10 @@ fn main() {
         if let FileData::Main(items) = item {
             for item in items {
                 match item {
-                    FileData::LayerUnderlay(layer) | FileData::LayerColor(layer) | FileData::LayerLine(layer) | FileData::LayerOverlay(layer) => dump(&layer),
+                    FileData::LayerUnderlay(layer) => dump("underlay", &layer),
+                    FileData::LayerColor(layer) => dump("color", &layer),
+                    FileData::LayerLine(layer) => dump("line", &layer),
+                    FileData::LayerOverlay(layer) => dump("overlay", &layer),
                     _ => {}
                 }
             }

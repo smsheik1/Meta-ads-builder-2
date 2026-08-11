@@ -1,0 +1,13 @@
+{
+  "name": "wiggly-animal-conversations-format-kit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test converter/tests/*.test.mjs && node converter/run_cargo_test.mjs",
+    "convert": "node converter/convert_pose.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.3"
+  }
+}
