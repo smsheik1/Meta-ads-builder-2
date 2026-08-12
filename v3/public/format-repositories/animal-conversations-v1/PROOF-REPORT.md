@@ -4,6 +4,15 @@
 
 The Harmony-free converter generated complete colored cat and bunny idle poses plus mouth-open and blink substitutions from the supplied Toon Boom projects. Converter tests assert the complete 12-layer order, exact palette recovery, source PEG placement, detached bunny fill nodes, expression drawing substitutions, transparent borders, and required opaque interior points. The six packaged character PNGs are checksum-bound in `assets.json`; each has a colocated conversion receipt.
 
+## Character-fill failure and fix
+
+- Observed failure: the bunny's dark-pink head shadow was transparent in every packaged pose. The close-up camera mirrors the pose, so the missing region appeared on the left side of the on-screen head and exposed the background curtain.
+- Root cause: the `Head-1.tvg` dark-pink paint seed (`0b6d656fc8edfc85`) resolved from boundary 11 side 0 to no enclosed region. The only previous required opacity point sampled the torso, so conversion incorrectly passed.
+- Smallest fix: bind that seed to boundary 11 side 1 in the bunny manifest and regenerate idle, blink, and mouth-open through the official converter. The recovered region contains 596,695 source-render pixels and the full pose's opaque coverage rises from 0.48925 to 0.49675.
+- Guardrail: conversion now checks a point inside the repaired head shadow, and tests inspect every cat/dog and bunny pose at all manifest-required head/body/tail points. A bunny-specific assertion also locks the repaired point to RGBA `[213,122,122,255]`.
+- Dog/cat inspection: idle, blink, and mouth-open were regenerated against expanded head/body/tail opacity points without changing their existing PNG hashes. High-contrast pose sheets, supplied-reference comparison, and two full-resolution rendered close-ups showed no analogous background leak.
+- Render evidence: smoke and both 31.137-second supplied-audio proofs passed. Exact living-room close-ups at 3.0, 11.5, 17.0, and 25.0 seconds were inspected at full resolution; both bunny talking/idle frames have a complete head shadow and both blue dog/cat frames remain fully colored.
+
 ## Free smoke proof
 
 - Run: `agent-runs/smoke-proof` (ignored local evidence)
@@ -18,7 +27,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Input audio SHA-256: `226ffe78af88c77175c0358d4ab85360eb3eac43b185e29b1a92ff2e58517657`
 - Measured input duration: 31.137007 seconds
 - Timeline: 15 contiguous beats; all three approved cameras and all four speaker modes. Fourteen spoken beats were explicitly confirmed from the supplied reference video's speaker-colored captions and mouth motion; the silent reaction was confirmed separately.
-- Output SHA-256: `4ab7aaab3df052cf8c88bb6600687f761d5d49c8c72c35e38c1bcf8bc9215f9b`
+- Output SHA-256: `d13750a91a2e37e1c8b54d15cf5f4342a6c9d58ef5b6aa85d918e775675bb5bb`
 - Automated result: pass at 1080x1920, 24 fps, H.264/AAC, mean audio -18.5 dB, 14 captioned beats
 - Direct visual review: the regenerated contact sheet was inspected at original resolution, the full 31-second render was scanned at one-second intervals, and dense transition sheets were inspected across 7.4-11.1 and 21.8-24.6 seconds. The disputed `No judging`, `We listen`, and `We're just listening` beats now use the cat caption color and cat mouth while the bunny remains a listener. The silent 27.9-28.8 reaction now uses the reference-matched cat close-up. Staging and bunny-only orientation remain correct.
 - Audio evidence: codec, duration, stream presence, and mean level passed automated inspection. No claim of directly hearing or judging intelligibility is made from player controls or metadata.
@@ -27,7 +36,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 
 - Run: `agent-runs/sample-backyard` (ignored local evidence)
 - Variation: identical user audio and timing with the packaged `backyard` background
-- Output SHA-256: `bc304643c4aac8e452931db89e03a3edf31425b2609e83d639aff483bed567ef`
+- Output SHA-256: `25cef877fbc8d7014828b7b7df3356ff948a62616695fb93e78e80b81c63b86e`
 - Result: every automated gate passed, including 15-of-15 confirmed speaker beats; direct contact-sheet inspection confirmed the corrected cat assignments and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
 
 ## Speaker-assignment failure and fix
@@ -52,4 +61,4 @@ The reference MP4 container reports 31.251202 seconds, while its extracted AAC s
 
 ## Packaged handoff
 
-`npm run build:kit` produced a version 0.2.0 ZIP without `node_modules`, generated runs, Cargo targets, local audio, or speaker-review clips. A fresh extraction under `/private/tmp` completed `npm install`, all ten Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The packaged smoke generated and applied a current speaker-assignment receipt before rendering; original-resolution contact-sheet inspection confirmed all three camera/character modes. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
+`npm run build:kit` produced a version 0.2.1 ZIP without `node_modules`, generated runs, Cargo targets, local audio, or speaker-review clips. A fresh extraction under `/private/tmp` completed `npm install`, all thirteen Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The packaged smoke generated and applied a current speaker-assignment receipt before rendering; original-resolution contact-sheet inspection confirmed all three camera/character modes and the repaired bunny head. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.

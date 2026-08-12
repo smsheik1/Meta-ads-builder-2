@@ -21,9 +21,9 @@
       "id": "bunny",
       "source": "Harmony BUN_LOOP_1 converted locally by converter/convert_pose.mjs",
       "poses": [
-        {"id": "idle", "path": "assets/characters/bunny/idle.png", "sha256": "3dca0be49b12a0a2adf82dbe0d952ac8263a680da8d5478b34174d79b6321d50"},
-        {"id": "mouth-open", "path": "assets/characters/bunny/mouth-open.png", "sha256": "9352027cde50fe0ee89886074b80e50e046fb5bc84c5f7261031ef425041c091"},
-        {"id": "blink", "path": "assets/characters/bunny/blink.png", "sha256": "49d1c767812b3d687c2dc486f4ef0e59d648a334055752fc852b8a80b3a68aa9"}
+        {"id": "idle", "path": "assets/characters/bunny/idle.png", "sha256": "3bc06240c29e92049e8e59bcb31e86c533af3b0b753f2b69f0945bef97ac45f6"},
+        {"id": "mouth-open", "path": "assets/characters/bunny/mouth-open.png", "sha256": "9a2235bec6f48e5e0d93e01a3c40b3c4037778eeb7b27a27402749291e05e0a4"},
+        {"id": "blink", "path": "assets/characters/bunny/blink.png", "sha256": "0ef96eb62f358fbb4f2c375fee31ce532b6f105742a55dc5722c8a520e88b319"}
       ]
     }
   ],

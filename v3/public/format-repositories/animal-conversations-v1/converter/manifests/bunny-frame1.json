@@ -11,7 +11,8 @@
     [255, 255, 255]
   ],
   "requiredOpaquePoints": [
-    [0.38, 0.75]
+    [0.38, 0.75],
+    [0.71, 0.40]
   ],
   "layers": [
     { "id": "left-leg", "file": "elements/Left_Leg/Left_Leg-1.tvg" },
@@ -30,7 +31,13 @@
     { "id": "right-leg", "file": "elements/Right_Leg/Right_Leg-1.tvg" },
     { "id": "right-ear", "file": "elements/Ear_Right/Ear_Right-1.tvg" },
     { "id": "left-ear", "file": "elements/Ear_Left.27/Ear_Left-1.tvg" },
-    { "id": "head", "file": "elements/Head/Head-1.tvg" },
+    {
+      "id": "head",
+      "file": "elements/Head/Head-1.tvg",
+      "seedOverrides": [
+        { "colorId": "0b6d656fc8edfc85", "boundaryIndex": 11, "side": 1 }
+      ]
+    },
     {
       "id": "eyes",
       "file": "elements/Eyes/Eyes-2.tvg",

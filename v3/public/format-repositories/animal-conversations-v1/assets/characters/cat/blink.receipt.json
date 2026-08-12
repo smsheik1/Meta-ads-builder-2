@@ -3,7 +3,7 @@
   "converter": "harmony-tvg-layered-pose-v1",
   "harmonyRequired": false,
   "manifest": "cat-frame1",
-  "manifestSha256": "c7cd3989ba496f62763e68bf8a26cbaa855f9f318098105ebe705d0797b0a889",
+  "manifestSha256": "6f984afd0bc7704dde1f8307fb542d1e5adc07004903342a532c83950a9daace",
   "output": "blink.png",
   "outputSha256": "94fdac22e1facaab07bfae2e161505d276815dfaba53e433e0886635e206e644",
   "bounds": {

@@ -39,7 +39,7 @@ npm run convert -- --rig=/absolute/path/CAT_LOOP_1 --manifest=cat-frame1 --mouth
 npm run convert -- --rig=/absolute/path/BUN_LOOP_1 --manifest=bunny-frame1 --mouth=2 --eyes=1 --output=/absolute/path/bunny.png
 ```
 
-The converter requires Cargo, Node, and Sharp but not Harmony. It writes a checksum receipt beside each PNG. See `converter/RECOVERY.md` for the recovered TGCO fill behavior and pose-manifest details.
+The converter requires Cargo, Node, and Sharp but not Harmony. It writes a checksum receipt beside each PNG. Character manifests define required opaque interior points, and tests verify those points in every packaged idle, blink, and mouth-open pose. See `converter/RECOVERY.md` for the recovered TGCO fill behavior and pose-manifest details.
 
 ## Output
 

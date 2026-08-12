@@ -27,6 +27,9 @@ and paint-region seed data.
 - Complete colored cat and bunny poses pass dimension, alpha coverage,
   transparent-border, required-palette, and source-layer-count checks without
   Toon Boom Harmony.
+- The bunny head's detached dark-pink shadow seed is explicitly bound to side 1
+  of boundary 11. Required head/body points and packaged-pose tests prevent that
+  region from silently becoming transparent again.
 
 The 64 MB cat and 61 MB bunny Harmony projects remain external user-supplied
 inputs. The Repo packages only the converter, exact frame-one manifests,
