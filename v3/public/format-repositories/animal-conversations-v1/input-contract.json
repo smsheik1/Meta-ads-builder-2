@@ -40,6 +40,7 @@
     "spoken beats have non-empty captions",
     "each beat stores the complete spoken line; the renderer, not the operator, splits it into progressive one-to-three-word caption cards",
     "every beat speaker is explicitly confirmed before validation through direct audio, documented local audio analysis, a user label, a checksum-matched documented reference video, or silence",
+    "local audio analysis defines each detected voice ID once in voiceCharacterMap and uses detectedVoices on every analyzed beat; a detected voice cannot change characters at a caption or dialogue-turn boundary",
     "speaker=both is valid only for explicitly confirmed simultaneous speech with documented overlap evidence; uncertainty must stop for review, and alternating voices must be split into contiguous single-speaker beats",
     "speaker confirmation becomes stale whenever the audio, timing, caption, camera, or speaker assignment changes",
     "neutral talking has mouth motion only; vertical bounce occurs only at an explicit bounceAt emphasis event",

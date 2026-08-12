@@ -45,6 +45,7 @@ export async function inspectRun({ runDirectory }) {
     audibleAudio: Number.isFinite(meanVolumeDb) && meanVolumeDb > -55,
     approvedCamerasOnly: measured.camerasUsed.every((camera) => ["two-shot", "cat-close", "bunny-close"].includes(camera)),
     speakerAssignmentConfirmed: measured.speakerAssignment?.reviewedBeats === input.timeline.length,
+    stableVoiceCastingConfirmed: measured.speakerAssignment?.voiceBoundBeats === (measured.speakerAssignment?.evidenceCounts?.["local-audio-analysis"] || 0),
     simultaneousSpeechConfirmed: measured.speakerAssignment?.confirmedOverlapBeats === input.timeline.filter((beat) => beat.speaker === "both").length,
     renderMatchesInput: renderReport.inputHash === measured.inputHash,
     captionsPresent: measured.captionedBeatCount > 0,

@@ -131,6 +131,8 @@ export async function validateRun({ root, runDirectory }) {
       method: speakerAssignment.method,
       reviewedBeats: speakerAssignment.reviewedBeats,
       evidenceCounts: speakerAssignment.evidenceCounts,
+      voiceCharacterMap: speakerAssignment.voiceCharacterMap,
+      voiceBoundBeats: speakerAssignment.voiceBoundBeats,
       confirmedOverlapBeats: speakerAssignment.confirmedOverlapBeats,
     },
     verifiedAssets,

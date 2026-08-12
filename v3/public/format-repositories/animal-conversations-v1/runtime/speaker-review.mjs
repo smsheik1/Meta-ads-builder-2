@@ -22,9 +22,10 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
     schemaVersion: 1,
     status: "pending",
     generatedAt,
-    instructions: "Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. local-audio-analysis also requires a concise evidenceNote naming the transcript/diarization basis and any creative role mapping. speaker=both means proven simultaneous speech: set overlapConfirmed=true and document the overlap in evidenceNote. Never use both for uncertainty or alternating voices; split alternating turns into contiguous beats. Disclose perception limits and never infer from caption text or camera alone.",
+    instructions: "Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. For local-audio-analysis, define each stable detected voice ID once in voiceCharacterMap, list that beat's detectedVoices, and add an evidenceNote naming the transcript/diarization basis. Never recast a voice at a caption or dialogue-turn boundary. speaker=both means proven simultaneous speech: set overlapConfirmed=true and document mapped cat and bunny voices in evidenceNote. Never use both for uncertainty or alternating voices; split alternating turns into contiguous beats. Disclose perception limits and never infer a speaker from caption text or camera alone.",
     audio: { file: input.audioFile, sha256: audioSha256 },
     reviewFingerprint: reviewFingerprint(input),
+    voiceCharacterMap: {},
     beats: input.timeline.map((beat, index) => ({
       index,
       start: beat.start,
@@ -34,6 +35,7 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
       confirmedSpeaker: null,
       evidence: null,
       evidenceNote: null,
+      detectedVoices: [],
       overlapConfirmed: null,
       clip: `speaker-review/beat-${String(index).padStart(2, "0")}.wav`,
     })),
@@ -47,12 +49,34 @@ export function applySpeakerReviewDocument({ input, review, audioSha256, applied
   if (review.reviewFingerprint !== reviewFingerprint(input)) errors.push("speaker review is stale because timeline timing, captions, or cameras changed.");
   if (!Array.isArray(review.beats) || review.beats.length !== input.timeline.length) errors.push("speaker review must contain one entry for every timeline beat.");
 
+  const voiceCharacterMap = review.voiceCharacterMap && typeof review.voiceCharacterMap === "object" && !Array.isArray(review.voiceCharacterMap)
+    ? review.voiceCharacterMap
+    : {};
+  Object.entries(voiceCharacterMap).forEach(([voice, character]) => {
+    if (!voice.trim() || !["cat", "bunny"].includes(character)) errors.push("voiceCharacterMap must map non-empty detected voice IDs to cat or bunny.");
+  });
+
   const beats = Array.isArray(review.beats) ? review.beats : [];
   beats.forEach((entry, index) => {
     if (entry.index !== index) errors.push(`speaker review beat ${index} has the wrong index.`);
     if (!SPEAKERS.has(entry.confirmedSpeaker)) errors.push(`speaker review beat ${index} needs confirmedSpeaker=cat, bunny, both, or none.`);
     if (!EVIDENCE.has(entry.evidence)) errors.push(`speaker review beat ${index} needs explicit evidence.`);
     if (entry.evidence === "local-audio-analysis" && (typeof entry.evidenceNote !== "string" || !entry.evidenceNote.trim())) errors.push(`speaker review beat ${index} needs an evidenceNote for local audio analysis.`);
+    if (entry.evidence === "local-audio-analysis") {
+      const detectedVoices = Array.isArray(entry.detectedVoices)
+        ? [...new Set(entry.detectedVoices.filter((voice) => typeof voice === "string" && voice.trim()).map((voice) => voice.trim()))]
+        : [];
+      if (!detectedVoices.length) errors.push(`speaker review beat ${index} needs detectedVoices for local audio analysis.`);
+      const mappedCharacters = detectedVoices.map((voice) => voiceCharacterMap[voice]);
+      if (mappedCharacters.some((character) => !character)) errors.push(`speaker review beat ${index} uses a detected voice missing from voiceCharacterMap.`);
+      if (["cat", "bunny"].includes(entry.confirmedSpeaker) && (detectedVoices.length !== 1 || mappedCharacters[0] !== entry.confirmedSpeaker)) {
+        errors.push(`speaker review beat ${index} must keep its detected voice on the same confirmed character.`);
+      }
+      if (entry.confirmedSpeaker === "both" && (!mappedCharacters.includes("cat") || !mappedCharacters.includes("bunny"))) {
+        errors.push(`speaker review beat ${index} needs mapped cat and bunny voices for confirmed overlap.`);
+      }
+    }
+    if (entry.evidence !== "local-audio-analysis" && Array.isArray(entry.detectedVoices) && entry.detectedVoices.length) errors.push(`speaker review beat ${index} may set detectedVoices only for local audio analysis.`);
     if (entry.evidence === "silence" && entry.confirmedSpeaker !== "none") errors.push(`speaker review beat ${index} can use silence evidence only with speaker=none.`);
     if (entry.confirmedSpeaker === "both" && entry.overlapConfirmed !== true) errors.push(`speaker review beat ${index} needs overlapConfirmed=true because speaker=both means simultaneous speech, never uncertainty.`);
     if (entry.confirmedSpeaker === "both" && (typeof entry.evidenceNote !== "string" || !entry.evidenceNote.trim())) errors.push(`speaker review beat ${index} needs an evidenceNote documenting the confirmed overlapping speech.`);
@@ -76,6 +100,8 @@ export function applySpeakerReviewDocument({ input, review, audioSha256, applied
     timelineHash: speakerAssignmentHash(nextInput),
     reviewedBeats: beats.length,
     evidenceCounts,
+    voiceCharacterMap,
+    voiceBoundBeats: beats.filter((beat) => beat.evidence === "local-audio-analysis").length,
     confirmedOverlapBeats: beats.filter((beat) => beat.confirmedSpeaker === "both" && beat.overlapConfirmed === true).length,
   };
   return { input: nextInput, receipt };
