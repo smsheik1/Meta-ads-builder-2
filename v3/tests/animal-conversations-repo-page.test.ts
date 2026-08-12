@@ -31,7 +31,7 @@ assert.equal(shelf?.entries[0]?.format.slug, "animal-conversations");
 
 const profile = getDiscoveryFormatProfile("animal-conversations");
 assert.ok(profile?.handoff, "Animal Conversations should offer a runnable agent handoff.");
-assert.equal(profile.version, "0.6.0");
+assert.equal(profile.version, "0.7.0");
 assert.equal(profile.repositoryHref, "/format-repositories/animal-conversations-v1/downloads/wiggly-animal-conversations-format-kit.zip");
 assert.match(profile.handoff.firstQuestion, /Attach the conversation audio/);
 assert.match(profile.handoff.instructions.join(" "), /one-to-three-word cards/);
@@ -57,7 +57,7 @@ const archivedManifest = JSON.parse(
 ) as { formatVersion: string; canonicalSkill: string };
 assert.deepEqual(archivedManifest, {
   ...archivedManifest,
-  formatVersion: "0.6.0",
+  formatVersion: "0.7.0",
   canonicalSkill: "SKILL.md",
 });
 

@@ -7,7 +7,7 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 11;
+const RENDERER_VERSION = 13;
 const BOUNCE_SECONDS = 0.36;
 const SPEECH_ANALYSIS_SAMPLE_RATE = 24000;
 const SPEECH_LEVEL_PERCENTILE = 0.9;
@@ -20,6 +20,7 @@ const BLINK_BOUNDARY_SNAP_FRAMES = 12;
 const BLINK_MINIMUM_GAP_FRAMES = 72;
 const BLINK_COLLISION_FRAMES = 5;
 const BLINK_STAGGER_FRAMES = 8;
+export const CAPTION_TOP_Y = 1460;
 const BLINK_TRACKS = {
   cat: { firstFrame: 53, gapFrames: [84, 109, 91, 126, 97] },
   bunny: { firstFrame: 79, gapFrames: [103, 88, 117, 96, 132] },
@@ -209,16 +210,14 @@ function frameRanges(frames) {
   return ranges;
 }
 
-function captionSvg(beat, captionText, episodeLabel) {
+export function captionSvg(beat, captionText, episodeLabel) {
   const colors = { cat: "#62C8FF", bunny: "#FF8BCC", both: "#FFE477", none: "#FFFFFF" };
   const lines = wrapCaption(captionText, 24);
   const fontSize = lines.length > 1 ? 66 : 76;
   const lineHeight = fontSize + 12;
-  const boxHeight = lines.length ? lines.length * lineHeight + 44 : 0;
   const tspans = lines.map((line, index) => `<tspan x="540" dy="${index ? lineHeight : 0}">${escapeXml(line)}</tspan>`).join("");
   return Buffer.from(`<svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-    ${lines.length ? `<rect x="68" y="96" width="944" height="${boxHeight}" rx="34" fill="#09121f" fill-opacity="0.70"/>` : ""}
-    <text x="540" y="${132 + fontSize}" text-anchor="middle" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="${fontSize}" font-weight="800" fill="${colors[beat.speaker]}" stroke="#07101c" stroke-width="12" paint-order="stroke" stroke-linejoin="round">${tspans}</text>
+    <text x="540" y="${CAPTION_TOP_Y + fontSize}" text-anchor="middle" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="${fontSize}" font-weight="800" fill="${colors[beat.speaker]}" stroke="#07101c" stroke-width="12" paint-order="stroke" stroke-linejoin="round">${tspans}</text>
     <rect x="173" y="1764" width="734" height="88" rx="44" fill="#09121f" fill-opacity="0.76"/>
     <text x="540" y="1825" text-anchor="middle" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="45" font-weight="800" fill="#FFE477" stroke="#07101c" stroke-width="7" paint-order="stroke">${escapeXml(episodeLabel)}</text>
   </svg>`);

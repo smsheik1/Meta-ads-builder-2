@@ -37,7 +37,7 @@
       "neutral talking remains vertically still and any jump is brief, intentional, and attached to an explicit emphasis event",
       "speaker identity comes from explicit per-beat evidence—direct audio, a user label, a checksum-matched documented reference video, or silence—rather than caption or camera inference",
       "camera cuts follow the supplied three-angle grammar",
-      "captions progress in readable one-to-three-word chunks, remain synchronized, and stay speaker-associated",
+      "captions progress in readable one-to-three-word chunks, stay in the lower bottom-third lane below character faces and above the episode label without a background panel, remain synchronized, and stay speaker-associated",
       "the original user-provided audio remains complete; intelligibility is reviewed when sound is perceptible and otherwise explicitly left unscored"
     ]
   }

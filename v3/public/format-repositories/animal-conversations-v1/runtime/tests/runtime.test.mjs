@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { validateTimeline } from "../validate.mjs";
-import { blinkStateAtFrame, buildBlinkSchedule, buildSpeechActivityTrack, captionChunks, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
+import { blinkStateAtFrame, buildBlinkSchedule, buildSpeechActivityTrack, CAPTION_TOP_Y, captionChunks, captionSvg, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
 import { applySpeakerReviewDocument, createSpeakerReviewDocument, speakerAssignmentHash } from "../speaker-review.mjs";
 import { readJson } from "../common.mjs";
 
@@ -92,6 +92,15 @@ test("captions progress in readable one-to-three-word chunks instead of full sen
   assert.equal(captionTextAtFrame(beat, 48), "I thought you");
   assert.equal(captionTextAtFrame(beat, 72), "liked it.");
   assert.equal(visualState(beat, 72).captionText, "liked it.");
+});
+
+test("captions stay in the lower bottom-third lane without a background panel", () => {
+  const svg = captionSvg({ speaker: "cat" }, "I have something", "ANIMAL CONVERSATIONS").toString();
+  assert.equal(CAPTION_TOP_Y, 1460);
+  assert.match(svg, /<text x="540" y="1536"/);
+  assert.doesNotMatch(svg, /<rect x="68"/);
+  assert.doesNotMatch(svg, /fill-opacity="0\.70"/);
+  assert.match(svg, /<rect x="173" y="1764"/, "the separate episode label should remain intact");
 });
 
 test("normal speech stays vertically still and bounce cues animate only the speaker", () => {

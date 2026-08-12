@@ -28,7 +28,7 @@ Neutral talking uses mouth movement only. The renderer measures the supplied aud
 
 Vertical jumping is reserved for explicit emphasis events: add an optional `bounceAt` array to a beat with one or two offsets in seconds from that beat's start. Use one cue for a punchline, interruption, or strong reaction; use two only for an intentionally frantic line. Omitting `bounceAt` guarantees that the speaker remains vertically still.
 
-The renderer automatically turns each beat's full caption into progressive one-to-three-word cards. Keep `caption` as the complete spoken line; do not pre-split it or add manual caption-only beats.
+The renderer automatically turns each beat's full caption into progressive one-to-three-word chunks. They stay in a dedicated lower lane inside the bottom third—below character faces and above the episode label—as outlined text without a background panel. Keep `caption` as the complete spoken line; do not pre-split it or add manual caption-only beats.
 
 Blinking is automatic and has no authoring field. Each character follows an independent deterministic cadence with irregular three-to-six-second gaps; due blinks move to a nearby dialogue boundary when possible, offscreen blinks are skipped, and near-simultaneous two-shot blinks are staggered. Each blink lasts three frames at 24 fps. Do not add manual blink cues or runtime randomness.
 
