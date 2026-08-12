@@ -26,7 +26,9 @@ The timing JSON follows [input-contract.json](input-contract.json). Copy `fixtur
 
 Neutral talking uses mouth movement only. Vertical jumping is reserved for explicit emphasis events: add an optional `bounceAt` array to a beat with one or two offsets in seconds from that beat's start. Use one cue for a punchline, interruption, or strong reaction; use two only for an intentionally frantic line. Omitting `bounceAt` guarantees that the speaker remains vertically still.
 
-`init` extracts every beat from the actual user audio into `agent-runs/<run>/speaker-review/` and creates `speaker-review.json`. Listen to each clip, set `confirmedSpeaker` plus `evidence` (`direct-audio-review`, `user-provided-label`, `reference-video`, or `silence`), then run `apply-speakers`. That command makes the confirmed values authoritative and writes a receipt bound to the audio checksum and full speaker timeline. `validate` refuses to proceed if any beat is unconfirmed or if the audio/timeline changed afterward. Run `review-speakers` to regenerate the clips and start the confirmation again.
+The renderer automatically turns each beat's full caption into progressive one-to-three-word cards. Keep `caption` as the complete spoken line; do not pre-split it or add manual caption-only beats.
+
+`init` extracts every beat from the actual user audio into `agent-runs/<run>/speaker-review/` and creates `speaker-review.json`. Prefer listening to each clip. If audio perception is unavailable, require another explicit channel: a user-provided label, a checksum-matched documented reference video, or confirmed silence. Set `confirmedSpeaker` plus the matching `evidence` (`direct-audio-review`, `user-provided-label`, `reference-video`, or `silence`), disclose the limitation, then run `apply-speakers`. That command makes the confirmed values authoritative and writes a receipt bound to the audio checksum and full speaker timeline. `validate` refuses to proceed if any beat is unconfirmed or if the audio/timeline changed afterward. Run `review-speakers` to regenerate the clips and start the confirmation again.
 
 ## Audio policy
 

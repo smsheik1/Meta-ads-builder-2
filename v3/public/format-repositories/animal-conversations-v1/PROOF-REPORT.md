@@ -27,7 +27,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Input audio SHA-256: `226ffe78af88c77175c0358d4ab85360eb3eac43b185e29b1a92ff2e58517657`
 - Measured input duration: 31.137007 seconds
 - Timeline: 15 contiguous beats; all three approved cameras and all four speaker modes. Fourteen spoken beats were explicitly confirmed from the supplied reference video's speaker-colored captions and mouth motion; the silent reaction was confirmed separately.
-- Output SHA-256: `a5392d23aa0408fbd01ad722f12d5a6c379fcbdf45a00e110a28b82b9717fb71`
+- Output SHA-256: `d4727a34c0f3beda72d5d937cd9566b31e53a2d91781739405de0b4744580fc2`
 - Automated result: pass at 1080x1920, 24 fps, H.264/AAC, mean audio -18.5 dB, 14 captioned beats
 - Direct visual review: the regenerated contact sheet was inspected at original resolution, the full 31-second render was scanned at one-second intervals, and dense transition and motion sheets were inspected across close-up, two-shot, cued, and neutral-talking intervals. The disputed `No judging`, `We listen`, and `We're just listening` beats use the cat caption color and cat mouth while the bunny remains a listener. The silent 27.9-28.8 reaction uses the reference-matched cat close-up. Staging, bunny-only orientation, neutral vertical stability, and brief cued emphasis motion remain correct.
 - Audio evidence: codec, duration, stream presence, and mean level passed automated inspection. No claim of directly hearing or judging intelligibility is made from player controls or metadata.
@@ -36,7 +36,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 
 - Run: `agent-runs/sample-backyard` (ignored local evidence)
 - Variation: identical user audio and timing with the packaged `backyard` background
-- Output SHA-256: `b8f7b896e503e0f956a590e1f31c6e2df7b1c6ff31e2d7500c4fb73afc7d7609`
+- Output SHA-256: `66a7cf1e9d95d6a80ade75097ffc33aae000ee6060285e69f1f94543f09c2876`
 - Result: every automated gate passed, including 15-of-15 confirmed speaker beats; direct contact-sheet inspection confirmed the corrected cat assignments and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
 
 ## Speaker-assignment failure and fix
@@ -53,7 +53,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Root cause: the two-shot scale and positions were not calibrated against the supplied video, the bunny-only layout had no orientation override, and the regression test asserted only a two-shot flip flag rather than rendered spatial bounds.
 - Smallest fix: reduce and reposition only the two-shot layouts, keep their inward-facing directions, and mirror the bunny in `bunny-close`. Cat layouts are unchanged.
 - Guardrail: the runtime test calculates prepared widths from the packaged character pixels, requires at least 120 pixels between two-shot bounds, requires the cat to remain inside the canvas, and asserts the layout-specific bunny orientation. Composition and quality contracts require separation and the reference-matched bunny-only direction.
-- Evidence: the staging correction was introduced in renderer version 4 and remains locked in the current renderer version 5 proofs. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
+- Evidence: the staging correction was introduced in renderer version 4 and remains locked in the current renderer version 7 proofs. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
 
 ## Key-segment motion correction
 
@@ -63,10 +63,20 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Blind-agent guardrail: `SKILL.md`, the README, and both input/composition contracts state the same rule: neutral talking uses mouth movement only; jumping must be explicitly attached to an emphasis event. The validator rejects unknown beat fields, more than two cues, unsorted/out-of-beat cues, and cues without an active speaker.
 - Regression proof: the runtime suite asserts zero vertical movement across multiple uncued speaking frames, movement and reset around an explicit cue, and no listener movement. The supplied conversation uses sparse cues only on selected punchlines and strong reactions. Dense motion sheets confirmed the cued movement in cat-close, two-shot, and bunny-close views and a completely fixed body baseline through an uncued talking interval; both background contact sheets were inspected at original resolution.
 
+## Reference-style caption correction
+
+- Observed failure: each timed beat displayed its complete caption as one sentence-sized slab, while the supplied Animal Conversations reference advances in short conversational fragments.
+- Root cause: the caption painter consumed `timeline[].caption` directly, so the data model's complete spoken line and the on-screen presentation were accidentally treated as the same unit.
+- Smallest robust fix: renderer version 7 keeps one complete line per audio-aligned beat, splits that line at sentence boundaries, then emits punctuation-aware one-to-three-word cards across the beat duration. Four-word phrases balance as two plus two instead of leaving a single-word tail. Operators do not pre-split captions or create caption-only beats.
+- Guardrail: unit coverage asserts that every generated card contains one to three words, repeated punctuated phrases remain distinct, a four-word line balances into two cards, and the active card advances with the frame. The active caption is included in cached visual state, so a card change always produces a new frame.
+- Evidence: both 31.137-second proofs were re-rendered through version 7. Original-resolution contact sheets show short cards such as `we don't judge!`, `heart to tell`, `No judging.`, `I hoped I`, and `I wound up` while retaining the verified speaker, camera, staging, color, and explicit-emphasis behavior.
+
 ## Audio-first decision
 
 The reference MP4 container reports 31.251202 seconds, while its extracted AAC stream measures 31.137007 seconds. The proof timeline intentionally ends at the measured audio duration because the reusable format accepts user audio, not source video. Validation rejects a timeline that follows container length instead of audio length by more than 0.08 seconds. Speaker identity is also bound to the extracted user-audio checksum, so replacing the file invalidates the assignment receipt.
 
 ## Packaged handoff
 
-`npm run build:kit` produced a version 0.3.0 ZIP without `node_modules`, generated runs, Cargo targets, local audio, or speaker-review clips. A fresh extraction under `/private/tmp` completed `npm install`, all fifteen Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The packaged smoke generated and applied a current speaker-assignment receipt before rendering; original-resolution contact-sheet inspection confirmed all three camera/character modes, the repaired bunny head, and the cue-capable renderer. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
+`npm run build:kit` produced a stable version 0.4.0 ZIP without `node_modules`, generated runs, Cargo targets, raw runtime audio, standalone review clips, or download artifacts. The intentionally distributable approved proof MP4 retains its soundtrack. The archive includes explicit entrypoints for Codex, Claude Code, Cursor, and other coding agents plus a versioned `KIT-MANIFEST.json`. A fresh extraction under `/private/tmp` completed `npm install`, all seventeen Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The packaged smoke generated and applied a current speaker-assignment receipt before rendering; original-resolution contact-sheet inspection confirmed all three camera/character modes, the repaired bunny head, the cue-capable renderer, and progressive captions. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
+
+An independent blind agent then received only the ZIP and the user-supplied audio, resolved version 0.4.0 from `KIT-MANIFEST.json`, ran every packaged gate, and finalized the backyard proof without source-repository context or provider calls. Its output SHA-256 was `66a7cf1e9d95d6a80ade75097ffc33aae000ee6060285e69f1f94543f09c2876`, exactly matching the controlled variation proof. The agent could not directly perceive audio, so it reused the packaged reference timeline only after the supplied file's SHA-256 and measured duration exactly matched the documented sample; its report makes that limitation explicit. The blind run also exposed and prompted correction of an overbroad receipt label: `method` now says `explicit-per-beat-speaker-confirmation`, while `evidenceCounts` preserves whether each decision came from direct audio, a user label, a reference video, or silence.

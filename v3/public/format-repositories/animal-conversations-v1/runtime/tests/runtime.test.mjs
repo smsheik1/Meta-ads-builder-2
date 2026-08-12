@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { validateTimeline } from "../validate.mjs";
-import { LAYOUTS, visualState } from "../render.mjs";
+import { captionChunks, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
 import { applySpeakerReviewDocument, createSpeakerReviewDocument, speakerAssignmentHash } from "../speaker-review.mjs";
 import { readJson } from "../common.mjs";
 
@@ -25,6 +25,18 @@ test("only the active speaker receives the talking pose", () => {
   const open = visualState(beat, 3);
   assert.equal(open.catPose, "mouth-open");
   assert.notEqual(open.bunnyPose, "mouth-open");
+});
+
+test("captions progress in readable one-to-three-word chunks instead of full sentences", () => {
+  assert.deepEqual(captionChunks("I thought you liked it."), ["I thought you", "liked it."]);
+  assert.deepEqual(captionChunks("One two three four"), ["One two", "three four"]);
+  assert.deepEqual(captionChunks("No judging. No judging. No judging."), ["No judging.", "No judging.", "No judging."]);
+  assert.ok(captionChunks("Whatever. I always thought I'd end up with Liam Hemsworth").every((chunk) => chunk.split(/\s+/).length <= 3));
+
+  const beat = { start: 2, end: 4, speaker: "bunny", camera: "bunny-close", caption: "I thought you liked it." };
+  assert.equal(captionTextAtFrame(beat, 48), "I thought you");
+  assert.equal(captionTextAtFrame(beat, 72), "liked it.");
+  assert.equal(visualState(beat, 72).captionText, "liked it.");
 });
 
 test("normal speech stays vertically still and bounce cues animate only the speaker", () => {
@@ -62,6 +74,7 @@ test("speaker review requires explicit evidence and binds the confirmed characte
   };
   const review = createSpeakerReviewDocument({ input, audioSha256: "audio-hash", generatedAt: "2026-01-01T00:00:00.000Z" });
   assert.equal(review.beats[0].confirmedSpeaker, null);
+  assert.match(review.instructions, /direct audio.*user-provided label.*reference video.*silence/);
   assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" }), /needs confirmedSpeaker/);
   assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "replacement-audio" }), /user audio changed/);
   review.beats[0].confirmedSpeaker = "cat";
@@ -72,6 +85,7 @@ test("speaker review requires explicit evidence and binds the confirmed characte
   changedTimeline.timeline[0].camera = "cat-close";
   assert.throws(() => applySpeakerReviewDocument({ input: changedTimeline, review, audioSha256: "audio-hash" }), /timeline timing, captions, or cameras changed/);
   const applied = applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash", appliedAt: "2026-01-01T00:01:00.000Z" });
+  assert.equal(applied.receipt.method, "explicit-per-beat-speaker-confirmation");
   assert.equal(applied.input.timeline[0].speaker, "cat");
   assert.equal(applied.receipt.timelineHash, speakerAssignmentHash(applied.input));
   assert.equal(applied.receipt.reviewedBeats, 2);
@@ -83,6 +97,20 @@ test("the supplied sample assigns the disputed blue-caption lines to the cat", a
   assert.equal(speakersByCaption.get("No judging. No judging. No judging."), "cat");
   assert.equal(speakersByCaption.get("We listen."), "cat");
   assert.equal(speakersByCaption.get("We're just listening..."), "cat");
+});
+
+test("quality review requires honest perception disclosure for fallback speaker evidence", async () => {
+  const quality = await readJson(path.join(formatRoot, "quality.json"));
+  const requirements = await readJson(path.join(formatRoot, "requirements.json"));
+  const inputContract = await readJson(path.join(formatRoot, "input-contract.json"));
+  const kitManifest = await readJson(path.join(formatRoot, "KIT-MANIFEST.json"));
+  assert.equal(quality.blindReview.requiredPlayback.perceptionMode, "best-available-with-explicit-disclosure");
+  const criteria = quality.blindReview.criteria.join(" ");
+  assert.match(criteria, /direct audio.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(criteria, /intelligibility.*otherwise explicitly left unscored/);
+  assert.match(requirements.notes.join(" "), /direct review.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(inputContract.timingRules.join(" "), /direct audio.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(kitManifest.excluded.join(" "), /raw user-supplied runtime audio.*proof MP4 retains its distributable soundtrack/);
 });
 
 test("conversation staging preserves inward orientation and a clear two-shot gap", async () => {

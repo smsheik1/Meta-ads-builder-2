@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kit": "wiggly-animal-conversations-format-kit",
+  "formatVersion": "0.4.0",
+  "officialFormat": ".",
+  "canonicalSkill": "SKILL.md",
+  "install": "npm install",
+  "check": "npm run check",
+  "smoke": "npm run smoke",
+  "excluded": [
+    "secrets",
+    "node_modules",
+    "agent run caches",
+    "raw user-supplied runtime audio; the approved fixed proof MP4 retains its distributable soundtrack",
+    "speaker-review clips",
+    "download artifacts"
+  ]
+}

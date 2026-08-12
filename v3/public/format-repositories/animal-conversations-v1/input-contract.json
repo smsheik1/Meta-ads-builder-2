@@ -22,7 +22,7 @@
           "end": {"type": "number", "exclusiveMinimum": 0},
           "speaker": {"enum": ["cat", "bunny", "both", "none"], "description": "Provisional value until confirmed against the user-audio beat by the speaker-review workflow."},
           "camera": {"enum": ["two-shot", "cat-close", "bunny-close"]},
-          "caption": {"type": "string", "maxLength": 180},
+          "caption": {"type": "string", "maxLength": 180, "description": "Complete spoken line for this beat. The renderer automatically presents it as progressive one-to-three-word caption cards."},
           "bounceAt": {
             "type": "array",
             "description": "Optional explicit emphasis events, expressed as strictly increasing second offsets from this beat's start. Omit for neutral talking, which uses mouth motion only.",
@@ -37,7 +37,8 @@
     "beats are contiguous from zero",
     "the final beat ends within 0.08 seconds of measured user-audio duration",
     "spoken beats have non-empty captions",
-    "every beat speaker is confirmed from its extracted user-audio clip before validation",
+    "each beat stores the complete spoken line; the renderer, not the operator, splits it into progressive one-to-three-word caption cards",
+    "every beat speaker is explicitly confirmed before validation through direct audio, a user label, a checksum-matched documented reference video, or silence",
     "speaker confirmation becomes stale whenever the audio, timing, caption, camera, or speaker assignment changes",
     "neutral talking has mouth motion only; vertical bounce occurs only at an explicit bounceAt emphasis event",
     "bounceAt contains no more than two strictly increasing offsets inside its beat"

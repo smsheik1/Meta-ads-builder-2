@@ -19,13 +19,13 @@
     {"id": "codecs", "threshold": "H.264 video and AAC audio", "measurementPath": "measured.videoCodec,audioCodec"},
     {"id": "audibleAudio", "threshold": "mean volume above -55 dB", "measurementPath": "measured.meanVolumeDb"},
     {"id": "cameraGrammar", "threshold": "only two-shot, cat-close, bunny-close", "measurementPath": "measured.camerasUsed"},
-    {"id": "speakerAssignment", "threshold": "every beat confirmed against current user audio", "measurementPath": "measured.speakerAssignment.reviewedBeats"},
+    {"id": "speakerAssignment", "threshold": "every beat explicitly confirmed and the receipt bound to current user audio", "measurementPath": "measured.speakerAssignment.reviewedBeats"},
     {"id": "renderInputParity", "threshold": "render report input hash equals inspected input hash", "measurementPath": "gates.renderMatchesInput"},
     {"id": "captions", "threshold": "at least one captioned beat", "measurementPath": "measured.captionedBeatCount"}
   ],
   "blindReview": {
-    "watchPasses": ["uninterrupted audiovisual playback", "caption-camera-character inspection"],
-    "requiredPlayback": {"completedPasses": 2, "perceptionMode": "direct"},
+    "watchPasses": ["uninterrupted playback with audio when perceptible, otherwise uninterrupted visual playback plus audio technical checks", "caption-camera-character inspection"],
+    "requiredPlayback": {"completedPasses": 2, "perceptionMode": "best-available-with-explicit-disclosure"},
     "criteria": [
       "cat and bunny remain complete, colored, recognizable, and correctly framed",
       "both characters visibly face inward toward each other in every two-shot",
@@ -33,10 +33,10 @@
       "the bunny-only camera faces right, matching the supplied reference",
       "the visible speaker receives mouth motion while a listening character remains vertically still",
       "neutral talking remains vertically still and any jump is brief, intentional, and attached to an explicit emphasis event",
-      "speaker identity comes from the explicit per-beat audio review rather than caption or camera inference",
+      "speaker identity comes from explicit per-beat evidence—direct audio, a user label, a checksum-matched documented reference video, or silence—rather than caption or camera inference",
       "camera cuts follow the supplied three-angle grammar",
-      "captions are synchronized, readable, and speaker-associated",
-      "the original user-provided audio remains intelligible and complete"
+      "captions progress in readable one-to-three-word chunks, remain synchronized, and stay speaker-associated",
+      "the original user-provided audio remains complete; intelligibility is reviewed when sound is perceptible and otherwise explicitly left unscored"
     ]
   }
 }

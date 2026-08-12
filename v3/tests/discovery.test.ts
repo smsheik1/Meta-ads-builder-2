@@ -385,7 +385,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 14, "Current Discovery proof should organize into fourteen focused shelves.");
+assert.equal(shelves.length, 15, "Current Discovery proof should organize into fifteen focused shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -440,6 +440,11 @@ assert.deepEqual(
   shelves.find((shelf) => shelf.id === "character-dance-offs")?.entries.map((entry) => entry.id),
   ["bikini-bottom-dance-off-ghetto-love-story", "bikini-bottom-dance-off-wiggle"],
   "Bikini Bottom Dance Off should live outside the explainer shelf.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "character-conversations")?.entries.map((entry) => entry.id),
+  ["animal-conversations-listen-dont-judge"],
+  "Animal Conversations should have one dedicated character-conversation shelf.",
 );
 assert.ok(
   shelves

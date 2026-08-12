@@ -7,7 +7,7 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 5;
+const RENDERER_VERSION = 7;
 const BOUNCE_SECONDS = 0.36;
 
 export const LAYOUTS = {
@@ -42,10 +42,44 @@ function wrapCaption(text, maximum = 27) {
   return lines.slice(0, 5);
 }
 
-function captionSvg(beat, episodeLabel) {
+export function captionChunks(text) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const phrases = [];
+  let phrase = [];
+  for (const word of words) {
+    phrase.push(word);
+    if (/[.!?]+["']?$/.test(word)) {
+      phrases.push(phrase);
+      phrase = [];
+    }
+  }
+  if (phrase.length) phrases.push(phrase);
+
+  const chunks = [];
+  for (const wordsInPhrase of phrases) {
+    for (let index = 0; index < wordsInPhrase.length;) {
+      const remaining = wordsInPhrase.length - index;
+      const size = remaining === 4 ? 2 : Math.min(3, remaining);
+      chunks.push(wordsInPhrase.slice(index, index + size).join(" "));
+      index += size;
+    }
+  }
+  return chunks;
+}
+
+export function captionTextAtFrame(beat, frameIndex) {
+  const chunks = captionChunks(beat.caption || "");
+  if (!chunks.length) return "";
+  const durationFrames = Math.max(1, Math.round((beat.end - beat.start) * FPS));
+  const localFrame = Math.max(0, frameIndex - Math.round(beat.start * FPS));
+  const chunkIndex = Math.min(chunks.length - 1, Math.floor(localFrame * chunks.length / durationFrames));
+  return chunks[chunkIndex];
+}
+
+function captionSvg(beat, captionText, episodeLabel) {
   const colors = { cat: "#62C8FF", bunny: "#FF8BCC", both: "#FFE477", none: "#FFFFFF" };
-  const lines = wrapCaption(beat.caption || "");
-  const fontSize = lines.length >= 4 ? 58 : 66;
+  const lines = wrapCaption(captionText, 24);
+  const fontSize = lines.length > 1 ? 66 : 76;
   const lineHeight = fontSize + 12;
   const boxHeight = lines.length ? lines.length * lineHeight + 44 : 0;
   const tspans = lines.map((line, index) => `<tspan x="540" dy="${index ? lineHeight : 0}">${escapeXml(line)}</tspan>`).join("");
@@ -74,7 +108,13 @@ export function visualState(beat, frameIndex) {
     return -Math.round(Math.sin(progress * Math.PI) * height);
   }));
   const bob = (character) => isSpeaking(character) ? (bounce || 0) : 0;
-  return { catPose: pose("cat"), bunnyPose: pose("bunny"), catBob: bob("cat"), bunnyBob: bob("bunny") };
+  return {
+    catPose: pose("cat"),
+    bunnyPose: pose("bunny"),
+    catBob: bob("cat"),
+    bunnyBob: bob("bunny"),
+    captionText: captionTextAtFrame(beat, frameIndex),
+  };
 }
 
 async function prepareAssets({ root, cacheDirectory, background, assets }) {
@@ -119,7 +159,7 @@ async function renderState({ prepared, cacheDirectory, beat, beatIndex, state, e
       top: position.bottom - metadata.height + state[`${characterId}Bob`],
     });
   }
-  overlays.push({ input: captionSvg(beat, episodeLabel), left: 0, top: 0 });
+  overlays.push({ input: captionSvg(beat, state.captionText, episodeLabel), left: 0, top: 0 });
   await sharp(prepared.background).composite(overlays).png({ compressionLevel: 7 }).toFile(output);
   return output;
 }

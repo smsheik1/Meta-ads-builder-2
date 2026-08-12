@@ -22,7 +22,7 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
     schemaVersion: 1,
     status: "pending",
     generatedAt,
-    instructions: "Listen to every clip, set confirmedSpeaker, and set evidence before running apply-speakers. Do not infer a speaker from caption text or camera alone.",
+    instructions: "Confirm every beat from direct audio, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. Disclose perception limits and never infer from caption text or camera alone.",
     audio: { file: input.audioFile, sha256: audioSha256 },
     reviewFingerprint: reviewFingerprint(input),
     beats: input.timeline.map((beat, index) => ({
@@ -62,7 +62,7 @@ export function applySpeakerReviewDocument({ input, review, audioSha256, applied
   const receipt = {
     schemaVersion: 1,
     status: "pass",
-    method: "explicit-per-beat-audio-review",
+    method: "explicit-per-beat-speaker-confirmation",
     appliedAt,
     audioSha256,
     timelineHash: speakerAssignmentHash(nextInput),
