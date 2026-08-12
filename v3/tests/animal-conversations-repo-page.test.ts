@@ -42,10 +42,17 @@ assert.ok(
   "The public poster must be committed.",
 );
 
-const shelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries()).find(
+const discoveryShelves = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries());
+const shelf = discoveryShelves.find(
   (candidate) => candidate.id === "character-conversations",
 );
 assert.equal(shelf?.entries[0]?.format.slug, "animal-conversations");
+assert.equal(
+  discoveryShelves[0],
+  shelf,
+  "Animal Conversations should be the first visible Discover shelf, not buried below older formats.",
+);
+assert.equal(shelf?.title, "Animal Conversations");
 
 const profile = getDiscoveryFormatProfile("animal-conversations");
 assert.ok(
