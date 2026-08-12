@@ -6,7 +6,7 @@
   "background": "living-room",
   "timeline": [
     {"start": 0, "end": 1.5, "speaker": "both", "camera": "two-shot", "caption": "We listen, and we don't judge!"},
-    {"start": 1.5, "end": 3, "speaker": "cat", "camera": "cat-close", "caption": "I have something to admit."},
+    {"start": 1.5, "end": 3, "speaker": "cat", "camera": "cat-close", "caption": "I have something to admit.", "bounceAt": [0.15]},
     {"start": 3, "end": 4.5, "speaker": "bunny", "camera": "bunny-close", "caption": "I'm listening."}
   ]
 }

@@ -4,6 +4,7 @@ import { speakerAssignmentHash } from "./speaker-review.mjs";
 
 export const CAMERAS = new Set(["two-shot", "cat-close", "bunny-close"]);
 export const SPEAKERS = new Set(["cat", "bunny", "both", "none"]);
+const BEAT_FIELDS = new Set(["start", "end", "speaker", "camera", "caption", "bounceAt"]);
 
 export function validateTimeline(timeline, durationSeconds) {
   const errors = [];
@@ -11,6 +12,9 @@ export function validateTimeline(timeline, durationSeconds) {
   let cursor = 0;
   timeline.forEach((beat, index) => {
     const label = `timeline[${index}]`;
+    Object.keys(beat).forEach((field) => {
+      if (!BEAT_FIELDS.has(field)) errors.push(`${label} has unknown field: ${field}.`);
+    });
     if (!Number.isFinite(beat.start) || !Number.isFinite(beat.end) || beat.end <= beat.start) {
       errors.push(`${label} must have numeric start/end values with end > start.`);
       return;
@@ -20,6 +24,21 @@ export function validateTimeline(timeline, durationSeconds) {
     if (!CAMERAS.has(beat.camera)) errors.push(`${label}.camera must be two-shot, cat-close, or bunny-close.`);
     if (typeof beat.caption !== "string" || beat.caption.length > 180) errors.push(`${label}.caption must be a string of at most 180 characters.`);
     if (beat.speaker !== "none" && !beat.caption.trim()) errors.push(`${label}.caption is required for spoken beats.`);
+    if (beat.bounceAt !== undefined) {
+      if (!Array.isArray(beat.bounceAt) || beat.bounceAt.length > 2) {
+        errors.push(`${label}.bounceAt must contain at most two cue offsets.`);
+      } else {
+        if (beat.speaker === "none" && beat.bounceAt.length) errors.push(`${label}.bounceAt requires an active speaker.`);
+        beat.bounceAt.forEach((cue, cueIndex) => {
+          if (!Number.isFinite(cue) || cue < 0 || cue >= beat.end - beat.start) {
+            errors.push(`${label}.bounceAt[${cueIndex}] must fall inside the beat.`);
+          }
+          if (cueIndex > 0 && cue <= beat.bounceAt[cueIndex - 1]) {
+            errors.push(`${label}.bounceAt cues must be strictly increasing.`);
+          }
+        });
+      }
+    }
     cursor = beat.end;
   });
   if (Number.isFinite(durationSeconds) && Math.abs(cursor - durationSeconds) > 0.08) {

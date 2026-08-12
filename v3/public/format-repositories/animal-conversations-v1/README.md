@@ -24,6 +24,8 @@ node runner.mjs finalize --run=my-episode
 
 The timing JSON follows [input-contract.json](input-contract.json). Copy `fixtures/sample/input.json` as a starting point. Its timeline must begin at zero, stay contiguous, and finish at the measured audio duration. The only camera values are `two-shot`, `cat-close`, and `bunny-close`; provisional speakers are `cat`, `bunny`, `both`, or `none`.
 
+Neutral talking uses mouth movement only. Vertical jumping is reserved for explicit emphasis events: add an optional `bounceAt` array to a beat with one or two offsets in seconds from that beat's start. Use one cue for a punchline, interruption, or strong reaction; use two only for an intentionally frantic line. Omitting `bounceAt` guarantees that the speaker remains vertically still.
+
 `init` extracts every beat from the actual user audio into `agent-runs/<run>/speaker-review/` and creates `speaker-review.json`. Listen to each clip, set `confirmedSpeaker` plus `evidence` (`direct-audio-review`, `user-provided-label`, `reference-video`, or `silence`), then run `apply-speakers`. That command makes the confirmed values authoritative and writes a receipt bound to the audio checksum and full speaker timeline. `validate` refuses to proceed if any beat is unconfirmed or if the audio/timeline changed afterward. Run `review-speakers` to regenerate the clips and start the confirmation again.
 
 ## Audio policy

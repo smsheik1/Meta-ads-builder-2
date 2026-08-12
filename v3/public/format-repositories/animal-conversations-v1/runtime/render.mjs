@@ -7,7 +7,8 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 4;
+const RENDERER_VERSION = 5;
+const BOUNCE_SECONDS = 0.36;
 
 export const LAYOUTS = {
   "two-shot": {
@@ -66,11 +67,13 @@ export function visualState(beat, frameIndex) {
     if (blink) return "blink";
     return "idle";
   };
-  const bob = (character) => {
-    if (isSpeaking(character)) return Math.floor(localFrame / 6) % 2 ? -8 : 0;
-    if (localFrame >= 4 && localFrame < 8) return -12;
-    return 0;
-  };
+  const bounce = Math.min(0, ...(beat.bounceAt || []).map((cue) => {
+    const progress = (localFrame / FPS - cue) / BOUNCE_SECONDS;
+    if (progress < 0 || progress > 1) return 0;
+    const height = beat.camera === "two-shot" ? 12 : 18;
+    return -Math.round(Math.sin(progress * Math.PI) * height);
+  }));
+  const bob = (character) => isSpeaking(character) ? (bounce || 0) : 0;
   return { catPose: pose("cat"), bunnyPose: pose("bunny"), catBob: bob("cat"), bunnyBob: bob("bunny") };
 }
 

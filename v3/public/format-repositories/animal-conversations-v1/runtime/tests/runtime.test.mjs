@@ -27,6 +27,31 @@ test("only the active speaker receives the talking pose", () => {
   assert.notEqual(open.bunnyPose, "mouth-open");
 });
 
+test("normal speech stays vertically still and bounce cues animate only the speaker", () => {
+  const normal = { start: 0, end: 2, speaker: "cat", camera: "cat-close", caption: "Hello" };
+  for (const frame of [0, 6, 12, 18, 24, 30]) {
+    const state = visualState(normal, frame);
+    assert.equal(state.catBob, 0);
+    assert.equal(state.bunnyBob, 0);
+  }
+
+  const emphasized = { ...normal, bounceAt: [0.25] };
+  assert.equal(visualState(emphasized, 6).catBob, 0);
+  assert.ok(visualState(emphasized, 10).catBob < 0);
+  assert.equal(visualState(emphasized, 10).bunnyBob, 0);
+  assert.equal(visualState(emphasized, 16).catBob, 0);
+});
+
+test("bounce cues are optional, ordered, inside the beat, and capped at two", () => {
+  const beat = { start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "Hello" };
+  assert.deepEqual(validateTimeline([{ ...beat, bounceAt: [0.1, 0.4] }], 1), []);
+  assert.match(validateTimeline([{ ...beat, bounceAt: [0.4, 0.1] }], 1).join(" "), /strictly increasing/);
+  assert.match(validateTimeline([{ ...beat, bounceAt: [0.1, 0.4, 0.7] }], 1).join(" "), /at most two/);
+  assert.match(validateTimeline([{ ...beat, bounceAt: [1] }], 1).join(" "), /inside the beat/);
+  assert.match(validateTimeline([{ ...beat, jump: true }], 1).join(" "), /unknown field/);
+  assert.match(validateTimeline([{ ...beat, speaker: "none", caption: "", bounceAt: [0.1] }], 1).join(" "), /active speaker/);
+});
+
 test("speaker review requires explicit evidence and binds the confirmed character to the timeline", () => {
   const input = {
     audioFile: "user-audio.wav",

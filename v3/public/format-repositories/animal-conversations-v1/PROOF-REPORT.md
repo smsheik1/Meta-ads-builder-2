@@ -27,16 +27,16 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Input audio SHA-256: `226ffe78af88c77175c0358d4ab85360eb3eac43b185e29b1a92ff2e58517657`
 - Measured input duration: 31.137007 seconds
 - Timeline: 15 contiguous beats; all three approved cameras and all four speaker modes. Fourteen spoken beats were explicitly confirmed from the supplied reference video's speaker-colored captions and mouth motion; the silent reaction was confirmed separately.
-- Output SHA-256: `d13750a91a2e37e1c8b54d15cf5f4342a6c9d58ef5b6aa85d918e775675bb5bb`
+- Output SHA-256: `a5392d23aa0408fbd01ad722f12d5a6c379fcbdf45a00e110a28b82b9717fb71`
 - Automated result: pass at 1080x1920, 24 fps, H.264/AAC, mean audio -18.5 dB, 14 captioned beats
-- Direct visual review: the regenerated contact sheet was inspected at original resolution, the full 31-second render was scanned at one-second intervals, and dense transition sheets were inspected across 7.4-11.1 and 21.8-24.6 seconds. The disputed `No judging`, `We listen`, and `We're just listening` beats now use the cat caption color and cat mouth while the bunny remains a listener. The silent 27.9-28.8 reaction now uses the reference-matched cat close-up. Staging and bunny-only orientation remain correct.
+- Direct visual review: the regenerated contact sheet was inspected at original resolution, the full 31-second render was scanned at one-second intervals, and dense transition and motion sheets were inspected across close-up, two-shot, cued, and neutral-talking intervals. The disputed `No judging`, `We listen`, and `We're just listening` beats use the cat caption color and cat mouth while the bunny remains a listener. The silent 27.9-28.8 reaction uses the reference-matched cat close-up. Staging, bunny-only orientation, neutral vertical stability, and brief cued emphasis motion remain correct.
 - Audio evidence: codec, duration, stream presence, and mean level passed automated inspection. No claim of directly hearing or judging intelligibility is made from player controls or metadata.
 
 ## Variation proof
 
 - Run: `agent-runs/sample-backyard` (ignored local evidence)
 - Variation: identical user audio and timing with the packaged `backyard` background
-- Output SHA-256: `25cef877fbc8d7014828b7b7df3356ff948a62616695fb93e78e80b81c63b86e`
+- Output SHA-256: `b8f7b896e503e0f956a590e1f31c6e2df7b1c6ff31e2d7500c4fb73afc7d7609`
 - Result: every automated gate passed, including 15-of-15 confirmed speaker beats; direct contact-sheet inspection confirmed the corrected cat assignments and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
 
 ## Speaker-assignment failure and fix
@@ -53,7 +53,15 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Root cause: the two-shot scale and positions were not calibrated against the supplied video, the bunny-only layout had no orientation override, and the regression test asserted only a two-shot flip flag rather than rendered spatial bounds.
 - Smallest fix: reduce and reposition only the two-shot layouts, keep their inward-facing directions, and mirror the bunny in `bunny-close`. Cat layouts are unchanged.
 - Guardrail: the runtime test calculates prepared widths from the packaged character pixels, requires at least 120 pixels between two-shot bounds, requires the cat to remain inside the canvas, and asserts the layout-specific bunny orientation. Composition and quality contracts require separation and the reference-matched bunny-only direction.
-- Evidence: smoke, living-room, and backyard renders use renderer version 4. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
+- Evidence: the staging correction was introduced in renderer version 4 and remains locked in the current renderer version 5 proofs. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
+
+## Key-segment motion correction
+
+- Observed failure: speaking characters jumped every six frames throughout every line, and listeners automatically jumped at the start of each beat. A useful emphasis move had become constant background motion.
+- Root cause: vertical movement was derived from the generic speaking/listening state rather than from an authored semantic event.
+- Smallest robust fix: renderer version 5 removes both automatic paths. Neutral talking changes the mouth pose only. A beat may opt into one or two `bounceAt` offsets, measured from that beat's start; each cue creates one brief 0.36-second half-sine bounce on the active speaker only. The two-shot amplitude is 12 pixels and the close-up amplitude is 18 pixels.
+- Blind-agent guardrail: `SKILL.md`, the README, and both input/composition contracts state the same rule: neutral talking uses mouth movement only; jumping must be explicitly attached to an emphasis event. The validator rejects unknown beat fields, more than two cues, unsorted/out-of-beat cues, and cues without an active speaker.
+- Regression proof: the runtime suite asserts zero vertical movement across multiple uncued speaking frames, movement and reset around an explicit cue, and no listener movement. The supplied conversation uses sparse cues only on selected punchlines and strong reactions. Dense motion sheets confirmed the cued movement in cat-close, two-shot, and bunny-close views and a completely fixed body baseline through an uncued talking interval; both background contact sheets were inspected at original resolution.
 
 ## Audio-first decision
 
@@ -61,4 +69,4 @@ The reference MP4 container reports 31.251202 seconds, while its extracted AAC s
 
 ## Packaged handoff
 
-`npm run build:kit` produced a version 0.2.1 ZIP without `node_modules`, generated runs, Cargo targets, local audio, or speaker-review clips. A fresh extraction under `/private/tmp` completed `npm install`, all thirteen Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The packaged smoke generated and applied a current speaker-assignment receipt before rendering; original-resolution contact-sheet inspection confirmed all three camera/character modes and the repaired bunny head. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
+`npm run build:kit` produced a version 0.3.0 ZIP without `node_modules`, generated runs, Cargo targets, local audio, or speaker-review clips. A fresh extraction under `/private/tmp` completed `npm install`, all fifteen Node tests, the Rust decoder test, `npm run check`, and the full free smoke command successfully. The packaged smoke generated and applied a current speaker-assignment receipt before rendering; original-resolution contact-sheet inspection confirmed all three camera/character modes, the repaired bunny head, and the cue-capable renderer. The final ponytail simplicity audit found no speculative abstraction or dependency to remove.
