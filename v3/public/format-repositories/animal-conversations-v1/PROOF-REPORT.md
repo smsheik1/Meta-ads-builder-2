@@ -27,7 +27,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Input audio SHA-256: `226ffe78af88c77175c0358d4ab85360eb3eac43b185e29b1a92ff2e58517657`
 - Measured input duration: 31.137007 seconds
 - Timeline: 15 contiguous beats; all three approved cameras and all four speaker modes. Fourteen spoken beats were explicitly confirmed from the supplied reference video's speaker-colored captions and mouth motion; the silent reaction was confirmed separately.
-- Output SHA-256: `3bb17937cf7ef8b83252de072fd9c5df39cf801a5d63f854ba7e15653a49466e`
+- Output SHA-256: `10c65799bff76421b2714b8afea84686cec44002ad039638e11b09aee04f7d24`
 - Automated result: pass at 1080x1920, 24 fps, H.264/AAC, mean audio -18.5 dB, 14 captioned beats
 - Direct visual review: the regenerated contact sheet was inspected at original resolution, the full 31-second render was scanned at one-second intervals, and dense transition and motion sheets were inspected across close-up, two-shot, cued, and neutral-talking intervals. The disputed `No judging`, `We listen`, and `We're just listening` beats use the cat caption color and cat mouth while the bunny remains a listener. The silent 27.9-28.8 reaction uses the reference-matched cat close-up. Staging, bunny-only orientation, neutral vertical stability, and brief cued emphasis motion remain correct.
 - Audio evidence: codec, duration, stream presence, and mean level passed automated inspection. No claim of directly hearing or judging intelligibility is made from player controls or metadata.
@@ -36,7 +36,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 
 - Run: `agent-runs/sample-backyard` (ignored local evidence)
 - Variation: identical user audio and timing with the packaged `backyard` background
-- Output SHA-256: `047de440c648d4572d7118cdaec0eb4784938a6fa12073e18a91750218fe46e8`
+- Output SHA-256: `0b5a96b9aafa5eb3eff1af0dee8dac4b3121ba9e429d0452486e7aaef61448c5`
 - Result: every automated gate passed, including 15-of-15 confirmed speaker beats; direct contact-sheet inspection confirmed the corrected cat assignments and that the replaceable background flows through the same renderer without changing character, caption, or camera behavior
 
 ## Speaker-assignment failure and fix
@@ -53,7 +53,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Root cause: the two-shot scale and positions were not calibrated against the supplied video, the bunny-only layout had no orientation override, and the regression test asserted only a two-shot flip flag rather than rendered spatial bounds.
 - Smallest fix: reduce and reposition only the two-shot layouts, keep their inward-facing directions, and mirror the bunny in `bunny-close`. Cat layouts are unchanged.
 - Guardrail: the runtime test calculates prepared widths from the packaged character pixels, requires at least 120 pixels between two-shot bounds, requires the cat to remain inside the canvas, and asserts the layout-specific bunny orientation. Composition and quality contracts require separation and the reference-matched bunny-only direction.
-- Evidence: the staging correction was introduced in renderer version 4 and remains locked in the current renderer version 13 proofs. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
+- Evidence: the staging correction was introduced in renderer version 4 and remains locked in the current renderer version 14 proofs. All automated gates pass. Original-resolution contact sheets show all three angles, while the one-second full visual scan and exact living-room frames confirm the correction throughout the 31-second output.
 
 ## Key-segment motion correction
 
@@ -69,15 +69,15 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Root cause: the caption painter consumed `timeline[].caption` directly, so the data model's complete spoken line and the on-screen presentation were accidentally treated as the same unit.
 - Smallest robust fix: renderer version 7 keeps one complete line per audio-aligned beat, splits that line at sentence boundaries, then emits punctuation-aware one-to-three-word cards across the beat duration. Four-word phrases balance as two plus two instead of leaving a single-word tail. Operators do not pre-split captions or create caption-only beats.
 - Guardrail: unit coverage asserts that every generated card contains one to three words, repeated punctuated phrases remain distinct, a four-word line balances into two cards, and the active card advances with the frame. The active caption is included in cached visual state, so a card change always produces a new frame.
-- Evidence: both 31.137-second proofs were re-rendered through version 13. Original-resolution contact sheets show short chunks such as `we don't judge!`, `heart to tell`, `No judging.`, `I hoped I`, and `I wound up` while retaining the verified speaker, camera, staging, color, and explicit-emphasis behavior.
+- Evidence: both 31.137-second proofs were re-rendered through version 14. Original-resolution contact sheets show short chunks such as `we don't judge!`, `heart to tell`, `No judging.`, `I hoped I`, and `I wound up` while retaining the verified speaker, camera, staging, color, and explicit-emphasis behavior.
 
 ## Bottom-third caption presentation correction
 
 - Requested correction: move subtitles from the top safe area into the bottom third and remove their grey background.
 - Observed follow-up failure: placing the text exactly at the 1280-pixel bottom-third boundary crossed the characters' faces in two-shot and close-up views. An unchanged output hash on the first retry also exposed stale renderer-cache reuse before delivery.
-- Smallest fix: renderer version 13 starts a dedicated caption lane at 1460 pixels on the 1080x1920 canvas—below every face and above the episode label—and removes only the subtitle panel. The separate episode-label panel remains unchanged. Advancing the renderer revision invalidates all earlier cached frames.
-- Guardrail: unit coverage locks the 1460-pixel lane, rejects the former `x=68` subtitle rectangle and 0.70-opacity fill, and confirms the episode-label rectangle is still present.
-- Evidence: the corrected no-hop living-room output SHA-256 is `480eb21b62b28557d93dbae30336eddd536501bfbdb60a14a4192d8e0e4ec69b`. Both official 31.137-second proofs pass renderer version 13, and original-resolution living-room and backyard contact sheets confirm the outlined captions below the faces with no caption panel across all three cameras.
+- Smallest fix: renderer version 14 starts a dedicated caption lane at 1400 pixels on the 1080x1920 canvas—60 pixels above the prior face-safe lane, still below every face and above the episode label—and removes only the subtitle panel. The separate episode-label panel remains unchanged. Advancing the renderer revision invalidates all earlier cached frames.
+- Guardrail: unit coverage locks the 1400-pixel lane, rejects the former `x=68` subtitle rectangle and 0.70-opacity fill, and confirms the episode-label rectangle is still present.
+- Evidence: the corrected no-hop living-room output SHA-256 is `4d31c0f0c3bcc164d3a6678e0c94be8bc809485e02a20b2c305eea665e4e2fb3`. Both official 31.137-second proofs pass renderer version 14, and original-resolution living-room and backyard contact sheets confirm the outlined captions below the faces with no caption panel across all three cameras.
 
 ## Conversational blink correction
 
@@ -92,7 +92,7 @@ The Harmony-free converter generated complete colored cat and bunny idle poses p
 - Observed failure: the verified speaker's two-pose mouth alternated every three frames for the entire dialogue beat, including audible gaps between phrases. That was correctly speaker-timed but was not audio-responsive lip sync.
 - Smallest robust fix: renderer version 11 uses the existing FFmpeg installation to decode the user audio to 24 kHz mono PCM and measures one RMS level per 24 fps video frame. A clip-relative threshold sits 18 dB below its 90th-percentile strong level, bounded from -55 to -28 dB. Two-frame speech padding protects brief quiet syllables, and any internal closure shorter than three frames is suppressed. The result still uses only `idle` and `mouth-open`; there is no new dependency, model, viseme set, phoneme analysis, transcript alignment, authoring field, or manual threshold.
 - Guardrail: unit coverage proves the same speech-activity frames after a 20 dB volume shift, bridges brief quiet dips, closes sustained pauses, rejects sub-three-frame twitches, and requires silence to override an otherwise open speaking pose. Inspection now fails when audio-derived activity is absent or an interior mouth closure is shorter than three frames. The render cache includes the audio checksum and each report records the derived threshold and exact inactive speaking-frame ranges.
-- Evidence: the exact version 9 no-hop baseline SHA-256 was `621584da8a7a870f0f50940139471ce9f7893bb32deb117f6fd1243692005355`; the version 11 pause-aware no-hop output is `953daf0d98cc056ebbff05b7bdda4c6cb10c90673fe4c09808a823355154e0ab`. Original-resolution A/B frames at 9.625, 13.500, 27.833, and 29.250 seconds show the baseline mouth open during low-energy gaps and the corrected mouth closed. The accepted sample threshold is -32.8 dB and produces five sustained spoken-beat pause ranges with no interior closure shorter than four frames. Attenuating the real supplied audio by 20 dB moved the threshold to -52.8 dB but changed zero of 748 activity decisions. Both current background proofs pass renderer version 13 with the same audio-derived schedule.
+- Evidence: the exact version 9 no-hop baseline SHA-256 was `621584da8a7a870f0f50940139471ce9f7893bb32deb117f6fd1243692005355`; the version 11 pause-aware no-hop output is `953daf0d98cc056ebbff05b7bdda4c6cb10c90673fe4c09808a823355154e0ab`. Original-resolution A/B frames at 9.625, 13.500, 27.833, and 29.250 seconds show the baseline mouth open during low-energy gaps and the corrected mouth closed. The accepted sample threshold is -32.8 dB and produces five sustained spoken-beat pause ranges with no interior closure shorter than four frames. Attenuating the real supplied audio by 20 dB moved the threshold to -52.8 dB but changed zero of 748 activity decisions. Both current background proofs pass renderer version 14 with the same audio-derived schedule.
 
 ## Audio-first decision
 

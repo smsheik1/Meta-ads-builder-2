@@ -96,8 +96,8 @@ test("captions progress in readable one-to-three-word chunks instead of full sen
 
 test("captions stay in the lower bottom-third lane without a background panel", () => {
   const svg = captionSvg({ speaker: "cat" }, "I have something", "ANIMAL CONVERSATIONS").toString();
-  assert.equal(CAPTION_TOP_Y, 1460);
-  assert.match(svg, /<text x="540" y="1536"/);
+  assert.equal(CAPTION_TOP_Y, 1400);
+  assert.match(svg, /<text x="540" y="1476"/);
   assert.doesNotMatch(svg, /<rect x="68"/);
   assert.doesNotMatch(svg, /fill-opacity="0\.70"/);
   assert.match(svg, /<rect x="173" y="1764"/, "the separate episode label should remain intact");

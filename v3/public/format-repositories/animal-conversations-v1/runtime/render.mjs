@@ -7,7 +7,7 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 13;
+const RENDERER_VERSION = 14;
 const BOUNCE_SECONDS = 0.36;
 const SPEECH_ANALYSIS_SAMPLE_RATE = 24000;
 const SPEECH_LEVEL_PERCENTILE = 0.9;
@@ -20,7 +20,7 @@ const BLINK_BOUNDARY_SNAP_FRAMES = 12;
 const BLINK_MINIMUM_GAP_FRAMES = 72;
 const BLINK_COLLISION_FRAMES = 5;
 const BLINK_STAGGER_FRAMES = 8;
-export const CAPTION_TOP_Y = 1460;
+export const CAPTION_TOP_Y = 1400;
 const BLINK_TRACKS = {
   cat: { firstFrame: 53, gapFrames: [84, 109, 91, 126, 97] },
   bunny: { firstFrame: 79, gapFrames: [103, 88, 117, 96, 132] },
