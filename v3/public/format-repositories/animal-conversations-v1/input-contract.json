@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Animal Conversations episode input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "title", "episodeLabel", "audioFile", "background", "timeline"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 80},
+    "episodeLabel": {"type": "string", "minLength": 1, "maxLength": 64},
+    "audioFile": {"type": "string", "description": "Run-relative copy of the user-supplied audio file."},
+    "background": {"enum": ["living-room", "backyard", "pool", "street-view", "store-atm"]},
+    "timeline": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start", "end", "speaker", "camera", "caption"],
+        "properties": {
+          "start": {"type": "number", "minimum": 0},
+          "end": {"type": "number", "exclusiveMinimum": 0},
+          "speaker": {"enum": ["cat", "bunny", "both", "none"], "description": "Provisional value until confirmed against the user-audio beat by the speaker-review workflow."},
+          "camera": {"enum": ["two-shot", "cat-close", "bunny-close"]},
+          "caption": {"type": "string", "maxLength": 180, "description": "Complete spoken line for this beat. The renderer automatically presents it as progressive one-to-three-word caption cards."},
+          "bounceAt": {
+            "type": "array",
+            "description": "Optional explicit emphasis events, expressed as strictly increasing second offsets from this beat's start. Omit for neutral talking, which uses mouth motion only.",
+            "maxItems": 2,
+            "items": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    }
+  },
+  "timingRules": [
+    "beats are contiguous from zero",
+    "the final beat ends within 0.08 seconds of measured user-audio duration",
+    "spoken beats have non-empty captions",
+    "each beat stores the complete spoken line; the renderer, not the operator, splits it into progressive one-to-three-word caption cards",
+    "every beat speaker is explicitly confirmed before validation through direct audio, a user label, a checksum-matched documented reference video, or silence",
+    "speaker confirmation becomes stale whenever the audio, timing, caption, camera, or speaker assignment changes",
+    "neutral talking has mouth motion only; vertical bounce occurs only at an explicit bounceAt emphasis event",
+    "bounceAt contains no more than two strictly increasing offsets inside its beat"
+  ]
+}

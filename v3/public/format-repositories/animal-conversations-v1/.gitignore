@@ -1,0 +1,6 @@
+agent-runs/*
+!agent-runs/.gitkeep
+node_modules/
+downloads/*
+*.zip
+!downloads/wiggly-animal-conversations-format-kit.zip

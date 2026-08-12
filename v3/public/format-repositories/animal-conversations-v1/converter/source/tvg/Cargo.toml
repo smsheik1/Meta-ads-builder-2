@@ -1,0 +1,20 @@
+[package]
+name = "tvg"
+version = "0.1.0"
+license = "MIT"
+edition = "2021"
+
+[features]
+serde = ["dep:serde"]
+
+[dependencies]
+byteorder = "1.4"
+num_enum = "0.7"
+thiserror.workspace = true
+libflate = "2.0"
+log.workspace = true
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde = { workspace = true }
+serde_json = "1"

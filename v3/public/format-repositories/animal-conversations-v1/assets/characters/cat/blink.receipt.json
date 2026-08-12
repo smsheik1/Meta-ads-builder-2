@@ -1,0 +1,116 @@
+{
+  "status": "pass",
+  "converter": "harmony-tvg-layered-pose-v1",
+  "harmonyRequired": false,
+  "manifest": "cat-frame1",
+  "manifestSha256": "6f984afd0bc7704dde1f8307fb542d1e5adc07004903342a532c83950a9daace",
+  "output": "blink.png",
+  "outputSha256": "94fdac22e1facaab07bfae2e161505d276815dfaba53e433e0886635e206e644",
+  "bounds": {
+    "minX": -1486.5469,
+    "minY": -1635.7344,
+    "maxX": 1869.0469,
+    "maxY": 1885.9688
+  },
+  "layerCount": 12,
+  "sources": [
+    {
+      "id": "left-leg",
+      "file": "elements/Left_Leg/Left_Leg-1.tvg",
+      "sha256": "ee6831d91bcd0aaf127a21959c6bf8a7d74a6d82c4096a8f95dfaf2c86fa1ae3",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "tail",
+      "file": "elements/Tail/Tail-1.tvg",
+      "sha256": "ccfd721898f1b6e29c44cd8c1e38abed40c8fcde94dc7a40cd1956472285b4fa",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "body",
+      "file": "elements/Body/Body-1.tvg",
+      "sha256": "88441b9f3ca2612c4992adfa1cb89aa0993ccffb905c509eb0770487effaab7b",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "right-back-leg",
+      "file": "elements/Right_Back_Leg/Right_Back_Leg-1.tvg",
+      "sha256": "8d731624f311f58d0268ccbf8e184c3195e8e19918e8d6c663d28649ebb2b61d",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "right-leg",
+      "file": "elements/Right_Leg/Right_Leg-1.tvg",
+      "sha256": "f6295f7ddd8304c419e19a10ce6d9056fcf5c92b41500e02e0bbe1f91818b11e",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "left-ear",
+      "file": "elements/Ear_Left/Ear_Left-1.tvg",
+      "sha256": "6d694f4343163bd5ecfb13c1be0c793655bf68582ac56f2b27d9b02c8e285eac",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "right-ear",
+      "file": "elements/Ear_Right/Ear_Right-1.tvg",
+      "sha256": "75052378c2b046005b74cee56968e597a2a68f9a3475f1b41c408bc5eb3cbdfb",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "head",
+      "file": "elements/Head/Head-1.tvg",
+      "sha256": "bc81d5438d99f3fbfef055df4ca5bd4f422880f22505b2ec901547c73fda9534",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "hair",
+      "file": "elements/Hair/Hair-1.tvg",
+      "sha256": "38a3300ed244dd94ea8bb22dc1714419bdda6c2cd7bdb89c3720c549c278a6e9",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "eyes",
+      "file": "elements/Eyes/Eyes-1.tvg",
+      "sha256": "67f922918069ab0f259ea617d3f258927ba8eebc8315660e0af58415927a86c7",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "mouth",
+      "file": "elements/Mouth/Mouth-1.tvg",
+      "sha256": "a26b9b5434087964b0999007a5c8e10630e66060e96b97795ff801ce339309de",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "nose",
+      "file": "elements/Nose/Nose-1.tvg",
+      "sha256": "f369c406bc790252e1a92599ceaf27bee832b4a93e66aa2ce577d3be9e087a2b",
+      "transform": null,
+      "seedOverrides": null
+    }
+  ],
+  "inspection": {
+    "width": 3456,
+    "height": 3622,
+    "opaquePixels": 6328661,
+    "coverage": 0.5055797294568174,
+    "borderOpaquePixels": 0,
+    "checks": {
+      "dimensions": true,
+      "alphaCoverage": true,
+      "transparentBorder": true,
+      "requiredPaletteColors": true,
+      "requiredInteriorCoverage": true
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "localTools": ["node", "npm", "ffmpeg", "ffprobe", "sharp"],
+  "optionalAssetRebuildTools": ["cargo"],
+  "formatRepoDependencies": [],
+  "providers": [],
+  "environmentVariables": [],
+  "notes": [
+    "The episode audio is always supplied by the user as a local file.",
+    "Speaker identity is confirmed per beat through explicit evidence: preferably direct review of local clips, otherwise a user label, a checksum-matched documented reference video, or silence. Automatic diarization is not claimed or required.",
+    "No speech, music, image, or video provider call occurs at runtime.",
+    "The smoke proof synthesizes a local tone only to exercise audio muxing without requiring episode content.",
+    "Cargo is required only when rebuilding PNG character poses from Toon Boom Harmony projects; normal video rendering uses the packaged PNG poses."
+  ]
+}

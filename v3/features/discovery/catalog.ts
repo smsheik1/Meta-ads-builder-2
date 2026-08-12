@@ -2495,6 +2495,28 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "animal-conversations-listen-dont-judge",
+    status: "published",
+    order: 11.7,
+    brand: "Animal Conversations",
+    title: "We listen and we don't judge",
+    curatorNote: "A supplied conversation becomes a staged cat-and-bunny exchange with verified speakers, three camera angles, progressive captions, and emphasis motion used only when the line earns it.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/animal-conversations-v1/goldens/we-listen-dont-judge.mp4",
+      poster: "/format-repositories/animal-conversations-v1/goldens/we-listen-dont-judge-poster.jpg",
+      durationLabel: "31 sec",
+      aspectRatio: "9:16",
+    },
+    format: {
+      slug: "animal-conversations",
+      name: "Animal Conversations",
+      version: "0.7.0",
+      owner: "Shaz",
+    },
+  },
+  {
     id: "davids-cookies-this-is-fine",
     status: "published",
     order: 12,
@@ -2701,6 +2723,12 @@ const discoveryShelfDefinitions = [
     title: "Character Dance-Offs",
     description: "Music, taunts, and reusable choreography built for replayable vertical video.",
     formats: ["bikini-bottom-dance-off"],
+  },
+  {
+    id: "character-conversations",
+    title: "Character Conversations",
+    description: "User-supplied dialogue staged as expressive, captioned character exchanges.",
+    formats: ["animal-conversations"],
   },
   {
     id: "conversations",

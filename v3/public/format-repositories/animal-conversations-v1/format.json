@@ -1,0 +1,13 @@
+{
+  "id": "animal-conversations",
+  "title": "Animal Conversations",
+  "name": "Animal Conversations",
+  "version": "0.7.0",
+  "description": "Turn user-supplied conversation audio and explicitly confirmed timed dialogue beats into a vertical cat-and-bunny video with speaker-driven mouths, progressive one-to-three-word captions, explicit key-segment emphasis bounces, and three approved camera angles.",
+  "runtime": "runner.mjs",
+  "renderer": "runtime/render.mjs",
+  "inputContract": "input-contract.json",
+  "compositionContract": "composition-contract.json",
+  "outputContract": "output-contract.json",
+  "qualityContract": "quality.json"
+}

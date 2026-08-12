@@ -1,0 +1,146 @@
+{
+  "status": "pass",
+  "converter": "harmony-tvg-layered-pose-v1",
+  "harmonyRequired": false,
+  "manifest": "bunny-frame1",
+  "manifestSha256": "358b85eb451ddf5ffeac2e6d93d6d75184491cdcc4658072ec8419c611d279c4",
+  "output": "bunny-frame1.png",
+  "outputSha256": "3dca0be49b12a0a2adf82dbe0d952ac8263a680da8d5478b34174d79b6321d50",
+  "bounds": {
+    "minX": -1605.9219,
+    "minY": -2004.3125,
+    "maxX": 1107.6875,
+    "maxY": 2446.5156
+  },
+  "layerCount": 12,
+  "sources": [
+    {
+      "id": "left-leg",
+      "file": "elements/Left_Leg/Left_Leg-1.tvg",
+      "sha256": "5b578efcc49b0c603eff2cc9402a5c466d183cab48beb0dcaad712d95f343f8d",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "tail",
+      "file": "elements/Tail/Tail-1.tvg",
+      "sha256": "7ef03097dc63895f2235542908b220e3a8a84c5e2d252f81bccbcd4f93ffad8d",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "body",
+      "file": "elements/Body/Body-1.tvg",
+      "sha256": "85749f6ec17e029d78b07d4ff193aae2ecaa3b09d97c2e9777003cdea73dee81",
+      "transform": null,
+      "seedOverrides": [
+        {
+          "colorId": "0b6d656fc8edfc85",
+          "boundaryIndex": 12,
+          "side": 0
+        },
+        {
+          "colorId": "0b6acb7cbef2d932",
+          "boundaryIndex": 14,
+          "side": 1,
+          "color": [
+            255,
+            241,
+            241,
+            255
+          ]
+        },
+        {
+          "colorId": "0b6d656fc8edc66b",
+          "boundaryIndex": 14,
+          "side": 0
+        }
+      ]
+    },
+    {
+      "id": "right-back-leg",
+      "file": "elements/Right_Back_Leg/Right_Back_Leg-1.tvg",
+      "sha256": "edd92c19362acdcecc5be003bb5c226627b4a7e2c6bda097b8ed9607c31a9baa",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "right-paw",
+      "file": "elements/Right_paw/Right_paw-1.tvg",
+      "sha256": "5a00d89ef6eb38454639785ed8074704da529cbe62acbf64c2a1db3116ab0d20",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "right-leg",
+      "file": "elements/Right_Leg/Right_Leg-1.tvg",
+      "sha256": "9d0024e7dd1c7d8d09acfad504eeb073babc9218833aa7247a8adb7b6a3f1610",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "right-ear",
+      "file": "elements/Ear_Right/Ear_Right-1.tvg",
+      "sha256": "b964ed23b1cd000d6defda46dd8f45b5616f5f757444141852c4a91da1689423",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "left-ear",
+      "file": "elements/Ear_Left.27/Ear_Left-1.tvg",
+      "sha256": "7f0781837589a6f9382956f66de0dc1a1cd12457d6f6b7c0405e64389540eb64",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "head",
+      "file": "elements/Head/Head-1.tvg",
+      "sha256": "cf2cabf23b06b9701bce2b062603d6b456776d68c94ebef0e186dc0485183426",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "eyes",
+      "file": "elements/Eyes/Eyes-2.tvg",
+      "sha256": "56710e67a544ac57914a57b2aed762442583684a6321b85522a19baffd0cd9f0",
+      "transform": {
+        "positionXFields": 0.9529383629602959,
+        "positionYFields": -0.5051035779492535,
+        "scaleX": 0.7694929878026502,
+        "scaleY": 1,
+        "rotationDegrees": -2.9776516297586033,
+        "pivotXFields": -4.052073545619738,
+        "pivotYFields": 2.6666602253949945
+      },
+      "seedOverrides": null
+    },
+    {
+      "id": "mouth",
+      "file": "elements/Mouth/Mouth-1.tvg",
+      "sha256": "8be44635b85fdff9abb0ba27418023cb5430df6a2c2e6aa78ca5fc315de97854",
+      "transform": null,
+      "seedOverrides": null
+    },
+    {
+      "id": "nose",
+      "file": "elements/Nose/Nose-1.tvg",
+      "sha256": "58b5dd623843419477b12082695018ce57fba37ce99c5e157e8d47e06adae09d",
+      "transform": null,
+      "seedOverrides": null
+    }
+  ],
+  "inspection": {
+    "width": 2814,
+    "height": 4551,
+    "opaquePixels": 6265585,
+    "coverage": 0.48924984582065034,
+    "borderOpaquePixels": 0,
+    "checks": {
+      "dimensions": true,
+      "alphaCoverage": true,
+      "transparentBorder": true,
+      "requiredPaletteColors": true,
+      "requiredInteriorCoverage": true
+    }
+  }
+}

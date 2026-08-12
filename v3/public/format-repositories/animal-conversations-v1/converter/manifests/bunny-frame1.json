@@ -1,0 +1,57 @@
+{
+  "id": "bunny-frame1",
+  "character": "bunny",
+  "description": "Active BUN_LOOP_1 frame-one display pose, ordered bottom to top.",
+  "expectedLayerCount": 12,
+  "requiredRgb": [
+    [46, 19, 13],
+    [255, 193, 193],
+    [213, 122, 122],
+    [255, 241, 241],
+    [255, 255, 255]
+  ],
+  "requiredOpaquePoints": [
+    [0.38, 0.75],
+    [0.71, 0.40]
+  ],
+  "layers": [
+    { "id": "left-leg", "file": "elements/Left_Leg/Left_Leg-1.tvg" },
+    { "id": "tail", "file": "elements/Tail/Tail-1.tvg" },
+    {
+      "id": "body",
+      "file": "elements/Body/Body-1.tvg",
+      "seedOverrides": [
+        { "colorId": "0b6d656fc8edfc85", "boundaryIndex": 12, "side": 0 },
+        { "colorId": "0b6acb7cbef2d932", "boundaryIndex": 14, "side": 1, "color": [255, 241, 241, 255] },
+        { "colorId": "0b6d656fc8edc66b", "boundaryIndex": 14, "side": 0 }
+      ]
+    },
+    { "id": "right-back-leg", "file": "elements/Right_Back_Leg/Right_Back_Leg-1.tvg" },
+    { "id": "right-paw", "file": "elements/Right_paw/Right_paw-1.tvg" },
+    { "id": "right-leg", "file": "elements/Right_Leg/Right_Leg-1.tvg" },
+    { "id": "right-ear", "file": "elements/Ear_Right/Ear_Right-1.tvg" },
+    { "id": "left-ear", "file": "elements/Ear_Left.27/Ear_Left-1.tvg" },
+    {
+      "id": "head",
+      "file": "elements/Head/Head-1.tvg",
+      "seedOverrides": [
+        { "colorId": "0b6d656fc8edfc85", "boundaryIndex": 11, "side": 1 }
+      ]
+    },
+    {
+      "id": "eyes",
+      "file": "elements/Eyes/Eyes-2.tvg",
+      "transform": {
+        "positionXFields": 0.9529383629602959,
+        "positionYFields": -0.5051035779492535,
+        "scaleX": 0.7694929878026502,
+        "scaleY": 1,
+        "rotationDegrees": -2.9776516297586033,
+        "pivotXFields": -4.052073545619738,
+        "pivotYFields": 2.6666602253949945
+      }
+    },
+    { "id": "mouth", "file": "elements/Mouth/Mouth-1.tvg" },
+    { "id": "nose", "file": "elements/Nose/Nose-1.tvg" }
+  ]
+}

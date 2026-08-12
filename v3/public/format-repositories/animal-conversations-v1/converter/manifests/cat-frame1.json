@@ -1,0 +1,31 @@
+{
+  "id": "cat-frame1",
+  "character": "cat",
+  "description": "Active CAT_LOOP_1 frame-one display pose, ordered bottom to top.",
+  "expectedLayerCount": 12,
+  "requiredRgb": [
+    [46, 19, 13],
+    [173, 250, 255],
+    [110, 213, 215],
+    [255, 162, 78]
+  ],
+  "requiredOpaquePoints": [
+    [0.35, 0.32],
+    [0.5, 0.75],
+    [0.83, 0.68]
+  ],
+  "layers": [
+    { "id": "left-leg", "file": "elements/Left_Leg/Left_Leg-1.tvg" },
+    { "id": "tail", "file": "elements/Tail/Tail-1.tvg" },
+    { "id": "body", "file": "elements/Body/Body-1.tvg" },
+    { "id": "right-back-leg", "file": "elements/Right_Back_Leg/Right_Back_Leg-1.tvg" },
+    { "id": "right-leg", "file": "elements/Right_Leg/Right_Leg-1.tvg" },
+    { "id": "left-ear", "file": "elements/Ear_Left/Ear_Left-1.tvg" },
+    { "id": "right-ear", "file": "elements/Ear_Right/Ear_Right-1.tvg" },
+    { "id": "head", "file": "elements/Head/Head-1.tvg" },
+    { "id": "hair", "file": "elements/Hair/Hair-1.tvg" },
+    { "id": "eyes", "file": "elements/Eyes/Eyes-2.tvg" },
+    { "id": "mouth", "file": "elements/Mouth/Mouth-1.tvg" },
+    { "id": "nose", "file": "elements/Nose/Nose-1.tvg" }
+  ]
+}
