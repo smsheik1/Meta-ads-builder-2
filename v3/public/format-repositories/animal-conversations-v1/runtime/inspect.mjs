@@ -32,6 +32,7 @@ export async function inspectRun({ runDirectory }) {
     inputHash: hashValue(input),
     captionedBeatCount: input.timeline.filter((beat) => beat.caption.trim()).length,
     speechActivity: renderReport.speechActivity,
+    mouthAnimation: renderReport.mouthAnimation,
     outputSha256: await sha256(output),
   };
   const gates = {
@@ -47,6 +48,7 @@ export async function inspectRun({ runDirectory }) {
     renderMatchesInput: renderReport.inputHash === measured.inputHash,
     captionsPresent: measured.captionedBeatCount > 0,
     speechActivityAnalyzed: Number.isFinite(measured.speechActivity?.thresholdDb),
+    mouthAnimationAnalyzed: measured.mouthAnimation?.method === "audio-envelope-hysteresis" && measured.mouthAnimation?.openFrames > 0,
     pauseClosuresStable: measured.speechActivity?.inactiveSpeakingFrameRanges?.every(
       ([start, end]) => start === 0 || end === renderReport.frameCount - 1 || end - start + 1 >= 3,
     ) === true,

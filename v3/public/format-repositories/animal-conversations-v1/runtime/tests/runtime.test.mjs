@@ -4,9 +4,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { validateTimeline } from "../validate.mjs";
-import { blinkStateAtFrame, buildBlinkSchedule, buildSpeechActivityTrack, CAPTION_TOP_Y, captionChunks, captionSvg, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
+import { blinkStateAtFrame, buildBlinkSchedule, buildMouthAnimationTrack, buildSpeechActivityTrack, CAPTION_TOP_Y, captionChunks, captionSvg, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
 import { applySpeakerReviewDocument, createSpeakerReviewDocument, speakerAssignmentHash } from "../speaker-review.mjs";
-import { readJson } from "../common.mjs";
+import { readJson, requireEpisodeInputSource } from "../common.mjs";
+
+test("real episode initialization fails closed without a timing input", () => {
+  assert.throws(() => requireEpisodeInputSource(), /every real episode/);
+  assert.equal(requireEpisodeInputSource("/tmp/episode.json"), "/tmp/episode.json");
+});
 
 const formatRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -50,6 +55,23 @@ test("mouth motion closes for real pauses without reacting to brief quiet frames
   assert.equal(visualState(beat, 3, { cat: false, bunny: false }, true).catPose, "mouth-open");
   assert.equal(visualState(beat, 3, { cat: false, bunny: false }, false).catPose, "idle");
   assert.notEqual(visualState(beat, 3, { cat: false, bunny: false }, false).bunnyPose, "mouth-open");
+});
+
+test("mouth cadence follows the audio envelope instead of a fixed frame clock", () => {
+  const slowLevels = Array(16).fill(-18);
+  const slowTrack = buildMouthAnimationTrack(slowLevels, slowLevels.map(() => true));
+  assert.ok(slowTrack.slice(1).every(Boolean), "a sustained slow vowel should hold the mouth open instead of flapping");
+
+  const fastLevels = [-16, -15, -38, -39, -17, -16, -37, -38, -15, -16, -39, -38];
+  const fastTrack = buildMouthAnimationTrack(fastLevels, fastLevels.map(() => true));
+  const transitions = fastTrack.slice(1).filter((isOpen, index) => isOpen !== fastTrack[index]).length;
+  assert.ok(transitions >= 4, "syllabic energy peaks should produce a visibly faster cadence");
+  assert.deepEqual(
+    buildMouthAnimationTrack(fastLevels.map((level) => level - 20), fastLevels.map(() => true)),
+    fastTrack,
+    "cadence should be stable after a volume shift",
+  );
+  assert.deepEqual(buildMouthAnimationTrack([-16, -16, -16], [true, false, true]), [true, false, true]);
 });
 
 test("blinks use independent deterministic tracks and favor dialogue boundaries", () => {
@@ -153,6 +175,20 @@ test("speaker review requires explicit evidence and binds the confirmed characte
   assert.equal(applied.input.timeline[0].speaker, "cat");
   assert.equal(applied.receipt.timelineHash, speakerAssignmentHash(applied.input));
   assert.equal(applied.receipt.reviewedBeats, 2);
+});
+
+test("local audio analysis is explicit evidence only when its basis is documented", () => {
+  const input = {
+    audioFile: "user-audio.wav",
+    timeline: [{ start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "Hello" }],
+  };
+  const review = createSpeakerReviewDocument({ input, audioSha256: "audio-hash" });
+  review.beats[0].confirmedSpeaker = "cat";
+  review.beats[0].evidence = "local-audio-analysis";
+  assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" }), /evidenceNote/);
+  review.beats[0].evidenceNote = "Local ASR word timings plus two-speaker diarization; speaker 0 was creatively cast as cat.";
+  const applied = applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" });
+  assert.equal(applied.receipt.evidenceCounts["local-audio-analysis"], 1);
 });
 
 test("the supplied sample assigns the disputed blue-caption lines to the cat", async () => {

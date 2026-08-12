@@ -3,6 +3,13 @@ import { createHash } from "node:crypto";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+export function requireEpisodeInputSource(input) {
+  if (!input) {
+    throw new Error("Pass an absolute existing --input=/path/timing.json for every real episode. The bundled sample is available only through the smoke command.");
+  }
+  return input;
+}
+
 export async function exists(file) {
   try {
     await access(file);

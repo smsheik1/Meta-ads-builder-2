@@ -38,7 +38,7 @@
     "the final beat ends within 0.08 seconds of measured user-audio duration",
     "spoken beats have non-empty captions",
     "each beat stores the complete spoken line; the renderer, not the operator, splits it into progressive one-to-three-word caption cards",
-    "every beat speaker is explicitly confirmed before validation through direct audio, a user label, a checksum-matched documented reference video, or silence",
+    "every beat speaker is explicitly confirmed before validation through direct audio, documented local audio analysis, a user label, a checksum-matched documented reference video, or silence",
     "speaker confirmation becomes stale whenever the audio, timing, caption, camera, or speaker assignment changes",
     "neutral talking has mouth motion only; vertical bounce occurs only at an explicit bounceAt emphasis event",
     "bounceAt contains no more than two strictly increasing offsets inside its beat"

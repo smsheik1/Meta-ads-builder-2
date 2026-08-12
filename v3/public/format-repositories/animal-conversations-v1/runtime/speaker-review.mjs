@@ -3,7 +3,7 @@ import path from "node:path";
 import { execute, hashValue, readJson, sha256, writeJson } from "./common.mjs";
 
 const SPEAKERS = new Set(["cat", "bunny", "both", "none"]);
-const EVIDENCE = new Set(["direct-audio-review", "user-provided-label", "reference-video", "silence"]);
+const EVIDENCE = new Set(["direct-audio-review", "local-audio-analysis", "user-provided-label", "reference-video", "silence"]);
 
 export function reviewFingerprint(input) {
   return hashValue({
@@ -22,7 +22,7 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
     schemaVersion: 1,
     status: "pending",
     generatedAt,
-    instructions: "Confirm every beat from direct audio, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. Disclose perception limits and never infer from caption text or camera alone.",
+    instructions: "Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. local-audio-analysis also requires a concise evidenceNote naming the transcript/diarization basis and any creative role mapping. Disclose perception limits and never infer from caption text or camera alone.",
     audio: { file: input.audioFile, sha256: audioSha256 },
     reviewFingerprint: reviewFingerprint(input),
     beats: input.timeline.map((beat, index) => ({
@@ -33,6 +33,7 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
       proposedSpeaker: beat.speaker,
       confirmedSpeaker: null,
       evidence: null,
+      evidenceNote: null,
       clip: `speaker-review/beat-${String(index).padStart(2, "0")}.wav`,
     })),
   };
@@ -50,6 +51,7 @@ export function applySpeakerReviewDocument({ input, review, audioSha256, applied
     if (entry.index !== index) errors.push(`speaker review beat ${index} has the wrong index.`);
     if (!SPEAKERS.has(entry.confirmedSpeaker)) errors.push(`speaker review beat ${index} needs confirmedSpeaker=cat, bunny, both, or none.`);
     if (!EVIDENCE.has(entry.evidence)) errors.push(`speaker review beat ${index} needs explicit evidence.`);
+    if (entry.evidence === "local-audio-analysis" && (typeof entry.evidenceNote !== "string" || !entry.evidenceNote.trim())) errors.push(`speaker review beat ${index} needs an evidenceNote for local audio analysis.`);
     if (entry.evidence === "silence" && entry.confirmedSpeaker !== "none") errors.push(`speaker review beat ${index} can use silence evidence only with speaker=none.`);
   });
   if (errors.length) throw new Error(`Speaker review failed:\n- ${errors.join("\n- ")}`);

@@ -7,7 +7,7 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 14;
+const RENDERER_VERSION = 15;
 const BOUNCE_SECONDS = 0.36;
 const SPEECH_ANALYSIS_SAMPLE_RATE = 24000;
 const SPEECH_LEVEL_PERCENTILE = 0.9;
@@ -15,6 +15,7 @@ const SPEECH_THRESHOLD_RANGE_DB = [-55, -28];
 const SPEECH_THRESHOLD_BELOW_STRONG_DB = 18;
 const SPEECH_ACTIVITY_PADDING_FRAMES = 2;
 const SPEECH_MINIMUM_PAUSE_FRAMES = 3;
+const MOUTH_MINIMUM_POSE_FRAMES = 2;
 const BLINK_DURATION_FRAMES = 3;
 const BLINK_BOUNDARY_SNAP_FRAMES = 12;
 const BLINK_MINIMUM_GAP_FRAMES = 72;
@@ -172,6 +173,36 @@ export function buildSpeechActivityTrack(frameLevelsDb) {
   return { activeFrames, strongLevelDb, thresholdDb };
 }
 
+export function buildMouthAnimationTrack(frameLevelsDb, activeFrames) {
+  if (!frameLevelsDb.length || frameLevelsDb.length !== activeFrames.length) return [];
+  const activeLevels = frameLevelsDb.filter((_, index) => activeFrames[index]).sort((left, right) => left - right);
+  if (!activeLevels.length) return activeFrames.map(() => false);
+  const percentile = (value) => activeLevels[Math.floor((activeLevels.length - 1) * value)];
+  const openLevelDb = percentile(0.58);
+  const measuredCloseLevelDb = percentile(0.32);
+  const closeLevelDb = Math.min(measuredCloseLevelDb, openLevelDb - 3);
+  const mouthOpenFrames = [];
+  let isOpen = false;
+  let framesInPose = MOUTH_MINIMUM_POSE_FRAMES;
+  for (let frameIndex = 0; frameIndex < frameLevelsDb.length; frameIndex += 1) {
+    if (!activeFrames[frameIndex]) {
+      isOpen = false;
+      framesInPose = MOUTH_MINIMUM_POSE_FRAMES;
+    } else if (framesInPose >= MOUTH_MINIMUM_POSE_FRAMES) {
+      if (!isOpen && frameLevelsDb[frameIndex] >= openLevelDb) {
+        isOpen = true;
+        framesInPose = 0;
+      } else if (isOpen && frameLevelsDb[frameIndex] <= closeLevelDb) {
+        isOpen = false;
+        framesInPose = 0;
+      }
+    }
+    mouthOpenFrames.push(isOpen);
+    framesInPose += 1;
+  }
+  return mouthOpenFrames;
+}
+
 function pcmFrameLevels(pcm, frameCount) {
   const samplesPerFrame = SPEECH_ANALYSIS_SAMPLE_RATE / FPS;
   return Array.from({ length: frameCount }, (_, frameIndex) => {
@@ -197,7 +228,8 @@ async function analyzeSpeechActivity({ audioFile, cacheDirectory, frameCount }) 
       "-ar", String(SPEECH_ANALYSIS_SAMPLE_RATE), "-f", "s16le", pcmFile,
     ], { capture: true });
   }
-  return buildSpeechActivityTrack(pcmFrameLevels(await readFile(pcmFile), frameCount));
+  const frameLevelsDb = pcmFrameLevels(await readFile(pcmFile), frameCount);
+  return { ...buildSpeechActivityTrack(frameLevelsDb), frameLevelsDb };
 }
 
 function frameRanges(frames) {
@@ -223,13 +255,12 @@ export function captionSvg(beat, captionText, episodeLabel) {
   </svg>`);
 }
 
-export function visualState(beat, frameIndex, blinkState = { cat: false, bunny: false }, speechActive = true) {
+export function visualState(beat, frameIndex, blinkState = { cat: false, bunny: false }, mouthOpen = true) {
   const localFrame = Math.max(0, frameIndex - Math.round(beat.start * FPS));
-  const mouthOpen = Math.floor(localFrame / 3) % 2 === 1;
   const isSpeaking = (character) => beat.speaker === character || beat.speaker === "both";
   const pose = (character) => {
     if (blinkState[character]) return "blink";
-    if (isSpeaking(character) && speechActive && mouthOpen) return "mouth-open";
+    if (isSpeaking(character) && mouthOpen) return "mouth-open";
     return "idle";
   };
   const bounce = Math.min(0, ...(beat.bounceAt || []).map((cue) => {
@@ -312,6 +343,17 @@ export async function renderRun({ root, runDirectory }) {
   const frameCount = Math.ceil(durationSeconds * FPS);
   const blinkSchedule = buildBlinkSchedule(input.timeline, frameCount);
   const speechActivity = await analyzeSpeechActivity({ audioFile, cacheDirectory, frameCount });
+  const mouthOpenFrames = Array(frameCount).fill(false);
+  for (const beat of input.timeline) {
+    if (beat.speaker === "none") continue;
+    const firstFrame = Math.max(0, Math.round(beat.start * FPS));
+    const lastFrame = Math.min(frameCount, Math.round(beat.end * FPS));
+    const localTrack = buildMouthAnimationTrack(
+      speechActivity.frameLevelsDb.slice(firstFrame, lastFrame),
+      speechActivity.activeFrames.slice(firstFrame, lastFrame),
+    );
+    localTrack.forEach((isOpen, offset) => { mouthOpenFrames[firstFrame + offset] = isOpen; });
+  }
   const eventUsage = new Map();
   const uniqueStates = new Set();
   const inactiveSpeakingFrames = [];
@@ -323,7 +365,7 @@ export async function renderRun({ root, runDirectory }) {
     const beat = input.timeline[beatIndex];
     eventUsage.set(beatIndex, (eventUsage.get(beatIndex) || 0) + 1);
     if (beat.speaker !== "none" && !speechActivity.activeFrames[frameIndex]) inactiveSpeakingFrames.push(frameIndex);
-    const state = visualState(beat, frameIndex, blinkStateAtFrame(blinkSchedule, frameIndex), speechActivity.activeFrames[frameIndex]);
+    const state = visualState(beat, frameIndex, blinkStateAtFrame(blinkSchedule, frameIndex), mouthOpenFrames[frameIndex]);
     const source = await renderState({ prepared, cacheDirectory, beat, beatIndex, state, episodeLabel: input.episodeLabel });
     uniqueStates.add(source);
     const destination = path.join(framesDirectory, `frame-${String(frameIndex).padStart(6, "0")}.png`);
@@ -368,6 +410,12 @@ export async function renderRun({ root, runDirectory }) {
       activeFrames: speechActivity.activeFrames.filter(Boolean).length,
       inactiveFrames: speechActivity.activeFrames.filter((active) => !active).length,
       inactiveSpeakingFrameRanges: frameRanges(inactiveSpeakingFrames),
+    },
+    mouthAnimation: {
+      method: "audio-envelope-hysteresis",
+      minimumPoseFrames: MOUTH_MINIMUM_POSE_FRAMES,
+      openFrames: mouthOpenFrames.filter(Boolean).length,
+      transitions: mouthOpenFrames.slice(1).filter((isOpen, index) => isOpen !== mouthOpenFrames[index]).length,
     },
     timelineBeatFrames: Object.fromEntries(eventUsage),
     output: "final.mp4",

@@ -3,7 +3,7 @@
 import { copyFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { execute, exists, hashValue, parseArgs, readJson, resolveRunDirectory, sha256, writeJson } from "./runtime/common.mjs";
+import { execute, exists, hashValue, parseArgs, readJson, requireEpisodeInputSource, resolveRunDirectory, sha256, writeJson } from "./runtime/common.mjs";
 import { inspectRun } from "./runtime/inspect.mjs";
 import { renderRun } from "./runtime/render.mjs";
 import { applySpeakerReview, createSpeakerReview } from "./runtime/speaker-review.mjs";
@@ -16,8 +16,8 @@ const args = parseArgs(process.argv.slice(3));
 async function initializeRun({ runId, audio, input }) {
   if (!audio || !path.isAbsolute(audio)) throw new Error("Pass the user's audio as an absolute --audio=/path/file.");
   if (!(await exists(audio))) throw new Error(`Audio file does not exist: ${audio}`);
-  const inputSource = input || path.join(root, "fixtures", "sample", "input.json");
-  if (!path.isAbsolute(inputSource) || !(await exists(inputSource))) throw new Error("Pass an absolute existing --input=/path/timing.json, or omit it to use the sample fixture.");
+  const inputSource = requireEpisodeInputSource(input);
+  if (!path.isAbsolute(inputSource) || !(await exists(inputSource))) throw new Error("Pass an absolute existing --input=/path/timing.json.");
   const runDirectory = resolveRunDirectory(root, runId);
   await mkdir(runDirectory, { recursive: true });
   const extension = path.extname(audio).toLowerCase() || ".audio";

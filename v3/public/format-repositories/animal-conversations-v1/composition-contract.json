@@ -17,6 +17,6 @@
     "user audio is copied locally and muxed into the final video"
   ],
   "replaceable": ["user audio", "timed captions", "explicit speaker assignment", "approved camera selection per beat", "optional key-segment bounce cues", "episode title and label", "one of five packaged backgrounds"],
-  "outOfScope": ["voice generation", "speech transcription", "automatic speaker diarization", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
+  "outOfScope": ["voice generation", "bundled speech transcription or diarization models (documented external local analysis may be supplied as evidence)", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
   "rendererInvariant": "Preview/proof/export frames are produced only by runtime/render.mjs from the validated complete episode input."
 }
