@@ -23,6 +23,15 @@ test("timeline accepts only contiguous approved conversation beats", () => {
   assert.match(validateTimeline([
     { start: 0, end: 1, speaker: "cat", camera: "wide", caption: "Hello" },
   ], 1).join(" "), /camera/);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "both", camera: "two-shot", caption: "Together" },
+  ], 1).join(" "), /overlapEvidence.*required/);
+  assert.deepEqual(validateTimeline([
+    { start: 0, end: 1, speaker: "both", camera: "two-shot", caption: "Together", overlapEvidence: "Two independently identified voices are simultaneous." },
+  ], 1), []);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "cat", camera: "two-shot", caption: "Solo", overlapEvidence: "uncertain" },
+  ], 1).join(" "), /permitted only when speaker=both/);
 });
 
 test("only the active speaker receives the talking pose", () => {
@@ -191,6 +200,25 @@ test("local audio analysis is explicit evidence only when its basis is documente
   assert.equal(applied.receipt.evidenceCounts["local-audio-analysis"], 1);
 });
 
+test("speaker=both requires explicitly confirmed simultaneous speech and never represents uncertainty", () => {
+  const input = {
+    audioFile: "user-audio.wav",
+    timeline: [{ start: 0, end: 1, speaker: "both", camera: "two-shot", caption: "Together" }],
+  };
+  const review = createSpeakerReviewDocument({ input, audioSha256: "audio-hash" });
+  review.beats[0].confirmedSpeaker = "both";
+  review.beats[0].evidence = "local-audio-analysis";
+  review.beats[0].evidenceNote = "Overlap-aware local analysis identifies cat and bunny speaking simultaneously from 0.20–0.72 seconds.";
+  assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" }), /overlapConfirmed=true/);
+  review.beats[0].overlapConfirmed = true;
+  const applied = applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" });
+  assert.equal(applied.receipt.confirmedOverlapBeats, 1);
+  assert.match(applied.input.timeline[0].overlapEvidence, /simultaneously/);
+
+  review.beats[0].confirmedSpeaker = "cat";
+  assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" }), /only when confirmedSpeaker=both/);
+});
+
 test("the supplied sample assigns the disputed blue-caption lines to the cat", async () => {
   const sample = await readJson(path.join(formatRoot, "fixtures/sample/input.json"));
   const speakersByCaption = new Map(sample.timeline.map((beat) => [beat.caption, beat.speaker]));
@@ -207,9 +235,12 @@ test("quality review requires honest perception disclosure for fallback speaker 
   assert.equal(quality.blindReview.requiredPlayback.perceptionMode, "best-available-with-explicit-disclosure");
   const criteria = quality.blindReview.criteria.join(" ");
   assert.match(criteria, /direct audio.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(criteria, /both.*proven simultaneous speech.*never uncertainty/);
   assert.match(criteria, /intelligibility.*otherwise explicitly left unscored/);
   assert.match(requirements.notes.join(" "), /direct review.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(requirements.notes.join(" "), /speaker=both.*simultaneous-speech evidence.*uncertainty must stop/);
   assert.match(inputContract.timingRules.join(" "), /direct audio.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(inputContract.timingRules.join(" "), /speaker=both.*simultaneous speech.*alternating voices.*single-speaker beats/);
   assert.match(kitManifest.excluded.join(" "), /raw user-supplied runtime audio.*proof MP4 retains its distributable soundtrack/);
 });
 

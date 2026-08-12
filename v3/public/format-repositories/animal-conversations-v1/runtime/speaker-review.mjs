@@ -13,7 +13,7 @@ export function reviewFingerprint(input) {
 }
 
 export function speakerAssignmentHash(input) {
-  return hashValue(input.timeline.map(({ start, end, speaker, camera, caption }) => ({ start, end, speaker, camera, caption })));
+  return hashValue(input.timeline.map(({ start, end, speaker, camera, caption, overlapEvidence }) => ({ start, end, speaker, camera, caption, overlapEvidence })));
 }
 
 export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = new Date().toISOString() }) {
@@ -22,7 +22,7 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
     schemaVersion: 1,
     status: "pending",
     generatedAt,
-    instructions: "Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. local-audio-analysis also requires a concise evidenceNote naming the transcript/diarization basis and any creative role mapping. Disclose perception limits and never infer from caption text or camera alone.",
+    instructions: "Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence; set confirmedSpeaker and matching evidence before apply-speakers. local-audio-analysis also requires a concise evidenceNote naming the transcript/diarization basis and any creative role mapping. speaker=both means proven simultaneous speech: set overlapConfirmed=true and document the overlap in evidenceNote. Never use both for uncertainty or alternating voices; split alternating turns into contiguous beats. Disclose perception limits and never infer from caption text or camera alone.",
     audio: { file: input.audioFile, sha256: audioSha256 },
     reviewFingerprint: reviewFingerprint(input),
     beats: input.timeline.map((beat, index) => ({
@@ -34,6 +34,7 @@ export function createSpeakerReviewDocument({ input, audioSha256, generatedAt = 
       confirmedSpeaker: null,
       evidence: null,
       evidenceNote: null,
+      overlapConfirmed: null,
       clip: `speaker-review/beat-${String(index).padStart(2, "0")}.wav`,
     })),
   };
@@ -53,12 +54,17 @@ export function applySpeakerReviewDocument({ input, review, audioSha256, applied
     if (!EVIDENCE.has(entry.evidence)) errors.push(`speaker review beat ${index} needs explicit evidence.`);
     if (entry.evidence === "local-audio-analysis" && (typeof entry.evidenceNote !== "string" || !entry.evidenceNote.trim())) errors.push(`speaker review beat ${index} needs an evidenceNote for local audio analysis.`);
     if (entry.evidence === "silence" && entry.confirmedSpeaker !== "none") errors.push(`speaker review beat ${index} can use silence evidence only with speaker=none.`);
+    if (entry.confirmedSpeaker === "both" && entry.overlapConfirmed !== true) errors.push(`speaker review beat ${index} needs overlapConfirmed=true because speaker=both means simultaneous speech, never uncertainty.`);
+    if (entry.confirmedSpeaker === "both" && (typeof entry.evidenceNote !== "string" || !entry.evidenceNote.trim())) errors.push(`speaker review beat ${index} needs an evidenceNote documenting the confirmed overlapping speech.`);
+    if (entry.confirmedSpeaker !== "both" && entry.overlapConfirmed === true) errors.push(`speaker review beat ${index} may confirm overlap only when confirmedSpeaker=both.`);
   });
   if (errors.length) throw new Error(`Speaker review failed:\n- ${errors.join("\n- ")}`);
 
   const nextInput = structuredClone(input);
   nextInput.timeline.forEach((beat, index) => {
     beat.speaker = beats[index].confirmedSpeaker;
+    if (beat.speaker === "both") beat.overlapEvidence = beats[index].evidenceNote.trim();
+    else delete beat.overlapEvidence;
   });
   const evidenceCounts = Object.fromEntries([...EVIDENCE].map((value) => [value, beats.filter((beat) => beat.evidence === value).length]).filter(([, count]) => count));
   const receipt = {
@@ -70,6 +76,7 @@ export function applySpeakerReviewDocument({ input, review, audioSha256, applied
     timelineHash: speakerAssignmentHash(nextInput),
     reviewedBeats: beats.length,
     evidenceCounts,
+    confirmedOverlapBeats: beats.filter((beat) => beat.confirmedSpeaker === "both" && beat.overlapConfirmed === true).length,
   };
   return { input: nextInput, receipt };
 }

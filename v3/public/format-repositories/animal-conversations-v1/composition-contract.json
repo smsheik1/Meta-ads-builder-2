@@ -8,7 +8,7 @@
     "exactly three approved camera IDs: two-shot, cat-close, and bunny-close",
     "the bunny faces right in two-shot and bunny-close layouts while the cat faces left in two-shot and cat-close layouts, matching the supplied three-angle reference",
     "two-shot character bounds preserve at least 120 pixels of clear conversational space and never overlap",
-    "mouth substitution only for the active speaker; both characters move for speaker=both; sustained low-energy pauses hold the active mouth closed without sub-three-frame jitter",
+    "mouth substitution only for the active speaker; both characters move only when speaker=both carries explicit confirmed simultaneous-speech evidence; uncertainty never animates two mouths, and alternating voices use separate contiguous beats; sustained low-energy pauses hold the active mouth closed without sub-three-frame jitter",
     "every speaker assignment is explicitly confirmed per beat through a declared evidence channel and checksum-bound to the user audio before rendering",
     "neutral talking uses mouth substitutions and independent deterministic three-frame blinks without vertical movement; blink cadence is irregular, favors nearby dialogue boundaries, skips offscreen events, and avoids mechanical synchronization",
     "vertical bounce occurs only at an explicit per-beat bounceAt emphasis event, with at most two cues",

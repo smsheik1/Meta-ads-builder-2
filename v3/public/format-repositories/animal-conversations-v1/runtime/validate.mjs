@@ -4,7 +4,7 @@ import { speakerAssignmentHash } from "./speaker-review.mjs";
 
 export const CAMERAS = new Set(["two-shot", "cat-close", "bunny-close"]);
 export const SPEAKERS = new Set(["cat", "bunny", "both", "none"]);
-const BEAT_FIELDS = new Set(["start", "end", "speaker", "camera", "caption", "bounceAt"]);
+const BEAT_FIELDS = new Set(["start", "end", "speaker", "camera", "caption", "overlapEvidence", "bounceAt"]);
 
 export function validateTimeline(timeline, durationSeconds) {
   const errors = [];
@@ -21,6 +21,12 @@ export function validateTimeline(timeline, durationSeconds) {
     }
     if (Math.abs(beat.start - cursor) > 0.02) errors.push(`${label} must begin at ${cursor.toFixed(3)} to keep captions and animation continuous.`);
     if (!SPEAKERS.has(beat.speaker)) errors.push(`${label}.speaker must be cat, bunny, both, or none.`);
+    if (beat.speaker === "both" && (typeof beat.overlapEvidence !== "string" || !beat.overlapEvidence.trim())) {
+      errors.push(`${label}.overlapEvidence is required when speaker=both; uncertainty must be split, resolved to one speaker, or left unfinalized.`);
+    }
+    if (beat.speaker !== "both" && beat.overlapEvidence !== undefined) {
+      errors.push(`${label}.overlapEvidence is permitted only when speaker=both.`);
+    }
     if (!CAMERAS.has(beat.camera)) errors.push(`${label}.camera must be two-shot, cat-close, or bunny-close.`);
     if (typeof beat.caption !== "string" || beat.caption.length > 180) errors.push(`${label}.caption must be a string of at most 180 characters.`);
     if (beat.speaker !== "none" && !beat.caption.trim()) errors.push(`${label}.caption is required for spoken beats.`);
@@ -89,6 +95,9 @@ export async function validateRun({ root, runDirectory }) {
     if (speakerAssignment.audioSha256 !== audioSha256) errors.push("Speaker assignment is stale because the user audio changed.");
     if (speakerAssignment.timelineHash !== speakerAssignmentHash(input)) errors.push("Speaker assignment is stale because the timeline changed.");
     if (speakerAssignment.reviewedBeats !== input.timeline.length) errors.push("Speaker assignment must cover every timeline beat.");
+    if (speakerAssignment.confirmedOverlapBeats !== input.timeline.filter((beat) => beat.speaker === "both").length) {
+      errors.push("Every speaker=both beat must have explicit confirmed overlapping-speech evidence.");
+    }
   }
 
   const verifiedAssets = [];
@@ -122,6 +131,7 @@ export async function validateRun({ root, runDirectory }) {
       method: speakerAssignment.method,
       reviewedBeats: speakerAssignment.reviewedBeats,
       evidenceCounts: speakerAssignment.evidenceCounts,
+      confirmedOverlapBeats: speakerAssignment.confirmedOverlapBeats,
     },
     verifiedAssets,
   };

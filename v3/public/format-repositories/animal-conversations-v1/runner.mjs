@@ -65,6 +65,10 @@ async function smoke() {
   review.beats.forEach((beat) => {
     beat.confirmedSpeaker = beat.proposedSpeaker;
     beat.evidence = beat.proposedSpeaker === "none" ? "silence" : "user-provided-label";
+    if (beat.proposedSpeaker === "both") {
+      beat.overlapConfirmed = true;
+      beat.evidenceNote = "The smoke fixture explicitly labels this mechanics-only beat as simultaneous dialogue.";
+    }
   });
   await writeJson(path.join(runDirectory, "speaker-review.json"), review);
   await applySpeakerReview({ runDirectory });
