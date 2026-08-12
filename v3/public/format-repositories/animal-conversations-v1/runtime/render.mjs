@@ -1,4 +1,4 @@
-import { link, mkdir } from "node:fs/promises";
+import { link, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { execute, exists, hashValue, writeJson } from "./common.mjs";
@@ -7,8 +7,14 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 9;
+const RENDERER_VERSION = 11;
 const BOUNCE_SECONDS = 0.36;
+const SPEECH_ANALYSIS_SAMPLE_RATE = 24000;
+const SPEECH_LEVEL_PERCENTILE = 0.9;
+const SPEECH_THRESHOLD_RANGE_DB = [-55, -28];
+const SPEECH_THRESHOLD_BELOW_STRONG_DB = 18;
+const SPEECH_ACTIVITY_PADDING_FRAMES = 2;
+const SPEECH_MINIMUM_PAUSE_FRAMES = 3;
 const BLINK_DURATION_FRAMES = 3;
 const BLINK_BOUNDARY_SNAP_FRAMES = 12;
 const BLINK_MINIMUM_GAP_FRAMES = 72;
@@ -134,6 +140,75 @@ export function blinkStateAtFrame(schedule, frameIndex) {
   return { cat: isBlinking("cat"), bunny: isBlinking("bunny") };
 }
 
+export function buildSpeechActivityTrack(frameLevelsDb) {
+  if (!frameLevelsDb.length) return { activeFrames: [], strongLevelDb: -180, thresholdDb: -55 };
+  const sorted = [...frameLevelsDb].sort((left, right) => left - right);
+  const strongLevelDb = sorted[Math.floor((sorted.length - 1) * SPEECH_LEVEL_PERCENTILE)];
+  const thresholdDb = Math.max(
+    SPEECH_THRESHOLD_RANGE_DB[0],
+    Math.min(SPEECH_THRESHOLD_RANGE_DB[1], strongLevelDb - SPEECH_THRESHOLD_BELOW_STRONG_DB),
+  );
+  const activeFrames = frameLevelsDb.map((_, frameIndex) => {
+    const first = Math.max(0, frameIndex - SPEECH_ACTIVITY_PADDING_FRAMES);
+    const last = Math.min(frameLevelsDb.length - 1, frameIndex + SPEECH_ACTIVITY_PADDING_FRAMES);
+    for (let candidate = first; candidate <= last; candidate += 1) {
+      if (frameLevelsDb[candidate] >= thresholdDb) return true;
+    }
+    return false;
+  });
+  for (let start = 0; start < activeFrames.length;) {
+    if (activeFrames[start]) {
+      start += 1;
+      continue;
+    }
+    let end = start + 1;
+    while (end < activeFrames.length && !activeFrames[end]) end += 1;
+    if (start > 0 && end < activeFrames.length && end - start < SPEECH_MINIMUM_PAUSE_FRAMES) {
+      activeFrames.fill(true, start, end);
+    }
+    start = end;
+  }
+  return { activeFrames, strongLevelDb, thresholdDb };
+}
+
+function pcmFrameLevels(pcm, frameCount) {
+  const samplesPerFrame = SPEECH_ANALYSIS_SAMPLE_RATE / FPS;
+  return Array.from({ length: frameCount }, (_, frameIndex) => {
+    const firstByte = frameIndex * samplesPerFrame * 2;
+    const lastByte = Math.min(pcm.length, firstByte + samplesPerFrame * 2);
+    let squared = 0;
+    let sampleCount = 0;
+    for (let byte = firstByte; byte + 1 < lastByte; byte += 2) {
+      const sample = pcm.readInt16LE(byte) / 32768;
+      squared += sample * sample;
+      sampleCount += 1;
+    }
+    if (!sampleCount) return -180;
+    return 20 * Math.log10(Math.sqrt(squared / sampleCount) + 1e-9);
+  });
+}
+
+async function analyzeSpeechActivity({ audioFile, cacheDirectory, frameCount }) {
+  const pcmFile = path.join(cacheDirectory, "speech-activity.pcm");
+  if (!(await exists(pcmFile))) {
+    await execute("ffmpeg", [
+      "-y", "-v", "error", "-i", audioFile, "-vn", "-ac", "1",
+      "-ar", String(SPEECH_ANALYSIS_SAMPLE_RATE), "-f", "s16le", pcmFile,
+    ], { capture: true });
+  }
+  return buildSpeechActivityTrack(pcmFrameLevels(await readFile(pcmFile), frameCount));
+}
+
+function frameRanges(frames) {
+  const ranges = [];
+  for (const frame of frames) {
+    const previous = ranges.at(-1);
+    if (previous && frame === previous[1] + 1) previous[1] = frame;
+    else ranges.push([frame, frame]);
+  }
+  return ranges;
+}
+
 function captionSvg(beat, captionText, episodeLabel) {
   const colors = { cat: "#62C8FF", bunny: "#FF8BCC", both: "#FFE477", none: "#FFFFFF" };
   const lines = wrapCaption(captionText, 24);
@@ -149,13 +224,13 @@ function captionSvg(beat, captionText, episodeLabel) {
   </svg>`);
 }
 
-export function visualState(beat, frameIndex, blinkState = { cat: false, bunny: false }) {
+export function visualState(beat, frameIndex, blinkState = { cat: false, bunny: false }, speechActive = true) {
   const localFrame = Math.max(0, frameIndex - Math.round(beat.start * FPS));
   const mouthOpen = Math.floor(localFrame / 3) % 2 === 1;
   const isSpeaking = (character) => beat.speaker === character || beat.speaker === "both";
   const pose = (character) => {
     if (blinkState[character]) return "blink";
-    if (isSpeaking(character) && mouthOpen) return "mouth-open";
+    if (isSpeaking(character) && speechActive && mouthOpen) return "mouth-open";
     return "idle";
   };
   const bounce = Math.min(0, ...(beat.bounceAt || []).map((cue) => {
@@ -227,6 +302,7 @@ export async function renderRun({ root, runDirectory }) {
   const renderHash = hashValue({
     renderer: RENDERER_VERSION,
     input,
+    audio: validated.receipt.audio.sha256,
     background: background.sha256,
     characterAssets: assets.characters.flatMap((character) => character.poses.map((pose) => pose.sha256)),
   }).slice(0, 16);
@@ -236,8 +312,10 @@ export async function renderRun({ root, runDirectory }) {
   const prepared = await prepareAssets({ root, cacheDirectory, background, assets });
   const frameCount = Math.ceil(durationSeconds * FPS);
   const blinkSchedule = buildBlinkSchedule(input.timeline, frameCount);
+  const speechActivity = await analyzeSpeechActivity({ audioFile, cacheDirectory, frameCount });
   const eventUsage = new Map();
   const uniqueStates = new Set();
+  const inactiveSpeakingFrames = [];
 
   let beatIndex = 0;
   for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
@@ -245,7 +323,8 @@ export async function renderRun({ root, runDirectory }) {
     while (beatIndex < input.timeline.length - 1 && time >= input.timeline[beatIndex].end - 0.0001) beatIndex += 1;
     const beat = input.timeline[beatIndex];
     eventUsage.set(beatIndex, (eventUsage.get(beatIndex) || 0) + 1);
-    const state = visualState(beat, frameIndex, blinkStateAtFrame(blinkSchedule, frameIndex));
+    if (beat.speaker !== "none" && !speechActivity.activeFrames[frameIndex]) inactiveSpeakingFrames.push(frameIndex);
+    const state = visualState(beat, frameIndex, blinkStateAtFrame(blinkSchedule, frameIndex), speechActivity.activeFrames[frameIndex]);
     const source = await renderState({ prepared, cacheDirectory, beat, beatIndex, state, episodeLabel: input.episodeLabel });
     uniqueStates.add(source);
     const destination = path.join(framesDirectory, `frame-${String(frameIndex).padStart(6, "0")}.png`);
@@ -284,6 +363,13 @@ export async function renderRun({ root, runDirectory }) {
     frameCount,
     uniqueVisualStates: uniqueStates.size,
     blinkScheduleFrames: blinkSchedule,
+    speechActivity: {
+      strongLevelDb: Number(speechActivity.strongLevelDb.toFixed(1)),
+      thresholdDb: Number(speechActivity.thresholdDb.toFixed(1)),
+      activeFrames: speechActivity.activeFrames.filter(Boolean).length,
+      inactiveFrames: speechActivity.activeFrames.filter((active) => !active).length,
+      inactiveSpeakingFrameRanges: frameRanges(inactiveSpeakingFrames),
+    },
     timelineBeatFrames: Object.fromEntries(eventUsage),
     output: "final.mp4",
   };

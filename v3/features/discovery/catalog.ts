@@ -2512,7 +2512,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "animal-conversations",
       name: "Animal Conversations",
-      version: "0.5.0",
+      version: "0.6.0",
       owner: "Shaz",
     },
   },

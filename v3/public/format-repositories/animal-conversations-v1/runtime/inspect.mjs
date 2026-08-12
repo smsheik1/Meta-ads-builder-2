@@ -31,6 +31,7 @@ export async function inspectRun({ runDirectory }) {
     speakerAssignment: validation.speakerAssignment,
     inputHash: hashValue(input),
     captionedBeatCount: input.timeline.filter((beat) => beat.caption.trim()).length,
+    speechActivity: renderReport.speechActivity,
     outputSha256: await sha256(output),
   };
   const gates = {
@@ -45,6 +46,10 @@ export async function inspectRun({ runDirectory }) {
     speakerAssignmentConfirmed: measured.speakerAssignment?.reviewedBeats === input.timeline.length,
     renderMatchesInput: renderReport.inputHash === measured.inputHash,
     captionsPresent: measured.captionedBeatCount > 0,
+    speechActivityAnalyzed: Number.isFinite(measured.speechActivity?.thresholdDb),
+    pauseClosuresStable: measured.speechActivity?.inactiveSpeakingFrameRanges?.every(
+      ([start, end]) => start === 0 || end === renderReport.frameCount - 1 || end - start + 1 >= 3,
+    ) === true,
   };
   const status = Object.values(gates).every(Boolean) ? "pass" : "fail";
   const report = { schemaVersion: 1, status, inspectedAt: new Date().toISOString(), measured, gates };

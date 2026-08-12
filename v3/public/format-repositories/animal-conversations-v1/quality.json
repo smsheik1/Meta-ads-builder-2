@@ -21,7 +21,8 @@
     {"id": "cameraGrammar", "threshold": "only two-shot, cat-close, bunny-close", "measurementPath": "measured.camerasUsed"},
     {"id": "speakerAssignment", "threshold": "every beat explicitly confirmed and the receipt bound to current user audio", "measurementPath": "measured.speakerAssignment.reviewedBeats"},
     {"id": "renderInputParity", "threshold": "render report input hash equals inspected input hash", "measurementPath": "gates.renderMatchesInput"},
-    {"id": "captions", "threshold": "at least one captioned beat", "measurementPath": "measured.captionedBeatCount"}
+    {"id": "captions", "threshold": "at least one captioned beat", "measurementPath": "measured.captionedBeatCount"},
+    {"id": "speechActivity", "threshold": "audio-derived activity exists and every interior mouth closure lasts at least three frames", "measurementPath": "gates.speechActivityAnalyzed,pauseClosuresStable"}
   ],
   "blindReview": {
     "watchPasses": ["uninterrupted playback with audio when perceptible, otherwise uninterrupted visual playback plus audio technical checks", "caption-camera-character inspection"],
@@ -31,7 +32,7 @@
       "both characters visibly face inward toward each other in every two-shot",
       "two-shot character silhouettes remain clearly separated without touching or overlap",
       "the bunny-only camera faces right, matching the supplied reference",
-      "the visible speaker receives mouth motion while a listening character remains vertically still",
+      "the visible speaker receives mouth motion during audible speech and closes naturally for sustained pauses while a listener remains still",
       "three-frame blinks look naturally irregular, favor conversational boundaries, and do not repeatedly synchronize the two characters",
       "neutral talking remains vertically still and any jump is brief, intentional, and attached to an explicit emphasis event",
       "speaker identity comes from explicit per-beat evidence—direct audio, a user label, a checksum-matched documented reference video, or silence—rather than caption or camera inference",

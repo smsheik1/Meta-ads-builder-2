@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { validateTimeline } from "../validate.mjs";
-import { blinkStateAtFrame, buildBlinkSchedule, captionChunks, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
+import { blinkStateAtFrame, buildBlinkSchedule, buildSpeechActivityTrack, captionChunks, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
 import { applySpeakerReviewDocument, createSpeakerReviewDocument, speakerAssignmentHash } from "../speaker-review.mjs";
 import { readJson } from "../common.mjs";
 
@@ -25,6 +25,31 @@ test("only the active speaker receives the talking pose", () => {
   const open = visualState(beat, 3);
   assert.equal(open.catPose, "mouth-open");
   assert.notEqual(open.bunnyPose, "mouth-open");
+});
+
+test("mouth motion closes for real pauses without reacting to brief quiet frames", () => {
+  const loud = [-60, -60, -60, -15, -15, -15, -50, -50, -15, -15, -15, -60, -60, -60, -60, -60, -60, -60, -60, -15, -15, -15];
+  const quiet = loud.map((level) => level - 20);
+  const loudTrack = buildSpeechActivityTrack(loud);
+  const quietTrack = buildSpeechActivityTrack(quiet);
+  assert.deepEqual(loudTrack.activeFrames, quietTrack.activeFrames, "volume changes should not change the mouth timing");
+  assert.ok(loudTrack.activeFrames[6], "a brief quiet dip inside speech should remain active");
+  assert.equal(loudTrack.activeFrames[15], false, "the middle of a sustained pause should close the mouth");
+  for (let start = 1; start < loudTrack.activeFrames.length - 1;) {
+    if (loudTrack.activeFrames[start]) {
+      start += 1;
+      continue;
+    }
+    let end = start + 1;
+    while (end < loudTrack.activeFrames.length && !loudTrack.activeFrames[end]) end += 1;
+    if (end < loudTrack.activeFrames.length) assert.ok(end - start >= 3, "a detected interior pause must never create a one-frame mouth twitch");
+    start = end;
+  }
+
+  const beat = { start: 0, end: 2, speaker: "cat", camera: "cat-close", caption: "Hello" };
+  assert.equal(visualState(beat, 3, { cat: false, bunny: false }, true).catPose, "mouth-open");
+  assert.equal(visualState(beat, 3, { cat: false, bunny: false }, false).catPose, "idle");
+  assert.notEqual(visualState(beat, 3, { cat: false, bunny: false }, false).bunnyPose, "mouth-open");
 });
 
 test("blinks use independent deterministic tracks and favor dialogue boundaries", () => {

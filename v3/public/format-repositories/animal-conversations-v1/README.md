@@ -24,7 +24,9 @@ node runner.mjs finalize --run=my-episode
 
 The timing JSON follows [input-contract.json](input-contract.json). Copy `fixtures/sample/input.json` as a starting point. Its timeline must begin at zero, stay contiguous, and finish at the measured audio duration. The only camera values are `two-shot`, `cat-close`, and `bunny-close`; provisional speakers are `cat`, `bunny`, `both`, or `none`.
 
-Neutral talking uses mouth movement only. Vertical jumping is reserved for explicit emphasis events: add an optional `bounceAt` array to a beat with one or two offsets in seconds from that beat's start. Use one cue for a punchline, interruption, or strong reaction; use two only for an intentionally frantic line. Omitting `bounceAt` guarantees that the speaker remains vertically still.
+Neutral talking uses mouth movement only. The renderer measures the supplied audio locally and holds the verified speaker's mouth closed during sustained pauses; brief quiet syllables are padded so they do not create mouth jitter. This is automatic and has no authoring field, model, transcription step, or provider call.
+
+Vertical jumping is reserved for explicit emphasis events: add an optional `bounceAt` array to a beat with one or two offsets in seconds from that beat's start. Use one cue for a punchline, interruption, or strong reaction; use two only for an intentionally frantic line. Omitting `bounceAt` guarantees that the speaker remains vertically still.
 
 The renderer automatically turns each beat's full caption into progressive one-to-three-word cards. Keep `caption` as the complete spoken line; do not pre-split it or add manual caption-only beats.
 
