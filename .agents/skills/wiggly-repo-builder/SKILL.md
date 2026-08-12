@@ -87,6 +87,7 @@ Update `references/standard.md` only from real evidence. Do not promote an Otaku
 
 - Run focused contract and runtime tests.
 - Run the free smoke test from the packaged artifact, not only the source tree.
+- Register every newly published Format with the shared rich Repo-page presentation: compact hero, honest services and costs, run summary, included assets, finished examples, proof and quality evidence, readable Repo files, and the agent CTA. Never add a new Format to the frozen legacy-page allowlist.
 - Test the real public page with Playwright when one exists.
 - Run `ponytail-review`; remove speculative abstractions and duplicated instructions.
 - Commit and push only a working checkpoint.

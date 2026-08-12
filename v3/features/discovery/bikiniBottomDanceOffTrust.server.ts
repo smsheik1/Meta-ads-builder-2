@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import type { FormatRepoTrustData } from "./formatRepoTrust.types";
 
 type PackageManifest = {
   scripts: Record<string, string>;
@@ -83,14 +84,9 @@ type RequirementsContract = {
   environmentVariables: string[];
 };
 
-export type BikiniBottomDanceOffTrustData = {
-  version: string;
+export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
   stats: {
     motions: number;
-    backgrounds: number;
-    technicalGates: number;
-    blindCriteria: number;
-    rendererCount: number;
   };
   includedAssets: {
     characters: Array<{
@@ -112,47 +108,7 @@ export type BikiniBottomDanceOffTrustData = {
     defaultBackgroundId: string;
     motionLabels: string[];
   };
-  grading: {
-    rubricVersion: string;
-    passingScore: number;
-    ratingScale: Array<{ rating: number; label: string }>;
-    criteria: Array<{
-      id: string;
-      label: string;
-      weight: number;
-      critical: boolean;
-    }>;
-  };
-  proof: {
-    grade: string;
-    score: number;
-    status: string;
-    technicalPassed: number;
-    technicalTotal: number;
-    width: number;
-    height: number;
-    durationSeconds: number;
-    renderer: string;
-    rubricVersion: string;
-  };
-  annotations: Array<{
-    seconds: number;
-    timeLabel: string;
-    title: string;
-    description: string;
-    color: "cyan" | "pink" | "lime" | "yellow";
-  }>;
   requirements: RequirementsContract;
-  commands: string[];
-  fileGroups: Array<{
-    title: string;
-    files: Array<{
-      label: string;
-      path: string;
-      description: string;
-      content: string;
-    }>;
-  }>;
 };
 
 const repoRoot = path.join(
@@ -206,10 +162,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     readJson<PackageManifest>(path.join(repoRoot, "package.json")),
     readJson<RequirementsContract>(path.join(repoRoot, "requirements.json")),
     readJson<RenderReport>(
-      path.join(
-        repoRoot,
-        "examples/wiggle-proof/evidence/render-report.json",
-      ),
+      path.join(repoRoot, "examples/wiggle-proof/evidence/render-report.json"),
     ),
     readJson<EvalReport>(
       path.join(repoRoot, "examples/wiggle-proof/evidence/eval-report.json"),
@@ -264,14 +217,62 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       return `npm run ${script}`;
     });
 
+  const assemblyCommands = [
+    "npm run check",
+    "npm run smoke",
+    "npm run list-motions",
+    "node runner.mjs init --run=<id> --song=<file>",
+    "node runner.mjs validate --run=<id>",
+    "node runner.mjs render --run=<id> --approve-provider",
+    "node runner.mjs inspect --run=<id>",
+    "node runner.mjs finalize --run=<id> --review=<review.json>",
+  ];
+
   return {
+    idPrefix: "dance-off",
     version: format.version,
+    assembly: {
+      title: "The assembly line",
+      path: "Song analysis → Dance plan → Voice lines → Render → Deliver",
+      ariaLabel: "Five steps from song analysis to final delivery",
+      commandsLabel: "What the coding agent runs",
+      commandsAriaLabel: "Exact Dance Off runtime commands",
+      steps: [
+        {
+          title: "Song analysis",
+          cost: "Free",
+          description: "Finds the beat, the best excerpt, and exact timing.",
+        },
+        {
+          title: "Dance plan",
+          cost: "Free",
+          description:
+            "Assigns solo, reaction, and finale dances to all four characters.",
+        },
+        {
+          title: "Voice lines",
+          cost: "Free tier",
+          description:
+            "Creates the opening, taunts, and closing line in four voices.",
+          waiting: "Waits for your approval",
+        },
+        {
+          title: "Render",
+          cost: "Free",
+          description: "Builds one 1080 × 1920 Reel with captions and music.",
+        },
+        {
+          title: "Review and deliver",
+          cost: "Free",
+          description:
+            "Checks the video, gets an independent grade, and returns the MP4.",
+          waiting: "Waits for your review",
+        },
+      ],
+      commands: assemblyCommands,
+    },
     stats: {
       motions: motions.motions.length,
-      backgrounds: backgrounds.options.length,
-      technicalGates: quality.technicalGates.length,
-      blindCriteria: quality.grading.blindCriteria.length,
-      rendererCount: 1,
     },
     includedAssets: {
       characters: includedCharacters,
@@ -290,28 +291,12 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         .filter((motion) => sampleMotionIds.has(motion.id))
         .map((motion) => motion.label),
     },
-    grading: {
-      rubricVersion: quality.rubricVersion,
-      passingScore: quality.grading.passingScore,
-      ratingScale: quality.grading.ratingScale.map(({ rating, label }) => ({ rating, label })),
-      criteria: quality.grading.blindCriteria.map(({ id, label, weight, criticalFloor }) => ({
-        id,
-        label,
-        weight,
-        critical: Number.isFinite(criticalFloor),
-      })),
-    },
     proof: {
-      grade: evalReport.overall.grade,
-      score: evalReport.overall.score,
-      status: evalReport.overall.status,
-      technicalPassed: evalReport.overall.technicalPassed,
-      technicalTotal: evalReport.overall.technicalTotal,
-      width: quality.automatic.width,
-      height: quality.automatic.height,
-      durationSeconds: quality.automatic.durationSeconds,
-      renderer: format.renderer,
-      rubricVersion: evalReport.rubricVersion,
+      durationTimeLabel: "00:47",
+    },
+    proofCopy: {
+      eyebrow: "02 · Finished example",
+      title: "Watch the final video.",
     },
     annotations: [
       {
@@ -348,166 +333,94 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       },
     ],
     requirements,
-    commands,
-    fileGroups: await Promise.all([
-      {
-        title: "Agent playbook",
-        files: [
-          {
-            label: "Agent instructions",
-            path: "SKILL.md",
-            description: "Exact agent workflow and approval rules.",
-          },
-          {
-            label: "Human setup",
-            path: "README.md",
-            description: "Human setup, commands, and examples.",
-          },
-        ],
-      },
-      {
-        title: "Inputs & outputs",
-        files: [
-          {
-            label: "Required inputs",
-            path: "input-contract.json",
-            description: "Required episode inputs and limits.",
-          },
-          {
-            label: "Final deliverables",
-            path: "output-contract.json",
-            description: "The final video and evidence bundle.",
-          },
-          {
-            label: "Services and tools",
-            path: "requirements.json",
-            description: "Local tools, providers, and environment.",
-          },
-        ],
-      },
-      {
-        title: "Creative system",
-        files: [
-          {
-            label: "Timeline rules",
-            path: "composition-contract.json",
-            description: "Timeline and rendering invariants.",
-          },
-          {
-            label: "Fixed vs customizable",
-            path: "content-boundary.json",
-            description: "Packaged mechanics versus episode inputs.",
-          },
-          {
-            label: "Asset manifest",
-            path: "assets.json",
-            description: "Versioned assets, roles, and source notes.",
-          },
-        ],
-      },
-      {
-        title: "Quality & evals",
-        files: [
-          {
-            label: "Quality rubric",
-            path: "quality.json",
-            description: "Technical gates and the blind creative rubric.",
-          },
-          {
-            label: "Evaluation framework",
-            path: "EVALUATION-FRAMEWORK.md",
-            description: "Review procedure, evidence rules, and calibration plan.",
-          },
-          {
-            label: "Calibration results",
-            path: "CALIBRATION-REPORT.md",
-            description: "Blind-review pilots, negative controls, and the remaining acceptance gate.",
-          },
-          {
-            label: "Blind judge prompt",
-            path: "prompts/blind-review.md",
-            description: "The isolated instructions given to the final judge.",
-          },
-          {
-            label: "Contract tests",
-            path: "tests/contracts.test.mjs",
-            description: "Contract regression coverage.",
-          },
-          {
-            label: "Evaluation tests",
-            path: "tests/evaluate.test.mjs",
-            description: "Eval and grading coverage.",
-          },
-          {
-            label: "Review integrity tests",
-            path: "tests/review-packet.test.mjs",
-            description: "Packet integrity and anti-tamper coverage.",
-          },
-          {
-            label: "Published proof",
-            path: "PROOF-REPORT.md",
-            description: "Why the published example is trustworthy.",
-          },
-        ],
-      },
-      {
-        title: "Official runtime",
-        files: [
-          {
-            label: "Main runner",
-            path: "runner.mjs",
-            description: "Validates and orchestrates every stage.",
-          },
-          {
-            label: "Video compositor",
-            path: "runtime/compose.mjs",
-            description: "Builds the 47-second Reel.",
-          },
-          {
-            label: "Output inspection",
-            path: "runtime/inspect.mjs",
-            description: "Measures final output quality.",
-          },
-          {
-            label: "Blind review scoring",
-            path: "runtime/review.mjs",
-            description: "Binds, validates, and scores blind-review evidence.",
-          },
-          {
-            label: "Timeline engine",
-            path: "runtime/timeline.mjs",
-            description: "Allocates speech, solos, finale, and loop.",
-          },
-        ],
-      },
-      {
-        title: "Assets",
-        files: [
-          {
-            label: "Background options",
-            path: "assets/background-options.json",
-            description: "Four selectable outer backgrounds.",
-          },
-          {
-            label: "Voice presets",
-            path: "assets/voice-presets.json",
-            description: "Non-secret Fish Audio assignments.",
-          },
-          {
-            label: "Dance library",
-            path: "mixamo-character-motion-v1/assets/motions/manifest.json",
-            description: "Frozen 25-motion starter catalog.",
-          },
-        ],
-      },
-    ].map(async (group) => ({
-      ...group,
-      files: await Promise.all(
-        group.files.map(async (file) => ({
-          ...file,
-          content: await readFile(resolveRepoFile(file.path), "utf8"),
-        })),
+    quality: {
+      eyebrow: "03 · Final evaluation",
+      title: "How your finished video is graded.",
+      summary: [
+        {
+          value: `${quality.technicalGates.length}/${quality.technicalGates.length}`,
+          label: "Technical gates must pass",
+        },
+        {
+          value: `${quality.grading.passingScore}/100`,
+          label: "Minimum blind score",
+        },
+        { value: "0", label: "Critical failures allowed" },
+      ],
+      noteTitle: "Blind means independent.",
+      note: "The judge receives the final MP4, intended cast and dialogue, and this rubric. It does not receive the source, render history, previous score, or known defects.",
+      criteriaTitle: "The blind judge scores seven things",
+      criteriaSubtitle: "Every rating needs time-coded evidence",
+      criteria: quality.grading.blindCriteria.map(
+        ({ id, label, weight, criticalFloor }) => ({
+          id,
+          label,
+          value: String(weight),
+          badge: Number.isFinite(criticalFloor) ? "Critical" : undefined,
+        }),
       ),
-    }))),
+      ratingScale: quality.grading.ratingScale
+        .slice()
+        .reverse()
+        .map(({ rating, label }) => ({ value: String(rating), label })),
+      rule: `A technically valid video still fails below ${quality.grading.passingScore}, or when character integrity, motion, audio, or composition falls below its critical floor. Missing, indirect, or low-confidence playback evidence is inconclusive and requires another judge.`,
+    },
+    commands,
+    receipt: {
+      rows: [
+        { label: "Renderer", value: format.renderer.replace("../", "") },
+        {
+          label: "Quality",
+          value: `${evalReport.overall.grade} · ${evalReport.overall.score}/100 · ${evalReport.overall.status}`,
+        },
+        {
+          label: "Technical",
+          value: `${evalReport.overall.technicalPassed}/${evalReport.overall.technicalTotal} gates`,
+        },
+        { label: "Blind rubric", value: `Version ${evalReport.rubricVersion}` },
+        {
+          label: "Output",
+          value: `${quality.automatic.width} × ${quality.automatic.height} · ${quality.automatic.durationSeconds}s MP4`,
+        },
+      ],
+      note: `Archived visual/caption-assisted pilot. Current rubric ${quality.rubricVersion} requires direct moving-video and audio perception before a score can ship.`,
+    },
+    files: await Promise.all(
+      [
+        { label: "Agent instructions", path: "SKILL.md" },
+        { label: "Human setup", path: "README.md" },
+        { label: "Required inputs", path: "input-contract.json" },
+        { label: "Final deliverables", path: "output-contract.json" },
+        { label: "Services and tools", path: "requirements.json" },
+        { label: "Timeline rules", path: "composition-contract.json" },
+        { label: "Fixed vs customizable", path: "content-boundary.json" },
+        { label: "Asset manifest", path: "assets.json" },
+        { label: "Quality rubric", path: "quality.json" },
+        { label: "Evaluation framework", path: "EVALUATION-FRAMEWORK.md" },
+        { label: "Calibration results", path: "CALIBRATION-REPORT.md" },
+        { label: "Blind judge prompt", path: "prompts/blind-review.md" },
+        { label: "Contract tests", path: "tests/contracts.test.mjs" },
+        { label: "Evaluation tests", path: "tests/evaluate.test.mjs" },
+        {
+          label: "Review integrity tests",
+          path: "tests/review-packet.test.mjs",
+        },
+        { label: "Published proof", path: "PROOF-REPORT.md" },
+        { label: "Main runner", path: "runner.mjs" },
+        { label: "Video compositor", path: "runtime/compose.mjs" },
+        { label: "Output inspection", path: "runtime/inspect.mjs" },
+        { label: "Blind review scoring", path: "runtime/review.mjs" },
+        { label: "Timeline engine", path: "runtime/timeline.mjs" },
+        { label: "Background options", path: "assets/background-options.json" },
+        { label: "Voice presets", path: "assets/voice-presets.json" },
+        {
+          label: "Dance library",
+          path: "mixamo-character-motion-v1/assets/motions/manifest.json",
+        },
+      ].map(async (file) => ({
+        ...file,
+        content: await readFile(resolveRepoFile(file.path), "utf8"),
+      })),
+    ),
   };
 }

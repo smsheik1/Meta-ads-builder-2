@@ -9,6 +9,10 @@ import {
   discoveryFormatSlugs,
   getDiscoveryFormatProfile,
 } from "../features/discovery/formatProof.server";
+import {
+  getFormatRepoPagePresentation,
+  richFormatRepoSlugs,
+} from "../features/discovery/formatRepoPage.server";
 
 for (const entry of discoveryCatalog) {
   assert.equal(
@@ -146,6 +150,24 @@ assert.ok(
     discoveryFormatSlugs.length === 49 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
+
+assert.deepEqual(richFormatRepoSlugs, [
+  "bikini-bottom-dance-off",
+  "animal-conversations",
+]);
+await assert.rejects(
+  getFormatRepoPagePresentation("future-format-example"),
+  /requires the shared rich Repo-page presentation/,
+  "A future Format cannot render through the legacy Repo-page fallback.",
+);
+const richFormatRepoSlugSet = new Set<string>(richFormatRepoSlugs);
+for (const slug of discoveryFormatSlugs) {
+  assert.equal(
+    Boolean(await getFormatRepoPagePresentation(slug)),
+    richFormatRepoSlugSet.has(slug),
+    `${slug} must use the rich Repo page or remain in the frozen legacy allowlist.`,
+  );
+}
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
 

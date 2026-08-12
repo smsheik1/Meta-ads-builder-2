@@ -16,15 +16,25 @@ const download = `${repositoryRoot}/downloads/wiggly-bikini-bottom-dance-off-for
 const finalVideo = `${evidenceRoot}/final.mp4`;
 const profile = getDiscoveryFormatProfile("bikini-bottom-dance-off");
 const formatPageSource = readFileSync("app/formats/[slug]/page.tsx", "utf8");
+const repoPageRegistrySource = readFileSync(
+  "features/discovery/formatRepoPage.server.ts",
+  "utf8",
+);
 const entries = getPublishedDiscoveryEntries().filter(
   (entry) => entry.format.slug === "bikini-bottom-dance-off",
 );
 
 assert.deepEqual(
   entries.map((entry) => entry.id),
-  ["bikini-bottom-dance-off-ghetto-love-story", "bikini-bottom-dance-off-wiggle"],
+  [
+    "bikini-bottom-dance-off-ghetto-love-story",
+    "bikini-bottom-dance-off-wiggle",
+  ],
 );
-assert.equal(entries[0]?.media.src, `/${latestExampleRoot.replace(/^public\//, "")}/final.mp4`);
+assert.equal(
+  entries[0]?.media.src,
+  `/${latestExampleRoot.replace(/^public\//, "")}/final.mp4`,
+);
 assert.equal(
   entries[0]?.media.poster,
   `/${latestExampleRoot.replace(/^public\//, "")}/poster.png`,
@@ -48,7 +58,12 @@ const evalReport = JSON.parse(
   rubricVersion: string;
   overall: Record<string, string | number>;
   technicalCriteria: Array<{ status: string; explanation: string }>;
-  blindCriteria: Array<{ status: string; explanation: string; rating: number; score: number }>;
+  blindCriteria: Array<{
+    status: string;
+    explanation: string;
+    rating: number;
+    score: number;
+  }>;
 };
 assert.deepEqual(evalReport.overall, {
   status: "pass",
@@ -56,7 +71,8 @@ assert.deepEqual(evalReport.overall, {
   provisionalScore: 85,
   grade: "B",
   passingScore: 85,
-  scoreMeaning: "blind creative quality only; technical validity is reported separately as pass or fail",
+  scoreMeaning:
+    "blind creative quality only; technical validity is reported separately as pass or fail",
   technicalStatus: "pass",
   technicalPassed: 16,
   technicalTotal: 16,
@@ -69,7 +85,11 @@ assert.ok(
   ),
 );
 assert.equal(evalReport.blindCriteria.length, 7);
-assert.ok(evalReport.blindCriteria.every((criterion) => criterion.status === "scored" && criterion.rating === 3));
+assert.ok(
+  evalReport.blindCriteria.every(
+    (criterion) => criterion.status === "scored" && criterion.rating === 3,
+  ),
+);
 const delivery = JSON.parse(
   readFileSync(`${evidenceRoot}/delivery.json`, "utf8"),
 ) as {
@@ -96,8 +116,8 @@ assert.equal(
   "/format-repositories/bikini-bottom-dance-off-v1/downloads/wiggly-bikini-bottom-dance-off-format-kit.zip",
 );
 assert.equal(profile.proofEntries.length, 2);
-assert.match(formatPageSource, /Finished Dance Offs\./);
-assert.match(formatPageSource, /id === "bikini-bottom-dance-off-wiggle"/);
+assert.match(repoPageRegistrySource, /Finished Dance Offs\./);
+assert.match(repoPageRegistrySource, /bikini-bottom-dance-off-wiggle/);
 assert.match(formatPageSource, /id="examples"/);
 assert.equal(existsSync(download), true);
 const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
@@ -112,7 +132,10 @@ for (const entry of [
   "bikini-bottom-dance-off-v1/SKILL.md",
   "bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/render-report.json",
 ]) {
-  assert.match(zipEntries, new RegExp(`${kitRoot}/${entry.replaceAll(".", "\\.")}`));
+  assert.match(
+    zipEntries,
+    new RegExp(`${kitRoot}/${entry.replaceAll(".", "\\.")}`),
+  );
 }
 const readArchivedText = async (relativePath: string) => {
   const file = archive.file(`${kitRoot}/${relativePath}`);
@@ -126,7 +149,10 @@ assert.equal(archivedManifest.formatVersion, "0.10.8");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
-assert.match(archivedAgents, /Codex, Antigravity app and CLI, and GitHub Copilot/);
+assert.match(
+  archivedAgents,
+  /Codex, Antigravity app and CLI, and GitHub Copilot/,
+);
 const prompt = buildDiscoveryHandoffPrompt(
   profile,
   "https://wiggly.agentenamel.com",
@@ -140,10 +166,16 @@ assert.match(prompt, /KIT-MANIFEST\.json/);
 assert.match(prompt, /latest published Wiggly Format/);
 assert.ok(prompt.startsWith("CODING AGENT REQUIRED:"));
 assert.match(prompt, /do not analyze or simulate/);
-assert.match(prompt, /Reply only: "Open this in Codex, Claude Code, Antigravity, Cursor, or Copilot CLI\."/);
+assert.match(
+  prompt,
+  /Reply only: "Open this in Codex, Claude Code, Antigravity, Cursor, or Copilot CLI\."/,
+);
 assert.match(prompt, /return its defined deliverables/);
 assert.doesNotMatch(prompt, /Exact public version: 0\.10\.0/);
-assert.doesNotMatch(prompt, /Required inputs:|Format instructions:|Working rules:/);
+assert.doesNotMatch(
+  prompt,
+  /Required inputs:|Format instructions:|Working rules:/,
+);
 assert.ok(prompt.length < 1000);
 
 const shelf = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries()).find(
@@ -163,26 +195,30 @@ assert.equal(
 );
 
 const consumerRoute = readFileSync("app/formats/[slug]/page.tsx", "utf8");
+const repoPageSections = readFileSync(
+  "features/discovery/FormatRepoPageSections.tsx",
+  "utf8",
+);
 const connectionsComponent = readFileSync(
   "features/discovery/BikiniBottomDanceOffConnections.tsx",
   "utf8",
 );
 const runSummaryComponent = readFileSync(
-  "features/discovery/BikiniBottomDanceOffRunSummary.tsx",
+  "features/discovery/FormatRepoRunSummary.tsx",
   "utf8",
 );
 const includedAssetsComponent = readFileSync(
   "features/discovery/BikiniBottomDanceOffIncludedAssets.tsx",
   "utf8",
 );
-const trustComponent = readFileSync(
-  "features/discovery/BikiniBottomDanceOffTrust.tsx",
-  "utf8",
-);
 const trustLoader = readFileSync(
   "features/discovery/bikiniBottomDanceOffTrust.server.ts",
   "utf8",
 );
+const trustComponent = `${readFileSync(
+  "features/discovery/FormatRepoTrust.tsx",
+  "utf8",
+)}\n${trustLoader}`;
 const trustStyles = readFileSync(
   "features/discovery/BikiniBottomDanceOffTrust.module.css",
   "utf8",
@@ -190,39 +226,39 @@ const trustStyles = readFileSync(
 const convexProvider = readFileSync("app/ConvexClientProvider.tsx", "utf8");
 assert.match(consumerRoute, /Download runnable Repo/);
 assert.match(consumerRoute, /format\.repositoryHref/);
-assert.match(consumerRoute, /BikiniBottomDanceOffTrust/);
+assert.match(consumerRoute, /FormatRepoTrust/);
 assert.match(
   consumerRoute,
-  /<BikiniBottomDanceOffConnections data=\{danceOffTrust\} \/>/,
+  /<FormatRepoConnections presentation=\{repoPage\} \/>/,
 );
+assert.match(consumerRoute, /<FormatRepoRunSummary/);
 assert.match(
   consumerRoute,
-  /<BikiniBottomDanceOffRunSummary format=\{format\} \/>/,
-);
-assert.match(
-  consumerRoute,
-  /<BikiniBottomDanceOffIncludedAssets data=\{danceOffTrust\} \/>/,
+  /<FormatRepoIncludedAssets presentation=\{repoPage\} \/>/,
 );
 assert.ok(
-  consumerRoute.indexOf("<BikiniBottomDanceOffRunSummary") <
-    consumerRoute.indexOf("<BikiniBottomDanceOffIncludedAssets"),
+  consumerRoute.indexOf("<FormatRepoRunSummary") <
+    consumerRoute.indexOf("<FormatRepoIncludedAssets"),
   "Included assets should follow the short run summary.",
 );
 assert.ok(
-  consumerRoute.indexOf("<BikiniBottomDanceOffIncludedAssets") <
-    consumerRoute.indexOf("<BikiniBottomDanceOffTrust"),
+  consumerRoute.indexOf("<FormatRepoIncludedAssets") <
+    consumerRoute.indexOf("<FormatRepoTrust"),
   "Included assets should appear before the proof and technical details.",
 );
+assert.match(repoPageSections, /<BikiniBottomDanceOffConnections/);
+assert.match(repoPageSections, /<BikiniBottomDanceOffIncludedAssets/);
 assert.doesNotMatch(consumerRoute, /variant="inline"/);
-assert.match(consumerRoute, /slug === "bikini-bottom-dance-off"/);
-assert.match(consumerRoute, /!danceOffTrust/);
+assert.match(consumerRoute, /getFormatRepoPagePresentation/);
+assert.match(repoPageRegistrySource, /slug === "bikini-bottom-dance-off"/);
+assert.match(consumerRoute, /!repoTrust/);
 assert.match(consumerRoute, /w-\[min\(100%-32px,980px\)\]/);
 assert.match(consumerRoute, /md:grid-cols-\[1\.15fr_0\.85fr\]/);
 assert.match(consumerRoute, /text-\[clamp\(42px,6vw,72px\)\]/);
 assert.match(consumerRoute, /max-w-\[310px\]/);
 assert.match(
   consumerRoute,
-  /\{!danceOffTrust \? \(\s*<a\s+href="#proof"/,
+  /\{!repoTrust \? \(\s*<a\s+href="#proof"/,
   "Dance Off should not show the redundant hero proof button once proof is inline.",
 );
 assert.match(
@@ -241,7 +277,10 @@ assert.doesNotMatch(
 assert.match(trustComponent, /How your finished video is graded\./);
 assert.match(trustComponent, /The blind judge scores seven things/);
 assert.match(trustComponent, /Archived visual\/caption-assisted pilot/);
-assert.match(trustComponent, /requires direct moving-video and audio perception/);
+assert.match(
+  trustComponent,
+  /requires direct moving-video and audio perception/,
+);
 assert.doesNotMatch(trustComponent, /One job\. Six transformations\./);
 assert.doesNotMatch(trustComponent, /The real proof, annotated\./);
 assert.doesNotMatch(trustComponent, /What the Repo refuses to ship\./);
@@ -258,7 +297,10 @@ assert.match(
   trustComponent,
   /Song analysis → Dance plan → Voice lines → Render → Deliver/,
 );
-assert.match(trustComponent, /Finds the beat, the best excerpt, and exact timing\./);
+assert.match(
+  trustComponent,
+  /Finds the beat, the best excerpt, and exact timing\./,
+);
 assert.match(trustComponent, /Waits for your approval/);
 assert.match(trustComponent, /Waits for your review/);
 assert.match(trustComponent, /Free tier/);
@@ -274,7 +316,10 @@ assert.match(
   /node runner\.mjs finalize --run=<id> --review=<review\.json>/,
 );
 assert.doesNotMatch(trustComponent, /FlowStation|Brief enters|Timed scene map/);
-assert.doesNotMatch(trustComponent, /One request moves straight to a finished Reel\./);
+assert.doesNotMatch(
+  trustComponent,
+  /One request moves straight to a finished Reel\./,
+);
 assert.match(trustComponent, />Repo files<\/h3>/);
 assert.match(trustComponent, /Open any file to read its actual contents\./);
 assert.match(trustComponent, /className=\{styles\.fileRow\}/);
@@ -287,7 +332,10 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(trustComponent, /styles\.repoSummary/);
 assert.doesNotMatch(trustComponent, /styles\.fileIcon/);
-assert.doesNotMatch(trustComponent, /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/);
+assert.doesNotMatch(
+  trustComponent,
+  /onClick=\{\(\) => revealSource\("SKILL\.md"\)\}/,
+);
 assert.doesNotMatch(trustComponent, /From SKILL\.md/);
 assert.doesNotMatch(trustComponent, /From PROOF-REPORT\.md/);
 assert.doesNotMatch(trustComponent, /From quality\.json/);
@@ -310,17 +358,17 @@ assert.doesNotMatch(connectionsComponent, /Current estimate/);
 assert.doesNotMatch(connectionsComponent, /No API key needed for/);
 assert.doesNotMatch(connectionsComponent, /valid dialogue is already cached/);
 assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
-assert.match(runSummaryComponent, /Make your Dance Off\./);
+assert.match(repoPageRegistrySource, /Make your Dance Off\./);
 assert.match(
-  runSummaryComponent,
+  repoPageRegistrySource,
   /Add one song and optionally choose the dances or dialogue\.[\s\S]*The\s+agent handles everything else\./,
 );
-assert.match(runSummaryComponent, /label="You provide">One song/);
+assert.match(repoPageRegistrySource, /provided: "One song"/);
 assert.match(
   runSummaryComponent,
-  /label="You get">\{format\.handoff\.output\}/,
+  /<SummaryFact label="You get">\{format\.handoff\.output\}/,
 );
-assert.match(runSummaryComponent, /label="Usually ready">12–30 minutes/);
+assert.match(repoPageRegistrySource, /ready: "12–30 minutes"/);
 assert.match(runSummaryComponent, /max-w-\[980px\]/);
 assert.match(runSummaryComponent, /min-\[701px\]:grid-cols-3/);
 assert.doesNotMatch(runSummaryComponent, /shadow-\[5px_5px_0_#080817\]/);
@@ -335,7 +383,10 @@ assert.match(includedAssetsComponent, /1 fixed character stage/);
 assert.match(includedAssetsComponent, /aria-pressed=\{isSelected\}/);
 assert.doesNotMatch(includedAssetsComponent, /No Mixamo download required/);
 assert.doesNotMatch(includedAssetsComponent, /createElement\("model-viewer"/);
-assert.doesNotMatch(includedAssetsComponent, /ColladaLoader|WebGLRenderer|iframe/);
+assert.doesNotMatch(
+  includedAssetsComponent,
+  /ColladaLoader|WebGLRenderer|iframe/,
+);
 assert.equal(
   (runSummaryComponent.match(/<DiscoveryFormatHandoff/g) ?? []).length,
   1,
@@ -355,12 +406,12 @@ assert.match(
 );
 assert.match(
   consumerRoute,
-  /danceOffTrust && format\.handoff \? \([\s\S]*Ready to make one\?[\s\S]*\) : \(/,
+  /repoTrust && format\.handoff \? \([\s\S]*Ready to make one\?[\s\S]*\) : \(/,
   "Dance Off should end with a compact CTA instead of repeating the full run breakdown.",
 );
 assert.match(
   consumerRoute,
-  /\{!danceOffTrust \? \([\s\S]*What stays the same[\s\S]*What changes[\s\S]*\) : null\}/,
+  /\{!repoTrust \? \([\s\S]*What stays the same[\s\S]*What changes[\s\S]*\) : null\}/,
   "Dance Off should omit the redundant fixed-versus-changeable wall of text.",
 );
 
@@ -385,10 +436,6 @@ const trustData = await getBikiniBottomDanceOffTrustData();
 assert.equal(trustData.version, "0.10.8");
 assert.deepEqual(trustData.stats, {
   motions: 25,
-  backgrounds: 4,
-  technicalGates: 16,
-  blindCriteria: 7,
-  rendererCount: 1,
 });
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
@@ -445,10 +492,10 @@ assert.deepEqual(
     "The ending deliberately creates the replay.",
   ],
 );
-assert.equal(trustData.proof.grade, "B");
-assert.equal(trustData.proof.score, 85);
-assert.equal(trustData.proof.rubricVersion, "1.0.0");
-assert.equal(trustData.grading.rubricVersion, "1.1.1");
+assert.equal(trustData.quality.summary[0]?.value, "16/16");
+assert.equal(trustData.quality.summary[1]?.value, "85/100");
+assert.equal(trustData.quality.criteria.length, 7);
+assert.match(trustData.receipt.rows[1]?.value ?? "", /B · 85\/100 · pass/);
 assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
 assert.deepEqual(trustData.requirements.environmentVariables, [
   "FISH_STUDIO_APIKEY",
@@ -466,37 +513,24 @@ assert.equal(
   true,
 );
 assert.equal(
-  trustData.fileGroups
-    .flatMap((group) => group.files)
-    .some((file) => file.path === "PROOF-REPORT.md"),
+  trustData.files.some((file) => file.path === "PROOF-REPORT.md"),
+  true,
+);
+assert.equal(trustData.files.length, 24);
+assert.equal(
+  trustData.files.every((file) => file.label.trim().length > 0),
   true,
 );
 assert.equal(
-  trustData.fileGroups.flatMap((group) => group.files).length,
-  24,
-);
-assert.equal(
-  trustData.fileGroups
-    .flatMap((group) => group.files)
-    .every((file) => file.label.trim().length > 0),
-  true,
-);
-assert.equal(
-  trustData.fileGroups
-    .flatMap((group) => group.files)
-    .every((file) => file.content.trim().length > 0),
+  trustData.files.every((file) => file.content.trim().length > 0),
   true,
 );
 assert.match(
-  trustData.fileGroups
-    .flatMap((group) => group.files)
-    .find((file) => file.path === "SKILL.md")?.content ?? "",
+  trustData.files.find((file) => file.path === "SKILL.md")?.content ?? "",
   /# Bikini Bottom Dance Off/,
 );
 assert.equal(
-  trustData.fileGroups
-    .flatMap((group) => group.files)
-    .some((file) => file.path === "CALIBRATION-REPORT.md"),
+  trustData.files.some((file) => file.path === "CALIBRATION-REPORT.md"),
   true,
 );
 

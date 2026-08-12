@@ -174,12 +174,19 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** The `0.10.0` pilot replaces the duplicated prompt with a concise launcher, resolves the exact version from `KIT-MANIFEST.json`, and packages checked root adapters for Codex, Claude Code, Antigravity app and CLI, Cursor, and GitHub Copilot. A clean-package check rejects adapter copies that contain commands, provider recipes, or deliverables.
 
+### 20. Publish every new Format with the rich Repo page
+
+**Rule:** Every newly published Format uses the shared rich Repo-page presentation established by Bikini Bottom Dance Off. Adapt the content to the Format, but keep the compact hero, honest services and costs, run summary, included assets, finished examples, proof and quality evidence, readable Repo files, and agent CTA. Never add a new Format to the frozen legacy-page allowlist.
+
+**Why:** A download button and generic proof grid do not explain what the agent needs, what the run costs, what is packaged, or why the Repo can be trusted. A shared structure makes those decisions predictable without creating a separate page implementation for each Format.
+
+**Evidence:** Bikini Bottom Dance Off established the structure, and Animal Conversations reused the same shared page components while preserving its zero-provider audio workflow, character assets, camera grammar, proof, and exact v0.7.0 download. The publication guard rejects unknown future Formats until they register the rich presentation.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:
 
 - Every Wiggly Repo should use the exact Otaku command names.
-- Every Repo needs a public file-browser page.
 - Every Repo needs scenes or a timeline.
 - Every Repo needs a contact sheet; static-image Formats may need different evidence.
 - Run evidence should share one product-wide UI component.

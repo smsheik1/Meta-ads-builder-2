@@ -1,18 +1,30 @@
+import type { ReactNode } from "react";
 import { DiscoveryFormatHandoff } from "./DiscoveryFormatHandoff";
 import type { DiscoveryFormatProfile } from "./types";
-import type { ReactNode } from "react";
 
-export function BikiniBottomDanceOffRunSummary({
-  format,
-}: {
+type Props = {
+  description: string;
   format: DiscoveryFormatProfile;
-}) {
+  idPrefix: string;
+  provided: string;
+  ready: string;
+  title: string;
+};
+
+export function FormatRepoRunSummary({
+  description,
+  format,
+  idPrefix,
+  provided,
+  ready,
+  title,
+}: Props) {
   if (!format.handoff) return null;
 
   return (
     <section
-      id="dance-off-run-summary"
-      aria-labelledby="dance-off-run-summary-title"
+      id={`${idPrefix}-run-summary`}
+      aria-labelledby={`${idPrefix}-run-summary-title`}
       className="border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-[58px] sm:px-7"
     >
       <div className="mx-auto max-w-[980px]">
@@ -22,23 +34,22 @@ export function BikiniBottomDanceOffRunSummary({
               Run this Format
             </p>
             <h2
-              id="dance-off-run-summary-title"
+              id={`${idPrefix}-run-summary-title`}
               className="mt-3 text-[clamp(32px,4.5vw,52px)] font-black leading-[0.98] tracking-[-0.04em]"
             >
-              Make your Dance Off.
+              {title}
             </h2>
             <p className="mt-4 max-w-2xl text-lg font-bold leading-7 text-[#596176]">
-              Add one song and optionally choose the dances or dialogue. The
-              agent handles everything else.
+              {description}
             </p>
           </div>
           <DiscoveryFormatHandoff format={format} />
         </div>
 
         <div className="mt-6 grid border-2 border-[#080817] bg-white min-[701px]:grid-cols-3">
-          <SummaryFact label="You provide">One song</SummaryFact>
+          <SummaryFact label="You provide">{provided}</SummaryFact>
           <SummaryFact label="You get">{format.handoff.output}</SummaryFact>
-          <SummaryFact label="Usually ready">12–30 minutes</SummaryFact>
+          <SummaryFact label="Usually ready">{ready}</SummaryFact>
         </div>
       </div>
     </section>
