@@ -2664,6 +2664,12 @@ export type DiscoveryShelf = {
 
 const discoveryShelfDefinitions = [
   {
+    id: "character-conversations",
+    title: "Animal Conversations",
+    description: "User-supplied dialogue staged as expressive, captioned character exchanges.",
+    formats: ["animal-conversations"],
+  },
+  {
     id: "product-stories",
     title: "Product Stories in Motion",
     description: "3D product stories and compact performance ads.",
@@ -2723,12 +2729,6 @@ const discoveryShelfDefinitions = [
     title: "Character Dance-Offs",
     description: "Music, taunts, and reusable choreography built for replayable vertical video.",
     formats: ["bikini-bottom-dance-off"],
-  },
-  {
-    id: "character-conversations",
-    title: "Character Conversations",
-    description: "User-supplied dialogue staged as expressive, captioned character exchanges.",
-    formats: ["animal-conversations"],
   },
   {
     id: "conversations",
