@@ -11,12 +11,14 @@ import { notFound } from "next/navigation";
 import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
 import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
 import { DiscoveryCharacterOptions } from "@/features/discovery/DiscoveryCharacterOptions";
-import { BikiniBottomDanceOffConnections } from "@/features/discovery/BikiniBottomDanceOffConnections";
-import { BikiniBottomDanceOffIncludedAssets } from "@/features/discovery/BikiniBottomDanceOffIncludedAssets";
-import { BikiniBottomDanceOffRunSummary } from "@/features/discovery/BikiniBottomDanceOffRunSummary";
-import { BikiniBottomDanceOffTrust } from "@/features/discovery/BikiniBottomDanceOffTrust";
-import { getBikiniBottomDanceOffTrustData } from "@/features/discovery/bikiniBottomDanceOffTrust.server";
+import {
+  FormatRepoConnections,
+  FormatRepoIncludedAssets,
+} from "@/features/discovery/FormatRepoPageSections";
+import { FormatRepoRunSummary } from "@/features/discovery/FormatRepoRunSummary";
+import { FormatRepoTrust } from "@/features/discovery/FormatRepoTrust";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
+import { getFormatRepoPagePresentation } from "@/features/discovery/formatRepoPage.server";
 import {
   discoveryFormatSlugs,
   getDiscoveryFormatProfile,
@@ -55,12 +57,13 @@ export default async function FormatPage({
   const creator = getDiscoveryCreatorByName(format.creator);
   const heroIsLandscapeVideo =
     heroProof.media.kind === "video" && heroProof.media.aspectRatio === "16:9";
-  const danceOffTrust =
-    slug === "bikini-bottom-dance-off"
-      ? await getBikiniBottomDanceOffTrustData()
-      : null;
-  const detailedProof = danceOffTrust
-    ? format.proofEntries.find((entry) => entry.id === "bikini-bottom-dance-off-wiggle") || heroProof
+  const repoPage = await getFormatRepoPagePresentation(slug);
+  const repoTrust = repoPage?.trust;
+  const repoPageCopy = repoPage?.copy;
+  const detailedProof = repoPage?.detailedProofId
+    ? format.proofEntries.find(
+        (entry) => entry.id === repoPage.detailedProofId,
+      ) || heroProof
     : heroProof;
 
   return (
@@ -68,7 +71,7 @@ export default async function FormatPage({
       <header className="border-b-2 border-[#080817]">
         <div
           className={`mx-auto flex items-center justify-between gap-4 ${
-            danceOffTrust
+            repoTrust
               ? "min-h-[66px] w-[min(100%-32px,980px)]"
               : "min-h-[76px] w-[min(100%-32px,1380px)]"
           }`}
@@ -93,7 +96,7 @@ export default async function FormatPage({
 
       <section
         className={`mx-auto grid ${
-          danceOffTrust
+          repoTrust
             ? "w-[min(100%-32px,980px)] gap-[38px] py-9 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-14"
             : "w-[min(100%-32px,1380px)] gap-9 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:py-16"
         }`}
@@ -111,7 +114,7 @@ export default async function FormatPage({
 
           <h1
             className={`font-black ${
-              danceOffTrust
+              repoTrust
                 ? "mt-6 text-[clamp(42px,6vw,72px)] leading-[0.92] tracking-[-0.055em]"
                 : "mt-7 text-6xl leading-[0.85] tracking-normal sm:text-8xl lg:text-[108px]"
             }`}
@@ -120,7 +123,7 @@ export default async function FormatPage({
           </h1>
           <p
             className={`max-w-2xl text-[#424254] ${
-              danceOffTrust
+              repoTrust
                 ? "mt-[18px] text-lg font-bold leading-[1.42]"
                 : "mt-7 text-2xl font-black leading-tight sm:text-3xl"
             }`}
@@ -128,7 +131,7 @@ export default async function FormatPage({
             {format.promise}
           </p>
           <p
-            className={`${danceOffTrust ? "mt-[18px] text-[13px]" : "mt-6 text-sm"} font-bold text-[#596176]`}
+            className={`${repoTrust ? "mt-[18px] text-[13px]" : "mt-6 text-sm"} font-bold text-[#596176]`}
           >
             By{" "}
             {creator ? (
@@ -145,9 +148,9 @@ export default async function FormatPage({
           </p>
 
           <div
-            className={`${danceOffTrust ? "mt-6" : "mt-8"} flex flex-wrap gap-3`}
+            className={`${repoTrust ? "mt-6" : "mt-8"} flex flex-wrap gap-3`}
           >
-            {!danceOffTrust ? (
+            {!repoTrust ? (
               <a
                 href="#proof"
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white shadow-[4px_4px_0_#52d6ff]"
@@ -157,7 +160,7 @@ export default async function FormatPage({
               </a>
             ) : null}
             {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
-            {format.technicalHref && !danceOffTrust ? (
+            {format.technicalHref && !repoTrust ? (
               <Link
                 href={format.technicalHref}
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-white px-5 text-sm font-black"
@@ -183,7 +186,7 @@ export default async function FormatPage({
           className={`mx-auto w-full overflow-hidden rounded-[12px] border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817] ${
             heroIsLandscapeVideo
               ? "max-w-[760px]"
-              : danceOffTrust
+              : repoTrust
                 ? "max-w-[310px]"
                 : "max-w-[440px]"
           }`}
@@ -233,19 +236,22 @@ export default async function FormatPage({
         </section>
       ) : null}
 
-      {danceOffTrust ? (
-        <BikiniBottomDanceOffConnections data={danceOffTrust} />
+      {repoPage ? <FormatRepoConnections presentation={repoPage} /> : null}
+
+      {repoTrust && repoPageCopy && format.handoff ? (
+        <FormatRepoRunSummary
+          format={format}
+          idPrefix={repoTrust.idPrefix}
+          title={repoPageCopy.runTitle}
+          description={repoPageCopy.runDescription}
+          provided={repoPageCopy.provided}
+          ready={repoPageCopy.ready}
+        />
       ) : null}
 
-      {danceOffTrust && format.handoff ? (
-        <BikiniBottomDanceOffRunSummary format={format} />
-      ) : null}
+      {repoPage ? <FormatRepoIncludedAssets presentation={repoPage} /> : null}
 
-      {danceOffTrust ? (
-        <BikiniBottomDanceOffIncludedAssets data={danceOffTrust} />
-      ) : null}
-
-      {danceOffTrust ? (
+      {repoTrust && repoPageCopy ? (
         <section
           id="examples"
           className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16"
@@ -253,11 +259,16 @@ export default async function FormatPage({
           <div className="mx-auto max-w-[980px]">
             <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">Examples</p>
-                <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">Finished Dance Offs.</h2>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
+                  Examples
+                </p>
+                <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">
+                  {repoPageCopy.examplesTitle}
+                </h2>
               </div>
               <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
-                {format.proofEntries.length} finished videos made with this Format.
+                {format.proofEntries.length} finished videos made with this
+                Format.
               </p>
             </div>
 
@@ -274,10 +285,16 @@ export default async function FormatPage({
                   />
                   <div className="p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
-                      Example {String(index + 1).padStart(2, "0")} · {entry.brand}
+                      Example {String(index + 1).padStart(2, "0")} ·{" "}
+                      {entry.brand}
                     </p>
-                    <h3 className="mt-2 text-2xl font-black leading-none">{entry.title}</h3>
-                    <Link href={`/s/${entry.id}`} className="mt-4 inline-flex items-center gap-2 text-sm font-black">
+                    <h3 className="mt-2 text-2xl font-black leading-none">
+                      {entry.title}
+                    </h3>
+                    <Link
+                      href={`/s/${entry.id}`}
+                      className="mt-4 inline-flex items-center gap-2 text-sm font-black"
+                    >
                       Open finished ad
                       <ArrowRight className="size-4" aria-hidden="true" />
                     </Link>
@@ -289,11 +306,11 @@ export default async function FormatPage({
         </section>
       ) : null}
 
-      {danceOffTrust &&
+      {repoTrust &&
       detailedProof.media.kind === "video" &&
       format.repositoryHref ? (
-        <BikiniBottomDanceOffTrust
-          data={danceOffTrust}
+        <FormatRepoTrust
+          data={repoTrust}
           openProofHref={`/s/${detailedProof.id}`}
           poster={detailedProof.media.poster}
           repositoryHref={format.repositoryHref}
@@ -362,7 +379,7 @@ export default async function FormatPage({
         </section>
       )}
 
-      {!danceOffTrust ? (
+      {!repoTrust ? (
         <section className="mx-auto grid w-[min(100%-32px,1100px)] gap-5 py-12 sm:py-16 lg:grid-cols-2">
           <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8">
             <p className="text-xs font-black uppercase tracking-[0.18em]">
@@ -397,7 +414,7 @@ export default async function FormatPage({
         </section>
       ) : null}
 
-      {danceOffTrust && format.handoff ? (
+      {repoTrust && format.handoff ? (
         <section
           id="run-with-agent"
           className="scroll-mt-6 border-t-2 border-[#080817] bg-[#080817] px-4 py-10 text-white sm:px-8 sm:py-12"
@@ -434,7 +451,7 @@ export default async function FormatPage({
                     ? "Know the run before you start."
                     : "Handoff is not live yet."}
                 </h2>
-                {!danceOffTrust ? (
+                {!repoTrust ? (
                   <p className="mt-5 max-w-xl text-lg font-bold leading-7 text-[#596176]">
                     {format.handoff
                       ? "The task is pinned to this exact public version. Codex asks one short question at a time and names the current step."
