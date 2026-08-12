@@ -7,8 +7,17 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 7;
+const RENDERER_VERSION = 9;
 const BOUNCE_SECONDS = 0.36;
+const BLINK_DURATION_FRAMES = 3;
+const BLINK_BOUNDARY_SNAP_FRAMES = 12;
+const BLINK_MINIMUM_GAP_FRAMES = 72;
+const BLINK_COLLISION_FRAMES = 5;
+const BLINK_STAGGER_FRAMES = 8;
+const BLINK_TRACKS = {
+  cat: { firstFrame: 53, gapFrames: [84, 109, 91, 126, 97] },
+  bunny: { firstFrame: 79, gapFrames: [103, 88, 117, 96, 132] },
+};
 
 export const LAYOUTS = {
   "two-shot": {
@@ -76,6 +85,55 @@ export function captionTextAtFrame(beat, frameIndex) {
   return chunks[chunkIndex];
 }
 
+function characterIsVisible(character, frameIndex, timeline) {
+  const time = frameIndex / FPS;
+  const beat = timeline.find((entry, index) => time < entry.end - 0.0001 || index === timeline.length - 1);
+  return beat?.camera === "two-shot" || beat?.camera === `${character}-close`;
+}
+
+function nearestVisibleBreakpoint(character, targetFrame, timeline) {
+  const candidates = timeline.slice(0, -1)
+    .map((beat) => Math.max(0, Math.round(beat.end * FPS) - 1))
+    .filter((frame) => characterIsVisible(character, frame, timeline))
+    .filter((frame) => Math.abs(frame - targetFrame) <= BLINK_BOUNDARY_SNAP_FRAMES)
+    .sort((left, right) => Math.abs(left - targetFrame) - Math.abs(right - targetFrame) || left - right);
+  return candidates[0];
+}
+
+export function buildBlinkSchedule(timeline, frameCount) {
+  const schedule = { cat: [], bunny: [] };
+  for (const character of ["cat", "bunny"]) {
+    const track = BLINK_TRACKS[character];
+    let targetFrame = track.firstFrame;
+    let gapIndex = 0;
+    while (targetFrame + BLINK_DURATION_FRAMES <= frameCount) {
+      let startFrame = nearestVisibleBreakpoint(character, targetFrame, timeline) ?? targetFrame;
+      if (characterIsVisible(character, startFrame, timeline)) {
+        const previous = schedule[character].at(-1);
+        if (previous === undefined || startFrame - previous >= BLINK_MINIMUM_GAP_FRAMES) {
+          let shouldSchedule = true;
+          if (character === "bunny" && schedule.cat.some((catFrame) => Math.abs(catFrame - startFrame) <= BLINK_COLLISION_FRAMES)) {
+            const staggered = startFrame + BLINK_STAGGER_FRAMES;
+            if (staggered + BLINK_DURATION_FRAMES <= frameCount && characterIsVisible(character, staggered, timeline)) startFrame = staggered;
+            else shouldSchedule = false;
+          }
+          if (shouldSchedule) schedule[character].push(startFrame);
+        }
+      }
+      targetFrame += track.gapFrames[gapIndex % track.gapFrames.length];
+      gapIndex += 1;
+    }
+  }
+  return schedule;
+}
+
+export function blinkStateAtFrame(schedule, frameIndex) {
+  const isBlinking = (character) => schedule[character].some(
+    (startFrame) => frameIndex >= startFrame && frameIndex < startFrame + BLINK_DURATION_FRAMES,
+  );
+  return { cat: isBlinking("cat"), bunny: isBlinking("bunny") };
+}
+
 function captionSvg(beat, captionText, episodeLabel) {
   const colors = { cat: "#62C8FF", bunny: "#FF8BCC", both: "#FFE477", none: "#FFFFFF" };
   const lines = wrapCaption(captionText, 24);
@@ -91,14 +149,13 @@ function captionSvg(beat, captionText, episodeLabel) {
   </svg>`);
 }
 
-export function visualState(beat, frameIndex) {
+export function visualState(beat, frameIndex, blinkState = { cat: false, bunny: false }) {
   const localFrame = Math.max(0, frameIndex - Math.round(beat.start * FPS));
   const mouthOpen = Math.floor(localFrame / 3) % 2 === 1;
-  const blink = frameIndex % 89 < 3;
   const isSpeaking = (character) => beat.speaker === character || beat.speaker === "both";
   const pose = (character) => {
+    if (blinkState[character]) return "blink";
     if (isSpeaking(character) && mouthOpen) return "mouth-open";
-    if (blink) return "blink";
     return "idle";
   };
   const bounce = Math.min(0, ...(beat.bounceAt || []).map((cue) => {
@@ -178,6 +235,7 @@ export async function renderRun({ root, runDirectory }) {
   await mkdir(framesDirectory, { recursive: true });
   const prepared = await prepareAssets({ root, cacheDirectory, background, assets });
   const frameCount = Math.ceil(durationSeconds * FPS);
+  const blinkSchedule = buildBlinkSchedule(input.timeline, frameCount);
   const eventUsage = new Map();
   const uniqueStates = new Set();
 
@@ -187,7 +245,7 @@ export async function renderRun({ root, runDirectory }) {
     while (beatIndex < input.timeline.length - 1 && time >= input.timeline[beatIndex].end - 0.0001) beatIndex += 1;
     const beat = input.timeline[beatIndex];
     eventUsage.set(beatIndex, (eventUsage.get(beatIndex) || 0) + 1);
-    const state = visualState(beat, frameIndex);
+    const state = visualState(beat, frameIndex, blinkStateAtFrame(blinkSchedule, frameIndex));
     const source = await renderState({ prepared, cacheDirectory, beat, beatIndex, state, episodeLabel: input.episodeLabel });
     uniqueStates.add(source);
     const destination = path.join(framesDirectory, `frame-${String(frameIndex).padStart(6, "0")}.png`);
@@ -225,6 +283,7 @@ export async function renderRun({ root, runDirectory }) {
     inputHash: hashValue(input),
     frameCount,
     uniqueVisualStates: uniqueStates.size,
+    blinkScheduleFrames: blinkSchedule,
     timelineBeatFrames: Object.fromEntries(eventUsage),
     output: "final.mp4",
   };

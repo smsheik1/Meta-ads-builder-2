@@ -10,7 +10,7 @@
     "two-shot character bounds preserve at least 120 pixels of clear conversational space and never overlap",
     "mouth substitution only for the active speaker; both characters move for speaker=both",
     "every speaker assignment is explicitly confirmed per beat through a declared evidence channel and checksum-bound to the user audio before rendering",
-    "neutral talking uses mouth substitutions and periodic blinks without vertical movement",
+    "neutral talking uses mouth substitutions and independent deterministic three-frame blinks without vertical movement; blink cadence is irregular, favors nearby dialogue boundaries, skips offscreen events, and avoids mechanical synchronization",
     "vertical bounce occurs only at an explicit per-beat bounceAt emphasis event, with at most two cues",
     "speaker-colored, high-contrast captions near the top safe area, progressing in one-to-three-word chunks rather than full-sentence cards",
     "persistent episode label near the bottom safe area",

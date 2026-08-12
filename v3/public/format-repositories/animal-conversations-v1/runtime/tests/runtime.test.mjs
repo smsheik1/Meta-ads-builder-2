@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { validateTimeline } from "../validate.mjs";
-import { captionChunks, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
+import { blinkStateAtFrame, buildBlinkSchedule, captionChunks, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
 import { applySpeakerReviewDocument, createSpeakerReviewDocument, speakerAssignmentHash } from "../speaker-review.mjs";
 import { readJson } from "../common.mjs";
 
@@ -25,6 +25,36 @@ test("only the active speaker receives the talking pose", () => {
   const open = visualState(beat, 3);
   assert.equal(open.catPose, "mouth-open");
   assert.notEqual(open.bunnyPose, "mouth-open");
+});
+
+test("blinks use independent deterministic tracks and favor dialogue boundaries", () => {
+  const timeline = [
+    { start: 0, end: 2.25, speaker: "both", camera: "two-shot", caption: "Together" },
+    { start: 2.25, end: 6.85, speaker: "cat", camera: "cat-close", caption: "Cat talks" },
+    { start: 6.85, end: 8, speaker: "bunny", camera: "bunny-close", caption: "Bunny talks" },
+    { start: 8, end: 12, speaker: "both", camera: "two-shot", caption: "Together again" },
+  ];
+  const schedule = buildBlinkSchedule(timeline, 12 * 24);
+  assert.deepEqual(schedule, buildBlinkSchedule(timeline, 12 * 24), "the same input must always produce the same blinks");
+  assert.equal(schedule.cat[0], 53, "cat's first due blink should align just before the 2.25s dialogue boundary");
+  assert.equal(schedule.bunny[0], 191, "an offscreen bunny blink should be skipped and the next due blink aligned to a visible boundary");
+  assert.ok(schedule.cat.every((frame) => !schedule.bunny.some((other) => Math.abs(frame - other) <= 5)), "character blinks should not look mechanically synchronized");
+  for (const starts of Object.values(schedule)) {
+    for (let index = 1; index < starts.length; index += 1) assert.ok(starts[index] - starts[index - 1] >= 72);
+  }
+
+  assert.deepEqual(blinkStateAtFrame(schedule, 53), { cat: true, bunny: false });
+  assert.deepEqual(blinkStateAtFrame(schedule, 55), { cat: true, bunny: false });
+  assert.deepEqual(blinkStateAtFrame(schedule, 56), { cat: false, bunny: false });
+  const speaking = timeline[0];
+  assert.equal(visualState(speaking, 53, blinkStateAtFrame(schedule, 53)).catPose, "blink", "a due blink should not be swallowed by the mouth cycle");
+
+  const sharedBoundary = buildBlinkSchedule([
+    { start: 0, end: 259 / 24, speaker: "both", camera: "two-shot", caption: "Together" },
+    { start: 259 / 24, end: 14, speaker: "both", camera: "two-shot", caption: "Still together" },
+  ], 14 * 24);
+  assert.ok(sharedBoundary.cat.includes(258), "the cat should use the nearby shared boundary");
+  assert.ok(sharedBoundary.bunny.includes(266), "the bunny should stagger instead of blinking with the cat");
 });
 
 test("captions progress in readable one-to-three-word chunks instead of full sentences", () => {

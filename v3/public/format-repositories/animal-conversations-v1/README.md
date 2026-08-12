@@ -28,6 +28,8 @@ Neutral talking uses mouth movement only. Vertical jumping is reserved for expli
 
 The renderer automatically turns each beat's full caption into progressive one-to-three-word cards. Keep `caption` as the complete spoken line; do not pre-split it or add manual caption-only beats.
 
+Blinking is automatic and has no authoring field. Each character follows an independent deterministic cadence with irregular three-to-six-second gaps; due blinks move to a nearby dialogue boundary when possible, offscreen blinks are skipped, and near-simultaneous two-shot blinks are staggered. Each blink lasts three frames at 24 fps. Do not add manual blink cues or runtime randomness.
+
 `init` extracts every beat from the actual user audio into `agent-runs/<run>/speaker-review/` and creates `speaker-review.json`. Prefer listening to each clip. If audio perception is unavailable, require another explicit channel: a user-provided label, a checksum-matched documented reference video, or confirmed silence. Set `confirmedSpeaker` plus the matching `evidence` (`direct-audio-review`, `user-provided-label`, `reference-video`, or `silence`), disclose the limitation, then run `apply-speakers`. That command makes the confirmed values authoritative and writes a receipt bound to the audio checksum and full speaker timeline. `validate` refuses to proceed if any beat is unconfirmed or if the audio/timeline changed afterward. Run `review-speakers` to regenerate the clips and start the confirmation again.
 
 ## Audio policy
