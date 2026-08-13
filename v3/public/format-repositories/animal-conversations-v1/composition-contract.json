@@ -4,7 +4,7 @@
     "1080x1920 vertical canvas at 24 fps",
     "one official renderer at runtime/render.mjs",
     "two supplied Toon Boom-derived characters: cat and bunny",
-    "the blue dog uses the legacy runtime ID cat and is the grounded, wise lead; the pink bunny is the secondary questioner/foil, and those roles remain stable for the complete episode",
+    "the blue dog uses the legacy runtime ID cat and the pink bunny uses bunny; narrative roles are not fixed by the Format and come only from the approved episode script",
     "idle, mouth-open, and blink pose substitutions for each character",
     "exactly three approved camera IDs: two-shot, cat-close, and bunny-close",
     "the bunny faces right in two-shot and bunny-close layouts while the cat faces left in two-shot and cat-close layouts, matching the supplied three-angle reference",
@@ -18,7 +18,7 @@
     "persistent episode label near the bottom safe area",
     "user audio is copied locally and muxed into the final video"
   ],
-  "replaceable": ["user audio", "timed captions", "named nonverbal vocalizations", "explicit speaker assignment", "approved camera selection per beat", "optional key-segment bounce cues", "episode title and label", "one of five packaged backgrounds"],
+  "replaceable": ["user audio", "timed captions", "named nonverbal vocalizations", "explicit speaker assignment", "episode-specific narrative roles such as mentor, lead, questioner, or foil", "approved camera selection per beat", "optional key-segment bounce cues", "episode title and label", "one of five packaged backgrounds"],
   "outOfScope": ["voice generation", "bundled speech transcription or diarization models (documented external local analysis may be supplied as evidence)", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
   "rendererInvariant": "Preview/proof/export frames are produced only by runtime/render.mjs from the validated complete episode input."
 }

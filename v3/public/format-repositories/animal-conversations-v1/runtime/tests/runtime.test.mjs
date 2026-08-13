@@ -316,16 +316,20 @@ test("quality review requires complete-script approval and honest perception dis
   const criteria = quality.blindReview.criteria.join(" ");
   assert.match(criteria, /complete role script.*spoken line.*nonverbal vocalization.*character assignment/);
   assert.match(criteria, /automated transcription.*diarization.*never approve roles/);
-  assert.match(criteria, /blue dog.*grounded, wise lead.*user-approved character performance/);
+  assert.match(criteria, /mentor, lead, questioner, and foil.*episode-specific roles.*user-approved complete script/);
+  assert.doesNotMatch(criteria, /grounded, wise lead|questioner\/foil/);
   assert.match(criteria, /intelligibility.*otherwise explicitly left unscored/);
   assert.match(requirements.notes.join(" "), /complete role script.*spoken line.*nonverbal vocalization.*character assignment/);
   assert.match(requirements.notes.join(" "), /speaker=both.*simultaneous-speech evidence.*uncertainty must stop/);
-  assert.match(requirements.notes.join(" "), /grounded\/wise lead.*blue dog.*runtime ID cat/);
+  assert.match(requirements.notes.join(" "), /stable detected voice ID.*user-confirmed character.*Never infer.*mentor.*lead.*questioner.*foil/);
+  assert.doesNotMatch(requirements.notes.join(" "), /grounded, wise lead|questioner\/foil/);
   assert.match(inputContract.timingRules.join(" "), /spoken caption text.*named nonverbal vocalization/);
   assert.match(inputContract.timingRules.join(" "), /user sees and approves the complete written role script/);
   assert.match(inputContract.timingRules.join(" "), /speaker=both.*simultaneous speech.*alternating voices.*single-speaker beats/);
   assert.match(inputContract.timingRules.join(" "), /voiceCharacterMap.*detectedVoices.*cannot change characters/);
-  assert.match(compositionContract.fixed.join(" "), /blue dog.*runtime ID cat.*grounded, wise lead.*pink bunny.*questioner\/foil/);
+  assert.match(compositionContract.fixed.join(" "), /blue dog.*runtime ID cat.*pink bunny.*narrative roles are not fixed.*approved episode script/);
+  assert.doesNotMatch(compositionContract.fixed.join(" "), /grounded, wise lead|questioner\/foil/);
+  assert.match(compositionContract.replaceable.join(" "), /episode-specific narrative roles.*mentor.*lead.*questioner.*foil/);
   assert.match(kitManifest.excluded.join(" "), /raw user-supplied runtime audio.*proof MP4 retains its distributable soundtrack/);
 });
 

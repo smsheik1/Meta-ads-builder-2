@@ -2,7 +2,7 @@
 
 This runnable format kit turns user-supplied audio plus a timed dialogue file into a 1080x1920 blue-dog-and-bunny conversation video. It includes the fixed characters, five supplied backgrounds, three camera angles, captions, speaker-driven mouths, deterministic blinks/reactions, validation, render inspection, and delivery receipts. It does not call a voice provider.
 
-The blue dog is the grounded, wise lead and uses the legacy runtime ID `cat`; the pink bunny is the secondary questioner/foil. The user-approved complete script is the role authority. Diarization supplies anonymous voice clusters only and cannot decide which character performs a line.
+The blue dog uses the legacy runtime ID `cat`; the pink bunny uses `bunny`. Narrative roles are episode-specific: either character may be the mentor, questioner, lead, or foil. The user-approved complete script is the only role authority. Diarization supplies anonymous voice clusters only and cannot decide character or narrative role.
 
 ## Quick start
 

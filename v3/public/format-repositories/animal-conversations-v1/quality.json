@@ -39,7 +39,7 @@
       "three-frame blinks look naturally irregular, favor conversational boundaries, and do not repeatedly synchronize the two characters",
       "neutral talking remains vertically still and any jump is brief, intentional, and attached to an explicit emphasis event",
       "the user has seen and approved one complete role script containing every spoken line, named nonverbal vocalization, silence, and character assignment; automated transcription, diarization, captions, and cameras may propose but never approve roles",
-      "the blue dog remains the grounded, wise lead for the complete episode; when local diarization represents distinct real speakers, a stable detected voice never jumps characters, while a user-approved character performance can override an inadequate anonymous cluster map",
+      "mentor, lead, questioner, and foil are episode-specific roles taken only from the user-approved complete script; when local diarization represents distinct real speakers, a stable detected voice never jumps characters, while a user-approved character performance can override an inadequate anonymous cluster map",
       "camera cuts follow the supplied three-angle grammar",
       "captions progress in readable one-to-three-word chunks, stay in the lower bottom-third lane below character faces and above the episode label without a background panel, remain synchronized, and stay speaker-associated",
       "the original user-provided audio remains complete; intelligibility is reviewed when sound is perceptible and otherwise explicitly left unscored"

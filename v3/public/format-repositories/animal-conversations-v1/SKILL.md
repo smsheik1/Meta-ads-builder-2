@@ -7,7 +7,7 @@ description: Render an Animal Conversations vertical video from user-provided au
 
 Use `runner.mjs` as the only episode entry point and `runtime/render.mjs` as the only renderer.
 
-The blue dog is the grounded, wise lead and uses the legacy runtime ID `cat`; the pink bunny is the secondary questioner/foil. Character roles come from the user-approved complete script, never from anonymous diarization labels alone.
+The blue dog uses the legacy runtime ID `cat`; the pink bunny uses `bunny`. Narrative roles are episode-specific: either character may be the mentor, questioner, lead, or foil. Character and narrative roles come from the user-approved complete script, never from a fixed archetype or anonymous diarization labels.
 
 When operating a downloaded kit, read `KIT-MANIFEST.json` first and report its `formatVersion` as the exact resolved version.
 
