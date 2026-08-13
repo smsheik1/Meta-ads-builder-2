@@ -9,7 +9,7 @@ await mkdir(downloads, { recursive: true });
 const output = path.join(downloads, "wiggly-animal-conversations-format-kit.zip");
 await rm(output, { force: true });
 await execute("zip", [
-  "-r", output,
+  "-X", "-r", output,
   ".",
   "-x", "node_modules/*", "agent-runs/*", "downloads/*", "converter/source/target/*", ".DS_Store",
 ], { cwd: root });

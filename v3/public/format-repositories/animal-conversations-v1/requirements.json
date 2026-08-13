@@ -6,7 +6,7 @@
   "environmentVariables": [],
   "notes": [
     "The episode audio is always supplied by the user as a local file.",
-    "Speaker identity is confirmed per beat through explicit evidence: preferably direct review of local clips; otherwise documented local audio analysis, a user label, a checksum-matched documented reference video, or silence. Local analysis is an optional operator-supplied aid, not a bundled transcription or diarization model. speaker=both requires documented simultaneous-speech evidence; uncertainty must stop for review and alternating voices must be split into single-speaker beats.",
+    "The complete role script is shown to and approved by the user before rendering. It contains every spoken line, named nonverbal vocalization, silence, and character assignment. Direct review, documented local analysis, user labels, or a checksum-matched approved reference may draft the beats, but transcription and diarization never approve character roles. speaker=both requires documented simultaneous-speech evidence; uncertainty must stop for review and alternating voices must be split into single-speaker beats.",
     "For local audio analysis, each stable detected voice ID is mapped once for the whole episode. The user-identified grounded/wise lead maps to the blue dog (legacy runtime ID cat), and caption or apparent dialogue-turn boundaries never recast that voice onto the bunny.",
     "No speech, music, image, or video provider call occurs at runtime.",
     "The smoke proof synthesizes a local tone only to exercise audio muxing without requiring episode content.",

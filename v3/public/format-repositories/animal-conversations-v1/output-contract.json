@@ -12,12 +12,12 @@
   "delivery": {
     "finalVideo": "final.mp4",
     "validationReceipt": ".validation.json",
-    "speakerAssignmentReceipt": ".speaker-assignment.json",
+    "scriptApprovalReceipt": ".script-approval.json",
     "renderReport": "render-report.json",
     "qualityReport": "quality-report.json",
     "contactSheet": "contact-sheet.png",
     "manifest": "delivery.json",
     "rule": "finalize writes delivery.json only after every automated technical gate passes"
   },
-  "evidence": ["input.json", "speaker-review.json", ".speaker-assignment.json", ".validation.json", "render-report.json", "quality-report.json", "contact-sheet.png", "delivery.json"]
+  "evidence": ["input.json", "script-review.json", ".script-approval.json", ".validation.json", "render-report.json", "quality-report.json", "contact-sheet.png", "delivery.json"]
 }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "entry": "runner.mjs",
-  "commands": ["check", "smoke", "init", "review-speakers", "apply-speakers", "validate", "render", "inspect", "finalize"],
+  "commands": ["check", "smoke", "init", "review-script", "approve-script", "validate", "render", "inspect", "finalize"],
   "officialRenderer": "runtime/render.mjs",
   "freeSmokeCommand": "npm run smoke -- --run=smoke-proof",
   "providerSpend": "none",

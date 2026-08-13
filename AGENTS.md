@@ -66,6 +66,11 @@ Ask these questions before writing code:
 - When in doubt, keep `/create` simpler and move advanced editing to `/builder`.
 - Do not delete legacy/reference code unless the user explicitly asks and the branch has a clear rollback path.
 
+## Provider Credentials
+
+- Provider API keys are stored in the ignored `.env.local` of the shared source project, and Git worktrees do not copy that file. In this local workspace the source file is `/Users/shaz/Documents/Codex/2026-05-10/i-m-working-on-a-project/Meta-Graphic-Ads-Builder/.env.local`.
+- When a provider key is needed for an explicitly approved call, load only the named value from that source file in memory. Do not print it, copy it into the worktree, or assume its absence from the worktree shell means it is unconfigured.
+
 ## Frontend QA
 
 - After any real rendered frontend change, use browser validation before calling it done.
