@@ -6,7 +6,8 @@
   "environmentVariables": [],
   "notes": [
     "The episode audio is always supplied by the user as a local file.",
-    "Speaker identity is confirmed per beat through explicit evidence: preferably direct review of local clips, otherwise a user label, a checksum-matched documented reference video, or silence. Automatic diarization is not claimed or required.",
+    "The generated timed-role-sheet.md is shown to and approved by the user before rendering. It contains every exact time range, spoken line, named nonverbal vocalization, silence, Dog/Bunny assignment, caption owner, and overlap. Direct review, documented local analysis, user labels, or a checksum-matched approved reference may draft the beats, but transcription and diarization never approve character roles. A speaker handoff occurs after the current speaker's last audible word and no later than the next speaker's first audible word; elongated phrases, internal dramatic pauses, and trailing words remain with the current speaker but never absorb the next character's words. speaker=both requires documented simultaneous-speech evidence and captioned overlap identifies captionSpeaker; uncertainty must stop for review and alternating voices must be split into single-speaker beats.",
+    "For local audio analysis, each stable detected voice ID is mapped once to the user-confirmed character for the whole episode. Never infer a character from a fixed mentor, lead, questioner, or foil archetype, and never recast a voice at a caption or apparent dialogue-turn boundary.",
     "No speech, music, image, or video provider call occurs at runtime.",
     "The smoke proof synthesizes a local tone only to exercise audio muxing without requiring episode content.",
     "Cargo is required only when rebuilding PNG character poses from Toon Boom Harmony projects; normal video rendering uses the packaged PNG poses."

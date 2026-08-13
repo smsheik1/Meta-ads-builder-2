@@ -127,6 +127,10 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
       { label: "Fixed vs customizable", path: "content-boundary.json" },
       { label: "Asset manifest", path: "assets.json" },
       { label: "Quality rubric", path: "quality.json" },
+      {
+        label: "Overlap regression",
+        path: "fixtures/regression/overlapping-reassurance/input.json",
+      },
       { label: "Published proof", path: "PROOF-REPORT.md" },
       { label: "Contract tests", path: "runtime/tests/runtime.test.mjs" },
       { label: "Main runner", path: "runner.mjs" },
@@ -160,7 +164,7 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
           title: "Speaker review",
           cost: "Free",
           description:
-            "Confirms every beat as cat, bunny, both, or silence and binds the result to the audio checksum.",
+            "Generates one timed role sheet with exact ranges, Dog/Bunny assignments, caption owners, vocalizations, and overlaps, then binds its approval to the audio checksum.",
           waiting: "Waits for explicit evidence",
         },
         {
@@ -179,7 +183,7 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
           title: "Review and deliver",
           cost: "Free",
           description:
-            "Inspects the MP4, contact sheet, and technical report before finalizing.",
+            "Inspects the MP4, approved timed role sheet, contact sheet, and technical report before finalizing.",
           waiting: "Waits for your review",
         },
       ],
@@ -187,8 +191,8 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
         "npm test",
         "npm run check",
         "npm run smoke -- --run=<id>",
-        "node runner.mjs init --run=<id> --audio=<file>",
-        "node runner.mjs apply-speakers --run=<id>",
+        "node runner.mjs init --run=<id> --audio=/absolute/path/audio.wav --input=/absolute/path/input.json",
+        "node runner.mjs approve-script --run=<id>",
         "node runner.mjs validate --run=<id>",
         "node runner.mjs render --run=<id>",
         "node runner.mjs inspect --run=<id>",

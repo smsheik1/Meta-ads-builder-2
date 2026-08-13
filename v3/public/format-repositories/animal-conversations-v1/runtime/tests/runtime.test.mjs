@@ -1,14 +1,31 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { validateTimeline } from "../validate.mjs";
-import { blinkStateAtFrame, buildBlinkSchedule, buildSpeechActivityTrack, CAPTION_TOP_Y, captionChunks, captionSvg, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
-import { applySpeakerReviewDocument, createSpeakerReviewDocument, speakerAssignmentHash } from "../speaker-review.mjs";
-import { readJson } from "../common.mjs";
+import { blinkStateAtFrame, buildBlinkSchedule, buildMouthAnimationTrack, buildSpeechActivityTrack, CAPTION_TOP_Y, captionChunks, captionSvg, captionTextAtFrame, LAYOUTS, visualState } from "../render.mjs";
+import { approveScriptReviewDocument, createScriptReviewDocument, reviewedScriptHash, scriptApprovalHash, timedRoleSheetMarkdown } from "../speaker-review.mjs";
+import { hashValue, readJson, requireEpisodeInputSource } from "../common.mjs";
+
+test("real episode initialization fails closed without a timing input", () => {
+  assert.throws(() => requireEpisodeInputSource(), /every real episode/);
+  assert.equal(requireEpisodeInputSource("/tmp/episode.json"), "/tmp/episode.json");
+});
 
 const formatRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+function markCompleteScriptApproved(input, review, basis = "user-confirmed-complete-script") {
+  review.approval = {
+    approved: true,
+    basis,
+    approvedBy: basis === "packaged-smoke-fixture" ? "packaged smoke fixture" : "episode user",
+    approvalNote: "The complete ordered script, including all roles, words, nonverbal vocalizations, and silence, was explicitly approved.",
+    scriptHash: reviewedScriptHash(input, review),
+  };
+  return review;
+}
 
 test("timeline accepts only contiguous approved conversation beats", () => {
   assert.deepEqual(validateTimeline([
@@ -18,6 +35,30 @@ test("timeline accepts only contiguous approved conversation beats", () => {
   assert.match(validateTimeline([
     { start: 0, end: 1, speaker: "cat", camera: "wide", caption: "Hello" },
   ], 1).join(" "), /camera/);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "both", camera: "two-shot", caption: "Together" },
+  ], 1).join(" "), /overlapEvidence.*required/);
+  assert.deepEqual(validateTimeline([
+    { start: 0, end: 1, speaker: "both", captionSpeaker: "bunny", camera: "two-shot", caption: "Together", overlapEvidence: "Two independently identified voices are simultaneous." },
+  ], 1), []);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "both", camera: "two-shot", caption: "Together", overlapEvidence: "Two independently identified voices are simultaneous." },
+  ], 1).join(" "), /captionSpeaker/);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "cat", captionSpeaker: "cat", camera: "cat-close", caption: "Solo" },
+  ], 1).join(" "), /permitted only.*speaker=both/);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "cat", camera: "two-shot", caption: "Solo", overlapEvidence: "uncertain" },
+  ], 1).join(" "), /permitted only when speaker=both/);
+  assert.deepEqual(validateTimeline([
+    { start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "", vocalization: "Emotional gasp and shriek" },
+  ], 1), []);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "Words", vocalization: "Shriek" },
+  ], 1).join(" "), /exactly one of caption or vocalization/);
+  assert.match(validateTimeline([
+    { start: 0, end: 1, speaker: "none", camera: "two-shot", caption: "", vocalization: "Unknown sound" },
+  ], 1).join(" "), /speaker=none cannot contain/);
 });
 
 test("only the active speaker receives the talking pose", () => {
@@ -25,6 +66,14 @@ test("only the active speaker receives the talking pose", () => {
   const open = visualState(beat, 3);
   assert.equal(open.catPose, "mouth-open");
   assert.notEqual(open.bunnyPose, "mouth-open");
+});
+
+test("caption ownership stays distinct from simultaneous mouth performance", () => {
+  const beat = { start: 0, end: 1, speaker: "both", captionSpeaker: "bunny", camera: "two-shot", caption: "Noooo..." };
+  const state = visualState(beat, 3);
+  assert.equal(state.catPose, "mouth-open");
+  assert.equal(state.bunnyPose, "mouth-open");
+  assert.match(captionSvg(beat, beat.caption, "ANIMAL CONVERSATIONS").toString(), /fill="#FF8BCC"/);
 });
 
 test("mouth motion closes for real pauses without reacting to brief quiet frames", () => {
@@ -50,6 +99,23 @@ test("mouth motion closes for real pauses without reacting to brief quiet frames
   assert.equal(visualState(beat, 3, { cat: false, bunny: false }, true).catPose, "mouth-open");
   assert.equal(visualState(beat, 3, { cat: false, bunny: false }, false).catPose, "idle");
   assert.notEqual(visualState(beat, 3, { cat: false, bunny: false }, false).bunnyPose, "mouth-open");
+});
+
+test("mouth cadence follows the audio envelope instead of a fixed frame clock", () => {
+  const slowLevels = Array(16).fill(-18);
+  const slowTrack = buildMouthAnimationTrack(slowLevels, slowLevels.map(() => true));
+  assert.ok(slowTrack.slice(1).every(Boolean), "a sustained slow vowel should hold the mouth open instead of flapping");
+
+  const fastLevels = [-16, -15, -38, -39, -17, -16, -37, -38, -15, -16, -39, -38];
+  const fastTrack = buildMouthAnimationTrack(fastLevels, fastLevels.map(() => true));
+  const transitions = fastTrack.slice(1).filter((isOpen, index) => isOpen !== fastTrack[index]).length;
+  assert.ok(transitions >= 4, "syllabic energy peaks should produce a visibly faster cadence");
+  assert.deepEqual(
+    buildMouthAnimationTrack(fastLevels.map((level) => level - 20), fastLevels.map(() => true)),
+    fastTrack,
+    "cadence should be stable after a volume shift",
+  );
+  assert.deepEqual(buildMouthAnimationTrack([-16, -16, -16], [true, false, true]), [true, false, true]);
 });
 
 test("blinks use independent deterministic tracks and favor dialogue boundaries", () => {
@@ -128,7 +194,7 @@ test("bounce cues are optional, ordered, inside the beat, and capped at two", ()
   assert.match(validateTimeline([{ ...beat, speaker: "none", caption: "", bounceAt: [0.1] }], 1).join(" "), /active speaker/);
 });
 
-test("speaker review requires explicit evidence and binds the confirmed character to the timeline", () => {
+test("complete script approval is required and binds words, nonverbal events, roles, and timing", () => {
   const input = {
     audioFile: "user-audio.wav",
     timeline: [
@@ -136,23 +202,146 @@ test("speaker review requires explicit evidence and binds the confirmed characte
       { start: 1, end: 2, speaker: "cat", camera: "cat-close", caption: "Okay." },
     ],
   };
-  const review = createSpeakerReviewDocument({ input, audioSha256: "audio-hash", generatedAt: "2026-01-01T00:00:00.000Z" });
+  const review = createScriptReviewDocument({ input, audioSha256: "audio-hash", generatedAt: "2026-01-01T00:00:00.000Z" });
   assert.equal(review.beats[0].confirmedSpeaker, null);
-  assert.match(review.instructions, /direct audio.*user-provided label.*reference video.*silence/);
-  assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash" }), /needs confirmedSpeaker/);
-  assert.throws(() => applySpeakerReviewDocument({ input, review, audioSha256: "replacement-audio" }), /user audio changed/);
+  assert.match(review.instructions, /timed-role-sheet\.md.*exact time range.*nonverbal vocalization.*caption owner.*user sees and approves the entire timed role sheet/);
+  assert.throws(() => approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" }), /complete written role script must be explicitly approved/);
+  assert.throws(() => approveScriptReviewDocument({ input, review, audioSha256: "replacement-audio" }), /user audio changed/);
   review.beats[0].confirmedSpeaker = "cat";
   review.beats[0].evidence = "direct-audio-review";
   review.beats[1].confirmedSpeaker = "cat";
   review.beats[1].evidence = "user-provided-label";
+  markCompleteScriptApproved(input, review);
+  const recastReview = structuredClone(review);
+  recastReview.beats[0].confirmedSpeaker = "bunny";
+  assert.throws(() => approveScriptReviewDocument({ input, review: recastReview, audioSha256: "audio-hash" }), /script approval is stale/);
   const changedTimeline = structuredClone(input);
   changedTimeline.timeline[0].camera = "cat-close";
-  assert.throws(() => applySpeakerReviewDocument({ input: changedTimeline, review, audioSha256: "audio-hash" }), /timeline timing, captions, or cameras changed/);
-  const applied = applySpeakerReviewDocument({ input, review, audioSha256: "audio-hash", appliedAt: "2026-01-01T00:01:00.000Z" });
-  assert.equal(applied.receipt.method, "explicit-per-beat-speaker-confirmation");
+  assert.throws(() => approveScriptReviewDocument({ input: changedTimeline, review, audioSha256: "audio-hash" }), /timing, words, caption ownership, vocalizations, or cameras changed/);
+  const applied = approveScriptReviewDocument({ input, review, audioSha256: "audio-hash", appliedAt: "2026-01-01T00:01:00.000Z" });
+  assert.equal(applied.receipt.method, "explicit-complete-script-approval");
   assert.equal(applied.input.timeline[0].speaker, "cat");
-  assert.equal(applied.receipt.timelineHash, speakerAssignmentHash(applied.input));
+  assert.equal(applied.receipt.scriptHash, scriptApprovalHash(applied.input));
+  assert.equal(applied.receipt.timedRoleSheetHash, hashValue(applied.timedRoleSheet));
   assert.equal(applied.receipt.reviewedBeats, 2);
+  assert.equal(applied.receipt.nonverbalBeats, 0);
+  assert.equal(applied.receipt.approval.basis, "user-confirmed-complete-script");
+});
+
+test("nonverbal vocalizations are first-class approved beats and invalidate stale receipts", () => {
+  const input = {
+    audioFile: "user-audio.wav",
+    timeline: [
+      { start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "", vocalization: "Emotional gasp and shriek" },
+      { start: 1, end: 2, speaker: "bunny", camera: "bunny-close", caption: "No, no, no!" },
+    ],
+  };
+  const review = createScriptReviewDocument({ input, audioSha256: "audio-hash" });
+  review.beats.forEach((beat) => {
+    beat.confirmedSpeaker = beat.proposedSpeaker;
+    beat.evidence = "user-provided-label";
+  });
+  markCompleteScriptApproved(input, review);
+  const applied = approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" });
+  assert.equal(applied.receipt.nonverbalBeats, 1);
+  assert.equal(applied.receipt.spokenBeats, 1);
+  const revised = structuredClone(applied.input);
+  revised.timeline[0].vocalization = "Quiet gasp";
+  assert.notEqual(scriptApprovalHash(revised), applied.receipt.scriptHash);
+});
+
+test("local audio analysis is explicit evidence only when its basis is documented", () => {
+  const input = {
+    audioFile: "user-audio.wav",
+    timeline: [{ start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "Hello" }],
+  };
+  const review = createScriptReviewDocument({ input, audioSha256: "audio-hash" });
+  review.beats[0].confirmedSpeaker = "cat";
+  review.beats[0].evidence = "local-audio-analysis";
+  assert.throws(() => approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" }), /evidenceNote/);
+  review.beats[0].evidenceNote = "Local ASR word timings plus two-speaker diarization; speaker 0 was creatively cast as cat.";
+  review.voiceCharacterMap.voice_0 = "cat";
+  review.beats[0].detectedVoices = ["voice_0"];
+  markCompleteScriptApproved(input, review);
+  const applied = approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" });
+  assert.equal(applied.receipt.evidenceCounts["local-audio-analysis"], 1);
+  assert.equal(applied.receipt.voiceBoundBeats, 1);
+  assert.equal(applied.receipt.voiceCharacterMap.voice_0, "cat");
+});
+
+test("local audio analysis cannot recast one detected voice at a later dialogue turn", () => {
+  const input = {
+    audioFile: "user-audio.wav",
+    timeline: [
+      { start: 0, end: 1, speaker: "cat", camera: "cat-close", caption: "First" },
+      { start: 1, end: 2, speaker: "bunny", camera: "bunny-close", caption: "Later" },
+    ],
+  };
+  const review = createScriptReviewDocument({ input, audioSha256: "audio-hash" });
+  review.voiceCharacterMap.voice_0 = "cat";
+  review.beats.forEach((beat) => {
+    beat.evidence = "local-audio-analysis";
+    beat.evidenceNote = "The same diarized voice_0 continues across this caption boundary.";
+    beat.detectedVoices = ["voice_0"];
+  });
+  review.beats[0].confirmedSpeaker = "cat";
+  review.beats[1].confirmedSpeaker = "bunny";
+  markCompleteScriptApproved(input, review);
+  assert.throws(() => approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" }), /same confirmed character/);
+});
+
+test("speaker=both requires explicitly confirmed simultaneous speech and never represents uncertainty", () => {
+  const input = {
+    audioFile: "user-audio.wav",
+    timeline: [{ start: 0, end: 1, speaker: "both", captionSpeaker: "bunny", camera: "two-shot", caption: "Together" }],
+  };
+  const review = createScriptReviewDocument({ input, audioSha256: "audio-hash" });
+  review.voiceCharacterMap.voice_cat = "cat";
+  review.voiceCharacterMap.voice_bunny = "bunny";
+  review.beats[0].confirmedSpeaker = "both";
+  review.beats[0].evidence = "local-audio-analysis";
+  review.beats[0].evidenceNote = "Overlap-aware local analysis identifies cat and bunny speaking simultaneously from 0.20–0.72 seconds.";
+  review.beats[0].detectedVoices = ["voice_cat", "voice_bunny"];
+  markCompleteScriptApproved(input, review);
+  assert.throws(() => approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" }), /overlapConfirmed=true/);
+  review.beats[0].overlapConfirmed = true;
+  const applied = approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" });
+  assert.equal(applied.receipt.confirmedOverlapBeats, 1);
+  assert.match(applied.input.timeline[0].overlapEvidence, /simultaneously/);
+  assert.equal(applied.input.timeline[0].captionSpeaker, "bunny");
+
+  const changedCaptionOwner = structuredClone(input);
+  changedCaptionOwner.timeline[0].captionSpeaker = "cat";
+  assert.notEqual(scriptApprovalHash(changedCaptionOwner), applied.receipt.scriptHash);
+
+  review.beats[0].confirmedSpeaker = "cat";
+  assert.throws(() => approveScriptReviewDocument({ input, review, audioSha256: "audio-hash" }), /only when confirmedSpeaker=both/);
+});
+
+test("overlapping-reassurance regression keeps parallel performance and role handoffs explicit", async () => {
+  const fixture = await readJson(path.join(formatRoot, "fixtures/regression/overlapping-reassurance/input.json"));
+  assert.deepEqual(validateTimeline(fixture.timeline, 5), []);
+  assert.deepEqual(fixture.timeline.map((beat) => beat.speaker), ["cat", "both", "cat", "both", "cat", "none", "bunny"]);
+  assert.deepEqual(fixture.timeline.filter((beat) => beat.speaker === "both").map((beat) => beat.captionSpeaker), ["bunny", "bunny"]);
+  assert.equal(fixture.timeline.find((beat) => beat.caption.includes("traaaaash"))?.speaker, "cat");
+
+  const review = createScriptReviewDocument({ input: fixture, audioSha256: "fixture-audio-hash", generatedAt: "2026-01-01T00:00:00.000Z" });
+  review.beats.forEach((beat) => {
+    beat.confirmedSpeaker = beat.proposedSpeaker;
+    beat.evidence = beat.proposedSpeaker === "none" ? "silence" : "user-provided-label";
+    if (beat.proposedSpeaker === "both") {
+      beat.overlapConfirmed = true;
+      beat.evidenceNote = fixture.timeline[beat.index].overlapEvidence;
+    }
+  });
+  markCompleteScriptApproved(fixture, review);
+  review.status = "applied";
+  const sheet = timedRoleSheetMarkdown({ input: fixture, review });
+  assert.match(sheet, /Status: \*\*APPROVED\*\*/);
+  assert.match(sheet, /00:00\.800–00:01\.400 \| Dog \+ Bunny \| Bunny \| “Noooo\.\.\.” \| CONFIRMED/);
+  assert.match(sheet, /00:01\.400–00:02\.000 \| Dog \| — \| \[Emotional gasp and shriek\]/);
+  assert.match(sheet, /00:02\.500–00:04\.200 \| Dog \| Dog \| “I'm traaaaash\.\.\. Gaaaaarbage\.\.\.”/);
+  assert.match(sheet, /00:04\.300–00:05\.000 \| Bunny \| Bunny \| “If you made a mistake—”/);
 });
 
 test("the supplied sample assigns the disputed blue-caption lines to the cat", async () => {
@@ -163,18 +352,40 @@ test("the supplied sample assigns the disputed blue-caption lines to the cat", a
   assert.equal(speakersByCaption.get("We're just listening..."), "cat");
 });
 
-test("quality review requires honest perception disclosure for fallback speaker evidence", async () => {
+test("quality review requires complete-script approval and honest perception disclosure", async () => {
   const quality = await readJson(path.join(formatRoot, "quality.json"));
   const requirements = await readJson(path.join(formatRoot, "requirements.json"));
   const inputContract = await readJson(path.join(formatRoot, "input-contract.json"));
+  const compositionContract = await readJson(path.join(formatRoot, "composition-contract.json"));
   const kitManifest = await readJson(path.join(formatRoot, "KIT-MANIFEST.json"));
   assert.equal(quality.blindReview.requiredPlayback.perceptionMode, "best-available-with-explicit-disclosure");
   const criteria = quality.blindReview.criteria.join(" ");
-  assert.match(criteria, /direct audio.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(criteria, /generated timed role sheet.*exact time range.*spoken line.*nonverbal vocalization.*character assignment.*caption owner.*overlap/);
+  assert.match(criteria, /automated transcription.*diarization.*never approve roles/);
+  assert.match(criteria, /mentor, lead, questioner, and foil.*episode-specific roles.*user-approved complete script/);
+  assert.doesNotMatch(criteria, /grounded, wise lead|questioner\/foil/);
+  assert.match(criteria, /elongated phrases.*trailing words.*same speaker.*last audible word.*without swallowing.*next character's first audible word/);
   assert.match(criteria, /intelligibility.*otherwise explicitly left unscored/);
-  assert.match(requirements.notes.join(" "), /direct review.*user label.*checksum-matched documented reference video.*silence/);
-  assert.match(inputContract.timingRules.join(" "), /direct audio.*user label.*checksum-matched documented reference video.*silence/);
+  assert.match(requirements.notes.join(" "), /timed-role-sheet\.md.*exact time range.*spoken line.*nonverbal vocalization.*Dog\/Bunny assignment.*caption owner.*overlap/);
+  assert.match(requirements.notes.join(" "), /speaker=both.*simultaneous-speech evidence.*uncertainty must stop/);
+  assert.match(requirements.notes.join(" "), /stable detected voice ID.*user-confirmed character.*Never infer.*mentor.*lead.*questioner.*foil/);
+  assert.doesNotMatch(requirements.notes.join(" "), /grounded, wise lead|questioner\/foil/);
+  assert.match(requirements.notes.join(" "), /speaker handoff.*last audible word.*next speaker's first audible word.*elongated phrases.*trailing words.*never absorb.*next character's words/);
+  assert.match(inputContract.timingRules.join(" "), /spoken caption text.*named nonverbal vocalization/);
+  assert.match(inputContract.timingRules.join(" "), /speaker boundary.*last audible word.*next speaker's first audible word.*elongated phrases.*trailing words.*delivery slows down.*never swallow.*next character's words/);
+  assert.match(inputContract.timingRules.join(" "), /timed-role-sheet\.md.*exact time range.*caption owner.*user approves that full sheet/);
+  assert.match(inputContract.timingRules.join(" "), /speaker=both.*simultaneous speech.*alternating voices.*single-speaker beats/);
+  assert.match(inputContract.timingRules.join(" "), /voiceCharacterMap.*detectedVoices.*cannot change characters/);
+  assert.match(compositionContract.fixed.join(" "), /blue dog.*runtime ID cat.*pink bunny.*narrative roles are not fixed.*approved episode script/);
+  assert.match(compositionContract.fixed.join(" "), /captionSpeaker.*caption ownership.*timed-role-sheet\.md/);
+  assert.doesNotMatch(compositionContract.fixed.join(" "), /grounded, wise lead|questioner\/foil/);
+  assert.match(compositionContract.replaceable.join(" "), /episode-specific narrative roles.*mentor.*lead.*questioner.*foil/);
   assert.match(kitManifest.excluded.join(" "), /raw user-supplied runtime audio.*proof MP4 retains its distributable soundtrack/);
+});
+
+test("format kit build strips nondeterministic ZIP metadata", async () => {
+  const buildSource = await readFile(path.join(formatRoot, "build-kit.mjs"), "utf8");
+  assert.match(buildSource, /"-X", "-r"/);
 });
 
 test("conversation staging preserves inward orientation and a clear two-shot gap", async () => {

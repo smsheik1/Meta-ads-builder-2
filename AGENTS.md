@@ -66,6 +66,11 @@ Ask these questions before writing code:
 - When in doubt, keep `/create` simpler and move advanced editing to `/builder`.
 - Do not delete legacy/reference code unless the user explicitly asks and the branch has a clear rollback path.
 
+## Provider Credentials
+
+- Provider API keys have one canonical source: the ignored repo-root `secrets.env`, which is a local symlink to the operator's central secrets file. Do not search, open, or use `.env.local` for provider credentials.
+- When a provider key is needed for an explicitly approved call, load only the named value from `secrets.env` in memory. Do not print it, copy it into a worktree, or assume its absence from the worktree shell means it is unconfigured.
+
 ## Frontend QA
 
 - After any real rendered frontend change, use browser validation before calling it done.

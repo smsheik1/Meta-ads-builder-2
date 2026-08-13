@@ -1,10 +1,11 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { audioDuration, exists, probe, readJson, sha256, writeJson } from "./common.mjs";
-import { speakerAssignmentHash } from "./speaker-review.mjs";
+import { audioDuration, exists, hashValue, probe, readJson, sha256, writeJson } from "./common.mjs";
+import { scriptApprovalHash } from "./speaker-review.mjs";
 
 export const CAMERAS = new Set(["two-shot", "cat-close", "bunny-close"]);
 export const SPEAKERS = new Set(["cat", "bunny", "both", "none"]);
-const BEAT_FIELDS = new Set(["start", "end", "speaker", "camera", "caption", "bounceAt"]);
+const BEAT_FIELDS = new Set(["start", "end", "speaker", "camera", "caption", "captionSpeaker", "vocalization", "overlapEvidence", "bounceAt"]);
 
 export function validateTimeline(timeline, durationSeconds) {
   const errors = [];
@@ -21,9 +22,29 @@ export function validateTimeline(timeline, durationSeconds) {
     }
     if (Math.abs(beat.start - cursor) > 0.02) errors.push(`${label} must begin at ${cursor.toFixed(3)} to keep captions and animation continuous.`);
     if (!SPEAKERS.has(beat.speaker)) errors.push(`${label}.speaker must be cat, bunny, both, or none.`);
+    if (beat.speaker === "both" && (typeof beat.overlapEvidence !== "string" || !beat.overlapEvidence.trim())) {
+      errors.push(`${label}.overlapEvidence is required when speaker=both; uncertainty must be split, resolved to one speaker, or left unfinalized.`);
+    }
+    if (beat.speaker !== "both" && beat.overlapEvidence !== undefined) {
+      errors.push(`${label}.overlapEvidence is permitted only when speaker=both.`);
+    }
     if (!CAMERAS.has(beat.camera)) errors.push(`${label}.camera must be two-shot, cat-close, or bunny-close.`);
     if (typeof beat.caption !== "string" || beat.caption.length > 180) errors.push(`${label}.caption must be a string of at most 180 characters.`);
-    if (beat.speaker !== "none" && !beat.caption.trim()) errors.push(`${label}.caption is required for spoken beats.`);
+    if (beat.vocalization !== undefined && (typeof beat.vocalization !== "string" || !beat.vocalization.trim() || beat.vocalization.length > 120)) {
+      errors.push(`${label}.vocalization must be a non-empty string of at most 120 characters when present.`);
+    }
+    const hasCaption = typeof beat.caption === "string" && Boolean(beat.caption.trim());
+    const hasVocalization = typeof beat.vocalization === "string" && Boolean(beat.vocalization.trim());
+    if (beat.speaker === "both" && hasCaption && !["cat", "bunny", "both"].includes(beat.captionSpeaker)) {
+      errors.push(`${label}.captionSpeaker must be cat, bunny, or both on a captioned speaker=both beat.`);
+    }
+    if ((beat.speaker !== "both" || !hasCaption) && beat.captionSpeaker !== undefined) {
+      errors.push(`${label}.captionSpeaker is permitted only on a captioned speaker=both beat.`);
+    }
+    if (beat.speaker === "none" && (hasCaption || hasVocalization)) errors.push(`${label} with speaker=none cannot contain spoken text or a vocalization.`);
+    if (beat.speaker !== "none" && hasCaption === hasVocalization) {
+      errors.push(`${label} with an active speaker must contain exactly one of caption or vocalization; split words and nonverbal performance into separate contiguous beats.`);
+    }
     if (beat.bounceAt !== undefined) {
       if (!Array.isArray(beat.bounceAt) || beat.bounceAt.length > 2) {
         errors.push(`${label}.bounceAt must contain at most two cue offsets.`);
@@ -79,16 +100,25 @@ export async function validateRun({ root, runDirectory }) {
   }
   errors.push(...validateTimeline(input.timeline, durationSeconds));
 
-  const speakerAssignmentPath = path.join(runDirectory, ".speaker-assignment.json");
-  let speakerAssignment = null;
-  if (!(await exists(speakerAssignmentPath))) {
-    errors.push("Speaker assignment is unconfirmed. Complete speaker-review.json and run apply-speakers before validation.");
+  const scriptApprovalPath = path.join(runDirectory, ".script-approval.json");
+  const timedRoleSheetPath = path.join(runDirectory, "timed-role-sheet.md");
+  let scriptApproval = null;
+  if (!(await exists(scriptApprovalPath))) {
+    errors.push("The complete role script is unapproved. Complete script-review.json and run approve-script before validation.");
   } else {
-    speakerAssignment = await readJson(speakerAssignmentPath);
-    if (speakerAssignment.status !== "pass") errors.push("Speaker assignment receipt must pass.");
-    if (speakerAssignment.audioSha256 !== audioSha256) errors.push("Speaker assignment is stale because the user audio changed.");
-    if (speakerAssignment.timelineHash !== speakerAssignmentHash(input)) errors.push("Speaker assignment is stale because the timeline changed.");
-    if (speakerAssignment.reviewedBeats !== input.timeline.length) errors.push("Speaker assignment must cover every timeline beat.");
+    scriptApproval = await readJson(scriptApprovalPath);
+    if (scriptApproval.status !== "pass") errors.push("Script approval receipt must pass.");
+    if (scriptApproval.audioSha256 !== audioSha256) errors.push("Script approval is stale because the user audio changed.");
+    if (scriptApproval.scriptHash !== scriptApprovalHash(input)) errors.push("Script approval is stale because the timing, words, caption ownership, vocalizations, cameras, or roles changed.");
+    if (!(await exists(timedRoleSheetPath))) errors.push("The approved timed-role-sheet.md is missing.");
+    else if (scriptApproval.timedRoleSheetHash !== hashValue(await readFile(timedRoleSheetPath, "utf8"))) errors.push("The timed role sheet is stale because it changed after approval.");
+    if (scriptApproval.reviewedBeats !== input.timeline.length) errors.push("Script approval must cover every timeline beat.");
+    if (scriptApproval.nonverbalBeats !== input.timeline.filter((beat) => typeof beat.vocalization === "string" && beat.vocalization.trim()).length) {
+      errors.push("Script approval must account for every nonverbal vocalization beat.");
+    }
+    if (scriptApproval.confirmedOverlapBeats !== input.timeline.filter((beat) => beat.speaker === "both").length) {
+      errors.push("Every speaker=both beat must have explicit confirmed overlapping-speech evidence.");
+    }
   }
 
   const verifiedAssets = [];
@@ -118,10 +148,17 @@ export async function validateRun({ root, runDirectory }) {
     background: background.id,
     timelineBeats: input.timeline.length,
     camerasUsed: [...new Set(input.timeline.map((beat) => beat.camera))],
-    speakerAssignment: speakerAssignment && {
-      method: speakerAssignment.method,
-      reviewedBeats: speakerAssignment.reviewedBeats,
-      evidenceCounts: speakerAssignment.evidenceCounts,
+    scriptApproval: scriptApproval && {
+      method: scriptApproval.method,
+      approval: scriptApproval.approval,
+      reviewedBeats: scriptApproval.reviewedBeats,
+      spokenBeats: scriptApproval.spokenBeats,
+      nonverbalBeats: scriptApproval.nonverbalBeats,
+      silentBeats: scriptApproval.silentBeats,
+      evidenceCounts: scriptApproval.evidenceCounts,
+      voiceCharacterMap: scriptApproval.voiceCharacterMap,
+      voiceBoundBeats: scriptApproval.voiceBoundBeats,
+      confirmedOverlapBeats: scriptApproval.confirmedOverlapBeats,
     },
     verifiedAssets,
   };
