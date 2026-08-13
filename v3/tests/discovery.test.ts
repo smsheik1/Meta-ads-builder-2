@@ -443,8 +443,11 @@ assert.deepEqual(
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "character-conversations")?.entries.map((entry) => entry.id),
-  ["animal-conversations-listen-dont-judge"],
-  "Animal Conversations should have one dedicated character-conversation shelf.",
+  [
+    "animal-conversations-listen-dont-judge",
+    "animal-conversations-i-made-a-mistake",
+  ],
+  "Animal Conversations should keep both finished videos on its dedicated shelf.",
 );
 assert.ok(
   shelves

@@ -2512,7 +2512,30 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "animal-conversations",
       name: "Animal Conversations",
-      version: "0.15.0",
+      version: "0.15.1",
+      owner: "Shaz",
+    },
+  },
+  {
+    id: "animal-conversations-i-made-a-mistake",
+    status: "published",
+    order: 11.71,
+    brand: "Animal Conversations",
+    title: "I made a mistake?!",
+    curatorNote:
+      "The corrected unseen-audio proof keeps the Dog's emotional spiral, the Bunny's overlapping reassurance, and the next handoff assigned to the intended characters.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/animal-conversations-v1/examples/i-made-a-mistake/evidence/final.mp4",
+      poster: "/format-repositories/animal-conversations-v1/examples/i-made-a-mistake/evidence/poster.jpg",
+      durationLabel: "30 sec",
+      aspectRatio: "9:16",
+    },
+    format: {
+      slug: "animal-conversations",
+      name: "Animal Conversations",
+      version: "0.15.1",
       owner: "Shaz",
     },
   },
