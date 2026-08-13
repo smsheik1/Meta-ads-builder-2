@@ -191,6 +191,7 @@ These ideas are deliberately not universal yet:
 - Every Repo needs a contact sheet; static-image Formats may need different evidence.
 - Run evidence should share one product-wide UI component.
 - One folder and manifest shape can cover static ads, template-only video, and generative video equally well.
+- Dialogue Formats with simultaneous performance should separate the active performers from caption ownership and show both in one exact-time approval artifact. Animal Conversations v0.15.0 fixed a real Dog/Bunny overlap failure this way, but the rule has not yet been challenged in another dialogue Repo.
 
 Repo #2 should challenge these assumptions instead of copying Otaku blindly.
 

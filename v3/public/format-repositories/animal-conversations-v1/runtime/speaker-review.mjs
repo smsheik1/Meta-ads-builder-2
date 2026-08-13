@@ -1,4 +1,4 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { execute, hashValue, readJson, sha256, writeJson } from "./common.mjs";
 
@@ -9,12 +9,49 @@ const APPROVAL_BASES = new Set(["user-confirmed-complete-script", "checksum-matc
 export function reviewFingerprint(input) {
   return hashValue({
     audioFile: input.audioFile,
-    timeline: input.timeline.map(({ start, end, camera, caption, vocalization }) => ({ start, end, camera, caption, vocalization })),
+    timeline: input.timeline.map(({ start, end, camera, caption, captionSpeaker, vocalization }) => ({ start, end, camera, caption, captionSpeaker, vocalization })),
   });
 }
 
 export function scriptApprovalHash(input) {
-  return hashValue(input.timeline.map(({ start, end, speaker, camera, caption, vocalization, overlapEvidence }) => ({ start, end, speaker, camera, caption, vocalization, overlapEvidence })));
+  return hashValue(input.timeline.map(({ start, end, speaker, camera, caption, captionSpeaker, vocalization, overlapEvidence }) => ({ start, end, speaker, camera, caption, captionSpeaker, vocalization, overlapEvidence })));
+}
+
+const CHARACTER_LABELS = { cat: "Dog", bunny: "Bunny", both: "Dog + Bunny", none: "Silence" };
+
+function timestamp(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = (seconds - minutes * 60).toFixed(3).padStart(6, "0");
+  return `${String(minutes).padStart(2, "0")}:${remainder}`;
+}
+
+function tableCell(value) {
+  return String(value ?? "—").replaceAll("|", "\\|").replaceAll(/\s+/g, " ").trim() || "—";
+}
+
+export function timedRoleSheetMarkdown({ input, review }) {
+  const approved = review.status === "applied" && review.approval?.approved === true;
+  const rows = input.timeline.map((beat, index) => {
+    const reviewedBeat = review.beats?.[index] || {};
+    const speaker = reviewedBeat.confirmedSpeaker || reviewedBeat.proposedSpeaker || beat.speaker;
+    const captionOwner = beat.caption?.trim()
+      ? speaker === "both"
+        ? CHARACTER_LABELS[beat.captionSpeaker] || "MISSING — BLOCKED"
+        : CHARACTER_LABELS[speaker]
+      : "—";
+    const performance = beat.caption?.trim()
+      ? `“${beat.caption.trim()}”`
+      : beat.vocalization?.trim()
+        ? `[${beat.vocalization.trim()}]`
+        : "[silence]";
+    const overlap = speaker === "both"
+      ? reviewedBeat.overlapConfirmed === true
+        ? `CONFIRMED — ${reviewedBeat.evidenceNote}`
+        : `PENDING — ${beat.overlapEvidence || "simultaneous speech must be verified"}`
+      : "—";
+    return `| ${index + 1} | ${timestamp(beat.start)}–${timestamp(beat.end)} | ${tableCell(CHARACTER_LABELS[speaker])} | ${tableCell(captionOwner)} | ${tableCell(performance)} | ${tableCell(overlap)} | \`${tableCell(reviewedBeat.clip || `script-review/beat-${String(index).padStart(2, "0")}.wav`)}\` |`;
+  });
+  return `# Timed role sheet\n\nStatus: **${approved ? "APPROVED" : "PENDING — DO NOT RENDER"}**  \nAudio: \`${tableCell(review.audio?.file || input.audioFile)}\`  \nAudio SHA-256: \`${tableCell(review.audio?.sha256 || "pending")}\`\n\nThe blue dog uses runtime ID \`cat\`. \`both\` means confirmed simultaneous performance, never uncertainty. On those rows, **Caption owner** identifies whose words appear while both mouths may animate.\n\n| # | Exact time | Active performance | Caption owner | Words / vocalization | Overlap evidence | Review clip |\n|---:|---|---|---|---|---|---|\n${rows.join("\n")}\n`;
 }
 
 export function reviewedScriptHash(input, review) {
@@ -34,7 +71,7 @@ export function createScriptReviewDocument({ input, audioSha256, generatedAt = n
     schemaVersion: 1,
     status: "pending",
     generatedAt,
-    instructions: "Review the complete timed role script before approve-script. Every audible beat must contain either spoken caption text or one named nonverbal vocalization; silence uses speaker=none. Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence. Automated transcription and diarization may draft words, timings, and anonymous voice clusters, but they never approve character roles. For local-audio-analysis, define each stable detected voice ID once in voiceCharacterMap, list that beat's detectedVoices, and add an evidenceNote naming the basis. speaker=both means proven simultaneous speech only. After the user sees and approves the entire written script, complete approval with its basis, approver, and note. Any later audio, timing, words, vocalization, camera, or role change invalidates approval.",
+    instructions: "Review timed-role-sheet.md before approve-script. It must show every exact time range, Dog/Bunny assignment, spoken line, named nonverbal vocalization, silence, caption owner, and overlap in one place. Confirm every beat from direct audio, documented local audio analysis, a user-provided label, a checksum-matched documented reference video, or silence. Automated transcription and diarization may draft words, timings, and anonymous voice clusters, but they never approve character roles. For local-audio-analysis, define each stable detected voice ID once in voiceCharacterMap, list that beat's detectedVoices, and add an evidenceNote naming the basis. speaker=both means proven simultaneous speech only and a captioned overlap requires captionSpeaker. After the user sees and approves the entire timed role sheet, complete approval with its basis, approver, and note. Any later audio, timing, words, caption owner, vocalization, camera, or role change invalidates approval.",
     audio: { file: input.audioFile, sha256: audioSha256 },
     reviewFingerprint: reviewFingerprint(input),
     approval: {
@@ -50,6 +87,7 @@ export function createScriptReviewDocument({ input, audioSha256, generatedAt = n
       start: beat.start,
       end: beat.end,
       caption: beat.caption,
+      captionSpeaker: beat.captionSpeaker || null,
       vocalization: beat.vocalization || null,
       proposedSpeaker: beat.speaker,
       confirmedSpeaker: null,
@@ -66,7 +104,7 @@ export function approveScriptReviewDocument({ input, review, audioSha256, applie
   const errors = [];
   if (review.schemaVersion !== 1) errors.push("script-review.json schemaVersion must be 1.");
   if (review.audio?.sha256 !== audioSha256) errors.push("script review is stale because the user audio changed.");
-  if (review.reviewFingerprint !== reviewFingerprint(input)) errors.push("script review is stale because timeline timing, words, vocalizations, or cameras changed.");
+  if (review.reviewFingerprint !== reviewFingerprint(input)) errors.push("script review is stale because timeline timing, words, caption ownership, vocalizations, or cameras changed.");
   if (!Array.isArray(review.beats) || review.beats.length !== input.timeline.length) errors.push("script review must contain one entry for every timeline beat.");
   if (review.approval?.approved !== true) errors.push("the complete written role script must be explicitly approved before rendering.");
   if (!APPROVAL_BASES.has(review.approval?.basis)) errors.push("script approval needs basis=user-confirmed-complete-script, checksum-matched-approved-reference, or packaged-smoke-fixture.");
@@ -85,8 +123,8 @@ export function approveScriptReviewDocument({ input, review, audioSha256, applie
   beats.forEach((entry, index) => {
     const inputBeat = input.timeline[index];
     if (entry.index !== index) errors.push(`script review beat ${index} has the wrong index.`);
-    if (inputBeat && (entry.start !== inputBeat.start || entry.end !== inputBeat.end || entry.caption !== inputBeat.caption || (entry.vocalization || null) !== (inputBeat.vocalization || null))) {
-      errors.push(`script review beat ${index} no longer matches the current timing, words, or vocalization.`);
+    if (inputBeat && (entry.start !== inputBeat.start || entry.end !== inputBeat.end || entry.caption !== inputBeat.caption || (entry.captionSpeaker || null) !== (inputBeat.captionSpeaker || null) || (entry.vocalization || null) !== (inputBeat.vocalization || null))) {
+      errors.push(`script review beat ${index} no longer matches the current timing, words, caption owner, or vocalization.`);
     }
     if (!SPEAKERS.has(entry.confirmedSpeaker)) errors.push(`script review beat ${index} needs confirmedSpeaker=cat, bunny, both, or none.`);
     if (!EVIDENCE.has(entry.evidence)) errors.push(`script review beat ${index} needs explicit evidence.`);
@@ -112,7 +150,7 @@ export function approveScriptReviewDocument({ input, review, audioSha256, applie
     if (entry.confirmedSpeaker !== "both" && entry.overlapConfirmed === true) errors.push(`script review beat ${index} may confirm overlap only when confirmedSpeaker=both.`);
   });
   if (typeof review.approval?.scriptHash === "string" && review.approval.scriptHash !== reviewedScriptHash(input, review)) {
-    errors.push("script approval is stale because the approved timings, words, vocalizations, cameras, or roles changed.");
+    errors.push("script approval is stale because the approved timings, words, caption ownership, vocalizations, cameras, or roles changed.");
   }
   if (errors.length) throw new Error(`Script approval failed:\n- ${errors.join("\n- ")}`);
 
@@ -123,6 +161,10 @@ export function approveScriptReviewDocument({ input, review, audioSha256, applie
     else delete beat.overlapEvidence;
   });
   const evidenceCounts = Object.fromEntries([...EVIDENCE].map((value) => [value, beats.filter((beat) => beat.evidence === value).length]).filter(([, count]) => count));
+  const timedRoleSheet = timedRoleSheetMarkdown({
+    input: nextInput,
+    review: { ...review, status: "applied", appliedAt },
+  });
   const receipt = {
     schemaVersion: 1,
     status: "pass",
@@ -130,6 +172,7 @@ export function approveScriptReviewDocument({ input, review, audioSha256, applie
     appliedAt,
     audioSha256,
     scriptHash: scriptApprovalHash(nextInput),
+    timedRoleSheetHash: hashValue(timedRoleSheet),
     approval: {
       basis: review.approval.basis,
       approvedBy: review.approval.approvedBy.trim(),
@@ -145,7 +188,7 @@ export function approveScriptReviewDocument({ input, review, audioSha256, applie
     voiceBoundBeats: beats.filter((beat) => beat.evidence === "local-audio-analysis").length,
     confirmedOverlapBeats: beats.filter((beat) => beat.confirmedSpeaker === "both" && beat.overlapConfirmed === true).length,
   };
-  return { input: nextInput, receipt };
+  return { input: nextInput, receipt, timedRoleSheet };
 }
 
 export async function createScriptReview({ runDirectory }) {
@@ -171,6 +214,7 @@ export async function createScriptReview({ runDirectory }) {
     ], { capture: true });
   }
   await writeJson(path.join(runDirectory, "script-review.json"), review);
+  await writeFile(path.join(runDirectory, "timed-role-sheet.md"), timedRoleSheetMarkdown({ input, review }), "utf8");
   return review;
 }
 
@@ -187,6 +231,7 @@ export async function approveScriptReview({ runDirectory }) {
   review.status = "applied";
   review.appliedAt = applied.receipt.appliedAt;
   await writeJson(reviewPath, review);
+  await writeFile(path.join(runDirectory, "timed-role-sheet.md"), applied.timedRoleSheet, "utf8");
   await writeJson(path.join(runDirectory, ".script-approval.json"), applied.receipt);
   return applied.receipt;
 }

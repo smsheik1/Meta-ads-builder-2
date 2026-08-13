@@ -59,7 +59,7 @@ assert.ok(
   profile?.handoff,
   "Animal Conversations should offer a runnable agent handoff.",
 );
-assert.equal(profile.version, "0.7.0");
+assert.equal(profile.version, "0.15.0");
 assert.equal(
   profile.repositoryHref,
   "/format-repositories/animal-conversations-v1/downloads/wiggly-animal-conversations-format-kit.zip",
@@ -70,8 +70,8 @@ assert.match(profile.handoff.instructions.join(" "), /one-to-three-word cards/);
 assert.ok(existsSync(download), "The stable public Repo download must exist.");
 assert.equal(
   createHash("sha256").update(readFileSync(download)).digest("hex"),
-  "8b88e9de4bacd83ede6f6c3c7dde980c7f9f114b777df4401d353248efbe238b",
-  "The Repo-page refactor must not mutate the exact published v0.7.0 kit.",
+  "b6dd1a6662704d7e8b44cade2ef3d6f9da5511c51cf1d437a1bb15f63271f395",
+  "The public download must match the exact published v0.15.0 kit.",
 );
 const archive = await JSZip.loadAsync(readFileSync(download));
 const zipEntries = Object.keys(archive.files).join("\n");
@@ -83,6 +83,7 @@ for (const expected of [
   "SKILL.md",
   "runtime/render.mjs",
   "fixtures/smoke/input.json",
+  "fixtures/regression/overlapping-reassurance/input.json",
 ]) {
   assert.match(
     zipEntries,
@@ -96,7 +97,7 @@ const archivedManifest = JSON.parse(
 ) as { formatVersion: string; canonicalSkill: string };
 assert.deepEqual(archivedManifest, {
   ...archivedManifest,
-  formatVersion: "0.7.0",
+  formatVersion: "0.15.0",
   canonicalSkill: "SKILL.md",
 });
 
@@ -184,7 +185,7 @@ assert.doesNotMatch(
 );
 
 const trustData = await getAnimalConversationsTrustData();
-assert.equal(trustData.version, "0.7.0");
+assert.equal(trustData.version, "0.15.0");
 assert.deepEqual(trustData.stats, {
   backgrounds: 5,
   cameras: 3,
@@ -218,11 +219,23 @@ assert.deepEqual(
 assert.match(trustData.assembly.path, /Audio setup → Speaker review/);
 assert.ok(
   trustData.assembly.commands.includes(
-    "node runner.mjs init --run=<id> --audio=<file>",
+    "node runner.mjs init --run=<id> --audio=/absolute/path/audio.wav --input=/absolute/path/input.json",
   ),
 );
+assert.ok(
+  trustData.assembly.commands.includes(
+    "node runner.mjs approve-script --run=<id>",
+  ),
+);
+assert.ok(
+  trustData.files.some(
+    ({ path }) =>
+      path === "fixtures/regression/overlapping-reassurance/input.json",
+  ),
+  "The public Repo page should expose the overlap regression fixture.",
+);
 assert.match(trustData.quality.note, /never claims automatic diarization/);
-assert.equal(trustData.quality.criteria.length, 11);
+assert.equal(trustData.quality.criteria.length, 12);
 assert.match(trustData.receipt.note, /Runtime audio remains user-supplied/);
 assert.ok(
   trustData.files.some(

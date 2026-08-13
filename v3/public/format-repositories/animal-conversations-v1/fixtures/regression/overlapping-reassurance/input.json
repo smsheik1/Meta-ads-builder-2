@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "title": "Overlapping Reassurance Regression",
+  "episodeLabel": "ANIMAL CONVERSATIONS",
+  "audioFile": "user-audio.wav",
+  "background": "living-room",
+  "timeline": [
+    {"start": 0, "end": 0.8, "speaker": "cat", "camera": "cat-close", "caption": "I made a mistake!?"},
+    {"start": 0.8, "end": 1.4, "speaker": "both", "captionSpeaker": "bunny", "camera": "two-shot", "caption": "Noooo...", "overlapEvidence": "The bunny reassurance overlaps the dog's continuing emotional reaction."},
+    {"start": 1.4, "end": 2, "speaker": "cat", "camera": "cat-close", "caption": "", "vocalization": "Emotional gasp and shriek"},
+    {"start": 2, "end": 2.5, "speaker": "both", "captionSpeaker": "bunny", "camera": "two-shot", "caption": "No, no, no!", "overlapEvidence": "The bunny's rapid reassurance overlaps the dog's continuing emotional reaction."},
+    {"start": 2.5, "end": 4.2, "speaker": "cat", "camera": "cat-close", "caption": "I'm traaaaash... Gaaaaarbage..."},
+    {"start": 4.2, "end": 4.3, "speaker": "none", "camera": "two-shot", "caption": ""},
+    {"start": 4.3, "end": 5, "speaker": "bunny", "camera": "bunny-close", "caption": "If you made a mistake—"}
+  ]
+}

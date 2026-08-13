@@ -5,7 +5,7 @@
   "audioFile": "user-audio.m4a",
   "background": "living-room",
   "timeline": [
-    {"start": 0, "end": 2.25, "speaker": "both", "camera": "two-shot", "caption": "We listen, and we don't judge!"},
+    {"start": 0, "end": 2.25, "speaker": "both", "captionSpeaker": "both", "camera": "two-shot", "caption": "We listen, and we don't judge!"},
     {"start": 2.25, "end": 6.85, "speaker": "cat", "camera": "cat-close", "caption": "Ever since you started cooking, I haven't had the heart to tell you that it's almost inedible.", "bounceAt": [4.05]},
     {"start": 6.85, "end": 7.85, "speaker": "bunny", "camera": "bunny-close", "caption": "I thought you liked it."},
     {"start": 7.85, "end": 8.5, "speaker": "cat", "camera": "two-shot", "caption": "No, no, no!", "bounceAt": [0.05, 0.34]},

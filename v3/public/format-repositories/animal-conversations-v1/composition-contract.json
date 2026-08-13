@@ -9,8 +9,8 @@
     "exactly three approved camera IDs: two-shot, cat-close, and bunny-close",
     "the bunny faces right in two-shot and bunny-close layouts while the cat faces left in two-shot and cat-close layouts, matching the supplied three-angle reference",
     "two-shot character bounds preserve at least 120 pixels of clear conversational space and never overlap",
-    "mouth substitution only for the active speaker; both characters move only when speaker=both carries explicit confirmed simultaneous-speech evidence; uncertainty never animates two mouths, and alternating voices use separate contiguous beats; sustained low-energy pauses hold the active mouth closed without sub-three-frame jitter",
-    "every spoken line, nonverbal vocal event, silence, and character role is shown in one complete written script, explicitly approved, and checksum-bound to the user audio before rendering",
+    "mouth substitution only for the active speaker; both characters move only when speaker=both carries explicit confirmed simultaneous-speech evidence; captionSpeaker preserves caption ownership during that overlap; uncertainty never animates two mouths, and alternating voices use separate contiguous beats; sustained low-energy pauses hold the active mouth closed without sub-three-frame jitter",
+    "every exact time range, spoken line, nonverbal vocal event, silence, character role, caption owner, and overlap is shown in one generated timed-role-sheet.md, explicitly approved, and checksum-bound to the user audio before rendering",
     "documented local audio analysis binds stable detected voice IDs to one character for the complete episode; caption and dialogue-turn boundaries never recast a voice",
     "neutral talking uses mouth substitutions and independent deterministic three-frame blinks without vertical movement; blink cadence is irregular, favors nearby dialogue boundaries, skips offscreen events, and avoids mechanical synchronization",
     "vertical bounce occurs only at an explicit per-beat bounceAt emphasis event, with at most two cues",
@@ -18,7 +18,7 @@
     "persistent episode label near the bottom safe area",
     "user audio is copied locally and muxed into the final video"
   ],
-  "replaceable": ["user audio", "timed captions", "named nonverbal vocalizations", "explicit speaker assignment", "episode-specific narrative roles such as mentor, lead, questioner, or foil", "approved camera selection per beat", "optional key-segment bounce cues", "episode title and label", "one of five packaged backgrounds"],
+  "replaceable": ["user audio", "timed captions", "named nonverbal vocalizations", "explicit speaker assignment", "caption ownership for confirmed simultaneous performance", "episode-specific narrative roles such as mentor, lead, questioner, or foil", "approved camera selection per beat", "optional key-segment bounce cues", "episode title and label", "one of five packaged backgrounds"],
   "outOfScope": ["voice generation", "bundled speech transcription or diarization models (documented external local analysis may be supplied as evidence)", "freeform camera coordinates", "character replacement", "timeline editor", "automatic rights clearance"],
   "rendererInvariant": "Preview/proof/export frames are produced only by runtime/render.mjs from the validated complete episode input."
 }

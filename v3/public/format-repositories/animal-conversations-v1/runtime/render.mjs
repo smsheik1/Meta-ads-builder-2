@@ -7,7 +7,7 @@ import { validateRun } from "./validate.mjs";
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 24;
-const RENDERER_VERSION = 15;
+const RENDERER_VERSION = 16;
 const BOUNCE_SECONDS = 0.36;
 const SPEECH_ANALYSIS_SAMPLE_RATE = 24000;
 const SPEECH_LEVEL_PERCENTILE = 0.9;
@@ -244,12 +244,13 @@ function frameRanges(frames) {
 
 export function captionSvg(beat, captionText, episodeLabel) {
   const colors = { cat: "#62C8FF", bunny: "#FF8BCC", both: "#FFE477", none: "#FFFFFF" };
+  const captionSpeaker = beat.speaker === "both" ? beat.captionSpeaker : beat.speaker;
   const lines = wrapCaption(captionText, 24);
   const fontSize = lines.length > 1 ? 66 : 76;
   const lineHeight = fontSize + 12;
   const tspans = lines.map((line, index) => `<tspan x="540" dy="${index ? lineHeight : 0}">${escapeXml(line)}</tspan>`).join("");
   return Buffer.from(`<svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-    <text x="540" y="${CAPTION_TOP_Y + fontSize}" text-anchor="middle" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="${fontSize}" font-weight="800" fill="${colors[beat.speaker]}" stroke="#07101c" stroke-width="12" paint-order="stroke" stroke-linejoin="round">${tspans}</text>
+    <text x="540" y="${CAPTION_TOP_Y + fontSize}" text-anchor="middle" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="${fontSize}" font-weight="800" fill="${colors[captionSpeaker]}" stroke="#07101c" stroke-width="12" paint-order="stroke" stroke-linejoin="round">${tspans}</text>
     <rect x="173" y="1764" width="734" height="88" rx="44" fill="#09121f" fill-opacity="0.76"/>
     <text x="540" y="1825" text-anchor="middle" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-size="45" font-weight="800" fill="#FFE477" stroke="#07101c" stroke-width="7" paint-order="stroke">${escapeXml(episodeLabel)}</text>
   </svg>`);

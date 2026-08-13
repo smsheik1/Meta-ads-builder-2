@@ -23,6 +23,7 @@
           "speaker": {"enum": ["cat", "bunny", "both", "none"], "description": "Provisional value until the complete written role script is approved. both means simultaneous speech only, never uncertainty or alternating turns."},
           "camera": {"enum": ["two-shot", "cat-close", "bunny-close"]},
           "caption": {"type": "string", "maxLength": 180, "description": "Complete spoken line for this beat. The renderer automatically presents it as progressive one-to-three-word caption cards."},
+          "captionSpeaker": {"enum": ["cat", "bunny", "both"], "description": "Required only when speaker=both and caption contains words. Identifies whose words the caption represents while both performances remain active; use both only for a true synchronized chorus."},
           "vocalization": {"type": "string", "minLength": 1, "maxLength": 120, "description": "Named audible nonverbal performance such as an emotional gasp or shriek. It is approval evidence, not displayed caption text. Split it into its own contiguous beat instead of hiding it inside a spoken line."},
           "overlapEvidence": {"type": "string", "minLength": 1, "description": "Written only by approve-script for a confirmed speaker=both beat. It records why simultaneous speech—not uncertainty or alternating voices—was confirmed."},
           "bounceAt": {
@@ -44,6 +45,8 @@
     "every beat speaker is explicitly confirmed through direct audio, documented local audio analysis, a user label, a checksum-matched documented reference video, or silence, and the user sees and approves the complete written role script before validation",
     "local audio analysis defines each detected voice ID once in voiceCharacterMap and uses detectedVoices on every analyzed beat; a detected voice cannot change characters at a caption or dialogue-turn boundary",
     "speaker=both is valid only for explicitly confirmed simultaneous speech with documented overlap evidence; uncertainty must stop for review, and alternating voices must be split into contiguous single-speaker beats",
+    "every captioned speaker=both beat identifies captionSpeaker as cat, bunny, or both; captionSpeaker is omitted from all other beats",
+    "init and review-script generate timed-role-sheet.md with every exact time range, active Dog/Bunny performance, caption owner, spoken line or named vocalization, overlap, and review clip; the user approves that full sheet before rendering",
     "complete-script approval becomes stale whenever the audio, timing, caption, vocalization, camera, or speaker assignment changes",
     "neutral talking has mouth motion only; vertical bounce occurs only at an explicit bounceAt emphasis event",
     "bounceAt contains no more than two strictly increasing offsets inside its beat"

@@ -104,6 +104,7 @@ async function finalize(runDirectory) {
     qualityReport: "quality-report.json",
     contactSheet: "contact-sheet.png",
     scriptApprovalReceipt: ".script-approval.json",
+    timedRoleSheet: "timed-role-sheet.md",
     audioPolicy: "user-supplied audio copied locally and muxed into the final AAC track; no voice provider calls",
   };
   await writeJson(path.join(runDirectory, "delivery.json"), delivery);
@@ -115,13 +116,13 @@ async function main() {
   if (command === "smoke") return smoke();
   if (command === "init") {
     const runDirectory = await initializeRun({ runId: args.run, audio: args.audio, input: args.input });
-    console.log(`Initialized ${runDirectory}\nReview every clip in script-review/, show the complete written role script to the user, complete script-review.json only after approval, then run approve-script.`);
+    console.log(`Initialized ${runDirectory}\nReview timed-role-sheet.md and every clip in script-review/, show that complete timed role sheet to the user, complete script-review.json only after approval, then run approve-script.`);
     return;
   }
   const runDirectory = resolveRunDirectory(root, args.run);
   if (command === "review-script") {
     const review = await createScriptReview({ runDirectory });
-    console.log(JSON.stringify({ status: review.status, review: path.join(runDirectory, "script-review.json"), clips: review.beats.length }, null, 2));
+    console.log(JSON.stringify({ status: review.status, review: path.join(runDirectory, "script-review.json"), timedRoleSheet: path.join(runDirectory, "timed-role-sheet.md"), clips: review.beats.length }, null, 2));
     return;
   }
   if (command === "approve-script") {
