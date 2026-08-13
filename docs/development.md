@@ -45,8 +45,14 @@ ready when the `worker:queue` check passes.
 
 ## Environment
 
-Use `v3/.env.local` for local v3 development. The root `.env` is legacy and
-should stay empty. Never commit real API keys.
+Use `v3/.env.local` only for worktree-specific backend URLs and non-secret
+local configuration. The root `.env` is legacy and should stay empty.
+
+Provider API keys have one canonical source: the ignored repo-root
+`secrets.env`, which is a local symlink to the operator's central secrets
+file. Do not duplicate provider credentials in `.env.local`, worktrees, run
+records, or chat. Local commands that need a provider key must load only the
+named value from that file into the process environment without printing it.
 
 Git worktrees do not inherit ignored environment files. `npm run dev` now
 looks for another configured Wiggly worktree and links its `v3/.env.local`
@@ -63,18 +69,18 @@ before running setup. To select a specific source explicitly, run
 Because the default is a symlink, edits to the shared environment affect every
 linked worktree; use a regular local file when isolation is required.
 
-Common local keys:
+Common worktree-local configuration:
 
 ```bash
 V3_CONVEX_URL=
 NEXT_PUBLIC_V3_CONVEX_URL=
 NEXT_PUBLIC_V3_CONVEX_SITE_URL=
 V3_CONVEX_DEPLOY_KEY=
-FIRECRAWL_API_KEY=
-BRANDFETCH_API_KEY=
-GEMINI_API_KEY=
-DEEPGRAM_API_KEY=
 ```
+
+Provider names such as `FIRECRAWL_API_KEY`, `BRANDFETCH_API_KEY`,
+`GEMINI_API_KEY`, and `DEEPGRAM_API_KEY` belong only in the canonical
+`secrets.env`.
 
 Website research tries Jina Reader first with an eight-second timeout.
 `FIRECRAWL_API_KEY` remains the fallback for blocked, weak, timed-out, or

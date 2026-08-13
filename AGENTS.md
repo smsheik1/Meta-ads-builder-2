@@ -68,8 +68,8 @@ Ask these questions before writing code:
 
 ## Provider Credentials
 
-- Provider API keys are stored in the ignored `.env.local` of the shared source project, and Git worktrees do not copy that file. In this local workspace the source file is `/Users/shaz/Documents/Codex/2026-05-10/i-m-working-on-a-project/Meta-Graphic-Ads-Builder/.env.local`.
-- When a provider key is needed for an explicitly approved call, load only the named value from that source file in memory. Do not print it, copy it into the worktree, or assume its absence from the worktree shell means it is unconfigured.
+- Provider API keys have one canonical source: the ignored repo-root `secrets.env`, which is a local symlink to the operator's central secrets file. Do not search, open, or use `.env.local` for provider credentials.
+- When a provider key is needed for an explicitly approved call, load only the named value from `secrets.env` in memory. Do not print it, copy it into a worktree, or assume its absence from the worktree shell means it is unconfigured.
 
 ## Frontend QA
 
