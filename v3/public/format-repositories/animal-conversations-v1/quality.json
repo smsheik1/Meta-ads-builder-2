@@ -35,7 +35,7 @@
       "both characters visibly face inward toward each other in every two-shot",
       "two-shot character silhouettes remain clearly separated without touching or overlap",
       "the bunny-only camera faces right, matching the supplied reference",
-      "the visible speaker receives audio-envelope-paced mouth motion during audible speech, slow sustained sounds do not flap at a fixed rate, sustained pauses close naturally, and a listener remains still",
+      "the visible speaker receives audio-envelope-paced mouth motion during audible speech, slow sustained sounds do not flap at a fixed rate, sustained pauses close naturally, elongated phrases and trailing words stay with the same speaker through the last audible word, and a listener remains still",
       "three-frame blinks look naturally irregular, favor conversational boundaries, and do not repeatedly synchronize the two characters",
       "neutral talking remains vertically still and any jump is brief, intentional, and attached to an explicit emphasis event",
       "the user has seen and approved one complete role script containing every spoken line, named nonverbal vocalization, silence, and character assignment; automated transcription, diarization, captions, and cameras may propose but never approve roles",
