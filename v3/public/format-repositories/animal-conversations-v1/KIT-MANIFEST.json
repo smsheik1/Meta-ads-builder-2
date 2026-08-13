@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kit": "wiggly-animal-conversations-format-kit",
-  "formatVersion": "0.13.0",
+  "formatVersion": "0.14.0",
   "officialFormat": ".",
   "canonicalSkill": "SKILL.md",
   "install": "npm install",

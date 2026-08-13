@@ -40,7 +40,7 @@
     "the final beat ends within 0.08 seconds of measured user-audio duration",
     "every active-speaker beat contains exactly one of spoken caption text or a named nonverbal vocalization; words and nonverbal performance are split into separate contiguous beats",
     "each beat stores the complete spoken line; the renderer, not the operator, splits it into progressive one-to-three-word caption cards",
-    "a speaker boundary occurs only after the current speaker's last audible word; elongated phrases, internal dramatic pauses, and trailing words remain one speaker performance even when the delivery slows down",
+    "a speaker boundary occurs after the current speaker's last audible word and no later than the next speaker's first audible word; elongated phrases, internal dramatic pauses, and trailing words remain one speaker performance when the delivery slows down but never swallow the next character's words",
     "every beat speaker is explicitly confirmed through direct audio, documented local audio analysis, a user label, a checksum-matched documented reference video, or silence, and the user sees and approves the complete written role script before validation",
     "local audio analysis defines each detected voice ID once in voiceCharacterMap and uses detectedVoices on every analyzed beat; a detected voice cannot change characters at a caption or dialogue-turn boundary",
     "speaker=both is valid only for explicitly confirmed simultaneous speech with documented overlap evidence; uncertainty must stop for review, and alternating voices must be split into contiguous single-speaker beats",
