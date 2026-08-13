@@ -380,7 +380,7 @@ test("quality review requires complete-script approval and honest perception dis
   assert.match(compositionContract.fixed.join(" "), /captionSpeaker.*caption ownership.*timed-role-sheet\.md/);
   assert.doesNotMatch(compositionContract.fixed.join(" "), /grounded, wise lead|questioner\/foil/);
   assert.match(compositionContract.replaceable.join(" "), /episode-specific narrative roles.*mentor.*lead.*questioner.*foil/);
-  assert.match(kitManifest.excluded.join(" "), /raw user-supplied runtime audio.*proof MP4 retains its distributable soundtrack/);
+  assert.match(kitManifest.excluded.join(" "), /raw user-supplied runtime audio.*example MP4s retain their distributable soundtracks/);
 });
 
 test("format kit build strips nondeterministic ZIP metadata", async () => {

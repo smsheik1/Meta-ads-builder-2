@@ -13,6 +13,8 @@ import { getAnimalConversationsTrustData } from "../features/discovery/animalCon
 const repositoryRoot = "public/format-repositories/animal-conversations-v1";
 const video = `${repositoryRoot}/goldens/we-listen-dont-judge.mp4`;
 const poster = `${repositoryRoot}/goldens/we-listen-dont-judge-poster.jpg`;
+const correctedExampleVideo = `${repositoryRoot}/examples/i-made-a-mistake/evidence/final.mp4`;
+const correctedExamplePoster = `${repositoryRoot}/examples/i-made-a-mistake/evidence/poster.jpg`;
 const download = `${repositoryRoot}/downloads/wiggly-animal-conversations-format-kit.zip`;
 const entries = getPublishedDiscoveryEntries().filter(
   (entry) => entry.format.slug === "animal-conversations",
@@ -20,8 +22,8 @@ const entries = getPublishedDiscoveryEntries().filter(
 
 assert.equal(
   entries.length,
-  1,
-  "Animal Conversations should be visible as one Discover card.",
+  2,
+  "Animal Conversations should expose both finished examples.",
 );
 assert.equal(entries[0]?.id, "animal-conversations-listen-dont-judge");
 assert.equal(
@@ -33,6 +35,16 @@ assert.equal(
   "/format-repositories/animal-conversations-v1/goldens/we-listen-dont-judge-poster.jpg",
 );
 assert.equal(entries[0]?.media.aspectRatio, "9:16");
+assert.equal(entries[1]?.id, "animal-conversations-i-made-a-mistake");
+assert.equal(
+  entries[1]?.media.src,
+  "/format-repositories/animal-conversations-v1/examples/i-made-a-mistake/evidence/final.mp4",
+);
+assert.equal(
+  entries[1]?.media.poster,
+  "/format-repositories/animal-conversations-v1/examples/i-made-a-mistake/evidence/poster.jpg",
+);
+assert.equal(entries[1]?.format.version, "0.15.1");
 assert.ok(
   existsSync(video) && statSync(video).size > 1_000_000,
   "The public proof video must be committed.",
@@ -40,6 +52,23 @@ assert.ok(
 assert.ok(
   existsSync(poster) && statSync(poster).size > 50_000,
   "The public poster must be committed.",
+);
+assert.ok(
+  existsSync(correctedExampleVideo) &&
+    statSync(correctedExampleVideo).size > 1_000_000,
+  "The corrected public example video must be committed.",
+);
+assert.equal(
+  createHash("sha256")
+    .update(readFileSync(correctedExampleVideo))
+    .digest("hex"),
+  "189eafcb00e3b9fc553bc4d181a2a3704cea052c368ff9517ce1701c7b2c3701",
+  "The public example must remain byte-identical to the approved v0.15 output.",
+);
+assert.ok(
+  existsSync(correctedExamplePoster) &&
+    statSync(correctedExamplePoster).size > 25_000,
+  "The corrected public example poster must be committed.",
 );
 
 const discoveryShelves = groupDiscoveryEntriesByShelf(getPublishedDiscoveryEntries());
@@ -59,7 +88,7 @@ assert.ok(
   profile?.handoff,
   "Animal Conversations should offer a runnable agent handoff.",
 );
-assert.equal(profile.version, "0.15.0");
+assert.equal(profile.version, "0.15.1");
 assert.equal(
   profile.repositoryHref,
   "/format-repositories/animal-conversations-v1/downloads/wiggly-animal-conversations-format-kit.zip",
@@ -70,8 +99,8 @@ assert.match(profile.handoff.instructions.join(" "), /one-to-three-word cards/);
 assert.ok(existsSync(download), "The stable public Repo download must exist.");
 assert.equal(
   createHash("sha256").update(readFileSync(download)).digest("hex"),
-  "b6dd1a6662704d7e8b44cade2ef3d6f9da5511c51cf1d437a1bb15f63271f395",
-  "The public download must match the exact published v0.15.0 kit.",
+  "786b25542e867293d43d388c56dbced161e7105ebb132d686d26879dafd182a3",
+  "The public download must match the exact published v0.15.1 kit.",
 );
 const archive = await JSZip.loadAsync(readFileSync(download));
 const zipEntries = Object.keys(archive.files).join("\n");
@@ -84,6 +113,8 @@ for (const expected of [
   "runtime/render.mjs",
   "fixtures/smoke/input.json",
   "fixtures/regression/overlapping-reassurance/input.json",
+  "examples/i-made-a-mistake/evidence/final.mp4",
+  "examples/i-made-a-mistake/evidence/poster.jpg",
 ]) {
   assert.match(
     zipEntries,
@@ -97,7 +128,7 @@ const archivedManifest = JSON.parse(
 ) as { formatVersion: string; canonicalSkill: string };
 assert.deepEqual(archivedManifest, {
   ...archivedManifest,
-  formatVersion: "0.15.0",
+  formatVersion: "0.15.1",
   canonicalSkill: "SKILL.md",
 });
 
@@ -185,7 +216,7 @@ assert.doesNotMatch(
 );
 
 const trustData = await getAnimalConversationsTrustData();
-assert.equal(trustData.version, "0.15.0");
+assert.equal(trustData.version, "0.15.1");
 assert.deepEqual(trustData.stats, {
   backgrounds: 5,
   cameras: 3,
@@ -236,7 +267,10 @@ assert.ok(
 );
 assert.match(trustData.quality.note, /never claims automatic diarization/);
 assert.equal(trustData.quality.criteria.length, 12);
-assert.match(trustData.receipt.note, /Runtime audio remains user-supplied/);
+assert.match(
+  trustData.receipt.note,
+  /Raw audio and review clips from new runs remain user-supplied/,
+);
 assert.ok(
   trustData.files.some(
     (file) =>

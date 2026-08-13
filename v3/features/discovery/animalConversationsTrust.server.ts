@@ -276,7 +276,7 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
           value: `${quality.automatic.width} × ${quality.automatic.height} · ${durationSeconds.toFixed(3)}s MP4`,
         },
       ],
-      note: "The approved proof MP4 intentionally retains its distributable soundtrack. Runtime audio remains user-supplied, local, and excluded from the downloadable kit.",
+      note: "The approved example MP4s intentionally retain their distributable soundtracks. Raw audio and review clips from new runs remain user-supplied, local, and excluded from the downloadable kit.",
     },
     commands,
     files,

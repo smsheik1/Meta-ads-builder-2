@@ -42,6 +42,13 @@ When local diarization genuinely identifies distinct stable people, `voiceCharac
 
 Episode audio is always supplied by the user. `init` copies it into the ignored run folder and extracts local review clips; nothing is uploaded by the official runtime. Rendering maps the original audio stream into the MP4 as AAC; it does not synthesize, rewrite, transcribe, or guess voice identity. An operator may use an external local or explicitly approved BYOK transcription/diarization tool to draft the timing JSON, but the kit intentionally ships no model, provider dependency, or second media pipeline. Those tools never replace whole-script approval. The smoke command creates a local sine tone solely to prove approval and muxing mechanics without provider spend.
 
+## Included examples
+
+- `goldens/we-listen-dont-judge.mp4` is the original fixed proof.
+- `examples/i-made-a-mistake/evidence/final.mp4` is the corrected unseen-audio proof with the Dog reaction, Bunny reassurance overlaps, complete elongated Dog line, and Bunny handoff preserved by the v0.15 approval rules.
+
+Both public examples intentionally retain their approved soundtracks. Raw audio and review clips from new runs remain excluded.
+
 ## Toon Boom conversion
 
 The packaged character PNGs came from the supplied Harmony projects through the official local converter:
