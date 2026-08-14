@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import JSZip from "jszip";
 import {
@@ -377,7 +378,9 @@ assert.match(includedAssetsComponent, /The cast, stages, and moves\./);
 assert.doesNotMatch(includedAssetsComponent, /already inside/);
 assert.doesNotMatch(includedAssetsComponent, /Production-ready Repo assets/);
 assert.match(includedAssetsComponent, /DiscoveryCharacterModelViewer/);
-assert.match(includedAssetsComponent, /Original four: drag in 3D/);
+assert.match(includedAssetsComponent, /Drag every character in 3D/);
+assert.doesNotMatch(includedAssetsComponent, /verified dance frames/);
+assert.doesNotMatch(includedAssetsComponent, /character\.modelSrc \?/);
 assert.doesNotMatch(includedAssetsComponent, /Included in Repo/);
 assert.match(includedAssetsComponent, /Dance \+ voice ready/);
 assert.match(includedAssetsComponent, /Dance-ready · voice pending/);
@@ -468,22 +471,64 @@ assert.deepEqual(trustData.includedAssets.motionLabels, [
 ]);
 for (const character of trustData.includedAssets.characters) {
   assert.equal(existsSync(`public${character.posterSrc}`), true);
-  if (character.modelSrc) {
-    assert.equal(existsSync(`public${character.modelSrc}`), true);
-    const previewModel = readFileSync(`public${character.modelSrc}`);
-    assert.equal(previewModel.subarray(0, 4).toString("ascii"), "glTF");
-    assert.ok(previewModel.byteLength > 250_000);
-  }
+  assert.equal(existsSync(`public${character.modelSrc}`), true);
+  const previewModel = readFileSync(`public${character.modelSrc}`);
+  assert.equal(previewModel.subarray(0, 4).toString("ascii"), "glTF");
+  assert.ok(previewModel.byteLength > 250_000);
   assert.ok(statSync(`public${character.posterSrc}`).size > 30_000);
 }
-assert.equal(trustData.includedAssets.characters.filter((character) => character.voiceReady).length, 4);
-assert.equal(trustData.includedAssets.characters.filter((character) => character.modelSrc).length, 4);
+assert.equal(
+  trustData.includedAssets.characters.filter(
+    (character) => character.voiceReady,
+  ).length,
+  4,
+);
+assert.equal(
+  trustData.includedAssets.characters.filter((character) => character.modelSrc)
+    .length,
+  8,
+);
 assert.equal(
   existsSync(
     "public/discovery/bikini-bottom-dance-off/character-previews/provenance.json",
   ),
   true,
 );
+const previewProvenance = JSON.parse(
+  readFileSync(
+    "public/discovery/bikini-bottom-dance-off/character-previews/provenance.json",
+    "utf8",
+  ),
+) as {
+  method: string;
+  previews: Array<{
+    characterId: string;
+    imageSha256: string;
+    modelSha256: string;
+    proofSource?: string;
+  }>;
+};
+assert.match(previewProvenance.method, /All eight browser-ready GLBs/);
+assert.equal(previewProvenance.previews.length, 8);
+for (const character of trustData.includedAssets.characters) {
+  const preview = previewProvenance.previews.find(
+    (candidate) => candidate.characterId === character.id,
+  );
+  assert.ok(preview);
+  assert.equal(preview.proofSource, undefined);
+  assert.equal(
+    createHash("sha256")
+      .update(readFileSync(`public${character.posterSrc}`))
+      .digest("hex"),
+    preview.imageSha256,
+  );
+  assert.equal(
+    createHash("sha256")
+      .update(readFileSync(`public${character.modelSrc}`))
+      .digest("hex"),
+    preview.modelSha256,
+  );
+}
 for (const background of trustData.includedAssets.backgrounds) {
   assert.equal(existsSync(`public${background.src}`), true);
 }
@@ -530,7 +575,9 @@ assert.equal(
 );
 assert.equal(trustData.files.length, 25);
 assert.equal(
-  trustData.files.some((file) => file.path.endsWith("assets/character-import-audit.json")),
+  trustData.files.some((file) =>
+    file.path.endsWith("assets/character-import-audit.json"),
+  ),
   true,
 );
 assert.equal(
