@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-08-13",
+  "sourceDirectory": "user Downloads folder",
+  "policy": "Each rigged candidate was rendered and visually inspected one character at a time. A renderer exit code was never treated as visual acceptance.",
+  "counts": {
+    "archivesDiscovered": 51,
+    "alreadyIncluded": 4,
+    "acceptedNewArchives": 4,
+    "acceptedNewCharacters": 4,
+    "rejectedArchives": 43,
+    "finalMotionReadyCharacters": 8
+  },
+  "acceptedNew": [
+    {
+      "archive": "PC _ Computer - Sonic Generations - Playable Characters - Sonic the Hedgehog (Modern).zip",
+      "characterIds": ["sonic-modern"],
+      "proof": [
+        "evidence/character-imports/sonic-modern-silly-dancing.png",
+        "evidence/character-imports/sonic-modern-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable full-body motion on two dances."
+    },
+    {
+      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Flynn Rider (Eugene Fitzherbert).zip",
+      "characterIds": ["flynn-rider"],
+      "proof": [
+        "evidence/character-imports/flynn-rider-silly-dancing.png",
+        "evidence/character-imports/flynn-rider-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable full-body motion on two dances."
+    },
+    {
+      "archive": "PlayStation Vita - The Muppets Movie Adventures - Playable Characters - Kermit (Pirate).zip",
+      "characterIds": ["kermit-pirate"],
+      "proof": [
+        "evidence/character-imports/kermit-pirate-silly-dancing.png",
+        "evidence/character-imports/kermit-pirate-macarena-dance.png"
+      ],
+      "reason": "Complete, textured character with readable motion on two dances after a bounded framing-scale correction."
+    },
+    {
+      "archive": "PlayStation Vita - The Muppets Movie Adventures - Playable Characters - Kermit (Sci-Fi).zip",
+      "characterIds": ["kermit-sci-fi"],
+      "proof": [
+        "evidence/character-imports/kermit-sci-fi-silly-dancing.png",
+        "evidence/character-imports/kermit-sci-fi-macarena-dance.png"
+      ],
+      "reason": "Complete, textured character with readable motion on two dances after a bounded framing-scale correction."
+    }
+  ],
+  "alreadyIncluded": [
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Squilliam Fancyson.zip",
+      "characterIds": ["squilliam"]
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Mr. Krabs.zip",
+      "characterIds": ["mr-krabs"]
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Patrick.zip",
+      "characterIds": ["patrick"]
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - SpongeBob SquarePants.zip",
+      "characterIds": ["spongebob"]
+    }
+  ],
+  "rejected": [
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Announcer Fish.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Gary.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip",
+      "reasonCode": "anonymous-rig",
+      "reason": "The skinned Collada rig exposes only anonymous Dummy/Object joint names, so a safe anatomical motion map cannot be verified."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",
+      "reasonCode": "anonymous-rig",
+      "reason": "The skinned Collada rig exposes only anonymous Dummy joint names, so a safe anatomical motion map cannot be verified."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip",
+      "reasonCode": "incomplete-render",
+      "reason": "The body animates, but the helmet remains opaque and the face is absent across the full sampled motion, including after one bounded transparency repair."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip",
+      "reasonCode": "incomplete-render",
+      "reason": "The body animates, but the eyes/pupils are blank across the full sampled motion, leaving an incomplete face."
+    },
+    {
+      "archive": "Mobile - Marvel Future Fight - Heroes - Spider-Man (Miles Morales, Classic).zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Fighters - Yoshi.zip",
+      "reasonCode": "collapsed-motion",
+      "reason": "The oriented character stays curled into a ball across the full sampled dance and never produces a readable full-body performance."
+    },
+    {
+      "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Stage Elements - Villagers.zip",
+      "reasonCode": "collapsed-motion",
+      "reason": "All five models were tested individually; each rendered as an oversized head with the body buried below the stage instead of a readable dance."
+    },
+    {
+      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Animated).zip",
+      "reasonCode": "broken-skin-binding",
+      "reason": "The isolated loader fails before frame zero because the skin references a missing bone matrix."
+    },
+    {
+      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip",
+      "reasonCode": "broken-skin-binding",
+      "reason": "The isolated loader fails before frame zero because the skin references a missing bone matrix."
+    },
+    {
+      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PC _ Computer - Sam & Max Season 3 (The Devil's Playhouse) - Characters - Max.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Jak 3 - Characters - Ashelin Praxis.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Jak 3 - Characters - Daxter.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Jak 3 - Characters - Jak.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Jak 3 - Characters - Keira Hagai.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Jak 3 - Characters - Tess (Ottsel).zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Jak 3 - Characters - Tess.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Sora - Sora.zip",
+      "reasonCode": "static-only",
+      "reason": "The supplied meshes contain no skin controller or joint hierarchy usable by the motion runtime."
+    },
+    {
+      "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Buzz Lightyear.zip",
+      "reasonCode": "anonymous-rig",
+      "reason": "The skinned rig exposes only bone000-style anonymous joints, so a safe anatomical motion map cannot be verified."
+    },
+    {
+      "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Woody.zip",
+      "reasonCode": "anonymous-rig",
+      "reason": "The skinned rig exposes only bone000-style anonymous joints, so a safe anatomical motion map cannot be verified."
+    },
+    {
+      "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Daphne Blake.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Fred Jones.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Shaggy Rogers.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Velma Dinkley.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip",
+      "reasonCode": "anonymous-rig",
+      "reason": "The skinned rig exposes only Skel0-style anonymous joints, so a safe anatomical motion map cannot be verified."
+    },
+    {
+      "archive": "PlayStation 4 - Kingdom Hearts III - Link Summons - Stitch.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip",
+      "reasonCode": "invisible-render",
+      "reason": "The runtime returns success, but the character is completely invisible in every sampled dance frame."
+    },
+    {
+      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Rapunzel.zip",
+      "reasonCode": "broken-deformation",
+      "reason": "The skin/hair stretches into a full-frame vertical spike while the character body disappears."
+    },
+    {
+      "archive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip",
+      "reasonCode": "unsupported-runtime-format",
+      "reason": "The archive has skinned glTF/FBX assets but no skinned Collada model; adding a second model loader is out of scope for this content-only expansion."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",
+      "reasonCode": "collapsed-motion",
+      "reason": "The character lies sideways and folded into the stage across the full sampled motion."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
+      "reasonCode": "collapsed-motion",
+      "reason": "The character lies sideways and folded into the stage across the full sampled motion."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip",
+      "reasonCode": "wrong-facing-performance",
+      "reason": "Only the back, hat, and tail remain readable; no front-facing performance appears in the full sampled motion."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip",
+      "reasonCode": "collapsed-motion",
+      "reason": "The rig folds and lies sideways across the full sampled motion."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip",
+      "reasonCode": "collapsed-motion",
+      "reason": "The body collapses into the head/face and never becomes a complete dancing silhouette."
+    },
+    {
+      "archive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip",
+      "reasonCode": "clipped-skin",
+      "reason": "The full-body skin is massively oversized and clipped; only the torso and legs remain visible."
+    },
+    {
+      "archive": "Xbox - Shrek - Playable Characters - Shrek.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "Xbox - Spider-Man_ The Movie - Playable Characters - Spider-Man.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "Xbox - Teenage Mutant Ninja Turtles - Playable Characters - Donatello.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "Xbox - Teenage Mutant Ninja Turtles - Playable Characters - Leonardo.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "Xbox - Teenage Mutant Ninja Turtles - Playable Characters - Michelangelo.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    },
+    {
+      "archive": "Xbox - Teenage Mutant Ninja Turtles - Playable Characters - Raphael.zip",
+      "reasonCode": "static-only",
+      "reason": "No skinned armature or rigged model was present."
+    }
+  ],
+  "futureVoiceHandoff": {
+    "status": "not-started",
+    "provider": "Fish Audio",
+    "spiderManVoiceId": "c9c0183c624d4b85a1345bc2ec4a10bf",
+    "note": "Voice discovery and assignment are intentionally deferred to a separate goal. The current Spider-Man archive is static-only and was not added as a motion-ready character."
+  }
+}

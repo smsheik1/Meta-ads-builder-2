@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "purpose": "Browser-ready interactive previews for the Bikini Bottom Dance Off Included Assets section",
   "background": "#ffffff",
-  "dimensions": {
+  "interactivePreviewDimensions": {
     "width": 800,
     "height": 1000
   },
-  "source": "The four motion-ready character rigs packaged in mixamo-character-motion-v1/assets/character-packs.json",
-  "method": "Exported from the official runtime's Collada loader with the packaged scale and transparency rules. These GLBs are discovery previews; the packaged Collada rigs remain the production source of truth.",
+  "source": "The eight motion-ready character rigs packaged in mixamo-character-motion-v1/assets/character-packs.json",
+  "method": "The original four use browser-ready GLBs exported from the official runtime's Collada loader. The four new imports use approved 1280x720 frames from their individual two-motion proofs. The packaged Collada rigs remain the production source of truth.",
   "previews": [
     {
       "characterId": "spongebob",
@@ -28,6 +28,30 @@
       "characterId": "squilliam",
       "imageSha256": "7629a021ad193c36bb8080099a702bd4ca0147702125eae3e49afb9ef228e351",
       "modelSha256": "cdaf5bf31dd82503362c625318cf8330c14a27200c7b0c877dce287cf22be889"
+    },
+    {
+      "characterId": "sonic-modern",
+      "imageSha256": "742a5a841683f7299726a7fe398a67f90a8e99ea6ca9b993e3d3cac3f05fc3ae",
+      "imageDimensions": {"width": 1280, "height": 720},
+      "proofSource": "mixamo-character-motion-v1/evidence/character-imports/sonic-modern-silly-dancing.png"
+    },
+    {
+      "characterId": "flynn-rider",
+      "imageSha256": "27d24268f2aab2b0ecd0b8701649b1ca9c512b2d137f1903e34eec59dabfe0fc",
+      "imageDimensions": {"width": 1280, "height": 720},
+      "proofSource": "mixamo-character-motion-v1/evidence/character-imports/flynn-rider-silly-dancing.png"
+    },
+    {
+      "characterId": "kermit-pirate",
+      "imageSha256": "1ce0f91bf59e999f7bed6f0d09568559072500199904cd3217e506a356fd67f1",
+      "imageDimensions": {"width": 1280, "height": 720},
+      "proofSource": "mixamo-character-motion-v1/evidence/character-imports/kermit-pirate-silly-dancing.png"
+    },
+    {
+      "characterId": "kermit-sci-fi",
+      "imageSha256": "222debaa0e0eb62d7baa6fe6cdb7705ae49f2e6c260f910ba3e65b6e15973f30",
+      "imageDimensions": {"width": 1280, "height": 720},
+      "proofSource": "mixamo-character-motion-v1/evidence/character-imports/kermit-sci-fi-silly-dancing.png"
     }
   ]
 }

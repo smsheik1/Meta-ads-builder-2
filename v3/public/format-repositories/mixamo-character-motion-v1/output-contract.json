@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "interactiveLab": {
     "entry": "runtime/renderer/index.html?mode=lab",
-    "characters": 4,
+    "characters": 8,
     "motions": 25,
     "startupPayload": "manifest plus one active character and one active motion",
     "controls": ["character selector", "motion selector", "pause", "restart", "MP4 download", "GIF download"]

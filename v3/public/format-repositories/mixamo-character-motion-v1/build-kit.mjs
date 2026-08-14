@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
+const format = JSON.parse(await readFile(path.join(root, "format.json"), "utf8"));
 const kitName = "wiggly-mixamo-character-motion-format-kit";
 const downloads = path.join(root, "downloads");
 const output = path.join(downloads, `${kitName}.zip`);
@@ -48,7 +49,7 @@ try {
   const files = await listFiles(staged);
   await writeFile(path.join(staged, "KIT-MANIFEST.json"), `${JSON.stringify({
     kit: kitName,
-    formatVersion: "0.5.2",
+    formatVersion: format.version,
     builtAt: new Date().toISOString(),
     excluded: ["secrets", "node_modules", "agent run caches", "source Mixamo DAEs", "download artifacts"],
     files,

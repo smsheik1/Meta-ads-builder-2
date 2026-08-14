@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -46,7 +46,7 @@ test("every character profile maps its available full body while excluding prote
   const catalog = await readJson("assets/character-packs.json");
   const manifest = await readJson("assets/motions/manifest.json");
   const inputContract = await readJson("input-contract.json");
-  assert.deepEqual(catalog.packs.map((pack) => pack.id), ["spongebob", "squilliam", "mr-krabs", "patrick"]);
+  assert.equal(new Set(catalog.packs.map((pack) => pack.id)).size, catalog.packs.length, "character IDs must be unique");
   assert.deepEqual(inputContract.properties.characterId.enum, catalog.packs.map((pack) => pack.id));
   for (const pack of catalog.packs) {
     const map = pack.motionProfile.boneMap;
@@ -68,7 +68,12 @@ test("every character profile maps its available full body while excluding prote
       ...Object.values(pack.motionProfile.feet),
       ...Object.values(pack.motionProfile.legChains).flat(),
     ]);
-    for (const name of declaredBones) assert.ok(model.includes(`name="${name}"`), `${pack.id} model is missing ${name}`);
+    for (const name of declaredBones) {
+      assert.ok(
+        model.includes(`name="${name}"`) || model.includes(`sid="${name}"`),
+        `${pack.id} model is missing runtime bone ${name}`,
+      );
+    }
     for (const motion of manifest.motions) {
       const clip = await readJson(motion.file);
       for (const source of Object.values(map)) assert.ok(clip.bones[source], `${pack.id}:${motion.id} is missing ${source}`);
@@ -91,4 +96,35 @@ test("Patrick delegates authored scale-helper legs to shared IK and protects his
     assert.ok(patrick.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
   }
   assert.equal(patrick.motionProfile.maximumVerticalRootCorrection, 0.14);
+});
+
+test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const audit = await readJson("assets/character-import-audit.json");
+  const accepted = audit.acceptedNew.flatMap((entry) => entry.characterIds);
+  const existing = audit.alreadyIncluded.flatMap((entry) => entry.characterIds);
+  const archives = [
+    ...audit.acceptedNew,
+    ...audit.alreadyIncluded,
+    ...audit.rejected,
+  ].map((entry) => entry.archive);
+
+  assert.equal(audit.counts.archivesDiscovered, 51);
+  assert.equal(audit.acceptedNew.length, 4);
+  assert.equal(audit.alreadyIncluded.length, 4);
+  assert.equal(audit.rejected.length, 43);
+  assert.equal(archives.length, 51);
+  assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
+  assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());
+  for (const entry of audit.acceptedNew) {
+    assert.equal(entry.proof.length, 2, `${entry.archive} needs two distinct motion proofs`);
+    for (const proof of entry.proof) assert.ok((await stat(path.join(root, proof))).size > 20_000, `${proof} must be a real contact sheet`);
+  }
+  assert.equal(audit.futureVoiceHandoff.status, "not-started");
+  assert.equal(audit.futureVoiceHandoff.spiderManVoiceId, "c9c0183c624d4b85a1345bc2ec4a10bf");
+  const packageManifest = await readJson("package.json");
+  const proofScript = await readFile(path.join(root, "runtime/scripts/prove-character-catalog.mjs"), "utf8");
+  assert.equal(packageManifest.scripts["prove:character"], "node runtime/scripts/prove-character-catalog.mjs");
+  assert.match(proofScript, /Pass exactly one --character=/);
+  assert.doesNotMatch(proofScript, /args\.characters|requestedIds/);
 });

@@ -445,6 +445,7 @@ async function loadCharacter(characterPack) {
         side: THREE.DoubleSide,
         transparent,
         alphaTest: transparent ? 0.08 : 0,
+        depthWrite: !transparent,
         toneMapped: false,
       });
     });

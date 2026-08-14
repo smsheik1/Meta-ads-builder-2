@@ -2468,7 +2468,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "bikini-bottom-dance-off",
       name: "Bikini Bottom Dance Off",
-      version: "0.10.8",
+      version: "0.11.0",
       owner: "Shaz",
     },
   },
@@ -2478,7 +2478,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     order: 11.61,
     brand: "Bikini Bottom",
     title: "Wiggle: the original Bikini Bottom Dance Off",
-    curatorNote: "Choose from 25 starter dances, or import another locally. Then let SpongeBob, Patrick, Mr. Krabs, and Squilliam taunt, solo, and collide in a scored 47-second Reel.",
+    curatorNote: "Choose from 25 starter dances and eight individually verified dancers. Four are voice-ready now; Sonic, Flynn, and both Kermit variants are staged for the separate voice pass.",
     goal: "entertain",
     media: {
       kind: "video",
@@ -2490,7 +2490,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "bikini-bottom-dance-off",
       name: "Bikini Bottom Dance Off",
-      version: "0.10.8",
+      version: "0.11.0",
       owner: "Shaz",
     },
   },

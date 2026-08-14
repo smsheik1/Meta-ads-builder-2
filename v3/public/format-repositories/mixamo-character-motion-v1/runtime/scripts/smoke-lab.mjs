@@ -23,7 +23,7 @@ try {
 
   const shell = page.locator("#lab-shell");
   assert.equal(await page.locator("#motion-grid [data-motion-id]").count(), 25);
-  assert.equal(await page.locator("#character-selector [data-character-id]").count(), 4);
+  assert.equal(await page.locator("#character-selector [data-character-id]").count(), 8);
   assert.equal(await shell.getAttribute("data-loaded-character-count"), "1");
   assert.equal(await shell.getAttribute("data-loaded-motion-count"), "1");
 
@@ -42,8 +42,8 @@ try {
     await page.locator("#error").textContent(),
   );
 
-  await page.locator('[data-character-id="squilliam"]').click();
-  await page.waitForFunction(() => document.querySelector("#lab-shell")?.dataset.characterId === "squilliam");
+  await page.locator('[data-character-id="sonic-modern"]').click();
+  await page.waitForFunction(() => document.querySelector("#lab-shell")?.dataset.characterId === "sonic-modern");
   const restartBox = await page.locator("#restart").boundingBox();
   const downloadBox = await page.locator("#download-toggle").boundingBox();
   assert.ok(restartBox && downloadBox && downloadBox.x >= restartBox.x + restartBox.width, "Download must sit to the right of Restart");
@@ -55,19 +55,19 @@ try {
   const overlaps = titleBox && menuBox
     && titleBox.x < menuBox.x + menuBox.width && titleBox.x + titleBox.width > menuBox.x
     && titleBox.y < menuBox.y + menuBox.height && titleBox.y + titleBox.height > menuBox.y;
-  assert.equal(Boolean(overlaps), false, `The open download menu must not cover Squilliam's name: ${JSON.stringify({ titleBox, menuBox })}`);
+  assert.equal(Boolean(overlaps), false, `The open download menu must not cover Sonic's name: ${JSON.stringify({ titleBox, menuBox })}`);
 
   await page.locator("#download-toggle").click();
   await page.locator('[data-motion-id="joyful-jump"]').click();
-  await page.locator('[data-character-id="patrick"]').click();
+  await page.locator('[data-character-id="kermit-sci-fi"]').click();
   await page.waitForFunction(() => {
     const element = document.querySelector("#lab-shell");
     return element?.dataset.motionId === "joyful-jump"
-      && element.dataset.characterId === "patrick"
+      && element.dataset.characterId === "kermit-sci-fi"
       && element.dataset.loadedMotionCount === "3"
       && element.dataset.loadedCharacterCount === "4";
   });
-  assert.equal(await page.locator("#title").textContent(), "Patrick Star");
+  assert.equal(await page.locator("#title").textContent(), "Kermit (Sci-Fi)");
   assert.equal(
     await page.locator("#error").isVisible(),
     false,
@@ -75,14 +75,14 @@ try {
   );
 
   const selectorBox = await page.locator("#character-selector").boundingBox();
-  const patrickBox = await page.locator('#character-selector [data-character-id="patrick"]').boundingBox();
-  assert.ok(selectorBox && patrickBox && patrickBox.x + patrickBox.width <= selectorBox.x + selectorBox.width + 1,
-    "The fourth character must remain inside the visible selector grid");
+  const finalCharacterBox = await page.locator('#character-selector [data-character-id="kermit-sci-fi"]').boundingBox();
+  assert.ok(selectorBox && finalCharacterBox && finalCharacterBox.x + finalCharacterBox.width <= selectorBox.x + selectorBox.width + 1,
+    "The eighth character must remain inside the visible selector grid");
   await page.waitForTimeout(1_100);
 
   const screenshot = path.join(evidenceDirectory, "character-dance-lab.png");
   await page.screenshot({ path: screenshot, fullPage: true });
-  console.log(JSON.stringify({ status: "pass", motions: 25, characters: 4, activeCharacter: "patrick", activeMotion: "joyful-jump", screenshot }, null, 2));
+  console.log(JSON.stringify({ status: "pass", motions: 25, characters: 8, activeCharacter: "kermit-sci-fi", activeMotion: "joyful-jump", screenshot }, null, 2));
 } finally {
   if (browser) await browser.close();
   await new Promise((resolve) => server.close(resolve));

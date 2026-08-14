@@ -105,7 +105,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.10.8");
+assert.equal(profile.version, "0.11.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -131,6 +131,7 @@ for (const entry of [
   "KIT-MANIFEST.json",
   "bikini-bottom-dance-off-v1/SKILL.md",
   "bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/render-report.json",
+  "mixamo-character-motion-v1/assets/character-import-audit.json",
 ]) {
   assert.match(
     zipEntries,
@@ -145,7 +146,7 @@ const readArchivedText = async (relativePath: string) => {
 const archivedManifest = JSON.parse(
   await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.10.8");
+assert.equal(archivedManifest.formatVersion, "0.11.0");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
@@ -376,9 +377,10 @@ assert.match(includedAssetsComponent, /The cast, stages, and moves\./);
 assert.doesNotMatch(includedAssetsComponent, /already inside/);
 assert.doesNotMatch(includedAssetsComponent, /Production-ready Repo assets/);
 assert.match(includedAssetsComponent, /DiscoveryCharacterModelViewer/);
-assert.match(includedAssetsComponent, /Drag to inspect in 3D/);
+assert.match(includedAssetsComponent, /Original four: drag in 3D/);
 assert.doesNotMatch(includedAssetsComponent, /Included in Repo/);
-assert.match(includedAssetsComponent, />\s*3D model\s*</);
+assert.match(includedAssetsComponent, /Dance \+ voice ready/);
+assert.match(includedAssetsComponent, /Dance-ready · voice pending/);
 assert.match(includedAssetsComponent, /1 fixed character stage/);
 assert.match(includedAssetsComponent, /aria-pressed=\{isSelected\}/);
 assert.doesNotMatch(includedAssetsComponent, /No Mixamo download required/);
@@ -433,9 +435,11 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.10.8");
+assert.equal(trustData.version, "0.11.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
+  motionReadyCharacters: 8,
+  voiceReadyCharacters: 4,
 });
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
@@ -444,6 +448,10 @@ assert.deepEqual(
     { id: "patrick", label: "Patrick Star" },
     { id: "mr-krabs", label: "Mr. Krabs" },
     { id: "squilliam", label: "Squilliam Fancyson" },
+    { id: "sonic-modern", label: "Sonic the Hedgehog (Modern)" },
+    { id: "flynn-rider", label: "Flynn Rider" },
+    { id: "kermit-pirate", label: "Kermit (Pirate)" },
+    { id: "kermit-sci-fi", label: "Kermit (Sci-Fi)" },
   ],
 );
 assert.equal(
@@ -459,13 +467,17 @@ assert.deepEqual(trustData.includedAssets.motionLabels, [
   "Ymca Dance",
 ]);
 for (const character of trustData.includedAssets.characters) {
-  assert.equal(existsSync(`public${character.modelSrc}`), true);
   assert.equal(existsSync(`public${character.posterSrc}`), true);
-  const previewModel = readFileSync(`public${character.modelSrc}`);
-  assert.equal(previewModel.subarray(0, 4).toString("ascii"), "glTF");
-  assert.ok(previewModel.byteLength > 250_000);
+  if (character.modelSrc) {
+    assert.equal(existsSync(`public${character.modelSrc}`), true);
+    const previewModel = readFileSync(`public${character.modelSrc}`);
+    assert.equal(previewModel.subarray(0, 4).toString("ascii"), "glTF");
+    assert.ok(previewModel.byteLength > 250_000);
+  }
   assert.ok(statSync(`public${character.posterSrc}`).size > 30_000);
 }
+assert.equal(trustData.includedAssets.characters.filter((character) => character.voiceReady).length, 4);
+assert.equal(trustData.includedAssets.characters.filter((character) => character.modelSrc).length, 4);
 assert.equal(
   existsSync(
     "public/discovery/bikini-bottom-dance-off/character-previews/provenance.json",
@@ -516,7 +528,11 @@ assert.equal(
   trustData.files.some((file) => file.path === "PROOF-REPORT.md"),
   true,
 );
-assert.equal(trustData.files.length, 24);
+assert.equal(trustData.files.length, 25);
+assert.equal(
+  trustData.files.some((file) => file.path.endsWith("assets/character-import-audit.json")),
+  true,
+);
 assert.equal(
   trustData.files.every((file) => file.label.trim().length > 0),
   true,
