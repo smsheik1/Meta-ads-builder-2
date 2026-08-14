@@ -107,7 +107,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.12.0");
+assert.equal(profile.version, "0.13.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -152,7 +152,7 @@ const readArchivedText = async (relativePath: string) => {
 const archivedManifest = JSON.parse(
   await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.12.0");
+assert.equal(archivedManifest.formatVersion, "0.13.0");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
@@ -453,11 +453,11 @@ const motionReadyCharacterCatalog = (
     packs: Array<{ id: string; label: string; status: string }>;
   }
 ).packs.filter((character) => character.status === "motion-ready");
-assert.equal(trustData.version, "0.12.0");
+assert.equal(trustData.version, "0.13.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   motionReadyCharacters: 22,
-  voiceReadyCharacters: 6,
+  voiceReadyCharacters: 19,
 });
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
@@ -491,7 +491,27 @@ assert.deepEqual(
     .filter((character) => character.voiceReady)
     .map((character) => character.id)
     .sort(),
-  ["mr-krabs", "patrick", "sandy", "spongebob", "squidward", "squilliam"],
+  [
+    "aqua",
+    "batman-animated",
+    "dr-doofenshmirtz",
+    "ferb",
+    "flynn-rider",
+    "kermit-pirate",
+    "kermit-sci-fi",
+    "larry",
+    "mario",
+    "mr-krabs",
+    "olaf",
+    "patrick",
+    "phineas",
+    "ratchet",
+    "sandy",
+    "sonic-modern",
+    "spongebob",
+    "squidward",
+    "squilliam",
+  ],
 );
 assert.equal(
   trustData.includedAssets.characters.filter((character) => character.modelSrc)

@@ -3,13 +3,23 @@
   "provider": "Fish Audio",
   "endpoint": "GET https://api.fish.audio/model",
   "queriedAt": "2026-08-14T15:52:38.417Z",
-  "status": "awaiting-user-selection",
+  "status": "approved",
   "policy": {
     "searchOnly": true,
     "ttsGenerated": false,
     "credentialSource": "secrets.env",
     "credentialStoredInAudit": false,
-    "selectionRule": "A single credible match may be queued for approval. Multiple credible matches must remain unselected until the user chooses."
+    "selectionRule": "A single credible match may be queued for approval. Multiple credible matches are approved only from the user's explicit choice."
+  },
+  "selection": {
+    "source": "explicit-user-choice",
+    "selectedAt": "2026-08-14",
+    "voiceReadyCharacters": 19,
+    "voicePendingCharacterIds": [
+      "agent-p",
+      "man-ray",
+      "batman-beyond"
+    ]
   },
   "evidence": {
     "rawSearchPath": "agent-runs/voice-discovery/raw-fish-model-search.json",
@@ -68,7 +78,7 @@
       "label": "Sonic the Hedgehog (Modern)",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "48484faae07e4cfdb8064da770ee461e",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "819bef35f241425291167f5ee794151c",
       "queries": [
         {
           "title": "Sonic the Hedgehog",
@@ -117,7 +127,7 @@
       "label": "Flynn Rider",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "0aa597fdaa8e4362a8a6dc5786e580f5",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "7a8d9440b3544a8d9c15bafe51896ea2",
       "queries": [
         {
           "title": "Flynn Rider",
@@ -160,7 +170,7 @@
       "label": "Kermit the Frog",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "cfb8ad89d53f41439dcf7858a9d7e0ed",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "cfb8ad89d53f41439dcf7858a9d7e0ed",
       "queries": [
         {
           "title": "Kermit the Frog",
@@ -222,7 +232,7 @@
       "label": "Mario",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "fd57e7b005664c41bad23e9ea0c56593",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "f9f460f0347b47039b4dcba199f745f9",
       "queries": [
         {
           "title": "Super Mario",
@@ -264,7 +274,7 @@
       "label": "Olaf",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "9008533e334c4452839ab9df2fe5a078",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "9008533e334c4452839ab9df2fe5a078",
       "queries": [
         {
           "title": "Olaf Frozen",
@@ -306,7 +316,7 @@
       "label": "Aqua (Kingdom Hearts)",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "3a02fca4b4a44eb4875dc9439e35decc",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "3fbcf051cbc34683be03d2068e3a55c3",
       "queries": [
         {
           "title": "Aqua Kingdom Hearts",
@@ -348,7 +358,7 @@
       "label": "Ratchet",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "a0627a3a4ae44f36b75d021415d890bf",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "8e2014bfd1c348b2a2d6b339ca4ebbcf",
       "queries": [
         {
           "title": "Ratchet and Clank",
@@ -438,7 +448,7 @@
       "label": "Batman (Animated Series)",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "e93a33eeed72468192dc41db870d4e42",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "ef549174cea246468ce32b00afa6affa",
       "queries": [
         {
           "title": "Batman Animated Series",
@@ -528,7 +538,7 @@
       "label": "Ferb Fletcher",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "e074ae7e1e2046f192d2fb7374943fab",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "e074ae7e1e2046f192d2fb7374943fab",
       "queries": [
         {
           "title": "Ferb Fletcher",
@@ -570,7 +580,7 @@
       "label": "Phineas Flynn",
       "classification": "multiple-credible-candidates",
       "recommendedReferenceId": "d3f9d85f2dd34ba0b72ed9d35f5d6b62",
-      "selectedReferenceId": null,
+      "selectedReferenceId": "b6c7dbc62a824648957cfe1c4d5da8cd",
       "queries": [
         {
           "title": "Phineas Flynn",
