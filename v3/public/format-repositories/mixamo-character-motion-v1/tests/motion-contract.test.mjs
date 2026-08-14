@@ -251,6 +251,24 @@ test("Man Ray keeps the verified Y-up anonymous-joint map and authored face", as
   assert.doesNotMatch(model, /file:\/\//);
 });
 
+test("Batman Animated repairs its Collada skeleton roots without packaging the malformed cape instance", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const batman = catalog.packs.find((pack) => pack.id === "batman-animated");
+  assert.ok(batman);
+  assert.equal(batman.scale, 0.015);
+  assert.equal(batman.pitch, 0);
+  assert.equal(batman.motionProfile.rootBone, "Bip01_Pelvis");
+  assert.deepEqual(batman.motionProfile.feet, { left: "Bip01_L_Toe0", right: "Bip01_R_Toe0" });
+  assert.equal(Object.keys(batman.motionProfile.boneMap).length, 21);
+  for (const material of ["Cartoon_Outline_MAT", "Cartoon_Outline_MAT_ncl1_1", "Cartoon_Outline_MAT_ncl1_2"]) {
+    assert.equal(batman.materialOpacities[material], 0);
+  }
+  const model = await readFile(path.join(root, batman.model), "utf8");
+  assert.equal((model.match(/<skeleton>#Bip01<\/skeleton>/g) || []).length, 2);
+  assert.doesNotMatch(model, /instance_controller url="#Batman_Animated_Series_capeController"/);
+  assert.match(model, /<init_from>Cartoon_Outline_MAT\.png<\/init_from>/);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -263,9 +281,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 13);
+  assert.equal(audit.acceptedNew.length, 14);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 34);
+  assert.equal(audit.rejected.length, 33);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());
