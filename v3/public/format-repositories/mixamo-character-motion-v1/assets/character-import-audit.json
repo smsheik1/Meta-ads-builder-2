@@ -167,7 +167,7 @@
     {
       "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Fighters - Yoshi.zip",
       "reasonCode": "collapsed-motion",
-      "reason": "The oriented character stays curled into a ball across the full sampled dance and never produces a readable full-body performance."
+      "reason": "A second bounded repair mapped the named Hip/limb joints instead of the non-deforming Trans/Rot wrappers and normalized scale, but both required dances still stayed curled into the authored ball-like rest pose. Repair now requires manual bind-pose reconstruction, so the candidate was skipped."
     },
     {
       "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Stage Elements - Villagers.zip",
