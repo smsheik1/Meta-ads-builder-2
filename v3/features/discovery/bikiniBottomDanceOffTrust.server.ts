@@ -98,7 +98,7 @@ export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
     characters: Array<{
       id: string;
       label: string;
-      modelSrc?: string;
+      modelSrc: string;
       posterSrc: string;
       voiceReady: boolean;
     }>;
@@ -182,12 +182,6 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   const finale = renderReport.timeline.finale.start;
   const closing = renderReport.timeline.closingChorus.start;
   const replay = renderReport.timeline.loopBridge.start;
-  const interactivePreviewIds = new Set([
-    "spongebob",
-    "patrick",
-    "mr-krabs",
-    "squilliam",
-  ]);
   const voiceReadyIds = new Set(
     voicePresets.voices.map((voice) => voice.characterId),
   );
@@ -203,16 +197,15 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   ];
   const includedCharacters = characterOrder.map((characterId) => {
     const character = characters.packs.find((pack) => pack.id === characterId);
-    if (!character) throw new Error(`Missing packaged character ${characterId}.`);
+    if (!character)
+      throw new Error(`Missing packaged character ${characterId}.`);
     if (character.status !== "motion-ready") {
       throw new Error(`Packaged character ${characterId} is not motion-ready.`);
     }
     return {
       id: character.id,
       label: character.label,
-      ...(interactivePreviewIds.has(character.id)
-        ? { modelSrc: `${characterPreviewRoot}/${character.id}.glb` }
-        : {}),
+      modelSrc: `${characterPreviewRoot}/${character.id}.glb`,
       posterSrc: `${characterPreviewRoot}/${character.id}.png`,
       voiceReady: voiceReadyIds.has(character.id),
     };

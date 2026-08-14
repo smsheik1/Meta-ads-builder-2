@@ -63,7 +63,7 @@ export function BikiniBottomDanceOffIncludedAssets({
         <div className="mt-8 flex items-end justify-between gap-3">
           <h3 className="text-xl font-black">Character models</h3>
           <p className="text-sm font-bold text-[#667087]">
-            Original four: drag in 3D · New four: verified dance frames
+            Drag every character in 3D
           </p>
         </div>
         <div
@@ -77,22 +77,12 @@ export function BikiniBottomDanceOffIncludedAssets({
               style={{ borderTopColor: characterAccent[character.id] }}
             >
               <div className="relative aspect-[4/5] bg-white">
-                {character.modelSrc ? (
-                  <DiscoveryCharacterModelViewer
-                    src={character.modelSrc}
-                    poster={character.posterSrc}
-                    alt={`${character.label} packaged interactive 3D character model`}
-                    characterId={character.id}
-                  />
-                ) : (
-                  <Image
-                    src={character.posterSrc}
-                    alt={`${character.label} verified dance render`}
-                    fill
-                    sizes="(min-width: 821px) 230px, (min-width: 430px) 50vw, 100vw"
-                    className="object-contain"
-                  />
-                )}
+                <DiscoveryCharacterModelViewer
+                  src={character.modelSrc}
+                  poster={character.posterSrc}
+                  alt={`${character.label} packaged interactive 3D character model`}
+                  characterId={character.id}
+                />
               </div>
               <div className="border-t-2 border-[#080817] p-3.5">
                 <h4 className="text-lg font-black leading-tight">
