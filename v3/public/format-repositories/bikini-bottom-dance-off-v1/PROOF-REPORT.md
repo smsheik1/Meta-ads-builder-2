@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.13.0`
+Format version: `0.14.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -16,6 +16,8 @@ Version `0.10.8` retains all four user-approved Fish Audio voice references and 
 Version `0.12.0` consumed the completed Character Dance Lab 51-archive, one-character-at-a-time audit. Eighteen new rigs passed two individually reviewed dances, producing 22 motion-ready characters total; 29 archives remain rejected with exact evidence. The discovery roster and its clean interactive previews are generated from that same shared catalog, so later accepted characters cannot silently fall back to a different card style.
 
 Version `0.13.0` completes the separate Fish Audio discovery pass. It skips six voices already registered elsewhere in the project, searches the remaining 15 identities one at a time, records the user's ten explicit duplicate-model choices, accepts the two unambiguous matches, and preserves three honest no-match results. The curated audit ships; the raw API dump, API key, and local receipts do not.
+
+Version `0.14.0` turns those approved references into fixed public card previews. Nineteen short Fish clips and one original nonverbal Agent P cue are packaged with exact text, duration, bytes, and SHA-256 provenance. One shared browser player stops the previous card before starting another. Man Ray and Batman Beyond remain visibly disabled after follow-up actor-name searches also found no credible match; the page never invents a voice or calls the provider at playback time.
 
 ## Two independent format fixtures
 

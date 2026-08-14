@@ -465,7 +465,7 @@ async function finalizeRun() {
 
 async function checkRepo() {
   for (const tool of ["node", "npm", "ffmpeg", "ffprobe"]) await execute(tool, tool === "node" || tool === "npm" ? ["--version"] : ["-version"], { capture: true });
-  for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/voice-presets.json"]) await readJson(path.join(root, file));
+  for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/voice-presets.json", "assets/voice-previews/manifest.json"]) await readJson(path.join(root, file));
   for (const file of ["runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "runtime/review.mjs", "prompts/blind-review.md", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
   await execute("npm", ["test"]);
   await execute("npm", ["test"], { cwd: motionRoot });

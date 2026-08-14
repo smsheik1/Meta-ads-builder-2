@@ -57,6 +57,18 @@ type VoiceManifest = {
   voices: Array<{ characterId: string }>;
 };
 
+type VoicePreviewManifest = {
+  previews: Array<{
+    characterId: string;
+    line: string;
+    kind: "fish-tts" | "original-nonverbal-cue";
+    status: "ready" | "voice-pending";
+    path?: string;
+    durationSeconds?: number;
+    reason?: string;
+  }>;
+};
+
 type RenderReport = {
   timeline: {
     rounds: Array<{ danceStart: number }>;
@@ -93,6 +105,7 @@ export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
     motions: number;
     motionReadyCharacters: number;
     voiceReadyCharacters: number;
+    voicePreviewReadyCharacters: number;
   };
   includedAssets: {
     characters: Array<{
@@ -102,6 +115,14 @@ export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
       modelSrc: string;
       posterSrc: string;
       voiceReady: boolean;
+      voicePreview: {
+        line: string;
+        kind: "fish-tts" | "original-nonverbal-cue";
+        status: "ready" | "voice-pending";
+        src?: string;
+        durationSeconds?: number;
+        reason?: string;
+      };
     }>;
     performerStage: {
       label: string;
@@ -177,6 +198,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     motions,
     characters,
     voicePresets,
+    voicePreviews,
     packageManifest,
     requirements,
     renderReport,
@@ -194,6 +216,9 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       path.join(motionRepoRoot, "assets/character-packs.json"),
     ),
     readJson<VoiceManifest>(path.join(repoRoot, "assets/voice-presets.json")),
+    readJson<VoicePreviewManifest>(
+      path.join(repoRoot, "assets/voice-previews/manifest.json"),
+    ),
     readJson<PackageManifest>(path.join(repoRoot, "package.json")),
     readJson<RequirementsContract>(path.join(repoRoot, "requirements.json")),
     readJson<RenderReport>(
@@ -211,12 +236,22 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   const voiceReadyIds = new Set(
     voicePresets.voices.map((voice) => voice.characterId),
   );
+  const voicePreviewByCharacter = new Map(
+    voicePreviews.previews.map((preview) => [preview.characterId, preview]),
+  );
   const includedCharacters = characters.packs
     .filter((character) => character.status === "motion-ready")
     .map((character) => {
       const sourceLabel = characterSourceLabels[character.id];
       if (!sourceLabel) {
         throw new Error(`Missing source label for ${character.id}`);
+      }
+      const voicePreview = voicePreviewByCharacter.get(character.id);
+      if (!voicePreview) {
+        throw new Error(`Missing voice preview for ${character.id}`);
+      }
+      if (voicePreview.status === "ready" && !voicePreview.path) {
+        throw new Error(`Missing ready voice preview path for ${character.id}`);
       }
       return {
         id: character.id,
@@ -225,6 +260,16 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         modelSrc: `${characterPreviewRoot}/${character.id}.glb`,
         posterSrc: `${characterPreviewRoot}/${character.id}.png`,
         voiceReady: voiceReadyIds.has(character.id),
+        voicePreview: {
+          line: voicePreview.line,
+          kind: voicePreview.kind,
+          status: voicePreview.status,
+          src: voicePreview.path
+            ? `${danceOffPublicRoot}/${voicePreview.path}`
+            : undefined,
+          durationSeconds: voicePreview.durationSeconds,
+          reason: voicePreview.reason,
+        },
       };
     });
   const sampleMotionIds = new Set([
@@ -315,6 +360,9 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
       motions: motions.motions.length,
       motionReadyCharacters: includedCharacters.length,
       voiceReadyCharacters: voiceReadyIds.size,
+      voicePreviewReadyCharacters: includedCharacters.filter(
+        (character) => character.voicePreview.status === "ready",
+      ).length,
     },
     includedAssets: {
       characters: includedCharacters,
@@ -455,6 +503,10 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         { label: "Timeline engine", path: "runtime/timeline.mjs" },
         { label: "Background options", path: "assets/background-options.json" },
         { label: "Voice presets", path: "assets/voice-presets.json" },
+        {
+          label: "Voice previews",
+          path: "assets/voice-previews/manifest.json",
+        },
         {
           label: "Character import audit",
           path: "mixamo-character-motion-v1/assets/character-import-audit.json",

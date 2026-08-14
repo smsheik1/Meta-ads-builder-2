@@ -107,7 +107,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.13.0");
+assert.equal(profile.version, "0.14.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -136,6 +136,8 @@ for (const entry of [
   "verify-entrypoints.mjs",
   "KIT-MANIFEST.json",
   "bikini-bottom-dance-off-v1/SKILL.md",
+  "bikini-bottom-dance-off-v1/assets/voice-previews/manifest.json",
+  "bikini-bottom-dance-off-v1/assets/voice-previews/spongebob.mp3",
   "bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/render-report.json",
   "mixamo-character-motion-v1/assets/character-import-audit.json",
 ]) {
@@ -152,7 +154,7 @@ const readArchivedText = async (relativePath: string) => {
 const archivedManifest = JSON.parse(
   await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.13.0");
+assert.equal(archivedManifest.formatVersion, "0.14.0");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
@@ -216,6 +218,14 @@ const runSummaryComponent = readFileSync(
 );
 const includedAssetsComponent = readFileSync(
   "features/discovery/BikiniBottomDanceOffIncludedAssets.tsx",
+  "utf8",
+);
+const characterModelViewerComponent = readFileSync(
+  "features/discovery/DiscoveryCharacterModelViewer.tsx",
+  "utf8",
+);
+const voicePreviewGenerator = readFileSync(
+  "scripts/generate-dance-off-voice-previews.mjs",
   "utf8",
 );
 const trustLoader = readFileSync(
@@ -388,6 +398,28 @@ assert.doesNotMatch(includedAssetsComponent, /verified dance frames/);
 assert.doesNotMatch(includedAssetsComponent, /character\.modelSrc \?/);
 assert.doesNotMatch(includedAssetsComponent, /Included in Repo/);
 assert.match(includedAssetsComponent, /\{character\.sourceLabel\}/);
+assert.match(includedAssetsComponent, /new Audio\(preview\.src\)/);
+assert.match(includedAssetsComponent, /current\.pause\(\)/);
+assert.ok(
+  includedAssetsComponent.indexOf("current.pause()") <
+    includedAssetsComponent.indexOf("new Audio(preview.src)"),
+  "Starting another card must stop the currently playing preview first.",
+);
+assert.match(characterModelViewerComponent, /Play voice/);
+assert.match(characterModelViewerComponent, /Play cue/);
+assert.match(characterModelViewerComponent, /Voice pending/);
+assert.match(characterModelViewerComponent, /character-voice-preview/);
+assert.match(characterModelViewerComponent, /aria-pressed/);
+assert.match(characterModelViewerComponent, /voicePreview\.line/);
+assert.match(
+  voicePreviewGenerator,
+  /process\.loadEnvFile\(path\.join\(workspaceRoot, "secrets\.env"\)\)/,
+);
+assert.doesNotMatch(voicePreviewGenerator, /\.env\.local/);
+assert.match(
+  voicePreviewGenerator,
+  /!\(await fileMatchesHash\(output, preview\.sha256\)\)/,
+);
 assert.doesNotMatch(includedAssetsComponent, /Dance \+ voice ready/);
 assert.doesNotMatch(includedAssetsComponent, /Dance-ready · voice pending/);
 assert.match(includedAssetsComponent, /1 fixed character stage/);
@@ -454,12 +486,49 @@ const motionReadyCharacterCatalog = (
     packs: Array<{ id: string; label: string; status: string }>;
   }
 ).packs.filter((character) => character.status === "motion-ready");
-assert.equal(trustData.version, "0.13.0");
+assert.equal(trustData.version, "0.14.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   motionReadyCharacters: 22,
   voiceReadyCharacters: 19,
+  voicePreviewReadyCharacters: 20,
 });
+const voicePreviewManifest = JSON.parse(
+  readFileSync(
+    `${repositoryRoot}/assets/voice-previews/manifest.json`,
+    "utf8",
+  ),
+) as {
+  previews: Array<{
+    characterId: string;
+    line: string;
+    kind: "fish-tts" | "original-nonverbal-cue";
+    status: "ready" | "voice-pending";
+    path?: string;
+    durationSeconds?: number;
+    bytes?: number;
+    sha256?: string;
+    reason?: string;
+  }>;
+};
+assert.equal(voicePreviewManifest.previews.length, 22);
+assert.equal(
+  voicePreviewManifest.previews.filter((preview) => preview.status === "ready")
+    .length,
+  20,
+);
+assert.deepEqual(
+  voicePreviewManifest.previews
+    .filter((preview) => preview.status === "voice-pending")
+    .map((preview) => preview.characterId),
+  ["man-ray", "batman-beyond"],
+);
+const agentPPreview = voicePreviewManifest.previews.find(
+  (preview) => preview.characterId === "agent-p",
+);
+assert.ok(agentPPreview);
+assert.equal(agentPPreview.kind, "original-nonverbal-cue");
+assert.equal(agentPPreview.status, "ready");
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
   motionReadyCharacterCatalog.map(({ id, label }) => ({ id, label })),
@@ -519,6 +588,35 @@ for (const character of trustData.includedAssets.characters) {
   const poster = readFileSync(`public${character.posterSrc}`);
   assert.ok(poster.byteLength > 5_000);
   assert.deepEqual(imageSize(poster), { width: 800, height: 1000, type: "png" });
+
+  const preview = voicePreviewManifest.previews.find(
+    (candidate) => candidate.characterId === character.id,
+  );
+  assert.ok(preview);
+  assert.equal(character.voicePreview.line, preview.line);
+  assert.equal(character.voicePreview.status, preview.status);
+  if (preview.status === "ready") {
+    assert.ok(preview.path);
+    assert.ok(preview.durationSeconds && preview.durationSeconds >= 0.5);
+    assert.ok(preview.durationSeconds <= 8);
+    assert.ok(preview.bytes && preview.bytes > 10_000);
+    assert.match(preview.sha256 ?? "", /^[0-9a-f]{64}$/);
+    const audioPath = `${repositoryRoot}/${preview.path}`;
+    assert.equal(existsSync(audioPath), true);
+    const audio = readFileSync(audioPath);
+    assert.equal(audio.byteLength, preview.bytes);
+    assert.equal(
+      createHash("sha256").update(audio).digest("hex"),
+      preview.sha256,
+    );
+    assert.equal(
+      character.voicePreview.src,
+      `/format-repositories/bikini-bottom-dance-off-v1/${preview.path}`,
+    );
+  } else {
+    assert.equal(character.voicePreview.src, undefined);
+    assert.match(character.voicePreview.reason ?? "", /No credible approved/);
+  }
 }
 assert.deepEqual(
   trustData.includedAssets.characters
@@ -640,7 +738,7 @@ assert.equal(
   trustData.files.some((file) => file.path === "PROOF-REPORT.md"),
   true,
 );
-assert.equal(trustData.files.length, 25);
+assert.equal(trustData.files.length, 26);
 assert.equal(
   trustData.files.some((file) =>
     file.path.endsWith("assets/character-import-audit.json"),
