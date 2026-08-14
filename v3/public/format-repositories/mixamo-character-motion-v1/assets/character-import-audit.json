@@ -172,7 +172,7 @@
     {
       "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Stage Elements - Villagers.zip",
       "reasonCode": "collapsed-motion",
-      "reason": "All five models were tested individually; each rendered as an oversized head with the body buried below the stage instead of a readable dance."
+      "reason": "All five models share an exporter hierarchy whose limbs and torso use conflicting axes. A second bounded repair on the representative boy rig mapped the real base/limbs and tested both the declared Z-up orientation and a 180-degree correction; the result changed from lying on its back to standing upside down, never a readable full-body dance. Fixing the set requires manual bind-pose reconstruction, so all five were skipped."
     },
     {
       "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Animated).zip",
