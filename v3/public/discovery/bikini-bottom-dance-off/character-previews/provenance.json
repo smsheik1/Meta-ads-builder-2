@@ -47,12 +47,12 @@
     },
     {
       "characterId": "sonic-modern",
-      "imageSha256": "6bc74773b663d6672a7b9acabcb4746dcd9a0525e43b75f76aa6fd4cea78d1ff",
+      "imageSha256": "b083c95c3769a3f5553262c4c1d76715f1dac6bbea15405dffe6658f030600c0",
       "imageDimensions": {
         "width": 800,
         "height": 1000
       },
-      "modelSha256": "03c14f46bc6bac1ba3f6885003a65134a802e521a10b7f2b7aad860a16adaf86"
+      "modelSha256": "66ed3d6eddef5595f43e13e19ce714b71d699900bb092a405c203b6136a88ea2"
     },
     {
       "characterId": "flynn-rider",
@@ -101,12 +101,12 @@
     },
     {
       "characterId": "mario",
-      "imageSha256": "28d6413432f819a838205db28c5f926230c7ee51bcc336ac8a163c10438a0d6d",
+      "imageSha256": "f02ecd6d8e79d7f1a7621b472d07e1fb86bc3be08f1476e3cb1fc284d6ece737",
       "imageDimensions": {
         "width": 800,
         "height": 1000
       },
-      "modelSha256": "7bc6f459adc98d00f0784ba022029cd3d06402b3481f9eb419aeca74c49f060a"
+      "modelSha256": "aecbafca34bb4b232610fe921daf0efadd8f469b4366d5fd9d2a344e8985af3d"
     },
     {
       "characterId": "olaf",
@@ -119,12 +119,12 @@
     },
     {
       "characterId": "sandy",
-      "imageSha256": "bb3bf8de467feec9f5a1be2977b4dc5820c56355035d6177bc91e8aad9d3740a",
+      "imageSha256": "2849baa3003812fc9f4ee7d3086ad28c981bad5ed94e0dc40aa06d866d47132f",
       "imageDimensions": {
         "width": 800,
         "height": 1000
       },
-      "modelSha256": "213bb7717d7d60fef199961fb3d4f2cb828e87c705bf88ba75bc93bb575d17a4"
+      "modelSha256": "d3c7d1108f1fd7b547e80a15a592bdca80af7624e79c6b8de584de9c6e5d55e3"
     },
     {
       "characterId": "aqua",
@@ -146,12 +146,12 @@
     },
     {
       "characterId": "larry",
-      "imageSha256": "7d57f58452814c868de6440310063819c44f15b88a5855d9622102c6efcb7bce",
+      "imageSha256": "ad69e87e8dbe367aceecd4897f3ae18a705404043dd9e9014b93df6f7dc3811e",
       "imageDimensions": {
         "width": 800,
         "height": 1000
       },
-      "modelSha256": "e52746e6fa3bd831e15eaad74de3051a3096902567226a73d13686341d53fb79"
+      "modelSha256": "4858a3375253f4b7339178cdd9d39cad6abd8c60a9bf1fa6ac657c346888ef30"
     },
     {
       "characterId": "man-ray",

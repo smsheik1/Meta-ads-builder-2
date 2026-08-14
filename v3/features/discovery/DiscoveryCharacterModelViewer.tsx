@@ -10,6 +10,8 @@ import {
 } from "react";
 
 const RESTING_CAMERA_ORBIT = "0deg 75deg 105%";
+const MIN_CAMERA_ORBIT = "auto 65deg auto";
+const MAX_CAMERA_ORBIT = "auto 85deg auto";
 const RESTING_FIELD_OF_VIEW = "30deg";
 const RETURN_DELAY_MS = 3000;
 const PREVIEW_BACKGROUND = "#f4f6f8";
@@ -115,6 +117,8 @@ export function DiscoveryCharacterModelViewer({
         "interaction-prompt": "none",
         "shadow-intensity": "0",
         "camera-orbit": RESTING_CAMERA_ORBIT,
+        "min-camera-orbit": MIN_CAMERA_ORBIT,
+        "max-camera-orbit": MAX_CAMERA_ORBIT,
         "field-of-view": RESTING_FIELD_OF_VIEW,
         "interpolation-decay": "100",
         "data-character-id": characterId,

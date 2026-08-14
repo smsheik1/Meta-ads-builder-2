@@ -76,6 +76,21 @@ function exporterHtml() {
       import { ColladaLoader } from "/node_modules/three/examples/jsm/loaders/ColladaLoader.js";
       import { GLTFExporter } from "/node_modules/three/examples/jsm/exporters/GLTFExporter.js";
 
+      function applyDisplayRules(character, characterPack) {
+        for (const meshName of characterPack.hiddenMeshes || []) {
+          const mesh = character.getObjectByName(meshName);
+          if (!mesh?.isMesh) throw new Error(\`Missing declared hidden mesh: \${characterPack.id}:\${meshName}\`);
+          mesh.visible = false;
+        }
+        for (const adjustment of characterPack.restPoseAdjustments || []) {
+          const target = character.getObjectByName(adjustment.node);
+          if (!target) throw new Error(\`Missing declared rest-pose node: \${characterPack.id}:\${adjustment.node}\`);
+          if (adjustment.positionDelta) {
+            target.position.add(new THREE.Vector3(...adjustment.positionDelta));
+          }
+        }
+      }
+
       window.exportCharacter = async (characterPack) => {
         const manager = new THREE.LoadingManager();
         const assetsReady = new Promise((resolve, reject) => {
@@ -89,6 +104,7 @@ function exporterHtml() {
         characterRoot.name = characterPack.id;
         character.rotation.set(characterPack.pitch ?? -Math.PI / 2, 0, 0);
         characterRoot.add(character);
+        applyDisplayRules(character, characterPack);
 
         character.traverse((object) => {
           if (!object.isMesh) return;
@@ -101,9 +117,11 @@ function exporterHtml() {
             const textureSource = source.map?.image?.currentSrc || source.map?.image?.src || "";
             const texturePath = textureSource.split(/[?#]/, 1)[0];
             const opacity = characterPack.materialOpacities?.[source.name] ?? 1;
-            const transparent = opacity < 1
+            const alphaCutout = characterPack.alphaCutoutMaterials?.includes(source.name)
+              || characterPack.alphaCutoutTextures?.some((filename) => texturePath.endsWith(filename));
+            const transparent = !alphaCutout && (opacity < 1
               || characterPack.transparentMaterials?.includes(source.name)
-              || characterPack.transparentTextures?.some((filename) => texturePath.endsWith(filename));
+              || characterPack.transparentTextures?.some((filename) => texturePath.endsWith(filename)));
             if (source.map) {
               source.map.magFilter = THREE.NearestFilter;
               source.map.minFilter = THREE.NearestMipmapNearestFilter;
@@ -116,7 +134,7 @@ function exporterHtml() {
               side: THREE.DoubleSide,
               transparent,
               opacity,
-              alphaTest: transparent ? 0.08 : 0,
+              alphaTest: alphaCutout ? (characterPack.alphaCutoff ?? 0.08) : 0,
               depthWrite: !transparent,
               toneMapped: false,
             });

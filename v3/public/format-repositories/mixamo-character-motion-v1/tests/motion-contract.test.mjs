@@ -137,10 +137,18 @@ test("Mario preserves the source's inch-scale unit without clipping the full-bod
   const mario = catalog.packs.find((pack) => pack.id === "mario");
   assert.ok(mario);
   assert.equal(mario.scale, 0.02);
+  assert.deepEqual(mario.hiddenMeshes, [
+    "Eyelid00__MarioFaceMat00",
+    "Eyelid01__MarioFaceMat00",
+  ]);
+  assert.equal(mario.restPoseAdjustments, undefined);
   assert.equal(mario.motionProfile.rootBone, "joint1");
   assert.deepEqual(mario.motionProfile.feet, { left: "joint6", right: "joint10" });
   const model = await readFile(path.join(root, mario.model), "utf8");
   assert.match(model, /<unit name="inch" meter="0\.0254"\/>/);
+  for (const mesh of mario.hiddenMeshes) {
+    assert.match(model, new RegExp(`name="${mesh}"`));
+  }
   for (const texture of [
     "mariobodyfixred_nrm.png",
     "mariobodyfix_alb.png",
@@ -150,6 +158,31 @@ test("Mario preserves the source's inch-scale unit without clipping the full-bod
     "marioshoes_alb.png",
   ]) {
     assert.match(model, new RegExp(`<init_from>\\./${texture}</init_from>`));
+  }
+});
+
+test("Sonic keeps the calibrated open-eye rest pose on protected facial controls", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const sonic = catalog.packs.find((pack) => pack.id === "sonic-modern");
+  assert.ok(sonic);
+  assert.deepEqual(sonic.restPoseAdjustments, [
+    { node: "joint22", positionDelta: [3, 0, 0] },
+    { node: "joint23", positionDelta: [3, 0, 0] },
+    { node: "joint24", positionDelta: [3, 0, 0] },
+    { node: "joint25", positionDelta: [3, 0, 0] },
+    { node: "joint26", positionDelta: [3, 0, 0] },
+    { node: "joint27", positionDelta: [-1.5, 0, 0] },
+    { node: "joint28", positionDelta: [-1.5, 0, 0] },
+    { node: "joint29", positionDelta: [-1.5, 0, 0] },
+  ]);
+  const model = await readFile(path.join(root, sonic.model), "utf8");
+  for (const { node } of sonic.restPoseAdjustments) {
+    assert.ok(sonic.motionProfile.protectedBones.includes(node), `${node} must retain the accepted open-eye rest pose`);
+    assert.equal(sonic.motionProfile.boneMap[node], undefined);
+    assert.ok(
+      model.includes(`name="${node}"`) || model.includes(`sid="${node}"`),
+      `${node} must exist in Sonic's source rig`,
+    );
   }
 });
 
@@ -163,18 +196,40 @@ test("Olaf stays visibly framed with his transparent body and facial textures", 
   assert.deepEqual(olaf.motionProfile.feet, { left: "joint5", right: "joint8" });
 });
 
-test("Sandy reveals her intact face through declarative helmet-glass opacity", async () => {
+test("Sandy reveals her intact face through explicit alpha cutouts and helmet-glass opacity", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const sandy = catalog.packs.find((pack) => pack.id === "sandy");
   assert.ok(sandy);
+  assert.deepEqual(sandy.transparentTextures, ["tx8_0000_sandyglass.PNG"]);
+  assert.deepEqual(sandy.alphaCutoutMaterials, [
+    "unnamed.003",
+    "unnamed.005",
+    "unnamed.006",
+    "unnamed.008",
+  ]);
+  assert.equal(sandy.alphaCutoff, 0.08);
   assert.deepEqual(sandy.materialOpacities, { "unnamed.007": 0.18 });
-  assert.ok(sandy.transparentTextures.includes("tx8_0000_sandyglass.PNG"));
   for (const bone of ["sandy_eye_L", "sandy_eye_R", "sandy_jaw", "sandy_lid_top_L", "sandy_lid_top_R"]) {
     assert.ok(sandy.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
   }
   const renderer = await readFile(path.join(root, "runtime/renderer/app.js"), "utf8");
   assert.match(renderer, /characterPack\.materialOpacities\?\.\[source\.name\] \?\? 1/);
-  assert.match(renderer, /opacity < 1/);
+  assert.match(renderer, /characterPack\.alphaCutoutMaterials\?\.includes\(source\.name\)/);
+  assert.match(renderer, /alphaTest: alphaCutout \? \(characterPack\.alphaCutoff \?\? 0\.08\) : 0/);
+  assert.match(renderer, /transparent = !alphaCutout/);
+});
+
+test("the shared runtime applies declarative display repairs before retargeting", async () => {
+  const renderer = await readFile(path.join(root, "runtime/renderer/app.js"), "utf8");
+  assert.match(renderer, /function applyCharacterDisplayRules\(character, characterPack\)/);
+  assert.match(renderer, /mesh\.visible = false/);
+  assert.match(renderer, /target\.position\.add\(new THREE\.Vector3\(\.\.\.adjustment\.positionDelta\)\)/);
+  assert.ok(
+    renderer.indexOf("applyCharacterDisplayRules(character, characterPack)") <
+      renderer.indexOf("return { character, characterRoot }"),
+    "display repairs must be part of the loaded rest pose before the retargeter is created",
+  );
+  assert.doesNotMatch(renderer, /characterPack\.id === ["'](?:sandy|mario|sonic-modern|larry)["']/);
 });
 
 test("Aqua stays on the single Collada runtime after an offline skinned-model conversion", async () => {
@@ -216,7 +271,9 @@ test("Larry keeps the verified unusual-anatomy map, source-unit correction, and 
   const larry = catalog.packs.find((pack) => pack.id === "larry");
   assert.ok(larry);
   assert.equal(larry.scale, 0.18);
-  assert.equal(larry.yaw, 3.1415926536);
+  assert.equal(larry.pitch, 0);
+  assert.equal(larry.yaw, 0);
+  assert.equal(larry.restPoseAdjustments, undefined);
   assert.equal(larry.motionProfile.rootBone, "Dummy010");
   assert.deepEqual(larry.motionProfile.feet, { left: "Dummy043", right: "Dummy046" });
   assert.equal(Object.keys(larry.motionProfile.boneMap).length, 27);
@@ -227,6 +284,7 @@ test("Larry keeps the verified unusual-anatomy map, source-unit correction, and 
   }
   const model = await readFile(path.join(root, larry.model), "utf8");
   assert.match(model, /<init_from>tex_0000_larry\.png<\/init_from>/);
+  assert.doesNotMatch(model, /<up_axis>/);
   assert.doesNotMatch(model, /file:\/\//);
 });
 
