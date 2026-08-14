@@ -1060,6 +1060,103 @@
         ]
       },
       "sourceArchive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip"
+    },
+    {
+      "id": "sandy",
+      "label": "Sandy Cheeks",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/sandy/chr_sandy_bindpose.dae",
+      "scale": 1.67,
+      "transparentTextures": [
+        "tx1_0000_lashes.PNG",
+        "tx1_0000_sandyeyes_64.PNG",
+        "tx8_0000_sandyglass.PNG"
+      ],
+      "transparentMaterials": [],
+      "materialOpacities": {
+        "unnamed.007": 0.18
+      },
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "sandy_sub_root",
+        "feet": {
+          "left": "sandy_toe_L",
+          "right": "sandy_toe_R"
+        },
+        "legChains": {
+          "left": [
+            "sandy_thigh_L",
+            "sandy_knee_L",
+            "sandy_ankle_L"
+          ],
+          "right": [
+            "sandy_thigh_R",
+            "sandy_knee_R",
+            "sandy_ankle_R"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "sandy_sub_root": "mixamorig_Hips",
+          "sandy_spine": "mixamorig_Spine",
+          "sandy_chest": "mixamorig_Spine2",
+          "sandy_neck": "mixamorig_Neck",
+          "sandy_head": "mixamorig_Head",
+          "sandy_clavicle_L": "mixamorig_LeftShoulder",
+          "sandy_bicep_L": "mixamorig_LeftArm",
+          "sandy_elbow_L": "mixamorig_LeftForeArm",
+          "sandy_wrist_L": "mixamorig_LeftHand",
+          "sandy_fingers_L": "mixamorig_LeftHandMiddle1",
+          "sandy_thumb_L": "mixamorig_LeftHandThumb1",
+          "sandy_clavicle_R": "mixamorig_RightShoulder",
+          "sandy_bicep_R": "mixamorig_RightArm",
+          "sandy_elbow_R": "mixamorig_RightForeArm",
+          "sandy_wrist_R": "mixamorig_RightHand",
+          "sandy_fingers_R": "mixamorig_RightHandMiddle1",
+          "sandy_thumb_R": "mixamorig_RightHandThumb1",
+          "sandy_thigh_L": "mixamorig_LeftUpLeg",
+          "sandy_knee_L": "mixamorig_LeftLeg",
+          "sandy_ankle_L": "mixamorig_LeftFoot",
+          "sandy_toe_L": "mixamorig_LeftToeBase",
+          "sandy_thigh_R": "mixamorig_RightUpLeg",
+          "sandy_knee_R": "mixamorig_RightLeg",
+          "sandy_ankle_R": "mixamorig_RightFoot",
+          "sandy_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "sandy_hip",
+          "sandy_connect",
+          "sandy_skel_tail1",
+          "sandy_skel_tail2",
+          "sandy_skel_tail3",
+          "sandy_skel_tail4",
+          "sandy_bicep_twist_L",
+          "sandy_elbow_twist_L",
+          "sandy_bicep_twist_R",
+          "sandy_elbow_twist_R",
+          "sandy_helmet",
+          "sandy_flower",
+          "sandy_ear_L",
+          "sandy_ear_R",
+          "sandy_eye_L",
+          "sandy_eye_R",
+          "sandy_jaw",
+          "sandy_lid_bottom_L",
+          "sandy_lid_bottom_R",
+          "sandy_lid_top_L",
+          "sandy_lid_top_R",
+          "sandy_teeth"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip"
     }
   ]
 }

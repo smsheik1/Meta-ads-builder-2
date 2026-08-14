@@ -432,7 +432,9 @@ async function loadCharacter(characterPack) {
     const materials = sources.map((source) => {
       const textureSource = source.map?.image?.currentSrc || source.map?.image?.src || "";
       const texturePath = textureSource.split(/[?#]/, 1)[0];
-      const transparent = characterPack.transparentMaterials?.includes(source.name)
+      const opacity = characterPack.materialOpacities?.[source.name] ?? 1;
+      const transparent = opacity < 1
+        || characterPack.transparentMaterials?.includes(source.name)
         || characterPack.transparentTextures?.some((filename) => texturePath.endsWith(filename));
       if (source.map) {
         source.map.magFilter = THREE.NearestFilter;
@@ -444,6 +446,7 @@ async function loadCharacter(characterPack) {
         color: 0xffffff,
         side: THREE.DoubleSide,
         transparent,
+        opacity,
         alphaTest: transparent ? 0.08 : 0,
         depthWrite: !transparent,
         toneMapped: false,

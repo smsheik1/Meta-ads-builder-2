@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 8,
-    "acceptedNewCharacters": 8,
-    "rejectedArchives": 39,
-    "finalMotionReadyCharacters": 12
+    "acceptedNewArchives": 9,
+    "acceptedNewCharacters": 9,
+    "rejectedArchives": 38,
+    "finalMotionReadyCharacters": 13
   },
   "acceptedNew": [
     {
@@ -83,6 +83,15 @@
         "evidence/character-imports/olaf-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded character with readable motion on two dances after correcting the undersized Collada display scale and preserving its transparent textures."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip",
+      "characterIds": ["sandy"],
+      "proof": [
+        "evidence/character-imports/sandy-silly-dancing.png",
+        "evidence/character-imports/sandy-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after assigning declarative opacity to the solid gray glass material, revealing the intact face geometry."
     }
   ],
   "alreadyIncluded": [
@@ -123,11 +132,6 @@
       "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",
       "reasonCode": "anonymous-rig",
       "reason": "The skinned Collada rig exposes only anonymous Dummy joint names, so a safe anatomical motion map cannot be verified."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip",
-      "reasonCode": "incomplete-render",
-      "reason": "The body animates, but the helmet remains opaque and the face is absent across the full sampled motion, including after one bounded transparency repair."
     },
     {
       "archive": "Mobile - Marvel Future Fight - Heroes - Spider-Man (Miles Morales, Classic).zip",

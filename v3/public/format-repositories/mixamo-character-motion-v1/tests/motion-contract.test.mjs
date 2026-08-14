@@ -163,6 +163,20 @@ test("Olaf stays visibly framed with his transparent body and facial textures", 
   assert.deepEqual(olaf.motionProfile.feet, { left: "joint5", right: "joint8" });
 });
 
+test("Sandy reveals her intact face through declarative helmet-glass opacity", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const sandy = catalog.packs.find((pack) => pack.id === "sandy");
+  assert.ok(sandy);
+  assert.deepEqual(sandy.materialOpacities, { "unnamed.007": 0.18 });
+  assert.ok(sandy.transparentTextures.includes("tx8_0000_sandyglass.PNG"));
+  for (const bone of ["sandy_eye_L", "sandy_eye_R", "sandy_jaw", "sandy_lid_top_L", "sandy_lid_top_R"]) {
+    assert.ok(sandy.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  const renderer = await readFile(path.join(root, "runtime/renderer/app.js"), "utf8");
+  assert.match(renderer, /characterPack\.materialOpacities\?\.\[source\.name\] \?\? 1/);
+  assert.match(renderer, /opacity < 1/);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -175,9 +189,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 8);
+  assert.equal(audit.acceptedNew.length, 9);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 39);
+  assert.equal(audit.rejected.length, 38);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());
