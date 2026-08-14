@@ -103,9 +103,7 @@ export function BikiniBottomDanceOffIncludedAssets({
                   {character.label}
                 </h4>
                 <p className="mt-1 text-xs font-bold text-[#667087]">
-                  {character.voiceReady
-                    ? "Dance + voice ready"
-                    : "Dance-ready · voice pending"}
+                  {character.sourceLabel}
                 </p>
               </div>
             </article>

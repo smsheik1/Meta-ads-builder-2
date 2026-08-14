@@ -98,6 +98,7 @@ export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
     characters: Array<{
       id: string;
       label: string;
+      sourceLabel: string;
       modelSrc: string;
       posterSrc: string;
       voiceReady: boolean;
@@ -127,6 +128,31 @@ const danceOffPublicRoot = "/format-repositories/bikini-bottom-dance-off-v1";
 const motionPublicRoot = "/format-repositories/mixamo-character-motion-v1";
 const characterPreviewRoot =
   "/discovery/bikini-bottom-dance-off/character-previews";
+
+const characterSourceLabels: Record<string, string> = {
+  spongebob: "SpongeBob SquarePants",
+  squilliam: "SpongeBob SquarePants",
+  "mr-krabs": "SpongeBob SquarePants",
+  patrick: "SpongeBob SquarePants",
+  "sonic-modern": "Sonic Generations",
+  "flynn-rider": "Tangled",
+  "kermit-pirate": "The Muppets",
+  "kermit-sci-fi": "The Muppets",
+  "agent-p": "Phineas and Ferb",
+  squidward: "SpongeBob SquarePants",
+  mario: "Super Mario 3D World",
+  olaf: "Frozen",
+  sandy: "SpongeBob SquarePants",
+  aqua: "Kingdom Hearts: Birth by Sleep",
+  ratchet: "Ratchet & Clank",
+  larry: "SpongeBob SquarePants",
+  "man-ray": "SpongeBob SquarePants",
+  "batman-animated": "Batman: The Animated Series",
+  "batman-beyond": "Batman Beyond",
+  "dr-doofenshmirtz": "Phineas and Ferb",
+  ferb: "Phineas and Ferb",
+  phineas: "Phineas and Ferb",
+};
 
 async function readJson<T>(filePath: string): Promise<T> {
   return JSON.parse(await readFile(filePath, "utf8")) as T;
@@ -188,9 +214,14 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   const includedCharacters = characters.packs
     .filter((character) => character.status === "motion-ready")
     .map((character) => {
+      const sourceLabel = characterSourceLabels[character.id];
+      if (!sourceLabel) {
+        throw new Error(`Missing source label for ${character.id}`);
+      }
       return {
         id: character.id,
         label: character.label,
+        sourceLabel,
         modelSrc: `${characterPreviewRoot}/${character.id}.glb`,
         posterSrc: `${characterPreviewRoot}/${character.id}.png`,
         voiceReady: voiceReadyIds.has(character.id),
