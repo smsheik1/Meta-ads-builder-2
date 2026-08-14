@@ -280,7 +280,7 @@
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",
       "reasonCode": "collapsed-motion",
-      "reason": "The character lies sideways and folded into the stage across the full sampled motion."
+      "reason": "The archive contains one skinned rig whose pelvis, thighs, clavicles, and arms use heavily pre-rotated, mutually inconsistent bind axes. Its verified 23-bone anatomy map passes numerical retarget checks, but both the original and corrected root-orientation proofs leave the intact textured skin sideways and folded through the stage across the full sampled motion. Recovery requires per-bone bind-axis reconstruction, so the character was skipped."
     },
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
