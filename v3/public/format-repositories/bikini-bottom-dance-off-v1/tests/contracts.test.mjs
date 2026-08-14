@@ -51,18 +51,20 @@ test("the existing manifests expose all motion-ready characters without inventin
     readJson("../mixamo-character-motion-v1/assets/character-import-audit.json"),
     readJson("input-contract.json"),
   ]);
-  assert.equal(voices.voices.length, 4);
+  assert.equal(voices.voices.length, 6);
   const acceptedNewIds = audit.acceptedNew.flatMap((entry) => entry.characterIds);
-  assert.equal(catalog.packs.length, voices.voices.length + acceptedNewIds.length);
+  assert.ok(acceptedNewIds.every((characterId) =>
+    catalog.packs.some((character) => character.id === characterId),
+  ));
   assert.deepEqual(
     inputContract.properties.characters.items.properties.characterId.enum.slice().sort(),
     voices.voices.map((voice) => voice.characterId).sort(),
   );
   const voiceReadyIds = new Set(voices.voices.map((voice) => voice.characterId));
-  assert.deepEqual(
-    catalog.packs.filter((character) => !voiceReadyIds.has(character.id)).map((character) => character.id).sort(),
-    acceptedNewIds.sort(),
-  );
+  assert.ok([...voiceReadyIds].every((characterId) =>
+    catalog.packs.some((character) => character.id === characterId),
+  ));
+  assert.equal(catalog.packs.filter((character) => !voiceReadyIds.has(character.id)).length, 16);
 });
 
 test("the Fish voice audit covers the full motion roster without re-searching known voices", async () => {
@@ -190,12 +192,21 @@ test("the song and Fish voices occupy mutually exclusive timeline beats", async 
 
 test("the approved Fish voice presets are registered and provider calls require approval", async () => {
   const voices = await readJson("assets/voice-presets.json");
-  assert.deepEqual(voices.voices.map((voice) => voice.characterId), ["spongebob", "patrick", "mr-krabs", "squilliam"]);
+  assert.deepEqual(voices.voices.map((voice) => voice.characterId), [
+    "spongebob",
+    "patrick",
+    "mr-krabs",
+    "squilliam",
+    "squidward",
+    "sandy",
+  ]);
   assert.deepEqual(voices.voices.map((voice) => voice.referenceId), [
     "9845e056f37b470d9a1005e41c864e25",
     "d1520b60870b4e9aa01eab5bfefb1c45",
     "394d3112f0da41049c42177f3ca31c5a",
     "f12d545dcc1149bab3b68bba84822a1e",
+    "1b28ff723a204fe08c26d8695f796b84",
+    "783d32b03d0c4ff28dd66455364d8665",
   ]);
   assert.equal(voices.voices.every((voice) => /^[0-9a-f]{32}$/.test(voice.referenceId)), true);
   assert.equal("privateReferenceEnvironmentVariable" in voices, false);
@@ -330,6 +341,8 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   assert.match(buildKit, /"kit-entrypoints"/);
   assert.match(buildKit, /await cp\(motionRoot/);
   assert.match(buildKit, /formatVersion = JSON\.parse/);
+  assert.match(buildKit, /excludedRoots = new Set\(\["agent-runs"/);
+  assert.match(buildKit, /excludedNames = new Set\(\["\.DS_Store", "\.env", "\.env\.local"/);
   assert.doesNotMatch(buildKit, /version: "0\.7/);
 });
 

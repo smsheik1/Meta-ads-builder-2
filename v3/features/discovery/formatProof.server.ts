@@ -342,7 +342,7 @@ const formatConfigs: FormatProfileConfig[] = [
         "One local song file the user is allowed to use",
         "A song title and preferred excerpt, or permission for the packaged analyzer to choose",
         "Motion preferences, or permission to audition and recommend from the catalog",
-        "Approved dialogue or Fish Audio access for the four registered voices",
+        "Approved dialogue or Fish Audio access for four selected voice-ready characters",
       ],
       deliverables: [
         "One validated episode input and motion assignment",

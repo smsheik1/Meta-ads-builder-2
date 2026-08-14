@@ -457,7 +457,7 @@ assert.equal(trustData.version, "0.12.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   motionReadyCharacters: 22,
-  voiceReadyCharacters: 4,
+  voiceReadyCharacters: 6,
 });
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
@@ -486,11 +486,12 @@ for (const character of trustData.includedAssets.characters) {
   assert.ok(poster.byteLength > 5_000);
   assert.deepEqual(imageSize(poster), { width: 800, height: 1000, type: "png" });
 }
-assert.equal(
-  trustData.includedAssets.characters.filter(
-    (character) => character.voiceReady,
-  ).length,
-  4,
+assert.deepEqual(
+  trustData.includedAssets.characters
+    .filter((character) => character.voiceReady)
+    .map((character) => character.id)
+    .sort(),
+  ["mr-krabs", "patrick", "sandy", "spongebob", "squidward", "squilliam"],
 );
 assert.equal(
   trustData.includedAssets.characters.filter((character) => character.modelSrc)

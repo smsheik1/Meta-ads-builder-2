@@ -26,6 +26,18 @@
       "referenceId": "f12d545dcc1149bab3b68bba84822a1e",
       "delivery": "elegant, condescending, and certain he won",
       "speed": 1.14
+    },
+    {
+      "characterId": "squidward",
+      "referenceId": "1b28ff723a204fe08c26d8695f796b84",
+      "delivery": "dry, unimpressed, and superior",
+      "speed": 1.08
+    },
+    {
+      "characterId": "sandy",
+      "referenceId": "783d32b03d0c4ff28dd66455364d8665",
+      "delivery": "energetic, competitive, and confident",
+      "speed": 1.15
     }
   ]
 }

@@ -21,7 +21,7 @@
         "type": "object",
         "required": ["characterId", "motionId", "finaleMotionId", "reactionMotionId", "label", "taunt", "color"],
         "properties": {
-          "characterId": {"type": "string", "enum": ["spongebob", "patrick", "mr-krabs", "squilliam"]},
+          "characterId": {"type": "string", "enum": ["spongebob", "patrick", "mr-krabs", "squilliam", "squidward", "sandy"]},
           "motionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
           "finaleMotionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
           "reactionMotionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
