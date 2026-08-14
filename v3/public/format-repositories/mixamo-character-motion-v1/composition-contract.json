@@ -3,7 +3,7 @@
   "fixed": [
     "One shared Three.js renderer for the interactive lab and video output",
     "MP4 and GIF downloads generated from the selected character and motion through the shared renderer",
-    "Responsive selector with four verified characters and 25 normalized motions",
+    "Responsive selector with eight verified characters and 25 normalized motions",
     "Manifest-first startup with only the active character and motion payload loaded",
     "Atomic latest-selection scene swaps with recoverable interactive WebGL playback",
     "Mixamo inverse-bind world-delta motion schema",

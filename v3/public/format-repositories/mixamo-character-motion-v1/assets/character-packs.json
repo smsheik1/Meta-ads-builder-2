@@ -9,18 +9,43 @@
       "format": "collada",
       "model": "assets/characters/spongebob/chr_bob_bindpose.dae",
       "scale": 2.1,
-      "transparentTextures": ["tx1_0000_lashes.PNG", "tx8_0000_spongecheeks_32.PNG", "tx8_0000_spongeeyes_128.PNG"],
-      "transparentMaterials": ["unnamed.003", "unnamed.004", "unnamed.006", "unnamed.007", "unnamed.008"],
+      "transparentTextures": [
+        "tx1_0000_lashes.PNG",
+        "tx8_0000_spongecheeks_32.PNG",
+        "tx8_0000_spongeeyes_128.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed.003",
+        "unnamed.004",
+        "unnamed.006",
+        "unnamed.007",
+        "unnamed.008"
+      ],
       "motionProfile": {
         "profile": "mixamo-humanoid-world-delta-v1",
         "minimumMappedBones": 35,
         "rootBone": "bob_sub_root",
-        "feet": {"left": "bob_toe_L", "right": "bob_toe_R"},
-        "legChains": {
-          "left": ["bob_thigh_L", "bob_knee_L", "bob_ankle_L"],
-          "right": ["bob_thigh_R", "bob_knee_R", "bob_ankle_R"]
+        "feet": {
+          "left": "bob_toe_L",
+          "right": "bob_toe_R"
         },
-        "rootMotionGain": [1, 1, 1],
+        "legChains": {
+          "left": [
+            "bob_thigh_L",
+            "bob_knee_L",
+            "bob_ankle_L"
+          ],
+          "right": [
+            "bob_thigh_R",
+            "bob_knee_R",
+            "bob_ankle_R"
+          ]
+        },
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
         "boneMap": {
           "bob_sub_root": "mixamorig_Hips",
           "bob_chest": "mixamorig_Spine2",
@@ -59,10 +84,28 @@
           "bob_toe_R": "mixamorig_RightToeBase"
         },
         "protectedBones": [
-          "bob_eye_socket_shrink_L", "bob_eye_L", "bob_eye_stretch_L", "bob_lid_lower_L", "bob_lid_upper_L",
-          "bob_eye_socket_shrink_R", "bob_eye_R", "bob_eye_stretch_R", "bob_lid_lower_R", "bob_lid_upper_R",
-          "bob_forehead", "bob_lip_upper", "bob_teeth", "bob_mouth_L", "bob_mouth_R", "bob_nose", "bob_jaw",
-          "bob_lip_lower", "bob_lip_lower_L", "bob_lip_lower_R", "bob_tongue_base", "bob_tongue_end"
+          "bob_eye_socket_shrink_L",
+          "bob_eye_L",
+          "bob_eye_stretch_L",
+          "bob_lid_lower_L",
+          "bob_lid_upper_L",
+          "bob_eye_socket_shrink_R",
+          "bob_eye_R",
+          "bob_eye_stretch_R",
+          "bob_lid_lower_R",
+          "bob_lid_upper_R",
+          "bob_forehead",
+          "bob_lip_upper",
+          "bob_teeth",
+          "bob_mouth_L",
+          "bob_mouth_R",
+          "bob_nose",
+          "bob_jaw",
+          "bob_lip_lower",
+          "bob_lip_lower_L",
+          "bob_lip_lower_R",
+          "bob_tongue_base",
+          "bob_tongue_end"
         ]
       },
       "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - SpongeBob SquarePants.zip"
@@ -133,7 +176,11 @@
           }
         ],
         "maximumVerticalRootCorrection": 0.12,
-        "rootMotionGain": [1, 1, 1],
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
         "boneMap": {
           "squilliam_sub_root": "mixamorig_Hips",
           "squilliam_spine_base": "mixamorig_Spine",
@@ -209,7 +256,11 @@
           ]
         },
         "maximumVerticalRootCorrection": 0.12,
-        "rootMotionGain": [1, 1, 1],
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
         "boneMap": {
           "krabs_sub_root": "mixamorig_Hips",
           "krabs_waist": "mixamorig_Spine2",
@@ -296,7 +347,11 @@
           ]
         },
         "maximumVerticalRootCorrection": 0.14,
-        "rootMotionGain": [1, 1, 1],
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
         "boneMap": {
           "pat_root_joint": "mixamorig_Hips",
           "pat_chest": "mixamorig_Spine2",
@@ -325,6 +380,307 @@
         ]
       },
       "sourceArchive": "GameCube - SpongeBob SquarePants: Lights, Camera, Pants! - Playable Characters - Patrick.zip"
+    },
+    {
+      "id": "sonic-modern",
+      "label": "Sonic the Hedgehog (Modern)",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/sonic-modern/sonic-modern.dae",
+      "scale": 0.07,
+      "transparentTextures": [],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 26,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "joint0",
+        "feet": {
+          "left": "joint77",
+          "right": "joint83"
+        },
+        "legChains": {
+          "left": [
+            "joint74",
+            "joint75",
+            "joint76"
+          ],
+          "right": [
+            "joint80",
+            "joint81",
+            "joint82"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "joint0": "mixamorig_Hips",
+          "joint1": "mixamorig_Spine",
+          "joint2": "mixamorig_Spine2",
+          "joint3": "mixamorig_Head",
+          "joint30": "mixamorig_LeftShoulder",
+          "joint31": "mixamorig_LeftArm",
+          "joint32": "mixamorig_LeftForeArm",
+          "joint33": "mixamorig_LeftHand",
+          "joint34": "mixamorig_LeftHandThumb1",
+          "joint37": "mixamorig_LeftHandIndex1",
+          "joint40": "mixamorig_LeftHandMiddle1",
+          "joint51": "mixamorig_RightShoulder",
+          "joint52": "mixamorig_RightArm",
+          "joint53": "mixamorig_RightForeArm",
+          "joint54": "mixamorig_RightHand",
+          "joint55": "mixamorig_RightHandThumb1",
+          "joint58": "mixamorig_RightHandIndex1",
+          "joint61": "mixamorig_RightHandMiddle1",
+          "joint74": "mixamorig_LeftUpLeg",
+          "joint75": "mixamorig_LeftLeg",
+          "joint76": "mixamorig_LeftFoot",
+          "joint77": "mixamorig_LeftToeBase",
+          "joint80": "mixamorig_RightUpLeg",
+          "joint81": "mixamorig_RightLeg",
+          "joint82": "mixamorig_RightFoot",
+          "joint83": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "joint6",
+          "joint7",
+          "joint8",
+          "joint21",
+          "joint88",
+          "joint93",
+          "joint95",
+          "joint100"
+        ]
+      },
+      "sourceArchive": "PC _ Computer - Sonic Generations - Playable Characters - Sonic the Hedgehog (Modern).zip"
+    },
+    {
+      "id": "flynn-rider",
+      "label": "Flynn Rider",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/flynn-rider/flynn-rider.dae",
+      "scale": 0.015,
+      "transparentTextures": [
+        "n_ra203_0d04.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 25,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "joint5",
+        "feet": {
+          "left": "joint9",
+          "right": "joint20"
+        },
+        "legChains": {
+          "left": [
+            "joint6",
+            "joint7",
+            "joint8"
+          ],
+          "right": [
+            "joint17",
+            "joint18",
+            "joint19"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "joint5": "mixamorig_Hips",
+          "joint28": "mixamorig_Spine",
+          "joint29": "mixamorig_Spine1",
+          "joint30": "mixamorig_Spine2",
+          "joint31": "mixamorig_Neck",
+          "joint32": "mixamorig_Head",
+          "joint129": "mixamorig_LeftShoulder",
+          "joint130": "mixamorig_LeftArm",
+          "joint131": "mixamorig_LeftForeArm",
+          "joint132": "mixamorig_LeftHand",
+          "joint134": "mixamorig_LeftHandThumb1",
+          "joint137": "mixamorig_LeftHandIndex1",
+          "joint140": "mixamorig_LeftHandMiddle1",
+          "joint177": "mixamorig_RightShoulder",
+          "joint178": "mixamorig_RightArm",
+          "joint179": "mixamorig_RightForeArm",
+          "joint180": "mixamorig_RightHand",
+          "joint182": "mixamorig_RightHandThumb1",
+          "joint185": "mixamorig_RightHandIndex1",
+          "joint188": "mixamorig_RightHandMiddle1",
+          "joint6": "mixamorig_LeftUpLeg",
+          "joint7": "mixamorig_LeftLeg",
+          "joint8": "mixamorig_LeftFoot",
+          "joint9": "mixamorig_LeftToeBase",
+          "joint17": "mixamorig_RightUpLeg",
+          "joint18": "mixamorig_RightLeg",
+          "joint19": "mixamorig_RightFoot",
+          "joint20": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "joint69",
+          "joint70",
+          "joint73",
+          "joint91",
+          "joint95",
+          "joint96"
+        ]
+      },
+      "sourceArchive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Flynn Rider (Eugene Fitzherbert).zip"
+    },
+    {
+      "id": "kermit-pirate",
+      "label": "Kermit (Pirate)",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/kermit-pirate/kermit-pirate.dae",
+      "scale": 2.1,
+      "transparentTextures": [
+        "Kermit_JackSparrow_Trans.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 27,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bip01_Pelvis",
+        "feet": {
+          "left": "Bip01_L_Toe0",
+          "right": "Bip01_R_Toe0"
+        },
+        "legChains": {
+          "left": [
+            "Bip01_L_Thigh",
+            "Bip01_L_Calf",
+            "Bip01_L_Foot"
+          ],
+          "right": [
+            "Bip01_R_Thigh",
+            "Bip01_R_Calf",
+            "Bip01_R_Foot"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Bip01_Pelvis": "mixamorig_Hips",
+          "Bip01_Spine": "mixamorig_Spine",
+          "Bip01_Spine1": "mixamorig_Spine2",
+          "Bip01_Neck": "mixamorig_Neck",
+          "Bip01_Head": "mixamorig_Head",
+          "Bip01_L_Clavicle": "mixamorig_LeftShoulder",
+          "Bip01_L_UpperArm": "mixamorig_LeftArm",
+          "Bip01_L_Forearm": "mixamorig_LeftForeArm",
+          "Bip01_L_Hand": "mixamorig_LeftHand",
+          "Bip01_L_Finger0": "mixamorig_LeftHandThumb1",
+          "Bip01_L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bip01_L_Finger2": "mixamorig_LeftHandMiddle1",
+          "Bip01_R_Clavicle": "mixamorig_RightShoulder",
+          "Bip01_R_UpperArm": "mixamorig_RightArm",
+          "Bip01_R_Forearm": "mixamorig_RightForeArm",
+          "Bip01_R_Hand": "mixamorig_RightHand",
+          "Bip01_R_Finger0": "mixamorig_RightHandThumb1",
+          "Bip01_R_Finger1": "mixamorig_RightHandIndex1",
+          "Bip01_R_Finger2": "mixamorig_RightHandMiddle1",
+          "Bip01_L_Thigh": "mixamorig_LeftUpLeg",
+          "Bip01_L_Calf": "mixamorig_LeftLeg",
+          "Bip01_L_Foot": "mixamorig_LeftFoot",
+          "Bip01_L_Toe0": "mixamorig_LeftToeBase",
+          "Bip01_R_Thigh": "mixamorig_RightUpLeg",
+          "Bip01_R_Calf": "mixamorig_RightLeg",
+          "Bip01_R_Foot": "mixamorig_RightFoot",
+          "Bip01_R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_1",
+          "Bone_2a",
+          "Bone_Hair_1",
+          "Bone_02"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - The Muppets Movie Adventures - Playable Characters - Kermit (Pirate).zip"
+    },
+    {
+      "id": "kermit-sci-fi",
+      "label": "Kermit (Sci-Fi)",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/kermit-sci-fi/kermit-sci-fi.dae",
+      "scale": 2.1,
+      "transparentTextures": [],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bip01_Pelvis",
+        "feet": {
+          "left": "Bip01_L_Toe0",
+          "right": "Bip01_R_Toe0"
+        },
+        "legChains": {
+          "left": [
+            "Bip01_L_Thigh",
+            "Bip01_L_Calf",
+            "Bip01_L_Foot"
+          ],
+          "right": [
+            "Bip01_R_Thigh",
+            "Bip01_R_Calf",
+            "Bip01_R_Foot"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Bip01_Pelvis": "mixamorig_Hips",
+          "Bip01_Spine": "mixamorig_Spine",
+          "Bip01_Spine1": "mixamorig_Spine2",
+          "Bip01_Neck": "mixamorig_Neck",
+          "Bip01_Head": "mixamorig_Head",
+          "Bip01_L_Clavicle": "mixamorig_LeftShoulder",
+          "Bip01_L_UpperArm": "mixamorig_LeftArm",
+          "Bip01_L_Forearm": "mixamorig_LeftForeArm",
+          "Bip01_L_Hand": "mixamorig_LeftHand",
+          "Bip01_L_Finger1": "mixamorig_LeftHandMiddle1",
+          "Bip01_R_Clavicle": "mixamorig_RightShoulder",
+          "Bip01_R_UpperArm": "mixamorig_RightArm",
+          "Bip01_R_Forearm": "mixamorig_RightForeArm",
+          "Bip01_R_Hand": "mixamorig_RightHand",
+          "Bip01_R_Finger0": "mixamorig_RightHandThumb1",
+          "Bip01_R_Finger1": "mixamorig_RightHandMiddle1",
+          "Bip01_L_Thigh": "mixamorig_LeftUpLeg",
+          "Bip01_L_Calf": "mixamorig_LeftLeg",
+          "Bip01_L_Foot": "mixamorig_LeftFoot",
+          "Bip01_L_Toe0": "mixamorig_LeftToeBase",
+          "Bip01_R_Thigh": "mixamorig_RightUpLeg",
+          "Bip01_R_Calf": "mixamorig_RightLeg",
+          "Bip01_R_Foot": "mixamorig_RightFoot",
+          "Bip01_R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_1",
+          "Bone_2a"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - The Muppets Movie Adventures - Playable Characters - Kermit (Sci-Fi).zip"
     }
   ]
 }

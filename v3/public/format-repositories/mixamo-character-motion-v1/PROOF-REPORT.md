@@ -8,6 +8,8 @@ Version 0.4 adds Patrick Star as the fourth verified rig. Patrick uses the same 
 
 Version 0.5 hardens the interactive renderer lifecycle. Character and motion changes now resolve as one latest-selection transaction, the displayed scene remains intact until its replacement is ready, rejected or timed-out loads leave the cache retryable, and interactive WebGL context loss has an explicit recovery path. Deterministic rendering and both download formats retain the existing export renderer behavior.
 
+Version 0.6 audits 51 supplied character archives strictly one character at a time. Sonic (Modern), Flynn Rider, Kermit (Pirate), and Kermit (Sci-Fi) each passed separate Silly Dancing and Macarena contact-sheet reviews, expanding the verified roster from four to eight. The remaining 43 archives have explicit rejection evidence in `assets/character-import-audit.json`; no failed or static-only model was silently included.
+
 | Motion | Original frames | Exact duration | Mapped bones | Planar root retained | Automatic quality |
 |---|---:|---:|---:|---:|---|
 | Hip Hop Dancing | 135 | 4.500 s | 35 | 100% | Pass |
@@ -70,7 +72,7 @@ Version 0.4 repeated the live Wiggly page test with Patrick and Rumba Dancing. P
 
 ## Playback stability proof
 
-The v0.5 browser regression adds artificial delay to character and motion requests, then issues eight rapid character/motion selections without waiting between clicks. The selector controls remain usable while loading, the old dancer remains on stage, stale completions are ignored, and the scene converges on the final Patrick + Twist Dance pair. The same pass forces `WEBGL_lose_context`, restores it, verifies that playback advances again, and reloads the lab five consecutive times. All four characters are also committed and rendered by the existing lab smoke.
+The v0.5 browser regression adds artificial delay to character and motion requests, then issues eight rapid character/motion selections without waiting between clicks. The selector controls remain usable while loading, the old dancer remains on stage, stale completions are ignored, and the scene converges on the final Patrick + Twist Dance pair. The same pass forces `WEBGL_lose_context`, restores it, verifies that playback advances again, and reloads the lab five consecutive times. Version 0.6 extends the ordinary lab smoke to the full eight-character selector and finishes on Kermit (Sci-Fi).
 
 The stress run reproduced the original intermittent freeze as `Frame -1 is outside 0-143`. A scene restart could occur a fraction after the browser timestamped the next animation callback, producing a negative elapsed interval. Elapsed time is now clamped at zero, and the animation callback schedules its successor from `finally`, so one unexpected frame error cannot permanently kill the loop. Interactive playback also disables the export-only preserved drawing buffer; deterministic output keeps it.
 
