@@ -219,8 +219,8 @@
     },
     {
       "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Woody.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned rig exposes only bone000-style anonymous joints, so a safe anatomical motion map cannot be verified."
+      "reasonCode": "missing-diffuse-texture",
+      "reason": "The archive's only texture is byte-for-byte the same rainbow UV-debug gradient supplied with Buzz, not Woody's diffuse character art. Anatomical bone mapping cannot produce an acceptable character without a disproportionate full UV-atlas repaint, so the candidate was skipped before redundant rig work."
     },
     {
       "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Daphne Blake.zip",
