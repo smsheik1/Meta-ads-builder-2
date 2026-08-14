@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DiscoveryCharacterModelViewer } from "./DiscoveryCharacterModelViewer";
 import type { BikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
 
@@ -39,10 +39,81 @@ export function BikiniBottomDanceOffIncludedAssets({
   const [selectedBackgroundId, setSelectedBackgroundId] = useState(
     assets.defaultBackgroundId,
   );
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [activeVoicePreviewId, setActiveVoicePreviewId] = useState<
+    string | null
+  >(null);
+  const [voicePreviewErrorId, setVoicePreviewErrorId] = useState<string | null>(
+    null,
+  );
   const selectedBackground =
     assets.backgrounds.find(
       (background) => background.id === selectedBackgroundId,
     ) ?? assets.backgrounds[0];
+
+  useEffect(
+    () => () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    },
+    [],
+  );
+
+  async function toggleVoicePreview(
+    character: (typeof assets.characters)[number],
+  ) {
+    const preview = character.voicePreview;
+    if (preview.status !== "ready" || !preview.src) return;
+
+    const current = audioRef.current;
+    if (
+      current &&
+      activeVoicePreviewId === character.id &&
+      !current.paused
+    ) {
+      current.pause();
+      current.currentTime = 0;
+      audioRef.current = null;
+      setActiveVoicePreviewId(null);
+      return;
+    }
+
+    if (current) {
+      current.pause();
+      current.currentTime = 0;
+    }
+
+    const audio = new Audio(preview.src);
+    audio.preload = "auto";
+    audioRef.current = audio;
+    setActiveVoicePreviewId(character.id);
+    setVoicePreviewErrorId(null);
+
+    const clearCurrent = () => {
+      if (audioRef.current !== audio) return;
+      audioRef.current = null;
+      setActiveVoicePreviewId(null);
+    };
+    audio.addEventListener("ended", clearCurrent, { once: true });
+    audio.addEventListener(
+      "error",
+      () => {
+        if (audioRef.current !== audio) return;
+        clearCurrent();
+        setVoicePreviewErrorId(character.id);
+      },
+      { once: true },
+    );
+
+    try {
+      await audio.play();
+    } catch {
+      if (audioRef.current === audio) {
+        clearCurrent();
+        setVoicePreviewErrorId(character.id);
+      }
+    }
+  }
 
   if (!selectedBackground) return null;
 
@@ -69,6 +140,7 @@ export function BikiniBottomDanceOffIncludedAssets({
           <p className="text-sm font-black min-[701px]:pb-1 min-[701px]:text-right">
             {data.stats.motionReadyCharacters} motion-ready ·{" "}
             {data.stats.voiceReadyCharacters} voice-ready ·{" "}
+            {data.stats.voicePreviewReadyCharacters} playable previews ·{" "}
             {assets.backgrounds.length + 1} backgrounds · {data.stats.motions}{" "}
             dances
           </p>
@@ -96,6 +168,12 @@ export function BikiniBottomDanceOffIncludedAssets({
                   poster={character.posterSrc}
                   alt={`${character.label} packaged interactive 3D character model`}
                   characterId={character.id}
+                  voicePreview={{
+                    ...character.voicePreview,
+                    isPlaying: activeVoicePreviewId === character.id,
+                    hasError: voicePreviewErrorId === character.id,
+                    onToggle: () => void toggleVoicePreview(character),
+                  }}
                 />
               </div>
               <div className="border-t-2 border-[#080817] p-3.5">

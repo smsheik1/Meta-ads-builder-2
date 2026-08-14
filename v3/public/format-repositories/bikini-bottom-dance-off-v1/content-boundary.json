@@ -11,7 +11,8 @@
     "the frozen 25-motion normalized starter catalog",
     "the four operator-supplied character packs",
     "four generated 1080x1920 outer-canvas background plates",
-    "public Fish Audio reference IDs and non-secret delivery presets"
+    "public Fish Audio reference IDs and non-secret delivery presets",
+    "twenty hashed discovery voice previews: nineteen approved Fish generations and one original nonverbal Agent P cue"
   ],
   "episodeInputs": [
     "a local song file and excerpt",
@@ -41,6 +42,7 @@
     }
   ],
   "notProviderCalls": [
+    "playing the fixed discovery-page voice previews",
     "Mixamo animation selection and rendering",
     "song analysis",
     "motion normalization and retargeting",

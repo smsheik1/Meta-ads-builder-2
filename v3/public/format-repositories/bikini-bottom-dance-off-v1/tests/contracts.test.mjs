@@ -73,6 +73,58 @@ test("the existing manifests expose all motion-ready characters without inventin
   );
 });
 
+test("the public character previews are complete, hashed, and honest about unavailable voices", async () => {
+  const [catalog, voices, previews] = await Promise.all([
+    readJson("../mixamo-character-motion-v1/assets/character-packs.json"),
+    readJson("assets/voice-presets.json"),
+    readJson("assets/voice-previews/manifest.json"),
+  ]);
+  const motionReadyIds = catalog.packs
+    .filter((character) => character.status === "motion-ready")
+    .map((character) => character.id)
+    .sort();
+  const previewIds = previews.previews
+    .map((preview) => preview.characterId)
+    .sort();
+  assert.deepEqual(previewIds, motionReadyIds);
+  assert.equal(new Set(previewIds).size, 22);
+
+  const ready = previews.previews.filter((preview) => preview.status === "ready");
+  const pending = previews.previews.filter(
+    (preview) => preview.status === "voice-pending",
+  );
+  assert.equal(ready.length, 20);
+  assert.deepEqual(
+    pending.map((preview) => preview.characterId),
+    ["man-ray", "batman-beyond"],
+  );
+  assert.ok(pending.every((preview) => !preview.path && /No credible approved/.test(preview.reason)));
+
+  const voiceIds = new Set(voices.voices.map((voice) => voice.characterId));
+  for (const preview of ready) {
+    assert.ok(preview.line);
+    assert.ok(preview.durationSeconds >= 0.5 && preview.durationSeconds <= 8);
+    assert.ok(preview.bytes > 10_000);
+    assert.match(preview.sha256, /^[0-9a-f]{64}$/);
+    if (preview.kind === "fish-tts") {
+      assert.equal(voiceIds.has(preview.characterId), true);
+      assert.match(preview.voiceReferenceFingerprint, /^[0-9a-f]{12}$/);
+    } else {
+      assert.equal(preview.characterId, "agent-p");
+      assert.equal(preview.kind, "original-nonverbal-cue");
+      assert.match(preview.source, /Original deterministic local synthesis/);
+    }
+    const bytes = await readFile(new URL(preview.path, root));
+    assert.equal(bytes.length, preview.bytes);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), preview.sha256);
+    assert.equal(
+      bytes.subarray(0, 3).toString("ascii"),
+      "ID3",
+      `${preview.characterId} should be a browser-ready MP3`,
+    );
+  }
+});
+
 test("the Fish voice audit covers the full motion roster without re-searching known voices", async () => {
   const [catalog, audit, auditText] = await Promise.all([
     readJson("../mixamo-character-motion-v1/assets/character-packs.json"),

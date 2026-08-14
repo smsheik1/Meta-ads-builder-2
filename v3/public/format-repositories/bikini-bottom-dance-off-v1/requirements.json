@@ -17,6 +17,7 @@
     "The unsupported gnuton/mixamo_anims_downloader browser-token script is not packaged or executed.",
     "Song files are copied into local run folders and are not packaged.",
     "Every character admitted by the input contract has an approved packaged reference preset; the operator supplies only their own Fish Audio API key.",
+    "The discovery page never calls Fish Audio. It plays fixed hashed previews from assets/voice-previews; Man Ray and Batman Beyond remain visibly disabled instead of receiving guessed voices.",
     "Validation completes before any Fish Audio call, and render requires --approve-provider whenever a dialogue cache entry is missing or stale."
   ]
 }
