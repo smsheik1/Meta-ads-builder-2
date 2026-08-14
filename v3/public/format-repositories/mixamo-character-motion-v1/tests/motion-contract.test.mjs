@@ -302,6 +302,21 @@ test("Dr. Doofenshmirtz retargets his true parent root while preserving the pre-
   assert.equal(Object.keys(doof.motionProfile.boneMap).length, 23);
 });
 
+test("Ferb retargets his true parent root while preserving the pre-rotated pelvis and face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const ferb = catalog.packs.find((pack) => pack.id === "ferb");
+  assert.ok(ferb);
+  assert.equal(ferb.scale, 1);
+  assert.equal(ferb.pitch, 0);
+  assert.equal(ferb.motionProfile.rootBone, "Bone_Ferb__Root");
+  assert.equal(ferb.motionProfile.boneMap.Bone_Ferb__Root, "mixamorig_Hips");
+  assert.equal(ferb.motionProfile.boneMap.Bone_Ferb__Pelvis, undefined);
+  for (const bone of ["Bone_Ferb__Pelvis", "Bone_Ferb__Facial_R", "Bone_Ferb__Eyelid_L"]) {
+    assert.ok(ferb.motionProfile.protectedBones.includes(bone));
+  }
+  assert.equal(Object.keys(ferb.motionProfile.boneMap).length, 22);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -314,9 +329,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 16);
+  assert.equal(audit.acceptedNew.length, 17);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 31);
+  assert.equal(audit.rejected.length, 30);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

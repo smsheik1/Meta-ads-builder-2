@@ -1845,6 +1845,68 @@
         ]
       },
       "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip"
+    },
+    {
+      "id": "ferb",
+      "label": "Ferb",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/ferb/ferb.dae",
+      "scale": 1,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": ["ferb_D.png"],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 22,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bone_Ferb__Root",
+        "feet": {
+          "left": "Bone_Ferb__L_Toe0",
+          "right": "Bone_Ferb__R_Toe0"
+        },
+        "legChains": {
+          "left": ["Bone_Ferb__L_Thigh", "Bone_Ferb__L_Calf", "Bone_Ferb__L_Foot"],
+          "right": ["Bone_Ferb__R_Thigh", "Bone_Ferb__R_Calf", "Bone_Ferb__R_Foot"]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "Bone_Ferb__Root": "mixamorig_Hips",
+          "Bone_Ferb__Spine": "mixamorig_Spine",
+          "Bone_Ferb__Spine1": "mixamorig_Spine2",
+          "Bone_Ferb__Head": "mixamorig_Head",
+          "Bone_Ferb__L_Clavicle": "mixamorig_LeftShoulder",
+          "Bone_Ferb__L_UpperArm": "mixamorig_LeftArm",
+          "Bone_Ferb__L_Forearm": "mixamorig_LeftForeArm",
+          "Bone_Ferb__L_Hand": "mixamorig_LeftHand",
+          "Bone_Ferb__L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bone_Ferb__R_Clavicle": "mixamorig_RightShoulder",
+          "Bone_Ferb__R_UpperArm": "mixamorig_RightArm",
+          "Bone_Ferb__R_Forearm": "mixamorig_RightForeArm",
+          "Bone_Ferb__R_Hand": "mixamorig_RightHand",
+          "Bone_Ferb__R_Finger1": "mixamorig_RightHandIndex1",
+          "Bone_Ferb__L_Thigh": "mixamorig_LeftUpLeg",
+          "Bone_Ferb__L_Calf": "mixamorig_LeftLeg",
+          "Bone_Ferb__L_Foot": "mixamorig_LeftFoot",
+          "Bone_Ferb__L_Toe0": "mixamorig_LeftToeBase",
+          "Bone_Ferb__R_Thigh": "mixamorig_RightUpLeg",
+          "Bone_Ferb__R_Calf": "mixamorig_RightLeg",
+          "Bone_Ferb__R_Foot": "mixamorig_RightFoot",
+          "Bone_Ferb__R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_Ferb__Pelvis",
+          "Bone_Ferb__Facial_R",
+          "Bone_Ferb__Facial_L",
+          "Bone_Ferb__Facial_Up",
+          "Bone_Ferb__Facial_Down",
+          "Bone_Ferb__Eyelid_R",
+          "Bone_Ferb__Eyelid_L"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip"
     }
   ]
 }
