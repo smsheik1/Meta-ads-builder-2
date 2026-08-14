@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 7,
-    "acceptedNewCharacters": 7,
-    "rejectedArchives": 40,
-    "finalMotionReadyCharacters": 11
+    "acceptedNewArchives": 8,
+    "acceptedNewCharacters": 8,
+    "rejectedArchives": 39,
+    "finalMotionReadyCharacters": 12
   },
   "acceptedNew": [
     {
@@ -74,6 +74,15 @@
         "evidence/character-imports/mario-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded character with readable motion on two dances after normalizing the source's inch-scale Collada rig declaratively."
+    },
+    {
+      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip",
+      "characterIds": ["olaf"],
+      "proof": [
+        "evidence/character-imports/olaf-silly-dancing.png",
+        "evidence/character-imports/olaf-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after correcting the undersized Collada display scale and preserving its transparent textures."
     }
   ],
   "alreadyIncluded": [
@@ -229,11 +238,6 @@
       "archive": "PlayStation 4 - Kingdom Hearts III - Link Summons - Stitch.zip",
       "reasonCode": "static-only",
       "reason": "No skinned armature or rigged model was present."
-    },
-    {
-      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip",
-      "reasonCode": "invisible-render",
-      "reason": "The runtime returns success, but the character is completely invisible in every sampled dance frame."
     },
     {
       "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Rapunzel.zip",

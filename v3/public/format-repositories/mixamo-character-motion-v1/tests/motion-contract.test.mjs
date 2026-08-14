@@ -153,6 +153,16 @@ test("Mario preserves the source's inch-scale unit without clipping the full-bod
   }
 });
 
+test("Olaf stays visibly framed with his transparent body and facial textures", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const olaf = catalog.packs.find((pack) => pack.id === "olaf");
+  assert.ok(olaf);
+  assert.equal(olaf.scale, 4.5);
+  assert.deepEqual(olaf.transparentTextures, ["mat1.png", "mat2.png", "mat3.png"]);
+  assert.equal(olaf.motionProfile.rootBone, "joint1");
+  assert.deepEqual(olaf.motionProfile.feet, { left: "joint5", right: "joint8" });
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -165,9 +175,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 7);
+  assert.equal(audit.acceptedNew.length, 8);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 40);
+  assert.equal(audit.rejected.length, 39);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

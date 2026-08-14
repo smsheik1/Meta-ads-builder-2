@@ -963,6 +963,103 @@
         ]
       },
       "sourceArchive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip"
+    },
+    {
+      "id": "olaf",
+      "label": "Olaf",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/olaf/24_olaf.dae",
+      "scale": 4.5,
+      "transparentTextures": [
+        "mat1.png",
+        "mat2.png",
+        "mat3.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 19,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "joint1",
+        "feet": {
+          "left": "joint5",
+          "right": "joint8"
+        },
+        "legChains": {
+          "left": [
+            "joint7",
+            "joint6"
+          ],
+          "right": [
+            "joint10",
+            "joint9"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "joint1": "mixamorig_Hips",
+          "joint11": "mixamorig_Spine",
+          "joint14": "mixamorig_Spine1",
+          "joint13": "mixamorig_Spine2",
+          "joint12": "mixamorig_Neck",
+          "joint15": "mixamorig_Head",
+          "joint94": "mixamorig_LeftShoulder",
+          "joint93": "mixamorig_LeftArm",
+          "joint95": "mixamorig_LeftForeArm",
+          "joint96": "mixamorig_LeftHand",
+          "joint107": "mixamorig_RightShoulder",
+          "joint106": "mixamorig_RightArm",
+          "joint108": "mixamorig_RightForeArm",
+          "joint109": "mixamorig_RightHand",
+          "joint7": "mixamorig_LeftUpLeg",
+          "joint6": "mixamorig_LeftLeg",
+          "joint5": "mixamorig_LeftFoot",
+          "joint10": "mixamorig_RightUpLeg",
+          "joint9": "mixamorig_RightLeg",
+          "joint8": "mixamorig_RightFoot"
+        },
+        "protectedBones": [
+          "joint4",
+          "joint16",
+          "joint17",
+          "joint18",
+          "joint59",
+          "joint60",
+          "joint67",
+          "joint91",
+          "joint92",
+          "joint97",
+          "joint98",
+          "joint99",
+          "joint100",
+          "joint101",
+          "joint102",
+          "joint103",
+          "joint104",
+          "joint105",
+          "joint110",
+          "joint111",
+          "joint112",
+          "joint113",
+          "joint114",
+          "joint115",
+          "joint116",
+          "joint117",
+          "joint118",
+          "joint119",
+          "joint120",
+          "joint121",
+          "joint123",
+          "joint124"
+        ]
+      },
+      "sourceArchive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip"
     }
   ]
 }
