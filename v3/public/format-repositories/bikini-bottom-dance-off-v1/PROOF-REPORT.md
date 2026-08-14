@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.11.0`
+Format version: `0.12.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -13,7 +13,7 @@ The machine-readable boundary is `content-boundary.json`.
 
 Version `0.10.8` retains all four user-approved Fish Audio voice references and the package-owned cross-agent entrypoint. It enlarges the four-character stage, removes the crop-like handoff flash, uses maximum-compatibility H.264 delivery settings, holds the complete winner CTA for more than five seconds, and gives the replay countdown enough screen time to register. It also counts only completed videos against the render-attempt budget, uses deterministic single-threaded H.264 encoding to prevent isolated transition-frame corruption, and packages the proof render report used by the public page. The finished-video proof below remains the archived `0.9.1` calibration proof and is labeled accordingly.
 
-Version `0.11.0` consumes the Character Dance Lab's 51-archive, one-character-at-a-time audit. Sonic (Modern), Flynn Rider, Kermit (Pirate), and Kermit (Sci-Fi) join the four existing characters as motion-ready assets after two individually reviewed dances each. The existing shared character catalog and Fish voice-preset manifest remain the two definitive status sources; complete spoken episodes remain limited to the four characters with approved Fish presets until the separate voice goal.
+Version `0.12.0` consumes the completed Character Dance Lab 51-archive, one-character-at-a-time audit. Eighteen new rigs passed two individually reviewed dances, producing 22 motion-ready characters total; 29 archives remain rejected with exact evidence. The discovery roster and its clean interactive previews are generated from that same shared catalog, so later accepted characters cannot silently fall back to a different card style. The shared character catalog and Fish voice-preset manifest remain the two definitive status sources; complete spoken episodes remain limited to the four characters with approved Fish presets until the separate voice goal.
 
 ## Two independent format fixtures
 

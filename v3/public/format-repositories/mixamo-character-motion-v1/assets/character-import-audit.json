@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-08-13",
+  "auditedAt": "2026-08-14",
   "sourceDirectory": "user Downloads folder",
   "policy": "Each rigged candidate was rendered and visually inspected one character at a time. A renderer exit code was never treated as visual acceptance.",
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 4,
-    "acceptedNewCharacters": 4,
-    "rejectedArchives": 43,
-    "finalMotionReadyCharacters": 8
+    "acceptedNewArchives": 18,
+    "acceptedNewCharacters": 18,
+    "rejectedArchives": 29,
+    "finalMotionReadyCharacters": 22
   },
   "acceptedNew": [
     {
@@ -47,6 +47,132 @@
         "evidence/character-imports/kermit-sci-fi-macarena-dance.png"
       ],
       "reason": "Complete, textured character with readable motion on two dances after a bounded framing-scale correction."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip",
+      "characterIds": ["agent-p"],
+      "proof": [
+        "evidence/character-imports/agent-p-silly-dancing.png",
+        "evidence/character-imports/agent-p-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable motion on two dances after declaring the source's omitted Y-up orientation."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip",
+      "characterIds": ["squidward"],
+      "proof": [
+        "evidence/character-imports/squidward-silly-dancing.png",
+        "evidence/character-imports/squidward-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after restoring the approved eye texture and transparent eye material assignments."
+    },
+    {
+      "archive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip",
+      "characterIds": ["mario"],
+      "proof": [
+        "evidence/character-imports/mario-silly-dancing.png",
+        "evidence/character-imports/mario-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after normalizing the source's inch-scale Collada rig declaratively."
+    },
+    {
+      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip",
+      "characterIds": ["olaf"],
+      "proof": [
+        "evidence/character-imports/olaf-silly-dancing.png",
+        "evidence/character-imports/olaf-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after correcting the undersized Collada display scale and preserving its transparent textures."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip",
+      "characterIds": ["sandy"],
+      "proof": [
+        "evidence/character-imports/sandy-silly-dancing.png",
+        "evidence/character-imports/sandy-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after assigning declarative opacity to the solid gray glass material, revealing the intact face geometry."
+    },
+    {
+      "archive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip",
+      "characterIds": ["aqua"],
+      "proof": [
+        "evidence/character-imports/aqua-silly-dancing.png",
+        "evidence/character-imports/aqua-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after a one-time offline conversion of the supplied skinned glTF into the existing Collada contract; no second runtime loader or dependency was added."
+    },
+    {
+      "archive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip",
+      "characterIds": ["ratchet"],
+      "proof": [
+        "evidence/character-imports/ratchet-silly-dancing.png",
+        "evidence/character-imports/ratchet-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after identifying the anonymous J0-style skeleton from its hierarchy and skin-influence locations; face, ears, fingers, and tail remain protected."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip",
+      "characterIds": ["larry"],
+      "proof": [
+        "evidence/character-imports/larry-silly-dancing.png",
+        "evidence/character-imports/larry-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable motion on two dances after identifying the anonymous Dummy skeleton from hierarchy and single-weight skin regions, correcting the omitted source unit, and preserving face, eye-stalk, and tail bones."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",
+      "characterIds": ["man-ray"],
+      "proof": [
+        "evidence/character-imports/man-ray-silly-dancing.png",
+        "evidence/character-imports/man-ray-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable motion on two dances after identifying the anonymous Dummy skeleton from hierarchy and skin regions and declaring the source's omitted Y-up orientation; authored face bones remain protected."
+    },
+    {
+      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Animated).zip",
+      "characterIds": ["batman-animated"],
+      "proof": [
+        "evidence/character-imports/batman-animated-silly-dancing.png",
+        "evidence/character-imports/batman-animated-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded body and head with readable motion on two dances after repairing the three omitted Collada skeleton-root declarations, hiding broken outline shells, removing the malformed oversized cape instance, and normalizing display scale; no second runtime loader was added."
+    },
+    {
+      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip",
+      "characterIds": ["batman-beyond"],
+      "proof": [
+        "evidence/character-imports/batman-beyond-silly-dancing.png",
+        "evidence/character-imports/batman-beyond-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded body and head with readable motion on two dances after repairing the omitted Collada skeleton-root declarations, removing the malformed oversized cape instance, repairing local texture references, and normalizing display scale; no second runtime loader was added."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
+      "characterIds": ["dr-doofenshmirtz"],
+      "proof": [
+        "evidence/character-imports/dr-doofenshmirtz-silly-dancing.png",
+        "evidence/character-imports/dr-doofenshmirtz-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, upright character with readable grounded motion on two dances after mapping the actual parent root as the Mixamo hips while preserving the source's pre-rotated pelvis and declaring the omitted Y-up orientation."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip",
+      "characterIds": ["ferb"],
+      "proof": [
+        "evidence/character-imports/ferb-silly-dancing.png",
+        "evidence/character-imports/ferb-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, upright character with readable grounded motion on two dances after mapping the actual parent root as the Mixamo hips while preserving the source's pre-rotated pelvis and declaring the omitted Y-up orientation."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip",
+      "characterIds": ["phineas"],
+      "proof": [
+        "evidence/character-imports/phineas-silly-dancing.png",
+        "evidence/character-imports/phineas-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, upright character with readable grounded motion on two dances after mapping the actual parent root as the Mixamo hips while preserving the source's pre-rotated pelvis and declaring the omitted Y-up orientation."
     }
   ],
   "alreadyIncluded": [
@@ -79,26 +205,6 @@
       "reason": "No skinned armature or rigged model was present."
     },
     {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned Collada rig exposes only anonymous Dummy/Object joint names, so a safe anatomical motion map cannot be verified."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned Collada rig exposes only anonymous Dummy joint names, so a safe anatomical motion map cannot be verified."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip",
-      "reasonCode": "incomplete-render",
-      "reason": "The body animates, but the helmet remains opaque and the face is absent across the full sampled motion, including after one bounded transparency repair."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip",
-      "reasonCode": "incomplete-render",
-      "reason": "The body animates, but the eyes/pupils are blank across the full sampled motion, leaving an incomplete face."
-    },
-    {
       "archive": "Mobile - Marvel Future Fight - Heroes - Spider-Man (Miles Morales, Classic).zip",
       "reasonCode": "static-only",
       "reason": "No skinned armature or rigged model was present."
@@ -106,22 +212,12 @@
     {
       "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Fighters - Yoshi.zip",
       "reasonCode": "collapsed-motion",
-      "reason": "The oriented character stays curled into a ball across the full sampled dance and never produces a readable full-body performance."
+      "reason": "A second bounded repair mapped the named Hip/limb joints instead of the non-deforming Trans/Rot wrappers and normalized scale, but both required dances still stayed curled into the authored ball-like rest pose. Repair now requires manual bind-pose reconstruction, so the candidate was skipped."
     },
     {
       "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Stage Elements - Villagers.zip",
       "reasonCode": "collapsed-motion",
-      "reason": "All five models were tested individually; each rendered as an oversized head with the body buried below the stage instead of a readable dance."
-    },
-    {
-      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Animated).zip",
-      "reasonCode": "broken-skin-binding",
-      "reason": "The isolated loader fails before frame zero because the skin references a missing bone matrix."
-    },
-    {
-      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip",
-      "reasonCode": "broken-skin-binding",
-      "reason": "The isolated loader fails before frame zero because the skin references a missing bone matrix."
+      "reason": "All five models share an exporter hierarchy whose limbs and torso use conflicting axes. A second bounded repair on the representative boy rig mapped the real base/limbs and tested both the declared Z-up orientation and a 180-degree correction; the result changed from lying on its back to standing upside down, never a readable full-body dance. Fixing the set requires manual bind-pose reconstruction, so all five were skipped."
     },
     {
       "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman.zip",
@@ -170,13 +266,13 @@
     },
     {
       "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Buzz Lightyear.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned rig exposes only bone000-style anonymous joints, so a safe anatomical motion map cannot be verified."
+      "reasonCode": "missing-diffuse-texture",
+      "reason": "The anonymous skeleton was anatomically mapped and passed coherent two-dance motion tests, but the only supplied texture is a rainbow UV-debug gradient rather than Buzz's diffuse character art. Repainting a full UV atlas is disproportionate manual asset reconstruction, so the neon test render was not accepted."
     },
     {
       "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Woody.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned rig exposes only bone000-style anonymous joints, so a safe anatomical motion map cannot be verified."
+      "reasonCode": "missing-diffuse-texture",
+      "reason": "The archive's only texture is byte-for-byte the same rainbow UV-debug gradient supplied with Buzz, not Woody's diffuse character art. Anatomical bone mapping cannot produce an acceptable character without a disproportionate full UV-atlas repaint, so the candidate was skipped before redundant rig work."
     },
     {
       "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Daphne Blake.zip",
@@ -199,59 +295,19 @@
       "reason": "No skinned armature or rigged model was present."
     },
     {
-      "archive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned rig exposes only Skel0-style anonymous joints, so a safe anatomical motion map cannot be verified."
-    },
-    {
       "archive": "PlayStation 4 - Kingdom Hearts III - Link Summons - Stitch.zip",
       "reasonCode": "static-only",
       "reason": "No skinned armature or rigged model was present."
     },
     {
-      "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip",
-      "reasonCode": "invisible-render",
-      "reason": "The runtime returns success, but the character is completely invisible in every sampled dance frame."
-    },
-    {
       "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Rapunzel.zip",
       "reasonCode": "broken-deformation",
-      "reason": "The skin/hair stretches into a full-frame vertical spike while the character body disappears."
-    },
-    {
-      "archive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip",
-      "reasonCode": "unsupported-runtime-format",
-      "reason": "The archive has skinned glTF/FBX assets but no skinned Collada model; adding a second model loader is out of scope for this content-only expansion."
+      "reason": "A bounded re-test mapped the real hip, spine, limbs, hands, and feet, supplied the missing referenced texture, and rendered both the primary and alternate UV-split Collada exports. Both exports still collapse the skin into a full-frame vertical spike while the body disappears, proving the failure is in the supplied bind/skin data rather than orientation, scale, or anatomy mapping. Recovery requires manual bind-pose reconstruction, so the character was skipped."
     },
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",
       "reasonCode": "collapsed-motion",
-      "reason": "The character lies sideways and folded into the stage across the full sampled motion."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
-      "reasonCode": "collapsed-motion",
-      "reason": "The character lies sideways and folded into the stage across the full sampled motion."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip",
-      "reasonCode": "wrong-facing-performance",
-      "reason": "Only the back, hat, and tail remain readable; no front-facing performance appears in the full sampled motion."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip",
-      "reasonCode": "collapsed-motion",
-      "reason": "The rig folds and lies sideways across the full sampled motion."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip",
-      "reasonCode": "collapsed-motion",
-      "reason": "The body collapses into the head/face and never becomes a complete dancing silhouette."
-    },
-    {
-      "archive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip",
-      "reasonCode": "clipped-skin",
-      "reason": "The full-body skin is massively oversized and clipped; only the torso and legs remain visible."
+      "reason": "The archive contains one skinned rig whose pelvis, thighs, clavicles, and arms use heavily pre-rotated, mutually inconsistent bind axes. Its verified 23-bone anatomy map passes numerical retarget checks, but both the original and corrected root-orientation proofs leave the intact textured skin sideways and folded through the stage across the full sampled motion. Recovery requires per-bone bind-axis reconstruction, so the character was skipped."
     },
     {
       "archive": "Xbox - Shrek - Playable Characters - Shrek.zip",

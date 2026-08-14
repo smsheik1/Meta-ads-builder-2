@@ -98,6 +98,240 @@ test("Patrick delegates authored scale-helper legs to shared IK and protects his
   assert.equal(patrick.motionProfile.maximumVerticalRootCorrection, 0.14);
 });
 
+test("Y-up Collada characters can opt out of the default Z-up pitch without a second loader", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const agentP = catalog.packs.find((pack) => pack.id === "agent-p");
+  assert.ok(agentP);
+  assert.equal(agentP.pitch, 0);
+  assert.equal(agentP.yaw, 0);
+  const model = await readFile(path.join(root, agentP.model), "utf8");
+  assert.doesNotMatch(model, /<up_axis>/);
+  assert.match(model, /<init_from>Agent_P_D\.png<\/init_from>/);
+  const renderer = await readFile(path.join(root, "runtime/renderer/app.js"), "utf8");
+  assert.match(renderer, /characterPack\.pitch \?\? -Math\.PI \/ 2/);
+});
+
+test("Squidward keeps the approved eye overlay and facial rig while sharing the paired-tentacle runtime", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const squidward = catalog.packs.find((pack) => pack.id === "squidward");
+  assert.ok(squidward);
+  assert.deepEqual(squidward.transparentTextures, ["tx8_0000_squideyes_128.PNG"]);
+  assert.deepEqual(squidward.transparentMaterials, ["unnamed.0", "unnamed.001"]);
+  assert.equal(squidward.motionProfile.pairedBoneChains.length, 2);
+  for (const bone of [
+    "squidward_eye_rotate_space_L",
+    "squidward_eye_scale_space_L",
+    "pupil_L",
+    "squidward_eye_rotate_space_R",
+    "squidward_eye_scale_space_R",
+    "pupil_R",
+    "squidward_mouth",
+    "squidward_nose_base",
+  ]) {
+    assert.ok(squidward.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+});
+
+test("Mario preserves the source's inch-scale unit without clipping the full-body skin", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const mario = catalog.packs.find((pack) => pack.id === "mario");
+  assert.ok(mario);
+  assert.equal(mario.scale, 0.02);
+  assert.equal(mario.motionProfile.rootBone, "joint1");
+  assert.deepEqual(mario.motionProfile.feet, { left: "joint6", right: "joint10" });
+  const model = await readFile(path.join(root, mario.model), "utf8");
+  assert.match(model, /<unit name="inch" meter="0\.0254"\/>/);
+  for (const texture of [
+    "mariobodyfixred_nrm.png",
+    "mariobodyfix_alb.png",
+    "marioeye_alb.png",
+    "marioface_alb.png",
+    "mariohandnew_alb.png",
+    "marioshoes_alb.png",
+  ]) {
+    assert.match(model, new RegExp(`<init_from>\\./${texture}</init_from>`));
+  }
+});
+
+test("Olaf stays visibly framed with his transparent body and facial textures", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const olaf = catalog.packs.find((pack) => pack.id === "olaf");
+  assert.ok(olaf);
+  assert.equal(olaf.scale, 4.5);
+  assert.deepEqual(olaf.transparentTextures, ["mat1.png", "mat2.png", "mat3.png"]);
+  assert.equal(olaf.motionProfile.rootBone, "joint1");
+  assert.deepEqual(olaf.motionProfile.feet, { left: "joint5", right: "joint8" });
+});
+
+test("Sandy reveals her intact face through declarative helmet-glass opacity", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const sandy = catalog.packs.find((pack) => pack.id === "sandy");
+  assert.ok(sandy);
+  assert.deepEqual(sandy.materialOpacities, { "unnamed.007": 0.18 });
+  assert.ok(sandy.transparentTextures.includes("tx8_0000_sandyglass.PNG"));
+  for (const bone of ["sandy_eye_L", "sandy_eye_R", "sandy_jaw", "sandy_lid_top_L", "sandy_lid_top_R"]) {
+    assert.ok(sandy.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  const renderer = await readFile(path.join(root, "runtime/renderer/app.js"), "utf8");
+  assert.match(renderer, /characterPack\.materialOpacities\?\.\[source\.name\] \?\? 1/);
+  assert.match(renderer, /opacity < 1/);
+});
+
+test("Aqua stays on the single Collada runtime after an offline skinned-model conversion", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const aqua = catalog.packs.find((pack) => pack.id === "aqua");
+  assert.ok(aqua);
+  assert.equal(aqua.format, "collada");
+  assert.equal(aqua.scale, 0.38);
+  assert.equal(aqua.pitch, 0);
+  assert.equal(aqua.motionProfile.rootBone, "center");
+  assert.equal(Object.keys(aqua.motionProfile.boneMap).length, 25);
+  assert.deepEqual(aqua.motionProfile.feet, { left: "L_ashi1", right: "R_ashi1" });
+  assert.deepEqual(aqua.transparentTextures, ["Aqua_PS2_Cloth.png", "Aqua_PS2_Hair.png", "Aqua_PS2_Skin.png"]);
+  const model = await readFile(path.join(root, aqua.model), "utf8");
+  assert.match(model, /Wiggly one-time glTF-to-Collada compatibility conversion/);
+  assert.match(model, /<up_axis>Y_UP<\/up_axis>/);
+  assert.match(model, /<Name_array[^>]+count="77"/);
+});
+
+test("Ratchet keeps the verified anonymous-joint anatomy map and protected authored bones", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const ratchet = catalog.packs.find((pack) => pack.id === "ratchet");
+  assert.ok(ratchet);
+  assert.equal(ratchet.format, "collada");
+  assert.equal(ratchet.yaw, -1.5707963268);
+  assert.equal(ratchet.motionProfile.rootBone, "J0");
+  assert.deepEqual(ratchet.motionProfile.feet, { left: "J103", right: "J97" });
+  assert.equal(Object.keys(ratchet.motionProfile.boneMap).length, 21);
+  assert.equal(ratchet.motionProfile.boneMap.J8, "mixamorig_Head");
+  assert.equal(ratchet.motionProfile.boneMap.J76, "mixamorig_LeftHand");
+  assert.equal(ratchet.motionProfile.boneMap.J56, "mixamorig_RightHand");
+  for (const bone of ["J9", "J51", "J57", "J70", "J77", "J90", "J104", "J110"]) {
+    assert.ok(ratchet.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+});
+
+test("Larry keeps the verified unusual-anatomy map, source-unit correction, and authored face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const larry = catalog.packs.find((pack) => pack.id === "larry");
+  assert.ok(larry);
+  assert.equal(larry.scale, 0.18);
+  assert.equal(larry.yaw, 3.1415926536);
+  assert.equal(larry.motionProfile.rootBone, "Dummy010");
+  assert.deepEqual(larry.motionProfile.feet, { left: "Dummy043", right: "Dummy046" });
+  assert.equal(Object.keys(larry.motionProfile.boneMap).length, 27);
+  assert.equal(larry.motionProfile.boneMap.Dummy020, "mixamorig_LeftHandMiddle3");
+  assert.equal(larry.motionProfile.boneMap.Dummy027, "mixamorig_RightHandMiddle3");
+  for (const bone of ["Dummy034", "Dummy036", "Dummy029", "Dummy009", "Dummy040", "Object001"]) {
+    assert.ok(larry.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  const model = await readFile(path.join(root, larry.model), "utf8");
+  assert.match(model, /<init_from>tex_0000_larry\.png<\/init_from>/);
+  assert.doesNotMatch(model, /file:\/\//);
+});
+
+test("Man Ray keeps the verified Y-up anonymous-joint map and authored face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const manRay = catalog.packs.find((pack) => pack.id === "man-ray");
+  assert.ok(manRay);
+  assert.equal(manRay.scale, 0.18);
+  assert.equal(manRay.pitch, 0);
+  assert.equal(manRay.yaw, 0);
+  assert.equal(manRay.motionProfile.rootBone, "Dummy003");
+  assert.deepEqual(manRay.motionProfile.feet, { left: "Dummy058", right: "Dummy054" });
+  assert.equal(Object.keys(manRay.motionProfile.boneMap).length, 41);
+  assert.equal(manRay.motionProfile.boneMap.Dummy010, "mixamorig_Head");
+  assert.equal(manRay.motionProfile.boneMap.Dummy048, "mixamorig_LeftHandThumb3");
+  assert.equal(manRay.motionProfile.boneMap.Dummy034, "mixamorig_RightHandThumb3");
+  for (const bone of ["Dummy011", "Dummy012", "Dummy015", "Dummy016", "Dummy017", "Dummy020"]) {
+    assert.ok(manRay.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  const model = await readFile(path.join(root, manRay.model), "utf8");
+  assert.match(model, /<init_from>tex_0000_man_ray_256\.png<\/init_from>/);
+  assert.doesNotMatch(model, /file:\/\//);
+});
+
+test("Batman Animated repairs its Collada skeleton roots without packaging the malformed cape instance", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const batman = catalog.packs.find((pack) => pack.id === "batman-animated");
+  assert.ok(batman);
+  assert.equal(batman.scale, 0.015);
+  assert.equal(batman.pitch, 0);
+  assert.equal(batman.motionProfile.rootBone, "Bip01_Pelvis");
+  assert.deepEqual(batman.motionProfile.feet, { left: "Bip01_L_Toe0", right: "Bip01_R_Toe0" });
+  assert.equal(Object.keys(batman.motionProfile.boneMap).length, 21);
+  for (const material of ["Cartoon_Outline_MAT", "Cartoon_Outline_MAT_ncl1_1", "Cartoon_Outline_MAT_ncl1_2"]) {
+    assert.equal(batman.materialOpacities[material], 0);
+  }
+  const model = await readFile(path.join(root, batman.model), "utf8");
+  assert.equal((model.match(/<skeleton>#Bip01<\/skeleton>/g) || []).length, 2);
+  assert.doesNotMatch(model, /instance_controller url="#Batman_Animated_Series_capeController"/);
+  assert.match(model, /<init_from>Cartoon_Outline_MAT\.png<\/init_from>/);
+});
+
+test("Batman Beyond repairs local Collada references without packaging the malformed cape instance", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const batman = catalog.packs.find((pack) => pack.id === "batman-beyond");
+  assert.ok(batman);
+  assert.equal(batman.scale, 0.015);
+  assert.equal(batman.pitch, 0);
+  assert.equal(batman.motionProfile.rootBone, "Bip01_Pelvis");
+  assert.deepEqual(batman.motionProfile.feet, { left: "Bip01_L_Toe0", right: "Bip01_R_Toe0" });
+  assert.equal(Object.keys(batman.motionProfile.boneMap).length, 21);
+  const model = await readFile(path.join(root, batman.model), "utf8");
+  assert.equal((model.match(/<skeleton>#Bip01<\/skeleton>/g) || []).length, 2);
+  assert.doesNotMatch(model, /instance_controller url="#Batman_Beyond_cape_skinController"/);
+  assert.doesNotMatch(model, /file:\/\//);
+  assert.match(model, /<init_from>DLC8_Batman_Beyond_torso_D\.png<\/init_from>/);
+});
+
+test("Dr. Doofenshmirtz retargets his true parent root while preserving the pre-rotated pelvis", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const doof = catalog.packs.find((pack) => pack.id === "dr-doofenshmirtz");
+  assert.ok(doof);
+  assert.equal(doof.scale, 0.7);
+  assert.equal(doof.pitch, 0);
+  assert.equal(doof.motionProfile.rootBone, "Root_Dr_Doof");
+  assert.equal(doof.motionProfile.boneMap.Root_Dr_Doof, "mixamorig_Hips");
+  assert.equal(doof.motionProfile.boneMap.Bone_Dr_Doof__Pelvis, undefined);
+  assert.ok(doof.motionProfile.protectedBones.includes("Bone_Dr_Doof__Pelvis"));
+  assert.deepEqual(doof.motionProfile.feet, {
+    left: "Bone_Dr_Doof__L_Toe0",
+    right: "Bone_Dr_Doof__R_Toe0",
+  });
+  assert.equal(Object.keys(doof.motionProfile.boneMap).length, 23);
+});
+
+test("Ferb retargets his true parent root while preserving the pre-rotated pelvis and face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const ferb = catalog.packs.find((pack) => pack.id === "ferb");
+  assert.ok(ferb);
+  assert.equal(ferb.scale, 1);
+  assert.equal(ferb.pitch, 0);
+  assert.equal(ferb.motionProfile.rootBone, "Bone_Ferb__Root");
+  assert.equal(ferb.motionProfile.boneMap.Bone_Ferb__Root, "mixamorig_Hips");
+  assert.equal(ferb.motionProfile.boneMap.Bone_Ferb__Pelvis, undefined);
+  for (const bone of ["Bone_Ferb__Pelvis", "Bone_Ferb__Facial_R", "Bone_Ferb__Eyelid_L"]) {
+    assert.ok(ferb.motionProfile.protectedBones.includes(bone));
+  }
+  assert.equal(Object.keys(ferb.motionProfile.boneMap).length, 22);
+});
+
+test("Phineas retargets his true parent root while preserving the pre-rotated pelvis and face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const phineas = catalog.packs.find((pack) => pack.id === "phineas");
+  assert.ok(phineas);
+  assert.equal(phineas.scale, 1);
+  assert.equal(phineas.pitch, 0);
+  assert.equal(phineas.motionProfile.rootBone, "Bone_Phineas__Root");
+  assert.equal(phineas.motionProfile.boneMap.Bone_Phineas__Root, "mixamorig_Hips");
+  assert.equal(phineas.motionProfile.boneMap.Bone_Phineas__Pelvis, undefined);
+  for (const bone of ["Bone_Phineas__Pelvis", "Bone_Phineas__Facial_R", "Bone_Phineas__Eyelid_L"]) {
+    assert.ok(phineas.motionProfile.protectedBones.includes(bone));
+  }
+  assert.equal(Object.keys(phineas.motionProfile.boneMap).length, 22);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -110,9 +344,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 4);
+  assert.equal(audit.acceptedNew.length, 18);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 43);
+  assert.equal(audit.rejected.length, 29);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

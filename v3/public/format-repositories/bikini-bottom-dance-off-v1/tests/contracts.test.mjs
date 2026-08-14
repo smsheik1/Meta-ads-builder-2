@@ -51,8 +51,9 @@ test("the existing manifests expose all motion-ready characters without inventin
     readJson("../mixamo-character-motion-v1/assets/character-import-audit.json"),
     readJson("input-contract.json"),
   ]);
-  assert.equal(catalog.packs.length, 8);
   assert.equal(voices.voices.length, 4);
+  const acceptedNewIds = audit.acceptedNew.flatMap((entry) => entry.characterIds);
+  assert.equal(catalog.packs.length, voices.voices.length + acceptedNewIds.length);
   assert.deepEqual(
     inputContract.properties.characters.items.properties.characterId.enum.slice().sort(),
     voices.voices.map((voice) => voice.characterId).sort(),
@@ -60,7 +61,7 @@ test("the existing manifests expose all motion-ready characters without inventin
   const voiceReadyIds = new Set(voices.voices.map((voice) => voice.characterId));
   assert.deepEqual(
     catalog.packs.filter((character) => !voiceReadyIds.has(character.id)).map((character) => character.id).sort(),
-    audit.acceptedNew.flatMap((entry) => entry.characterIds).sort(),
+    acceptedNewIds.sort(),
   );
 });
 

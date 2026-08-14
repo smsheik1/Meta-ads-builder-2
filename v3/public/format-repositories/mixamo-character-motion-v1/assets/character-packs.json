@@ -681,6 +681,1294 @@
         ]
       },
       "sourceArchive": "PlayStation Vita - The Muppets Movie Adventures - Playable Characters - Kermit (Sci-Fi).zip"
+    },
+    {
+      "id": "agent-p",
+      "label": "Agent P",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/agent-p/agent-p.dae",
+      "scale": 2.1,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "Agent_P_D.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 22,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bone_Agent_P__Root",
+        "feet": {
+          "left": "Bone_Agent_P__L_Toe0",
+          "right": "Bone_Agent_P__R_Toe0"
+        },
+        "legChains": {
+          "left": [
+            "Bone_Agent_P__L_Thigh",
+            "Bone_Agent_P__L_Calf",
+            "Bone_Agent_P__L_Foot"
+          ],
+          "right": [
+            "Bone_Agent_P__R_Thigh",
+            "Bone_Agent_P__R_Calf",
+            "Bone_Agent_P__R_Foot"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Bone_Agent_P__Root": "mixamorig_Hips",
+          "Bone_Agent_P__Spine": "mixamorig_Spine",
+          "Bone_Agent_P__Spine1": "mixamorig_Spine2",
+          "Bone_Agent_P__Head": "mixamorig_Head",
+          "Bone_Agent_P__L_Clavicle": "mixamorig_LeftShoulder",
+          "Bone_Agent_P__L_UpperArm": "mixamorig_LeftArm",
+          "Bone_Agent_P__L_Forearm": "mixamorig_LeftForeArm",
+          "Bone_Agent_P__L_Hand": "mixamorig_LeftHand",
+          "Bone_Agent_P__L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bone_Agent_P__R_Clavicle": "mixamorig_RightShoulder",
+          "Bone_Agent_P__R_UpperArm": "mixamorig_RightArm",
+          "Bone_Agent_P__R_Forearm": "mixamorig_RightForeArm",
+          "Bone_Agent_P__R_Hand": "mixamorig_RightHand",
+          "Bone_Agent_P__R_Finger1": "mixamorig_RightHandIndex1",
+          "Bone_Agent_P__L_Thigh": "mixamorig_LeftUpLeg",
+          "Bone_Agent_P__L_Calf": "mixamorig_LeftLeg",
+          "Bone_Agent_P__L_Foot": "mixamorig_LeftFoot",
+          "Bone_Agent_P__L_Toe0": "mixamorig_LeftToeBase",
+          "Bone_Agent_P__R_Thigh": "mixamorig_RightUpLeg",
+          "Bone_Agent_P__R_Calf": "mixamorig_RightLeg",
+          "Bone_Agent_P__R_Foot": "mixamorig_RightFoot",
+          "Bone_Agent_P__R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_Agent_P__Tails_1",
+          "Bone_Agent_P__Tails_2",
+          "Bone_Agent_P__Prop1",
+          "Bone_Agent_P__Prop2",
+          "Bone_Agent_P__Facial_Up",
+          "Bone_Agent_P__Facial_R",
+          "Bone_Agent_P__Facial_Down",
+          "Bone_Agent_P__Facial_L"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip"
+    },
+    {
+      "id": "squidward",
+      "label": "Squidward Tentacles",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/squidward/chr_squid_bindpose.dae",
+      "scale": 1.67,
+      "transparentTextures": [
+        "tx8_0000_squideyes_128.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed.0",
+        "unnamed.001"
+      ],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "squidward_sub_root",
+        "feet": {
+          "left": "squidward_front_toe_L",
+          "right": "squidward_front_toe_R"
+        },
+        "legChains": {
+          "left": [
+            "squidward_front_thigh_L",
+            "squidward_front_knee_L",
+            "squidward_front_ankle_L"
+          ],
+          "right": [
+            "squidward_front_thigh_R",
+            "squidward_front_knee_R",
+            "squidward_front_ankle_R"
+          ]
+        },
+        "pairedBoneChains": [
+          {
+            "driver": [
+              "squidward_front_thigh_L",
+              "squidward_front_knee_L",
+              "squidward_front_ankle_L",
+              "squidward_front_toe_L"
+            ],
+            "follower": [
+              "squidward_rear_thigh_L",
+              "squidward_rear_knee_L",
+              "squidward_rear_ankle_L",
+              "squidward_rear_toe_L"
+            ]
+          },
+          {
+            "driver": [
+              "squidward_front_thigh_R",
+              "squidward_front_knee_R",
+              "squidward_front_ankle_R",
+              "squidward_front_toe_R"
+            ],
+            "follower": [
+              "squidward_rear_thigh_R",
+              "squidward_rear_knee_R",
+              "squidward_rear_ankle_R",
+              "squidward_rear_toe_R"
+            ]
+          }
+        ],
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "squidward_sub_root": "mixamorig_Hips",
+          "squidward_spine_base": "mixamorig_Spine",
+          "squidward_chest": "mixamorig_Spine2",
+          "squidward_neck_base": "mixamorig_Neck",
+          "squidward_head": "mixamorig_Head",
+          "squidward_clavicle_L": "mixamorig_LeftShoulder",
+          "squidward_bicep_L": "mixamorig_LeftArm",
+          "squidward_elbow_L": "mixamorig_LeftForeArm",
+          "squidward_hand_L": "mixamorig_LeftHand",
+          "squidward_fingers_L": "mixamorig_LeftHandMiddle1",
+          "squidward_clavicle_R": "mixamorig_RightShoulder",
+          "squidward_bicep_R": "mixamorig_RightArm",
+          "squidward_elbow_R": "mixamorig_RightForeArm",
+          "squidward_hand_R": "mixamorig_RightHand",
+          "squidward_fingers_R": "mixamorig_RightHandMiddle1",
+          "squidward_front_thigh_L": "mixamorig_LeftUpLeg",
+          "squidward_front_knee_L": "mixamorig_LeftLeg",
+          "squidward_front_ankle_L": "mixamorig_LeftFoot",
+          "squidward_front_toe_L": "mixamorig_LeftToeBase",
+          "squidward_front_thigh_R": "mixamorig_RightUpLeg",
+          "squidward_front_knee_R": "mixamorig_RightLeg",
+          "squidward_front_ankle_R": "mixamorig_RightFoot",
+          "squidward_front_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "squidward_eye_rotate_space_L",
+          "squidward_eye_scale_space_L",
+          "pupil_L",
+          "squidward_eye_rotate_space_R",
+          "squidward_eye_scale_space_R",
+          "pupil_R",
+          "squidward_mouth",
+          "squidward_mouth_corner_L",
+          "squidward_mouth_corner_R",
+          "squidward_nose_base",
+          "squidward_nose_end"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip"
+    },
+    {
+      "id": "mario",
+      "label": "Mario",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/mario/Mario.dae",
+      "scale": 0.02,
+      "transparentTextures": [
+        "marioeye_alb.png",
+        "mariohandnew_alb.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 20,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "joint1",
+        "feet": {
+          "left": "joint6",
+          "right": "joint10"
+        },
+        "legChains": {
+          "left": [
+            "joint3",
+            "joint4",
+            "joint5"
+          ],
+          "right": [
+            "joint7",
+            "joint8",
+            "joint9"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "joint1": "mixamorig_Hips",
+          "joint11": "mixamorig_Spine",
+          "joint12": "mixamorig_Spine2",
+          "joint13": "mixamorig_Head",
+          "joint14": "mixamorig_LeftShoulder",
+          "joint15": "mixamorig_LeftArm",
+          "joint16": "mixamorig_LeftForeArm",
+          "joint17": "mixamorig_LeftHand",
+          "joint18": "mixamorig_RightShoulder",
+          "joint19": "mixamorig_RightArm",
+          "joint20": "mixamorig_RightForeArm",
+          "joint21": "mixamorig_RightHand",
+          "joint3": "mixamorig_LeftUpLeg",
+          "joint4": "mixamorig_LeftLeg",
+          "joint5": "mixamorig_LeftFoot",
+          "joint6": "mixamorig_LeftToeBase",
+          "joint7": "mixamorig_RightUpLeg",
+          "joint8": "mixamorig_RightLeg",
+          "joint9": "mixamorig_RightFoot",
+          "joint10": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "joint2",
+          "joint25",
+          "joint26",
+          "joint27",
+          "joint28",
+          "joint29",
+          "joint30",
+          "joint31",
+          "joint32",
+          "joint33",
+          "joint22",
+          "joint23",
+          "joint24",
+          "joint34",
+          "joint35",
+          "joint36",
+          "joint37",
+          "joint38",
+          "joint39",
+          "joint40",
+          "joint41",
+          "joint42",
+          "joint43",
+          "joint44",
+          "joint45",
+          "joint46",
+          "joint47"
+        ]
+      },
+      "sourceArchive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip"
+    },
+    {
+      "id": "olaf",
+      "label": "Olaf",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/olaf/24_olaf.dae",
+      "scale": 4.5,
+      "transparentTextures": [
+        "mat1.png",
+        "mat2.png",
+        "mat3.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 19,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "joint1",
+        "feet": {
+          "left": "joint5",
+          "right": "joint8"
+        },
+        "legChains": {
+          "left": [
+            "joint7",
+            "joint6"
+          ],
+          "right": [
+            "joint10",
+            "joint9"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "joint1": "mixamorig_Hips",
+          "joint11": "mixamorig_Spine",
+          "joint14": "mixamorig_Spine1",
+          "joint13": "mixamorig_Spine2",
+          "joint12": "mixamorig_Neck",
+          "joint15": "mixamorig_Head",
+          "joint94": "mixamorig_LeftShoulder",
+          "joint93": "mixamorig_LeftArm",
+          "joint95": "mixamorig_LeftForeArm",
+          "joint96": "mixamorig_LeftHand",
+          "joint107": "mixamorig_RightShoulder",
+          "joint106": "mixamorig_RightArm",
+          "joint108": "mixamorig_RightForeArm",
+          "joint109": "mixamorig_RightHand",
+          "joint7": "mixamorig_LeftUpLeg",
+          "joint6": "mixamorig_LeftLeg",
+          "joint5": "mixamorig_LeftFoot",
+          "joint10": "mixamorig_RightUpLeg",
+          "joint9": "mixamorig_RightLeg",
+          "joint8": "mixamorig_RightFoot"
+        },
+        "protectedBones": [
+          "joint4",
+          "joint16",
+          "joint17",
+          "joint18",
+          "joint59",
+          "joint60",
+          "joint67",
+          "joint91",
+          "joint92",
+          "joint97",
+          "joint98",
+          "joint99",
+          "joint100",
+          "joint101",
+          "joint102",
+          "joint103",
+          "joint104",
+          "joint105",
+          "joint110",
+          "joint111",
+          "joint112",
+          "joint113",
+          "joint114",
+          "joint115",
+          "joint116",
+          "joint117",
+          "joint118",
+          "joint119",
+          "joint120",
+          "joint121",
+          "joint123",
+          "joint124"
+        ]
+      },
+      "sourceArchive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Arendelle) - Olaf.zip"
+    },
+    {
+      "id": "sandy",
+      "label": "Sandy Cheeks",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/sandy/chr_sandy_bindpose.dae",
+      "scale": 1.67,
+      "transparentTextures": [
+        "tx1_0000_lashes.PNG",
+        "tx1_0000_sandyeyes_64.PNG",
+        "tx8_0000_sandyglass.PNG"
+      ],
+      "transparentMaterials": [],
+      "materialOpacities": {
+        "unnamed.007": 0.18
+      },
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "sandy_sub_root",
+        "feet": {
+          "left": "sandy_toe_L",
+          "right": "sandy_toe_R"
+        },
+        "legChains": {
+          "left": [
+            "sandy_thigh_L",
+            "sandy_knee_L",
+            "sandy_ankle_L"
+          ],
+          "right": [
+            "sandy_thigh_R",
+            "sandy_knee_R",
+            "sandy_ankle_R"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "sandy_sub_root": "mixamorig_Hips",
+          "sandy_spine": "mixamorig_Spine",
+          "sandy_chest": "mixamorig_Spine2",
+          "sandy_neck": "mixamorig_Neck",
+          "sandy_head": "mixamorig_Head",
+          "sandy_clavicle_L": "mixamorig_LeftShoulder",
+          "sandy_bicep_L": "mixamorig_LeftArm",
+          "sandy_elbow_L": "mixamorig_LeftForeArm",
+          "sandy_wrist_L": "mixamorig_LeftHand",
+          "sandy_fingers_L": "mixamorig_LeftHandMiddle1",
+          "sandy_thumb_L": "mixamorig_LeftHandThumb1",
+          "sandy_clavicle_R": "mixamorig_RightShoulder",
+          "sandy_bicep_R": "mixamorig_RightArm",
+          "sandy_elbow_R": "mixamorig_RightForeArm",
+          "sandy_wrist_R": "mixamorig_RightHand",
+          "sandy_fingers_R": "mixamorig_RightHandMiddle1",
+          "sandy_thumb_R": "mixamorig_RightHandThumb1",
+          "sandy_thigh_L": "mixamorig_LeftUpLeg",
+          "sandy_knee_L": "mixamorig_LeftLeg",
+          "sandy_ankle_L": "mixamorig_LeftFoot",
+          "sandy_toe_L": "mixamorig_LeftToeBase",
+          "sandy_thigh_R": "mixamorig_RightUpLeg",
+          "sandy_knee_R": "mixamorig_RightLeg",
+          "sandy_ankle_R": "mixamorig_RightFoot",
+          "sandy_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "sandy_hip",
+          "sandy_connect",
+          "sandy_skel_tail1",
+          "sandy_skel_tail2",
+          "sandy_skel_tail3",
+          "sandy_skel_tail4",
+          "sandy_bicep_twist_L",
+          "sandy_elbow_twist_L",
+          "sandy_bicep_twist_R",
+          "sandy_elbow_twist_R",
+          "sandy_helmet",
+          "sandy_flower",
+          "sandy_ear_L",
+          "sandy_ear_R",
+          "sandy_eye_L",
+          "sandy_eye_R",
+          "sandy_jaw",
+          "sandy_lid_bottom_L",
+          "sandy_lid_bottom_R",
+          "sandy_lid_top_L",
+          "sandy_lid_top_R",
+          "sandy_teeth"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip"
+    },
+    {
+      "id": "aqua",
+      "label": "Aqua",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/aqua/aqua.dae",
+      "scale": 0.38,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "Aqua_PS2_Cloth.png",
+        "Aqua_PS2_Hair.png",
+        "Aqua_PS2_Skin.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 25,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "center",
+        "feet": {
+          "left": "L_ashi1",
+          "right": "R_ashi1"
+        },
+        "legChains": {
+          "left": [
+            "L_momo",
+            "L_sune",
+            "L_ashi1"
+          ],
+          "right": [
+            "R_momo",
+            "R_sune",
+            "R_ashi1"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "center": "mixamorig_Hips",
+          "hara": "mixamorig_Spine",
+          "mune": "mixamorig_Spine2",
+          "kubi": "mixamorig_Neck",
+          "atama": "mixamorig_Head",
+          "L_kata": "mixamorig_LeftShoulder",
+          "L_ude1": "mixamorig_LeftArm",
+          "L_ude2": "mixamorig_LeftForeArm",
+          "L_te": "mixamorig_LeftHand",
+          "L_yubiA": "mixamorig_LeftHandThumb1",
+          "L_yubiB": "mixamorig_LeftHandMiddle1",
+          "R_kata": "mixamorig_RightShoulder",
+          "R_ude1": "mixamorig_RightArm",
+          "R_ude2": "mixamorig_RightForeArm",
+          "R_te": "mixamorig_RightHand",
+          "R_yubiA": "mixamorig_RightHandThumb1",
+          "R_yubiB": "mixamorig_RightHandMiddle1",
+          "L_momo": "mixamorig_LeftUpLeg",
+          "L_sune": "mixamorig_LeftLeg",
+          "L_ashi1": "mixamorig_LeftFoot",
+          "L_ashi1_end": "mixamorig_LeftToeBase",
+          "R_momo": "mixamorig_RightUpLeg",
+          "R_sune": "mixamorig_RightLeg",
+          "R_ashi1": "mixamorig_RightFoot",
+          "R_ashi1_end": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Root",
+          "ago",
+          "ago_end",
+          "kamiA",
+          "kamiA_end",
+          "kamiB",
+          "kamiB_end",
+          "kamiC",
+          "kamiC_end",
+          "kamiD",
+          "kamiD_end",
+          "kamiE",
+          "kamiE_end",
+          "kamiF",
+          "kamiF_end",
+          "kamiG",
+          "kamiG_end",
+          "R_yubiB_end",
+          "R_yubiA_end",
+          "R_buki",
+          "R_buki_end",
+          "R_sodeB",
+          "R_sodeB_end",
+          "R_sodeA",
+          "R_sodeA_end",
+          "R_armour",
+          "R_armour_end",
+          "L_yubiB_end",
+          "L_yubiA_end",
+          "L_sodeA",
+          "L_sodeA_end",
+          "L_sodeB",
+          "L_sodeB_end",
+          "L_armour",
+          "L_armour_end",
+          "koshi",
+          "L_susoB",
+          "L_susoB_end",
+          "L_susoA1",
+          "L_susoA1_end",
+          "L_susoC1",
+          "L_susoC1_end",
+          "R_susoC1",
+          "R_susoC1_end",
+          "L_skt",
+          "L_skt_end",
+          "R_skt",
+          "R_skt_end",
+          "R_susoB",
+          "R_susoB_end",
+          "R_susoA1",
+          "R_susoA1_end"
+        ]
+      },
+      "sourceArchive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip"
+    },
+    {
+      "id": "ratchet",
+      "label": "Ratchet",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/ratchet/Ratchet.dae",
+      "scale": 1.67,
+      "yaw": -1.5707963268,
+      "transparentTextures": [
+        "415.png",
+        "416.png",
+        "417.png",
+        "418.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 21,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "J0",
+        "feet": {
+          "left": "J103",
+          "right": "J97"
+        },
+        "legChains": {
+          "left": [
+            "J98",
+            "J99",
+            "J100"
+          ],
+          "right": [
+            "J92",
+            "J93",
+            "J94"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "J0": "mixamorig_Hips",
+          "J2": "mixamorig_Spine",
+          "J6": "mixamorig_Spine2",
+          "J7": "mixamorig_Neck",
+          "J8": "mixamorig_Head",
+          "J72": "mixamorig_LeftShoulder",
+          "J73": "mixamorig_LeftArm",
+          "J75": "mixamorig_LeftForeArm",
+          "J76": "mixamorig_LeftHand",
+          "J52": "mixamorig_RightShoulder",
+          "J53": "mixamorig_RightArm",
+          "J55": "mixamorig_RightForeArm",
+          "J56": "mixamorig_RightHand",
+          "J98": "mixamorig_LeftUpLeg",
+          "J99": "mixamorig_LeftLeg",
+          "J100": "mixamorig_LeftFoot",
+          "J103": "mixamorig_LeftToeBase",
+          "J92": "mixamorig_RightUpLeg",
+          "J93": "mixamorig_RightLeg",
+          "J94": "mixamorig_RightFoot",
+          "J97": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "J9",
+          "J10",
+          "J11",
+          "J12",
+          "J13",
+          "J14",
+          "J15",
+          "J16",
+          "J17",
+          "J18",
+          "J19",
+          "J20",
+          "J21",
+          "J22",
+          "J23",
+          "J24",
+          "J25",
+          "J26",
+          "J27",
+          "J28",
+          "J29",
+          "J30",
+          "J31",
+          "J32",
+          "J33",
+          "J34",
+          "J35",
+          "J36",
+          "J37",
+          "J38",
+          "J39",
+          "J40",
+          "J41",
+          "J42",
+          "J43",
+          "J44",
+          "J45",
+          "J46",
+          "J47",
+          "J48",
+          "J49",
+          "J50",
+          "J51",
+          "J57",
+          "J58",
+          "J59",
+          "J60",
+          "J61",
+          "J62",
+          "J63",
+          "J64",
+          "J65",
+          "J66",
+          "J67",
+          "J68",
+          "J69",
+          "J70",
+          "J77",
+          "J78",
+          "J79",
+          "J80",
+          "J81",
+          "J82",
+          "J83",
+          "J84",
+          "J85",
+          "J86",
+          "J87",
+          "J88",
+          "J89",
+          "J90",
+          "J104",
+          "J105",
+          "J106",
+          "J107",
+          "J108",
+          "J109",
+          "J110"
+        ]
+      },
+      "sourceArchive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip"
+    },
+    {
+      "id": "larry",
+      "label": "Larry the Lobster",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/larry/chr_larry_bindpose.dae",
+      "scale": 0.18,
+      "yaw": 3.1415926536,
+      "transparentTextures": [
+        "tex_0000_larry.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 27,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Dummy010",
+        "feet": {
+          "left": "Dummy043",
+          "right": "Dummy046"
+        },
+        "legChains": {
+          "left": [
+            "Dummy008",
+            "Dummy041",
+            "Dummy042"
+          ],
+          "right": [
+            "Dummy007",
+            "Dummy044",
+            "Dummy045"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Dummy010": "mixamorig_Hips",
+          "Dummy011": "mixamorig_Spine2",
+          "Dummy028": "mixamorig_Head",
+          "Dummy013": "mixamorig_LeftShoulder",
+          "Dummy014": "mixamorig_LeftArm",
+          "Dummy015": "mixamorig_LeftForeArm",
+          "Dummy016": "mixamorig_LeftHand",
+          "Dummy017": "mixamorig_LeftHandMiddle1",
+          "Dummy018": "mixamorig_LeftHandMiddle2",
+          "Dummy020": "mixamorig_LeftHandMiddle3",
+          "Dummy019": "mixamorig_LeftHandThumb1",
+          "Dummy012": "mixamorig_RightShoulder",
+          "Dummy021": "mixamorig_RightArm",
+          "Dummy022": "mixamorig_RightForeArm",
+          "Dummy023": "mixamorig_RightHand",
+          "Dummy024": "mixamorig_RightHandMiddle1",
+          "Dummy025": "mixamorig_RightHandMiddle2",
+          "Dummy027": "mixamorig_RightHandMiddle3",
+          "Dummy026": "mixamorig_RightHandThumb1",
+          "Dummy008": "mixamorig_LeftUpLeg",
+          "Dummy041": "mixamorig_LeftLeg",
+          "Dummy042": "mixamorig_LeftFoot",
+          "Dummy043": "mixamorig_LeftToeBase",
+          "Dummy007": "mixamorig_RightUpLeg",
+          "Dummy044": "mixamorig_RightLeg",
+          "Dummy045": "mixamorig_RightFoot",
+          "Dummy046": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Dummy034",
+          "Dummy035",
+          "Dummy033",
+          "Dummy036",
+          "Dummy032",
+          "Dummy037",
+          "Dummy031",
+          "Dummy038",
+          "Dummy030",
+          "Dummy029",
+          "Dummy009",
+          "Dummy039",
+          "Dummy040",
+          "Object001"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip"
+    },
+    {
+      "id": "man-ray",
+      "label": "Man Ray",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/man-ray/csm_manray_bindpose.dae",
+      "scale": 0.18,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "tex_0000_man_ray_256.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 41,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Dummy003",
+        "feet": {
+          "left": "Dummy058",
+          "right": "Dummy054"
+        },
+        "legChains": {
+          "left": [
+            "Dummy049",
+            "Dummy056",
+            "Dummy057"
+          ],
+          "right": [
+            "Dummy050",
+            "Dummy052",
+            "Dummy053"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Dummy003": "mixamorig_Hips",
+          "Dummy005": "mixamorig_Spine",
+          "Dummy006": "mixamorig_Spine2",
+          "Dummy009": "mixamorig_Neck",
+          "Dummy010": "mixamorig_Head",
+          "Dummy007": "mixamorig_LeftShoulder",
+          "Dummy035": "mixamorig_LeftArm",
+          "Dummy036": "mixamorig_LeftForeArm",
+          "Dummy038": "mixamorig_LeftHand",
+          "Dummy039": "mixamorig_LeftHandThumb1",
+          "Dummy048": "mixamorig_LeftHandThumb3",
+          "Dummy040": "mixamorig_LeftHandIndex1",
+          "Dummy047": "mixamorig_LeftHandIndex3",
+          "Dummy041": "mixamorig_LeftHandMiddle1",
+          "Dummy046": "mixamorig_LeftHandMiddle3",
+          "Dummy042": "mixamorig_LeftHandRing1",
+          "Dummy045": "mixamorig_LeftHandRing3",
+          "Dummy043": "mixamorig_LeftHandPinky1",
+          "Dummy044": "mixamorig_LeftHandPinky3",
+          "Dummy008": "mixamorig_RightShoulder",
+          "Dummy021": "mixamorig_RightArm",
+          "Dummy022": "mixamorig_RightForeArm",
+          "Dummy024": "mixamorig_RightHand",
+          "Dummy025": "mixamorig_RightHandThumb1",
+          "Dummy034": "mixamorig_RightHandThumb3",
+          "Dummy026": "mixamorig_RightHandIndex1",
+          "Dummy033": "mixamorig_RightHandIndex3",
+          "Dummy027": "mixamorig_RightHandMiddle1",
+          "Dummy032": "mixamorig_RightHandMiddle3",
+          "Dummy028": "mixamorig_RightHandRing1",
+          "Dummy031": "mixamorig_RightHandRing3",
+          "Dummy029": "mixamorig_RightHandPinky1",
+          "Dummy030": "mixamorig_RightHandPinky3",
+          "Dummy049": "mixamorig_LeftUpLeg",
+          "Dummy056": "mixamorig_LeftLeg",
+          "Dummy057": "mixamorig_LeftFoot",
+          "Dummy058": "mixamorig_LeftToeBase",
+          "Dummy050": "mixamorig_RightUpLeg",
+          "Dummy052": "mixamorig_RightLeg",
+          "Dummy053": "mixamorig_RightFoot",
+          "Dummy054": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Dummy011",
+          "Dummy012",
+          "Dummy013",
+          "Dummy014",
+          "Dummy015",
+          "Dummy016",
+          "Dummy017",
+          "Dummy018",
+          "Dummy019",
+          "Dummy020"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip"
+    },
+    {
+      "id": "batman-animated",
+      "label": "Batman (Animated)",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/batman-animated/batman-animated.dae",
+      "scale": 0.015,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "Animated_Series_Batman_Cape_D.png",
+        "Animated_Series_Batman_cloth_D.png",
+        "Animated_Series_Batman_leg_D.png",
+        "Cartoon_Outline_MAT.png"
+      ],
+      "transparentMaterials": [],
+      "materialOpacities": {
+        "Cartoon_Outline_MAT": 0,
+        "Cartoon_Outline_MAT_ncl1_1": 0,
+        "Cartoon_Outline_MAT_ncl1_2": 0
+      },
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 21,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bip01_Pelvis",
+        "feet": {
+          "left": "Bip01_L_Toe0",
+          "right": "Bip01_R_Toe0"
+        },
+        "legChains": {
+          "left": [
+            "Bip01_L_Thigh",
+            "Bip01_L_Calf",
+            "Bip01_L_Foot"
+          ],
+          "right": [
+            "Bip01_R_Thigh",
+            "Bip01_R_Calf",
+            "Bip01_R_Foot"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Bip01_Pelvis": "mixamorig_Hips",
+          "Bip01_Spine": "mixamorig_Spine",
+          "Bip01_Spine2": "mixamorig_Spine2",
+          "Bip01_Neck": "mixamorig_Neck",
+          "Bip01_Head": "mixamorig_Head",
+          "Bip01_L_Clavicle": "mixamorig_LeftShoulder",
+          "Bip01_L_UpperArm": "mixamorig_LeftArm",
+          "Bip01_L_Forearm": "mixamorig_LeftForeArm",
+          "Bip01_L_Hand": "mixamorig_LeftHand",
+          "Bip01_R_Clavicle": "mixamorig_RightShoulder",
+          "Bip01_R_UpperArm": "mixamorig_RightArm",
+          "Bip01_R_Forearm": "mixamorig_RightForeArm",
+          "Bip01_R_Hand": "mixamorig_RightHand",
+          "Bip01_L_Thigh": "mixamorig_LeftUpLeg",
+          "Bip01_L_Calf": "mixamorig_LeftLeg",
+          "Bip01_L_Foot": "mixamorig_LeftFoot",
+          "Bip01_L_Toe0": "mixamorig_LeftToeBase",
+          "Bip01_R_Thigh": "mixamorig_RightUpLeg",
+          "Bip01_R_Calf": "mixamorig_RightLeg",
+          "Bip01_R_Foot": "mixamorig_RightFoot",
+          "Bip01_R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bip01",
+          "FcFX_Jaw",
+          "FcFx_Eye_L",
+          "FcFx_Eye_R",
+          "Bone_Cape_1_00",
+          "Bone_Cape_2_00",
+          "Bone_Cape_3_00",
+          "Bone_Cape_4_00",
+          "Bone_Cape_5_00",
+          "Bone_Cape_6_00",
+          "Bone_Cape_7_00"
+        ]
+      },
+      "sourceArchive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Animated).zip"
+    },
+    {
+      "id": "batman-beyond",
+      "label": "Batman Beyond",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/batman-beyond/batman-beyond.dae",
+      "scale": 0.015,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "DLC8_Batman_Beyond_torso_D.png",
+        "DLC8_Batman_Beyond_Leg_D.png",
+        "DLC8_Batman_Beyond_Leg_M.png",
+        "DLC8_Batman_Beyond_Head_D.png",
+        "DLC8_Batman_Beyond_Head_M.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 21,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bip01_Pelvis",
+        "feet": {
+          "left": "Bip01_L_Toe0",
+          "right": "Bip01_R_Toe0"
+        },
+        "legChains": {
+          "left": [
+            "Bip01_L_Thigh",
+            "Bip01_L_Calf",
+            "Bip01_L_Foot"
+          ],
+          "right": [
+            "Bip01_R_Thigh",
+            "Bip01_R_Calf",
+            "Bip01_R_Foot"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Bip01_Pelvis": "mixamorig_Hips",
+          "Bip01_Spine": "mixamorig_Spine",
+          "Bip01_Spine2": "mixamorig_Spine2",
+          "Bip01_Neck": "mixamorig_Neck",
+          "Bip01_Head": "mixamorig_Head",
+          "Bip01_L_Clavicle": "mixamorig_LeftShoulder",
+          "Bip01_L_UpperArm": "mixamorig_LeftArm",
+          "Bip01_L_Forearm": "mixamorig_LeftForeArm",
+          "Bip01_L_Hand": "mixamorig_LeftHand",
+          "Bip01_R_Clavicle": "mixamorig_RightShoulder",
+          "Bip01_R_UpperArm": "mixamorig_RightArm",
+          "Bip01_R_Forearm": "mixamorig_RightForeArm",
+          "Bip01_R_Hand": "mixamorig_RightHand",
+          "Bip01_L_Thigh": "mixamorig_LeftUpLeg",
+          "Bip01_L_Calf": "mixamorig_LeftLeg",
+          "Bip01_L_Foot": "mixamorig_LeftFoot",
+          "Bip01_L_Toe0": "mixamorig_LeftToeBase",
+          "Bip01_R_Thigh": "mixamorig_RightUpLeg",
+          "Bip01_R_Calf": "mixamorig_RightLeg",
+          "Bip01_R_Foot": "mixamorig_RightFoot",
+          "Bip01_R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bip01",
+          "FcFX_Jaw",
+          "FcFx_Eye_L",
+          "FcFx_Eye_R",
+          "Bone_Cape_1_00",
+          "Bone_Cape_2_00",
+          "Bone_Cape_3_00",
+          "Bone_Cape_4_00",
+          "Bone_Cape_5_00",
+          "Bone_Cape_6_00",
+          "Bone_Cape_7_00"
+        ]
+      },
+      "sourceArchive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip"
+    },
+    {
+      "id": "dr-doofenshmirtz",
+      "label": "Dr. Doofenshmirtz",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/dr-doofenshmirtz/dr-doofenshmirtz.dae",
+      "scale": 0.7,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": ["Dr_Doof_D.png"],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Root_Dr_Doof",
+        "feet": {
+          "left": "Bone_Dr_Doof__L_Toe0",
+          "right": "Bone_Dr_Doof__R_Toe0"
+        },
+        "legChains": {
+          "left": ["Bone_Dr_Doof__L_Thigh", "Bone_Dr_Doof__L_Calf", "Bone_Dr_Doof__L_Foot"],
+          "right": ["Bone_Dr_Doof__R_Thigh", "Bone_Dr_Doof__R_Calf", "Bone_Dr_Doof__R_Foot"]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "Root_Dr_Doof": "mixamorig_Hips",
+          "Bone_Dr_Doof__Spine": "mixamorig_Spine",
+          "Bone_Dr_Doof__Spine1": "mixamorig_Spine2",
+          "Bone_Dr_Doof__Neck": "mixamorig_Neck",
+          "Bone_Dr_Doof__Head": "mixamorig_Head",
+          "Bone_Dr_Doof__L_Clavicle": "mixamorig_LeftShoulder",
+          "Bone_Dr_Doof__L_UpperArm": "mixamorig_LeftArm",
+          "Bone_Dr_Doof__L_Forearm": "mixamorig_LeftForeArm",
+          "Bone_Dr_Doof__L_Hand": "mixamorig_LeftHand",
+          "Bone_Dr_Doof__L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bone_Dr_Doof__R_Clavicle": "mixamorig_RightShoulder",
+          "Bone_Dr_Doof__R_UpperArm": "mixamorig_RightArm",
+          "Bone_Dr_Doof__R_Forearm": "mixamorig_RightForeArm",
+          "Bone_Dr_Doof__R_Hand": "mixamorig_RightHand",
+          "Bone_Dr_Doof__R_Finger1": "mixamorig_RightHandIndex1",
+          "Bone_Dr_Doof__L_Thigh": "mixamorig_LeftUpLeg",
+          "Bone_Dr_Doof__L_Calf": "mixamorig_LeftLeg",
+          "Bone_Dr_Doof__L_Foot": "mixamorig_LeftFoot",
+          "Bone_Dr_Doof__L_Toe0": "mixamorig_LeftToeBase",
+          "Bone_Dr_Doof__R_Thigh": "mixamorig_RightUpLeg",
+          "Bone_Dr_Doof__R_Calf": "mixamorig_RightLeg",
+          "Bone_Dr_Doof__R_Foot": "mixamorig_RightFoot",
+          "Bone_Dr_Doof__R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_Dr_Doof__Pelvis",
+          "Bone_Dr_Doof__Prop1",
+          "Bone_Dr_Doof__Prop2"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip"
+    },
+    {
+      "id": "ferb",
+      "label": "Ferb",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/ferb/ferb.dae",
+      "scale": 1,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": ["ferb_D.png"],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 22,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bone_Ferb__Root",
+        "feet": {
+          "left": "Bone_Ferb__L_Toe0",
+          "right": "Bone_Ferb__R_Toe0"
+        },
+        "legChains": {
+          "left": ["Bone_Ferb__L_Thigh", "Bone_Ferb__L_Calf", "Bone_Ferb__L_Foot"],
+          "right": ["Bone_Ferb__R_Thigh", "Bone_Ferb__R_Calf", "Bone_Ferb__R_Foot"]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "Bone_Ferb__Root": "mixamorig_Hips",
+          "Bone_Ferb__Spine": "mixamorig_Spine",
+          "Bone_Ferb__Spine1": "mixamorig_Spine2",
+          "Bone_Ferb__Head": "mixamorig_Head",
+          "Bone_Ferb__L_Clavicle": "mixamorig_LeftShoulder",
+          "Bone_Ferb__L_UpperArm": "mixamorig_LeftArm",
+          "Bone_Ferb__L_Forearm": "mixamorig_LeftForeArm",
+          "Bone_Ferb__L_Hand": "mixamorig_LeftHand",
+          "Bone_Ferb__L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bone_Ferb__R_Clavicle": "mixamorig_RightShoulder",
+          "Bone_Ferb__R_UpperArm": "mixamorig_RightArm",
+          "Bone_Ferb__R_Forearm": "mixamorig_RightForeArm",
+          "Bone_Ferb__R_Hand": "mixamorig_RightHand",
+          "Bone_Ferb__R_Finger1": "mixamorig_RightHandIndex1",
+          "Bone_Ferb__L_Thigh": "mixamorig_LeftUpLeg",
+          "Bone_Ferb__L_Calf": "mixamorig_LeftLeg",
+          "Bone_Ferb__L_Foot": "mixamorig_LeftFoot",
+          "Bone_Ferb__L_Toe0": "mixamorig_LeftToeBase",
+          "Bone_Ferb__R_Thigh": "mixamorig_RightUpLeg",
+          "Bone_Ferb__R_Calf": "mixamorig_RightLeg",
+          "Bone_Ferb__R_Foot": "mixamorig_RightFoot",
+          "Bone_Ferb__R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_Ferb__Pelvis",
+          "Bone_Ferb__Facial_R",
+          "Bone_Ferb__Facial_L",
+          "Bone_Ferb__Facial_Up",
+          "Bone_Ferb__Facial_Down",
+          "Bone_Ferb__Eyelid_R",
+          "Bone_Ferb__Eyelid_L"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip"
+    },
+    {
+      "id": "phineas",
+      "label": "Phineas",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/phineas/phineas.dae",
+      "scale": 1,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": ["Phineas_D.png"],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 22,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bone_Phineas__Root",
+        "feet": {
+          "left": "Bone_Phineas__L_Toe0",
+          "right": "Bone_Phineas__R_Toe0"
+        },
+        "legChains": {
+          "left": ["Bone_Phineas__L_Thigh", "Bone_Phineas__L_Calf", "Bone_Phineas__L_Foot"],
+          "right": ["Bone_Phineas__R_Thigh", "Bone_Phineas__R_Calf", "Bone_Phineas__R_Foot"]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "Bone_Phineas__Root": "mixamorig_Hips",
+          "Bone_Phineas__Spine": "mixamorig_Spine",
+          "Bone_Phineas__Spine1": "mixamorig_Spine2",
+          "Bone_Phineas__Head": "mixamorig_Head",
+          "Bone_Phineas__L_Clavicle": "mixamorig_LeftShoulder",
+          "Bone_Phineas__L_UpperArm": "mixamorig_LeftArm",
+          "Bone_Phineas__L_Forearm": "mixamorig_LeftForeArm",
+          "Bone_Phineas__L_Hand": "mixamorig_LeftHand",
+          "Bone_Phineas__L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bone_Phineas__R_Clavicle": "mixamorig_RightShoulder",
+          "Bone_Phineas__R_UpperArm": "mixamorig_RightArm",
+          "Bone_Phineas__R_Forearm": "mixamorig_RightForeArm",
+          "Bone_Phineas__R_Hand": "mixamorig_RightHand",
+          "Bone_Phineas__R_Finger1": "mixamorig_RightHandIndex1",
+          "Bone_Phineas__L_Thigh": "mixamorig_LeftUpLeg",
+          "Bone_Phineas__L_Calf": "mixamorig_LeftLeg",
+          "Bone_Phineas__L_Foot": "mixamorig_LeftFoot",
+          "Bone_Phineas__L_Toe0": "mixamorig_LeftToeBase",
+          "Bone_Phineas__R_Thigh": "mixamorig_RightUpLeg",
+          "Bone_Phineas__R_Calf": "mixamorig_RightLeg",
+          "Bone_Phineas__R_Foot": "mixamorig_RightFoot",
+          "Bone_Phineas__R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_Phineas__Pelvis",
+          "Bone_Phineas__Facial_R",
+          "Bone_Phineas__Facial_L",
+          "Bone_Phineas__Facial_Up",
+          "Bone_Phineas__Facial_Down",
+          "Bone_Phineas__Eyelid_R",
+          "Bone_Phineas__Eyelid_L"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip"
     }
   ]
 }

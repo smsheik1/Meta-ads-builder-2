@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
+import { imageSize } from "image-size";
 import JSZip from "jszip";
 import {
   getPublishedDiscoveryEntries,
@@ -106,7 +107,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.11.0");
+assert.equal(profile.version, "0.12.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -121,6 +122,10 @@ assert.match(repoPageRegistrySource, /Finished Dance Offs\./);
 assert.match(repoPageRegistrySource, /bikini-bottom-dance-off-wiggle/);
 assert.match(formatPageSource, /id="examples"/);
 assert.equal(existsSync(download), true);
+assert.ok(
+  statSync(download).size < 100 * 1024 * 1024,
+  "The published format kit must remain below GitHub's 100 MiB file limit.",
+);
 const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
 const archive = await JSZip.loadAsync(readFileSync(download));
 const zipEntries = Object.keys(archive.files).join("\n");
@@ -147,7 +152,7 @@ const readArchivedText = async (relativePath: string) => {
 const archivedManifest = JSON.parse(
   await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.11.0");
+assert.equal(archivedManifest.formatVersion, "0.12.0");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
@@ -438,24 +443,26 @@ assert.match(trustStyles, /@media \(max-width: 700px\)/);
 assert.doesNotMatch(trustStyles, /box-shadow: 7px 7px 0 #080817/);
 
 const trustData = await getBikiniBottomDanceOffTrustData();
-assert.equal(trustData.version, "0.11.0");
+const motionReadyCharacterCatalog = (
+  JSON.parse(
+    readFileSync(
+      "public/format-repositories/mixamo-character-motion-v1/assets/character-packs.json",
+      "utf8",
+    ),
+  ) as {
+    packs: Array<{ id: string; label: string; status: string }>;
+  }
+).packs.filter((character) => character.status === "motion-ready");
+assert.equal(trustData.version, "0.12.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
-  motionReadyCharacters: 8,
+  motionReadyCharacters: 22,
   voiceReadyCharacters: 4,
 });
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
-  [
-    { id: "spongebob", label: "SpongeBob SquarePants" },
-    { id: "patrick", label: "Patrick Star" },
-    { id: "mr-krabs", label: "Mr. Krabs" },
-    { id: "squilliam", label: "Squilliam Fancyson" },
-    { id: "sonic-modern", label: "Sonic the Hedgehog (Modern)" },
-    { id: "flynn-rider", label: "Flynn Rider" },
-    { id: "kermit-pirate", label: "Kermit (Pirate)" },
-    { id: "kermit-sci-fi", label: "Kermit (Sci-Fi)" },
-  ],
+  motionReadyCharacterCatalog.map(({ id, label }) => ({ id, label })),
+  "Every motion-ready catalog character should automatically receive the same discovery card.",
 );
 assert.equal(
   trustData.includedAssets.performerStage.src,
@@ -475,7 +482,9 @@ for (const character of trustData.includedAssets.characters) {
   const previewModel = readFileSync(`public${character.modelSrc}`);
   assert.equal(previewModel.subarray(0, 4).toString("ascii"), "glTF");
   assert.ok(previewModel.byteLength > 250_000);
-  assert.ok(statSync(`public${character.posterSrc}`).size > 30_000);
+  const poster = readFileSync(`public${character.posterSrc}`);
+  assert.ok(poster.byteLength > 5_000);
+  assert.deepEqual(imageSize(poster), { width: 800, height: 1000, type: "png" });
 }
 assert.equal(
   trustData.includedAssets.characters.filter(
@@ -486,7 +495,7 @@ assert.equal(
 assert.equal(
   trustData.includedAssets.characters.filter((character) => character.modelSrc)
     .length,
-  8,
+  22,
 );
 assert.equal(
   existsSync(
@@ -508,8 +517,11 @@ const previewProvenance = JSON.parse(
     proofSource?: string;
   }>;
 };
-assert.match(previewProvenance.method, /All eight browser-ready GLBs/);
-assert.equal(previewProvenance.previews.length, 8);
+assert.match(
+  previewProvenance.method,
+  new RegExp(`All ${motionReadyCharacterCatalog.length} browser-ready GLBs`),
+);
+assert.equal(previewProvenance.previews.length, motionReadyCharacterCatalog.length);
 for (const character of trustData.includedAssets.characters) {
   const preview = previewProvenance.previews.find(
     (candidate) => candidate.characterId === character.id,

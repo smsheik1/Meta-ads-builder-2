@@ -12,6 +12,7 @@ import {
 const RESTING_CAMERA_ORBIT = "0deg 75deg 105%";
 const RESTING_FIELD_OF_VIEW = "30deg";
 const RETURN_DELAY_MS = 3000;
+const PREVIEW_BACKGROUND = "#f4f6f8";
 
 type CharacterModelViewerElement = HTMLElement & {
   cameraOrbit: string;
@@ -90,7 +91,7 @@ export function DiscoveryCharacterModelViewer({
   }, []);
 
   return (
-    <div className="relative h-full w-full bg-white">
+    <div className="relative h-full w-full bg-[#f4f6f8]">
       {createElement("model-viewer", {
         ref: viewerRef,
         src,
@@ -111,8 +112,8 @@ export function DiscoveryCharacterModelViewer({
         "data-testid": "character-model-viewer",
         className: "block h-full w-full cursor-grab active:cursor-grabbing",
         style: {
-          "--poster-color": "#ffffff",
-          backgroundColor: "#ffffff",
+          "--poster-color": PREVIEW_BACKGROUND,
+          backgroundColor: PREVIEW_BACKGROUND,
         } as CSSProperties,
       })}
       <div className="pointer-events-none absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border-2 border-[#080817] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-[#080817] shadow-[2px_2px_0_#080817]">

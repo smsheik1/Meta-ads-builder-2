@@ -14,6 +14,20 @@ const characterAccent: Record<string, string> = {
   "flynn-rider": "#a6785b",
   "kermit-pirate": "#56c86f",
   "kermit-sci-fi": "#8be05f",
+  "agent-p": "#08b8b8",
+  squidward: "#9cd8c5",
+  mario: "#e31b23",
+  olaf: "#8fd8ff",
+  sandy: "#c9915a",
+  aqua: "#805ad5",
+  ratchet: "#f3c741",
+  larry: "#ff4b2b",
+  "man-ray": "#4285d4",
+  "batman-animated": "#f0b429",
+  "batman-beyond": "#d9272e",
+  "dr-doofenshmirtz": "#7a7f71",
+  ferb: "#25b45b",
+  phineas: "#ff6542",
 };
 
 export function BikiniBottomDanceOffIncludedAssets({

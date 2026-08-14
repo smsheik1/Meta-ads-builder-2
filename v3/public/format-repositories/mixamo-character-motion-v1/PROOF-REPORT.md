@@ -10,6 +10,8 @@ Version 0.5 hardens the interactive renderer lifecycle. Character and motion cha
 
 Version 0.6 audits 51 supplied character archives strictly one character at a time. Sonic (Modern), Flynn Rider, Kermit (Pirate), and Kermit (Sci-Fi) each passed separate Silly Dancing and Macarena contact-sheet reviews, expanding the verified roster from four to eight. The remaining 43 archives have explicit rejection evidence in `assets/character-import-audit.json`; no failed or static-only model was silently included.
 
+Version 0.7 completes that ordered recovery audit. Four archives were already represented, eighteen new rigs passed two individually inspected dance proofs, and 29 were skipped with exact evidence because they lacked textures, required disproportionate bind reconstruction, or remained structurally invalid. The verified roster is now 22 characters. Every accepted character still uses the one Collada loader, declarative retargeting profile, and official renderer; Aqua's glTF conversion was bounded to an offline asset conversion rather than adding a second runtime loader.
+
 | Motion | Original frames | Exact duration | Mapped bones | Planar root retained | Automatic quality |
 |---|---:|---:|---:|---:|---|
 | Hip Hop Dancing | 135 | 4.500 s | 35 | 100% | Pass |
