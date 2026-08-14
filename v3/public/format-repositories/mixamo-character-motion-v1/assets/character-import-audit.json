@@ -275,7 +275,7 @@
     {
       "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Rapunzel.zip",
       "reasonCode": "broken-deformation",
-      "reason": "The skin/hair stretches into a full-frame vertical spike while the character body disappears."
+      "reason": "A bounded re-test mapped the real hip, spine, limbs, hands, and feet, supplied the missing referenced texture, and rendered both the primary and alternate UV-split Collada exports. Both exports still collapse the skin into a full-frame vertical spike while the body disappears, proving the failure is in the supplied bind/skin data rather than orientation, scale, or anatomy mapping. Recovery requires manual bind-pose reconstruction, so the character was skipped."
     },
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",
