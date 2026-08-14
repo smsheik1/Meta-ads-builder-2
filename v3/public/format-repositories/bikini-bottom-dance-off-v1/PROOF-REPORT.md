@@ -1,11 +1,11 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.12.0`
+Format version: `0.13.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
 
-- The official character renderer and retargeter, eight verified motion-ready character profiles, 25 normalized starter motions, local motion import, the 9:16 compositor, four selectable outer backgrounds, the Fish News panel background, inspection, and delivery. Four characters currently have approved voice presets; the four new dancers remain explicitly voice-pending.
+- The official character renderer and retargeter, 22 verified motion-ready character profiles, 25 normalized starter motions, local motion import, the 9:16 compositor, four selectable outer backgrounds, the Fish News panel background, inspection, and delivery. Nineteen characters have approved Fish Audio presets; Agent P, Man Ray, and Batman Beyond stay explicitly voice-pending because no credible model was found.
 - The song, script, cast order, colors, outer background, and solo/finale/reaction assignments remain episode inputs.
 - Fish Audio is the only runtime provider and remains approval-gated. Mixamo is an operator-time source for local Collada import, not a runtime API.
 
@@ -13,7 +13,9 @@ The machine-readable boundary is `content-boundary.json`.
 
 Version `0.10.8` retains all four user-approved Fish Audio voice references and the package-owned cross-agent entrypoint. It enlarges the four-character stage, removes the crop-like handoff flash, uses maximum-compatibility H.264 delivery settings, holds the complete winner CTA for more than five seconds, and gives the replay countdown enough screen time to register. It also counts only completed videos against the render-attempt budget, uses deterministic single-threaded H.264 encoding to prevent isolated transition-frame corruption, and packages the proof render report used by the public page. The finished-video proof below remains the archived `0.9.1` calibration proof and is labeled accordingly.
 
-Version `0.12.0` consumes the completed Character Dance Lab 51-archive, one-character-at-a-time audit. Eighteen new rigs passed two individually reviewed dances, producing 22 motion-ready characters total; 29 archives remain rejected with exact evidence. The discovery roster and its clean interactive previews are generated from that same shared catalog, so later accepted characters cannot silently fall back to a different card style. The shared character catalog and Fish voice-preset manifest remain the two definitive status sources; complete spoken episodes remain limited to the four characters with approved Fish presets until the separate voice goal.
+Version `0.12.0` consumed the completed Character Dance Lab 51-archive, one-character-at-a-time audit. Eighteen new rigs passed two individually reviewed dances, producing 22 motion-ready characters total; 29 archives remain rejected with exact evidence. The discovery roster and its clean interactive previews are generated from that same shared catalog, so later accepted characters cannot silently fall back to a different card style.
+
+Version `0.13.0` completes the separate Fish Audio discovery pass. It skips six voices already registered elsewhere in the project, searches the remaining 15 identities one at a time, records the user's ten explicit duplicate-model choices, accepts the two unambiguous matches, and preserves three honest no-match results. The curated audit ships; the raw API dump, API key, and local receipts do not.
 
 ## Two independent format fixtures
 

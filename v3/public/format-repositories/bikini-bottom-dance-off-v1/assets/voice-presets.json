@@ -6,26 +6,97 @@
     {
       "characterId": "spongebob",
       "referenceId": "9845e056f37b470d9a1005e41c864e25",
-      "delivery": "explosively excited",
       "speed": 1.18
     },
     {
       "characterId": "patrick",
       "referenceId": "d1520b60870b4e9aa01eab5bfefb1c45",
-      "delivery": "smug but slightly clueless",
       "speed": 1.12
     },
     {
       "characterId": "mr-krabs",
       "referenceId": "394d3112f0da41049c42177f3ca31c5a",
-      "delivery": "offended and dismissive",
       "speed": 1.16
     },
     {
       "characterId": "squilliam",
       "referenceId": "f12d545dcc1149bab3b68bba84822a1e",
-      "delivery": "elegant, condescending, and certain he won",
       "speed": 1.14
+    },
+    {
+      "characterId": "squidward",
+      "referenceId": "1b28ff723a204fe08c26d8695f796b84",
+      "speed": 1.08
+    },
+    {
+      "characterId": "sandy",
+      "referenceId": "783d32b03d0c4ff28dd66455364d8665",
+      "speed": 1.15
+    },
+    {
+      "characterId": "sonic-modern",
+      "referenceId": "819bef35f241425291167f5ee794151c",
+      "speed": 1.18
+    },
+    {
+      "characterId": "flynn-rider",
+      "referenceId": "7a8d9440b3544a8d9c15bafe51896ea2",
+      "speed": 1.1
+    },
+    {
+      "characterId": "kermit-pirate",
+      "referenceId": "cfb8ad89d53f41439dcf7858a9d7e0ed",
+      "speed": 1.08
+    },
+    {
+      "characterId": "kermit-sci-fi",
+      "referenceId": "cfb8ad89d53f41439dcf7858a9d7e0ed",
+      "speed": 1.08
+    },
+    {
+      "characterId": "mario",
+      "referenceId": "f9f460f0347b47039b4dcba199f745f9",
+      "speed": 1.16
+    },
+    {
+      "characterId": "olaf",
+      "referenceId": "9008533e334c4452839ab9df2fe5a078",
+      "speed": 1.12
+    },
+    {
+      "characterId": "aqua",
+      "referenceId": "3fbcf051cbc34683be03d2068e3a55c3",
+      "speed": 1.06
+    },
+    {
+      "characterId": "ratchet",
+      "referenceId": "8e2014bfd1c348b2a2d6b339ca4ebbcf",
+      "speed": 1.14
+    },
+    {
+      "characterId": "larry",
+      "referenceId": "a855ea4217f546c7a31fc578e52a29e8",
+      "speed": 1.12
+    },
+    {
+      "characterId": "batman-animated",
+      "referenceId": "ef549174cea246468ce32b00afa6affa",
+      "speed": 1
+    },
+    {
+      "characterId": "dr-doofenshmirtz",
+      "referenceId": "542ae2f776d64d53bae3e9722dc489fc",
+      "speed": 1.12
+    },
+    {
+      "characterId": "ferb",
+      "referenceId": "e074ae7e1e2046f192d2fb7374943fab",
+      "speed": 1.06
+    },
+    {
+      "characterId": "phineas",
+      "referenceId": "b6c7dbc62a824648957cfe1c4d5da8cd",
+      "speed": 1.16
     }
   ]
 }

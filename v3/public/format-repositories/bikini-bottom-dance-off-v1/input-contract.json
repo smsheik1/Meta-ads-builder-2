@@ -21,7 +21,7 @@
         "type": "object",
         "required": ["characterId", "motionId", "finaleMotionId", "reactionMotionId", "label", "taunt", "color"],
         "properties": {
-          "characterId": {"type": "string", "enum": ["spongebob", "patrick", "mr-krabs", "squilliam"]},
+          "characterId": {"type": "string", "enum": ["spongebob", "patrick", "mr-krabs", "squilliam", "squidward", "sandy", "sonic-modern", "flynn-rider", "kermit-pirate", "kermit-sci-fi", "mario", "olaf", "aqua", "ratchet", "larry", "batman-animated", "dr-doofenshmirtz", "ferb", "phineas"]},
           "motionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
           "finaleMotionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
           "reactionMotionId": {"type": "string", "pattern": "^[a-z0-9-]+$"},

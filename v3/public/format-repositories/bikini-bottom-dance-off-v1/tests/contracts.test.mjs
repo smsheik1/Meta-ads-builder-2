@@ -51,18 +51,119 @@ test("the existing manifests expose all motion-ready characters without inventin
     readJson("../mixamo-character-motion-v1/assets/character-import-audit.json"),
     readJson("input-contract.json"),
   ]);
-  assert.equal(voices.voices.length, 4);
+  assert.equal(voices.voices.length, 19);
   const acceptedNewIds = audit.acceptedNew.flatMap((entry) => entry.characterIds);
-  assert.equal(catalog.packs.length, voices.voices.length + acceptedNewIds.length);
+  assert.ok(acceptedNewIds.every((characterId) =>
+    catalog.packs.some((character) => character.id === characterId),
+  ));
   assert.deepEqual(
     inputContract.properties.characters.items.properties.characterId.enum.slice().sort(),
     voices.voices.map((voice) => voice.characterId).sort(),
   );
   const voiceReadyIds = new Set(voices.voices.map((voice) => voice.characterId));
+  assert.ok([...voiceReadyIds].every((characterId) =>
+    catalog.packs.some((character) => character.id === characterId),
+  ));
   assert.deepEqual(
-    catalog.packs.filter((character) => !voiceReadyIds.has(character.id)).map((character) => character.id).sort(),
-    acceptedNewIds.sort(),
+    catalog.packs
+      .filter((character) => !voiceReadyIds.has(character.id))
+      .map((character) => character.id)
+      .sort(),
+    ["agent-p", "batman-beyond", "man-ray"],
   );
+});
+
+test("the Fish voice audit covers the full motion roster without re-searching known voices", async () => {
+  const [catalog, audit, auditText] = await Promise.all([
+    readJson("../mixamo-character-motion-v1/assets/character-packs.json"),
+    readJson("assets/voice-discovery-audit.json"),
+    readFile(new URL("assets/voice-discovery-audit.json", root), "utf8"),
+  ]);
+  const rosterIds = catalog.packs.map((character) => character.id).sort();
+  const skippedIds = audit.roster.skippedExistingVoices.map((voice) => voice.characterId);
+  const reviewedIds = audit.reviews.flatMap((review) => review.characterIds);
+  assert.equal(audit.roster.motionReadyCharacters, 22);
+  assert.equal(audit.roster.searchedVoiceIdentities, 15);
+  assert.equal(audit.roster.searchedCharacterIds, 16);
+  assert.equal(audit.status, "approved");
+  assert.equal(audit.selection.source, "explicit-user-choice");
+  assert.equal(audit.selection.voiceReadyCharacters, 19);
+  assert.deepEqual(audit.selection.voicePendingCharacterIds, [
+    "agent-p",
+    "man-ray",
+    "batman-beyond",
+  ]);
+  assert.deepEqual([...skippedIds, ...reviewedIds].sort(), rosterIds);
+  assert.equal(new Set([...skippedIds, ...reviewedIds]).size, rosterIds.length);
+  assert.deepEqual(skippedIds.sort(), [
+    "mr-krabs",
+    "patrick",
+    "sandy",
+    "spongebob",
+    "squidward",
+    "squilliam",
+  ]);
+
+  const noMatches = audit.reviews.filter((review) => review.classification === "no-credible-match");
+  const singleMatches = audit.reviews.filter(
+    (review) => review.classification === "single-credible-candidate",
+  );
+  const multipleMatches = audit.reviews.filter(
+    (review) => review.classification === "multiple-credible-candidates",
+  );
+  assert.equal(noMatches.length, 3);
+  assert.equal(singleMatches.length, 2);
+  assert.equal(multipleMatches.length, 10);
+  for (const review of noMatches) {
+    assert.equal(review.candidates.length, 0);
+    assert.equal(review.selectedReferenceId, null);
+  }
+  for (const review of singleMatches) {
+    assert.equal(review.candidates.length, 1);
+    assert.equal(review.selectedReferenceId, review.candidates[0].referenceId);
+  }
+  for (const review of multipleMatches) {
+    assert.ok(review.candidates.length >= 2);
+    assert.match(review.selectedReferenceId, /^[0-9a-f]{32}$/);
+    assert.ok(review.candidates.some(
+      (candidate) => candidate.referenceId === review.recommendedReferenceId,
+    ));
+    assert.ok(review.candidates.some(
+      (candidate) => candidate.referenceId === review.selectedReferenceId,
+    ));
+  }
+  assert.deepEqual(
+    Object.fromEntries(multipleMatches.map((review) => [
+      review.characterIds.join(","),
+      review.selectedReferenceId,
+    ])),
+    {
+      "sonic-modern": "819bef35f241425291167f5ee794151c",
+      "flynn-rider": "7a8d9440b3544a8d9c15bafe51896ea2",
+      "kermit-pirate,kermit-sci-fi": "cfb8ad89d53f41439dcf7858a9d7e0ed",
+      "mario": "f9f460f0347b47039b4dcba199f745f9",
+      "olaf": "9008533e334c4452839ab9df2fe5a078",
+      "aqua": "3fbcf051cbc34683be03d2068e3a55c3",
+      "ratchet": "8e2014bfd1c348b2a2d6b339ca4ebbcf",
+      "batman-animated": "ef549174cea246468ce32b00afa6affa",
+      "ferb": "e074ae7e1e2046f192d2fb7374943fab",
+      "phineas": "b6c7dbc62a824648957cfe1c4d5da8cd",
+    },
+  );
+  for (const candidate of audit.reviews.flatMap((review) => review.candidates)) {
+    assert.match(candidate.referenceId, /^[0-9a-f]{32}$/);
+    if (candidate.sampleUrl) {
+      assert.match(candidate.sampleUrl, /^https:\/\/platform\.r2\.fish\.audio\//);
+    }
+  }
+  assert.deepEqual(audit.roster.knownFutureVoices, [{
+    characterId: "spider-man",
+    rosterStatus: "not-yet-motion-ready",
+    referenceId: "c9c0183c624d4b85a1345bc2ec4a10bf",
+    source: "user-supplied",
+  }]);
+  assert.doesNotMatch(auditText, /Bearer\s+/);
+  assert.equal(audit.policy.credentialStoredInAudit, false);
 });
 
 test("a second proof input replaces every solo and finale without runtime changes", async () => {
@@ -125,15 +226,32 @@ test("the song and Fish voices occupy mutually exclusive timeline beats", async 
 });
 
 test("the approved Fish voice presets are registered and provider calls require approval", async () => {
-  const voices = await readJson("assets/voice-presets.json");
-  assert.deepEqual(voices.voices.map((voice) => voice.characterId), ["spongebob", "patrick", "mr-krabs", "squilliam"]);
-  assert.deepEqual(voices.voices.map((voice) => voice.referenceId), [
-    "9845e056f37b470d9a1005e41c864e25",
-    "d1520b60870b4e9aa01eab5bfefb1c45",
-    "394d3112f0da41049c42177f3ca31c5a",
-    "f12d545dcc1149bab3b68bba84822a1e",
+  const [voices, audit] = await Promise.all([
+    readJson("assets/voice-presets.json"),
+    readJson("assets/voice-discovery-audit.json"),
   ]);
+  const approvedFromAudit = [
+    ...audit.roster.skippedExistingVoices,
+    ...audit.reviews.flatMap((review) =>
+      review.selectedReferenceId
+        ? review.characterIds.map((characterId) => ({
+          characterId,
+          referenceId: review.selectedReferenceId,
+        }))
+        : [],
+    ),
+  ].sort((left, right) => left.characterId.localeCompare(right.characterId));
+  assert.equal(voices.voices.length, 19);
+  assert.deepEqual(
+    voices.voices
+      .map(({ characterId, referenceId }) => ({ characterId, referenceId }))
+      .sort((left, right) => left.characterId.localeCompare(right.characterId)),
+    approvedFromAudit,
+  );
   assert.equal(voices.voices.every((voice) => /^[0-9a-f]{32}$/.test(voice.referenceId)), true);
+  assert.equal(voices.voices.every((voice) => voice.speed >= 1 && voice.speed <= 1.2), true);
+  assert.equal(voices.voices.every((voice) => !("delivery" in voice)), true);
+  assert.equal(new Set(voices.voices.map((voice) => voice.characterId)).size, 19);
   assert.equal("privateReferenceEnvironmentVariable" in voices, false);
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
   assert.doesNotMatch(runner, /SQUILLIAM_VOICE_ID/);
@@ -266,6 +384,8 @@ test("the package boundary keeps Mixamo local and external calls explicit", asyn
   assert.match(buildKit, /"kit-entrypoints"/);
   assert.match(buildKit, /await cp\(motionRoot/);
   assert.match(buildKit, /formatVersion = JSON\.parse/);
+  assert.match(buildKit, /excludedRoots = new Set\(\["agent-runs"/);
+  assert.match(buildKit, /excludedNames = new Set\(\["\.DS_Store", "\.env", "\.env\.local"/);
   assert.doesNotMatch(buildKit, /version: "0\.7/);
 });
 
