@@ -132,6 +132,27 @@ test("Squidward keeps the approved eye overlay and facial rig while sharing the 
   }
 });
 
+test("Mario preserves the source's inch-scale unit without clipping the full-body skin", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const mario = catalog.packs.find((pack) => pack.id === "mario");
+  assert.ok(mario);
+  assert.equal(mario.scale, 0.02);
+  assert.equal(mario.motionProfile.rootBone, "joint1");
+  assert.deepEqual(mario.motionProfile.feet, { left: "joint6", right: "joint10" });
+  const model = await readFile(path.join(root, mario.model), "utf8");
+  assert.match(model, /<unit name="inch" meter="0\.0254"\/>/);
+  for (const texture of [
+    "mariobodyfixred_nrm.png",
+    "mariobodyfix_alb.png",
+    "marioeye_alb.png",
+    "marioface_alb.png",
+    "mariohandnew_alb.png",
+    "marioshoes_alb.png",
+  ]) {
+    assert.match(model, new RegExp(`<init_from>\\./${texture}</init_from>`));
+  }
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -144,9 +165,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 6);
+  assert.equal(audit.acceptedNew.length, 7);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 41);
+  assert.equal(audit.rejected.length, 40);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

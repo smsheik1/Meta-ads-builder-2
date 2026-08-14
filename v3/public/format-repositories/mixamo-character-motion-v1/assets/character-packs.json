@@ -870,6 +870,99 @@
         ]
       },
       "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip"
+    },
+    {
+      "id": "mario",
+      "label": "Mario",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/mario/Mario.dae",
+      "scale": 0.02,
+      "transparentTextures": [
+        "marioeye_alb.png",
+        "mariohandnew_alb.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 20,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "joint1",
+        "feet": {
+          "left": "joint6",
+          "right": "joint10"
+        },
+        "legChains": {
+          "left": [
+            "joint3",
+            "joint4",
+            "joint5"
+          ],
+          "right": [
+            "joint7",
+            "joint8",
+            "joint9"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "joint1": "mixamorig_Hips",
+          "joint11": "mixamorig_Spine",
+          "joint12": "mixamorig_Spine2",
+          "joint13": "mixamorig_Head",
+          "joint14": "mixamorig_LeftShoulder",
+          "joint15": "mixamorig_LeftArm",
+          "joint16": "mixamorig_LeftForeArm",
+          "joint17": "mixamorig_LeftHand",
+          "joint18": "mixamorig_RightShoulder",
+          "joint19": "mixamorig_RightArm",
+          "joint20": "mixamorig_RightForeArm",
+          "joint21": "mixamorig_RightHand",
+          "joint3": "mixamorig_LeftUpLeg",
+          "joint4": "mixamorig_LeftLeg",
+          "joint5": "mixamorig_LeftFoot",
+          "joint6": "mixamorig_LeftToeBase",
+          "joint7": "mixamorig_RightUpLeg",
+          "joint8": "mixamorig_RightLeg",
+          "joint9": "mixamorig_RightFoot",
+          "joint10": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "joint2",
+          "joint25",
+          "joint26",
+          "joint27",
+          "joint28",
+          "joint29",
+          "joint30",
+          "joint31",
+          "joint32",
+          "joint33",
+          "joint22",
+          "joint23",
+          "joint24",
+          "joint34",
+          "joint35",
+          "joint36",
+          "joint37",
+          "joint38",
+          "joint39",
+          "joint40",
+          "joint41",
+          "joint42",
+          "joint43",
+          "joint44",
+          "joint45",
+          "joint46",
+          "joint47"
+        ]
+      },
+      "sourceArchive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip"
     }
   ]
 }

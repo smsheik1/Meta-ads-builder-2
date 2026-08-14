@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 6,
-    "acceptedNewCharacters": 6,
-    "rejectedArchives": 41,
-    "finalMotionReadyCharacters": 10
+    "acceptedNewArchives": 7,
+    "acceptedNewCharacters": 7,
+    "rejectedArchives": 40,
+    "finalMotionReadyCharacters": 11
   },
   "acceptedNew": [
     {
@@ -65,6 +65,15 @@
         "evidence/character-imports/squidward-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded character with readable motion on two dances after restoring the approved eye texture and transparent eye material assignments."
+    },
+    {
+      "archive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip",
+      "characterIds": ["mario"],
+      "proof": [
+        "evidence/character-imports/mario-silly-dancing.png",
+        "evidence/character-imports/mario-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after normalizing the source's inch-scale Collada rig declaratively."
     }
   ],
   "alreadyIncluded": [
@@ -255,11 +264,6 @@
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip",
       "reasonCode": "collapsed-motion",
       "reason": "The body collapses into the head/face and never becomes a complete dancing silhouette."
-    },
-    {
-      "archive": "Wii U - Super Mario 3D World - Playable Characters - Mario.zip",
-      "reasonCode": "clipped-skin",
-      "reason": "The full-body skin is massively oversized and clipped; only the torso and legs remain visible."
     },
     {
       "archive": "Xbox - Shrek - Playable Characters - Shrek.zip",
