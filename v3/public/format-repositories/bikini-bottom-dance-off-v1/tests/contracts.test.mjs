@@ -65,6 +65,70 @@ test("the existing manifests expose all motion-ready characters without inventin
   );
 });
 
+test("the Fish voice audit covers the full motion roster without re-searching known voices", async () => {
+  const [catalog, audit, auditText] = await Promise.all([
+    readJson("../mixamo-character-motion-v1/assets/character-packs.json"),
+    readJson("assets/voice-discovery-audit.json"),
+    readFile(new URL("assets/voice-discovery-audit.json", root), "utf8"),
+  ]);
+  const rosterIds = catalog.packs.map((character) => character.id).sort();
+  const skippedIds = audit.roster.skippedExistingVoices.map((voice) => voice.characterId);
+  const reviewedIds = audit.reviews.flatMap((review) => review.characterIds);
+  assert.equal(audit.roster.motionReadyCharacters, 22);
+  assert.equal(audit.roster.searchedVoiceIdentities, 15);
+  assert.equal(audit.roster.searchedCharacterIds, 16);
+  assert.deepEqual([...skippedIds, ...reviewedIds].sort(), rosterIds);
+  assert.equal(new Set([...skippedIds, ...reviewedIds]).size, rosterIds.length);
+  assert.deepEqual(skippedIds.sort(), [
+    "mr-krabs",
+    "patrick",
+    "sandy",
+    "spongebob",
+    "squidward",
+    "squilliam",
+  ]);
+
+  const noMatches = audit.reviews.filter((review) => review.classification === "no-credible-match");
+  const singleMatches = audit.reviews.filter(
+    (review) => review.classification === "single-credible-candidate",
+  );
+  const multipleMatches = audit.reviews.filter(
+    (review) => review.classification === "multiple-credible-candidates",
+  );
+  assert.equal(noMatches.length, 3);
+  assert.equal(singleMatches.length, 2);
+  assert.equal(multipleMatches.length, 10);
+  for (const review of noMatches) {
+    assert.equal(review.candidates.length, 0);
+    assert.equal(review.selectedReferenceId, null);
+  }
+  for (const review of singleMatches) {
+    assert.equal(review.candidates.length, 1);
+    assert.equal(review.selectedReferenceId, review.candidates[0].referenceId);
+  }
+  for (const review of multipleMatches) {
+    assert.ok(review.candidates.length >= 2);
+    assert.equal(review.selectedReferenceId, null);
+    assert.ok(review.candidates.some(
+      (candidate) => candidate.referenceId === review.recommendedReferenceId,
+    ));
+  }
+  for (const candidate of audit.reviews.flatMap((review) => review.candidates)) {
+    assert.match(candidate.referenceId, /^[0-9a-f]{32}$/);
+    if (candidate.sampleUrl) {
+      assert.match(candidate.sampleUrl, /^https:\/\/platform\.r2\.fish\.audio\//);
+    }
+  }
+  assert.deepEqual(audit.roster.knownFutureVoices, [{
+    characterId: "spider-man",
+    rosterStatus: "not-yet-motion-ready",
+    referenceId: "c9c0183c624d4b85a1345bc2ec4a10bf",
+    source: "user-supplied",
+  }]);
+  assert.doesNotMatch(auditText, /Bearer\s+/);
+  assert.equal(audit.policy.credentialStoredInAudit, false);
+});
+
 test("a second proof input replaces every solo and finale without runtime changes", async () => {
   const original = await readJson("fixtures/smoke/input.json");
   const alternate = await readJson("fixtures/alternate/input.json");

@@ -1,0 +1,609 @@
+{
+  "schemaVersion": 1,
+  "provider": "Fish Audio",
+  "endpoint": "GET https://api.fish.audio/model",
+  "queriedAt": "2026-08-14T15:52:38.417Z",
+  "status": "awaiting-user-selection",
+  "policy": {
+    "searchOnly": true,
+    "ttsGenerated": false,
+    "credentialSource": "secrets.env",
+    "credentialStoredInAudit": false,
+    "selectionRule": "A single credible match may be queued for approval. Multiple credible matches must remain unselected until the user chooses."
+  },
+  "evidence": {
+    "rawSearchPath": "agent-runs/voice-discovery/raw-fish-model-search.json",
+    "rawSearchPackaged": false,
+    "curationRule": "Keep trained English TTS models whose title is an exact character, canonical actor, or source-franchise match. Discard unrelated fuzzy title matches."
+  },
+  "roster": {
+    "motionReadyCharacters": 22,
+    "skippedExistingVoices": [
+      {
+        "characterId": "spongebob",
+        "referenceId": "9845e056f37b470d9a1005e41c864e25"
+      },
+      {
+        "characterId": "patrick",
+        "referenceId": "d1520b60870b4e9aa01eab5bfefb1c45"
+      },
+      {
+        "characterId": "mr-krabs",
+        "referenceId": "394d3112f0da41049c42177f3ca31c5a"
+      },
+      {
+        "characterId": "squilliam",
+        "referenceId": "f12d545dcc1149bab3b68bba84822a1e"
+      },
+      {
+        "characterId": "squidward",
+        "referenceId": "1b28ff723a204fe08c26d8695f796b84"
+      },
+      {
+        "characterId": "sandy",
+        "referenceId": "783d32b03d0c4ff28dd66455364d8665"
+      }
+    ],
+    "searchedVoiceIdentities": 15,
+    "searchedCharacterIds": 16,
+    "knownFutureVoices": [
+      {
+        "characterId": "spider-man",
+        "rosterStatus": "not-yet-motion-ready",
+        "referenceId": "c9c0183c624d4b85a1345bc2ec4a10bf",
+        "source": "user-supplied"
+      }
+    ]
+  },
+  "summary": {
+    "noCredibleMatch": 3,
+    "singleCredibleCandidate": 2,
+    "multipleCredibleCandidates": 10
+  },
+  "reviews": [
+    {
+      "characterIds": [
+        "sonic-modern"
+      ],
+      "label": "Sonic the Hedgehog (Modern)",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "48484faae07e4cfdb8064da770ee461e",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Sonic the Hedgehog",
+          "total": 113
+        },
+        {
+          "title": "Modern Sonic",
+          "total": 1
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "48484faae07e4cfdb8064da770ee461e",
+          "title": "Sonic The Hedgehog [Roger Craig Smith]",
+          "taskCount": 58661,
+          "likeCount": 398,
+          "sampleUrl": "https://platform.r2.fish.audio/task/22301c1a94ab419c8e46ffba43ea7c3f.mp3"
+        },
+        {
+          "referenceId": "00269ec592514981af298501487acc87",
+          "title": "Sonic The Hedgehog (Jason Griffith)",
+          "taskCount": 21782,
+          "likeCount": 69,
+          "sampleUrl": null
+        },
+        {
+          "referenceId": "819bef35f241425291167f5ee794151c",
+          "title": "Sonic the Hedgehog (Ryan Drummond)",
+          "taskCount": 12471,
+          "likeCount": 58,
+          "sampleUrl": "https://platform.r2.fish.audio/task/4b055e5669d6450eb0fbf43bd7793446.mp3"
+        },
+        {
+          "referenceId": "2f7286dbb3c649608aaed7a5e10b0ac5",
+          "title": "Sonic The Hedgehog (Ben Schwartz)",
+          "taskCount": 5674,
+          "likeCount": 41,
+          "sampleUrl": "https://platform.r2.fish.audio/task/6922cd756e894070b13b4289ddedc34d.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "flynn-rider"
+      ],
+      "label": "Flynn Rider",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "0aa597fdaa8e4362a8a6dc5786e580f5",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Flynn Rider",
+          "total": 18
+        },
+        {
+          "title": "Eugene Fitzherbert",
+          "total": 1
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "0aa597fdaa8e4362a8a6dc5786e580f5",
+          "title": "Flynn Rider",
+          "taskCount": 741,
+          "likeCount": 25,
+          "sampleUrl": "https://platform.r2.fish.audio/task/8c24b518c8394644bb2be885cea13c39.mp3"
+        },
+        {
+          "referenceId": "66fd44b6a23e49c782cc0ecf8fdd2a59",
+          "title": "Flynn Rider",
+          "taskCount": 317,
+          "likeCount": 1,
+          "sampleUrl": "https://platform.r2.fish.audio/task/66d711e0366a4196a90c7b996638443c.mp3"
+        },
+        {
+          "referenceId": "7a8d9440b3544a8d9c15bafe51896ea2",
+          "title": "flynn rider",
+          "taskCount": 3,
+          "likeCount": 1,
+          "sampleUrl": "https://platform.r2.fish.audio/task/d2f87f32f5bd4ac794ea21d39a01ae62.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "kermit-pirate",
+        "kermit-sci-fi"
+      ],
+      "label": "Kermit the Frog",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "cfb8ad89d53f41439dcf7858a9d7e0ed",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Kermit the Frog",
+          "total": 8
+        },
+        {
+          "title": "Kermit",
+          "total": 23
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "e4ab98de928a4791a8613f102caae78a",
+          "title": "Kermit The Frog",
+          "taskCount": 8255,
+          "likeCount": 16,
+          "sampleUrl": null
+        },
+        {
+          "referenceId": "cfb8ad89d53f41439dcf7858a9d7e0ed",
+          "title": "Kermit the Frog (Jim Henson)",
+          "taskCount": 5390,
+          "likeCount": 17,
+          "sampleUrl": "https://platform.r2.fish.audio/task/0a631c4e9b064bb9aac985bdd0a3aabd.mp3"
+        },
+        {
+          "referenceId": "849233e6c6e34f2392d47e97b522b4f3",
+          "title": "Kermit the Frog (Steve Whitmire)",
+          "taskCount": 1581,
+          "likeCount": 12,
+          "sampleUrl": "https://platform.r2.fish.audio/task/6abac44e0c19428cbff43aa4731d29a3.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "agent-p"
+      ],
+      "label": "Agent P / Perry the Platypus",
+      "classification": "no-credible-match",
+      "recommendedReferenceId": null,
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Perry the Platypus",
+          "total": 0
+        },
+        {
+          "title": "Agent P",
+          "total": 0
+        }
+      ],
+      "candidates": []
+    },
+    {
+      "characterIds": [
+        "mario"
+      ],
+      "label": "Mario",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "fd57e7b005664c41bad23e9ea0c56593",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Super Mario",
+          "total": 109
+        },
+        {
+          "title": "Mario",
+          "total": 200
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "fd57e7b005664c41bad23e9ea0c56593",
+          "title": "Mario (Super Mario Bros Wonder)",
+          "taskCount": 20435,
+          "likeCount": 88,
+          "sampleUrl": "https://platform.r2.fish.audio/task/7a898c96d8624b8398c00517b08b36d9.mp3"
+        },
+        {
+          "referenceId": "62f38c5c4fde472bac1145cc7c063b00",
+          "title": "Mario",
+          "taskCount": 18878,
+          "likeCount": 37,
+          "sampleUrl": "https://platform.r2.fish.audio/task/559ef98b94c34830bd4d59ab60457f6f.mp3"
+        },
+        {
+          "referenceId": "f9f460f0347b47039b4dcba199f745f9",
+          "title": "Mario",
+          "taskCount": 16373,
+          "likeCount": 72,
+          "sampleUrl": "https://platform.r2.fish.audio/task/8fa517a6e5bf40e59969582c6a72034c.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "olaf"
+      ],
+      "label": "Olaf",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "9008533e334c4452839ab9df2fe5a078",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Olaf Frozen",
+          "total": 5
+        },
+        {
+          "title": "Olaf",
+          "total": 79
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "9008533e334c4452839ab9df2fe5a078",
+          "title": "Olaf",
+          "taskCount": 1197,
+          "likeCount": 11,
+          "sampleUrl": "https://platform.r2.fish.audio/task/3f8cea37f03545d69897d479e291e703.mp3"
+        },
+        {
+          "referenceId": "b45047aa7185475181fdae3152ebc874",
+          "title": "Olaf",
+          "taskCount": 581,
+          "likeCount": 7,
+          "sampleUrl": "https://platform.r2.fish.audio/task/77daf605dd3e46eaa9d26b2d333f490f.mp3"
+        },
+        {
+          "referenceId": "5cafbdaf67424a5d9f85495530124be0",
+          "title": "Olaf",
+          "taskCount": 467,
+          "likeCount": 10,
+          "sampleUrl": "https://platform.r2.fish.audio/task/2903beb41da842d18ade3df73a4396b8.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "aqua"
+      ],
+      "label": "Aqua (Kingdom Hearts)",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "3a02fca4b4a44eb4875dc9439e35decc",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Aqua Kingdom Hearts",
+          "total": 0
+        },
+        {
+          "title": "Aqua KH",
+          "total": 3
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "3a02fca4b4a44eb4875dc9439e35decc",
+          "title": "Aqua kh",
+          "taskCount": 115,
+          "likeCount": 0,
+          "sampleUrl": "https://platform.r2.fish.audio/task/dbe6bb61b74448199aef5e62d6758e99.mp3"
+        },
+        {
+          "referenceId": "3fbcf051cbc34683be03d2068e3a55c3",
+          "title": "Aqua kh",
+          "taskCount": 14,
+          "likeCount": 0,
+          "sampleUrl": "https://platform.r2.fish.audio/tasks/2026-08-08/1b2caefa44b7434b85d8fe0bcd2bc095.mp3"
+        },
+        {
+          "referenceId": "77756298a6de45f687ebea1f7eb86786",
+          "title": "Aqua kh",
+          "taskCount": 2,
+          "likeCount": 0,
+          "sampleUrl": "https://platform.r2.fish.audio/tasks/2026-08-08/1710280206d742c2a3df739755e607bd.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "ratchet"
+      ],
+      "label": "Ratchet",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "a0627a3a4ae44f36b75d021415d890bf",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Ratchet and Clank",
+          "total": 1
+        },
+        {
+          "title": "Ratchet",
+          "total": 11
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "a0627a3a4ae44f36b75d021415d890bf",
+          "title": "Ratchet",
+          "taskCount": 151,
+          "likeCount": 4,
+          "sampleUrl": "https://platform.r2.fish.audio/task/efb3d03261d747b19ac200768ea19d6a.mp3"
+        },
+        {
+          "referenceId": "ee5055c64db7407382927218cab3a9a9",
+          "title": "Ratchet Lombax",
+          "taskCount": 129,
+          "likeCount": 2,
+          "sampleUrl": "https://platform.r2.fish.audio/task/c24dd9f4a8844f0ea4e614c507726002.mp3"
+        },
+        {
+          "referenceId": "8e2014bfd1c348b2a2d6b339ca4ebbcf",
+          "title": "Ratchet voice Ratchet and clank",
+          "taskCount": 67,
+          "likeCount": 1,
+          "sampleUrl": "https://platform.r2.fish.audio/task/8239b2782a5b41e0902607fe7e418087.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "larry"
+      ],
+      "label": "Larry the Lobster",
+      "classification": "single-credible-candidate",
+      "recommendedReferenceId": "a855ea4217f546c7a31fc578e52a29e8",
+      "selectedReferenceId": "a855ea4217f546c7a31fc578e52a29e8",
+      "queries": [
+        {
+          "title": "Larry the Lobster",
+          "total": 1
+        },
+        {
+          "title": "Larry Lobster SpongeBob",
+          "total": 0
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "a855ea4217f546c7a31fc578e52a29e8",
+          "title": "Larry the Lobster",
+          "taskCount": 185,
+          "likeCount": 2,
+          "sampleUrl": "https://platform.r2.fish.audio/task/eb4ec85a63d04bb08009d9bc824210cd.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "man-ray"
+      ],
+      "label": "Man Ray",
+      "classification": "no-credible-match",
+      "recommendedReferenceId": null,
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Man Ray SpongeBob",
+          "total": 0
+        },
+        {
+          "title": "Manray SpongeBob",
+          "total": 0
+        }
+      ],
+      "candidates": []
+    },
+    {
+      "characterIds": [
+        "batman-animated"
+      ],
+      "label": "Batman (Animated Series)",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "e93a33eeed72468192dc41db870d4e42",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Batman Animated Series",
+          "total": 4
+        },
+        {
+          "title": "Kevin Conroy Batman",
+          "total": 3
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "e93a33eeed72468192dc41db870d4e42",
+          "title": "Kevin Conroy Batman",
+          "taskCount": 4195,
+          "likeCount": 31,
+          "sampleUrl": "https://platform.r2.fish.audio/task/9ff248fddb8b454aa9e4cf891a77300d.mp3"
+        },
+        {
+          "referenceId": "ef549174cea246468ce32b00afa6affa",
+          "title": "Batman animated series",
+          "taskCount": 2269,
+          "likeCount": 30,
+          "sampleUrl": "https://platform.r2.fish.audio/task/b486419675fb44b49704279e3772035f.mp3"
+        },
+        {
+          "referenceId": "31c2eca89c174c5f8dca29efa49ae922",
+          "title": "Batman [Kevin Conroy]",
+          "taskCount": 1516,
+          "likeCount": 7,
+          "sampleUrl": "https://platform.r2.fish.audio/task/84a911bc408942dd839a2080402fb8e1.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "batman-beyond"
+      ],
+      "label": "Batman Beyond / Terry McGinnis",
+      "classification": "no-credible-match",
+      "recommendedReferenceId": null,
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Batman Beyond",
+          "total": 0
+        },
+        {
+          "title": "Terry McGinnis",
+          "total": 0
+        }
+      ],
+      "candidates": []
+    },
+    {
+      "characterIds": [
+        "dr-doofenshmirtz"
+      ],
+      "label": "Dr. Doofenshmirtz",
+      "classification": "single-credible-candidate",
+      "recommendedReferenceId": "542ae2f776d64d53bae3e9722dc489fc",
+      "selectedReferenceId": "542ae2f776d64d53bae3e9722dc489fc",
+      "queries": [
+        {
+          "title": "Dr Doofenshmirtz",
+          "total": 4
+        },
+        {
+          "title": "Heinz Doofenshmirtz",
+          "total": 14
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "542ae2f776d64d53bae3e9722dc489fc",
+          "title": "Dr. Heinz Doofenshmirtz",
+          "taskCount": 3379,
+          "likeCount": 12,
+          "sampleUrl": "https://platform.r2.fish.audio/task/c7b4e93226cf455aa2ee3e8627fadd3b.wav"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "ferb"
+      ],
+      "label": "Ferb Fletcher",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "e074ae7e1e2046f192d2fb7374943fab",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Ferb Fletcher",
+          "total": 1
+        },
+        {
+          "title": "Ferb",
+          "total": 44
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "e074ae7e1e2046f192d2fb7374943fab",
+          "title": "Ferb",
+          "taskCount": 606,
+          "likeCount": 7,
+          "sampleUrl": "https://platform.r2.fish.audio/task/63fba224f8374e7fbec67ad9a226a17b.mp3"
+        },
+        {
+          "referenceId": "7b4726c3d9734ce78dd5dabda2360b7a",
+          "title": "Ferb Fletcher",
+          "taskCount": 70,
+          "likeCount": 2,
+          "sampleUrl": "https://platform.r2.fish.audio/task/b39ea32f7bd64088946e0b3827b896fc.mp3"
+        },
+        {
+          "referenceId": "d65ea80260b24a878995c87aefeb1684",
+          "title": "Ferb",
+          "taskCount": 61,
+          "likeCount": 2,
+          "sampleUrl": "https://platform.r2.fish.audio/task/93dcfad2e51346d18c4769c662fbf7f3.mp3"
+        }
+      ]
+    },
+    {
+      "characterIds": [
+        "phineas"
+      ],
+      "label": "Phineas Flynn",
+      "classification": "multiple-credible-candidates",
+      "recommendedReferenceId": "d3f9d85f2dd34ba0b72ed9d35f5d6b62",
+      "selectedReferenceId": null,
+      "queries": [
+        {
+          "title": "Phineas Flynn",
+          "total": 10
+        },
+        {
+          "title": "Phineas",
+          "total": 61
+        }
+      ],
+      "candidates": [
+        {
+          "referenceId": "d3f9d85f2dd34ba0b72ed9d35f5d6b62",
+          "title": "Phineas Flynn",
+          "taskCount": 1919,
+          "likeCount": 16,
+          "sampleUrl": "https://platform.r2.fish.audio/task/5828160b842a4972a11a4055a417b753.mp3"
+        },
+        {
+          "referenceId": "b6c7dbc62a824648957cfe1c4d5da8cd",
+          "title": "Phineas",
+          "taskCount": 1551,
+          "likeCount": 8,
+          "sampleUrl": "https://platform.r2.fish.audio/task/aa4e188491d44deea79ec59578cd6455.mp3"
+        },
+        {
+          "referenceId": "26ae9623356643798a4584bd54fe563a",
+          "title": "Phineas Flynn Fletcher",
+          "taskCount": 864,
+          "likeCount": 14,
+          "sampleUrl": "https://platform.r2.fish.audio/task/5385eee69aa14d83a962280d77c9d15c.mp3"
+        }
+      ]
+    }
+  ]
+}
