@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 10,
-    "acceptedNewCharacters": 10,
-    "rejectedArchives": 37,
-    "finalMotionReadyCharacters": 14
+    "acceptedNewArchives": 11,
+    "acceptedNewCharacters": 11,
+    "rejectedArchives": 36,
+    "finalMotionReadyCharacters": 15
   },
   "acceptedNew": [
     {
@@ -101,6 +101,15 @@
         "evidence/character-imports/aqua-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded character with readable motion on two dances after a one-time offline conversion of the supplied skinned glTF into the existing Collada contract; no second runtime loader or dependency was added."
+    },
+    {
+      "archive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip",
+      "characterIds": ["ratchet"],
+      "proof": [
+        "evidence/character-imports/ratchet-silly-dancing.png",
+        "evidence/character-imports/ratchet-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after identifying the anonymous J0-style skeleton from its hierarchy and skin-influence locations; face, ears, fingers, and tail remain protected."
     }
   ],
   "alreadyIncluded": [
@@ -241,11 +250,6 @@
       "archive": "PlayStation 2 - Scooby-Doo! Night of 100 Frights - The Gang - Velma Dinkley.zip",
       "reasonCode": "static-only",
       "reason": "No skinned armature or rigged model was present."
-    },
-    {
-      "archive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned rig exposes only Skel0-style anonymous joints, so a safe anatomical motion map cannot be verified."
     },
     {
       "archive": "PlayStation 4 - Kingdom Hearts III - Link Summons - Stitch.zip",
