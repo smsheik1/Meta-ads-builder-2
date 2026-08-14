@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 11,
-    "acceptedNewCharacters": 11,
-    "rejectedArchives": 36,
-    "finalMotionReadyCharacters": 15
+    "acceptedNewArchives": 12,
+    "acceptedNewCharacters": 12,
+    "rejectedArchives": 35,
+    "finalMotionReadyCharacters": 16
   },
   "acceptedNew": [
     {
@@ -110,6 +110,15 @@
         "evidence/character-imports/ratchet-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded character with readable motion on two dances after identifying the anonymous J0-style skeleton from its hierarchy and skin-influence locations; face, ears, fingers, and tail remain protected."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip",
+      "characterIds": ["larry"],
+      "proof": [
+        "evidence/character-imports/larry-silly-dancing.png",
+        "evidence/character-imports/larry-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable motion on two dances after identifying the anonymous Dummy skeleton from hierarchy and single-weight skin regions, correcting the omitted source unit, and preserving face, eye-stalk, and tail bones."
     }
   ],
   "alreadyIncluded": [
@@ -140,11 +149,6 @@
       "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Gary.zip",
       "reasonCode": "static-only",
       "reason": "No skinned armature or rigged model was present."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned Collada rig exposes only anonymous Dummy/Object joint names, so a safe anatomical motion map cannot be verified."
     },
     {
       "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",

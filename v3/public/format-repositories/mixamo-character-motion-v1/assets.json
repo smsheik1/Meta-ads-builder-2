@@ -74,6 +74,8 @@
     {"path": "assets/characters/ratchet/416.png", "role": "transparent Ratchet character texture"},
     {"path": "assets/characters/ratchet/417.png", "role": "transparent Ratchet character texture"},
     {"path": "assets/characters/ratchet/418.png", "role": "transparent Ratchet character texture"},
+    {"path": "assets/characters/larry/chr_larry_bindpose.dae", "role": "verified Larry the Lobster character model with declaratively mapped anonymous skeleton"},
+    {"path": "assets/characters/larry/tex_0000_larry.png", "role": "transparent Larry character texture"},
     {"path": "evidence/character-imports/sonic-modern-silly-dancing.png", "role": "Sonic individual visual proof"},
     {"path": "evidence/character-imports/sonic-modern-macarena-dance.png", "role": "Sonic second-motion visual proof"},
     {"path": "evidence/character-imports/flynn-rider-silly-dancing.png", "role": "Flynn individual visual proof"},
@@ -95,7 +97,9 @@
     {"path": "evidence/character-imports/aqua-silly-dancing.png", "role": "Aqua individual visual proof"},
     {"path": "evidence/character-imports/aqua-macarena-dance.png", "role": "Aqua second-motion visual proof"},
     {"path": "evidence/character-imports/ratchet-silly-dancing.png", "role": "Ratchet individual visual proof"},
-    {"path": "evidence/character-imports/ratchet-macarena-dance.png", "role": "Ratchet second-motion visual proof"}
+    {"path": "evidence/character-imports/ratchet-macarena-dance.png", "role": "Ratchet second-motion visual proof"},
+    {"path": "evidence/character-imports/larry-silly-dancing.png", "role": "Larry individual visual proof"},
+    {"path": "evidence/character-imports/larry-macarena-dance.png", "role": "Larry second-motion visual proof"}
   ],
   "generated": ["newly imported normalized Mixamo motion JSON", "downloaded MP4", "downloaded looping GIF", "motion report", "contact sheet", "quality report", "lab smoke screenshot"],
   "sourceNotes": "Character assets come from user-provided game archives. The 51-archive import audit records accepted, already-included, and rejected sources without redistributing rejected archives. Motion JSON files are locally normalized from user-downloaded Mixamo Collada clips; source DAE files are not packaged. The Fish News background is an exact packaged copy of public/talking-fish-news-assets/underwater-studio-background.png."

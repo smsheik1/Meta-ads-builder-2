@@ -211,6 +211,25 @@ test("Ratchet keeps the verified anonymous-joint anatomy map and protected autho
   }
 });
 
+test("Larry keeps the verified unusual-anatomy map, source-unit correction, and authored face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const larry = catalog.packs.find((pack) => pack.id === "larry");
+  assert.ok(larry);
+  assert.equal(larry.scale, 0.18);
+  assert.equal(larry.yaw, 3.1415926536);
+  assert.equal(larry.motionProfile.rootBone, "Dummy010");
+  assert.deepEqual(larry.motionProfile.feet, { left: "Dummy043", right: "Dummy046" });
+  assert.equal(Object.keys(larry.motionProfile.boneMap).length, 27);
+  assert.equal(larry.motionProfile.boneMap.Dummy020, "mixamorig_LeftHandMiddle3");
+  assert.equal(larry.motionProfile.boneMap.Dummy027, "mixamorig_RightHandMiddle3");
+  for (const bone of ["Dummy034", "Dummy036", "Dummy029", "Dummy009", "Dummy040", "Object001"]) {
+    assert.ok(larry.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  const model = await readFile(path.join(root, larry.model), "utf8");
+  assert.match(model, /<init_from>tex_0000_larry\.png<\/init_from>/);
+  assert.doesNotMatch(model, /file:\/\//);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -223,9 +242,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 11);
+  assert.equal(audit.acceptedNew.length, 12);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 36);
+  assert.equal(audit.rejected.length, 35);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

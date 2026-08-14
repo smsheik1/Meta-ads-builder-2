@@ -1431,6 +1431,93 @@
         ]
       },
       "sourceArchive": "PlayStation 3 - Ratchet & Clank (HD) - Characters - Ratchet.zip"
+    },
+    {
+      "id": "larry",
+      "label": "Larry the Lobster",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/larry/chr_larry_bindpose.dae",
+      "scale": 0.18,
+      "yaw": 3.1415926536,
+      "transparentTextures": [
+        "tex_0000_larry.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 27,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Dummy010",
+        "feet": {
+          "left": "Dummy043",
+          "right": "Dummy046"
+        },
+        "legChains": {
+          "left": [
+            "Dummy008",
+            "Dummy041",
+            "Dummy042"
+          ],
+          "right": [
+            "Dummy007",
+            "Dummy044",
+            "Dummy045"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Dummy010": "mixamorig_Hips",
+          "Dummy011": "mixamorig_Spine2",
+          "Dummy028": "mixamorig_Head",
+          "Dummy013": "mixamorig_LeftShoulder",
+          "Dummy014": "mixamorig_LeftArm",
+          "Dummy015": "mixamorig_LeftForeArm",
+          "Dummy016": "mixamorig_LeftHand",
+          "Dummy017": "mixamorig_LeftHandMiddle1",
+          "Dummy018": "mixamorig_LeftHandMiddle2",
+          "Dummy020": "mixamorig_LeftHandMiddle3",
+          "Dummy019": "mixamorig_LeftHandThumb1",
+          "Dummy012": "mixamorig_RightShoulder",
+          "Dummy021": "mixamorig_RightArm",
+          "Dummy022": "mixamorig_RightForeArm",
+          "Dummy023": "mixamorig_RightHand",
+          "Dummy024": "mixamorig_RightHandMiddle1",
+          "Dummy025": "mixamorig_RightHandMiddle2",
+          "Dummy027": "mixamorig_RightHandMiddle3",
+          "Dummy026": "mixamorig_RightHandThumb1",
+          "Dummy008": "mixamorig_LeftUpLeg",
+          "Dummy041": "mixamorig_LeftLeg",
+          "Dummy042": "mixamorig_LeftFoot",
+          "Dummy043": "mixamorig_LeftToeBase",
+          "Dummy007": "mixamorig_RightUpLeg",
+          "Dummy044": "mixamorig_RightLeg",
+          "Dummy045": "mixamorig_RightFoot",
+          "Dummy046": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Dummy034",
+          "Dummy035",
+          "Dummy033",
+          "Dummy036",
+          "Dummy032",
+          "Dummy037",
+          "Dummy031",
+          "Dummy038",
+          "Dummy030",
+          "Dummy029",
+          "Dummy009",
+          "Dummy039",
+          "Dummy040",
+          "Object001"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip"
     }
   ]
 }
