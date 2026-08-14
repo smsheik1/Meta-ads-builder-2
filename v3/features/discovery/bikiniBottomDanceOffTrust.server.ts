@@ -53,6 +53,10 @@ type CharacterManifest = {
   }>;
 };
 
+type VoiceManifest = {
+  voices: Array<{ characterId: string }>;
+};
+
 type RenderReport = {
   timeline: {
     rounds: Array<{ danceStart: number }>;
@@ -87,13 +91,16 @@ type RequirementsContract = {
 export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
   stats: {
     motions: number;
+    motionReadyCharacters: number;
+    voiceReadyCharacters: number;
   };
   includedAssets: {
     characters: Array<{
       id: string;
       label: string;
-      modelSrc: string;
+      modelSrc?: string;
       posterSrc: string;
+      voiceReady: boolean;
     }>;
     performerStage: {
       label: string;
@@ -143,6 +150,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     backgrounds,
     motions,
     characters,
+    voicePresets,
     packageManifest,
     requirements,
     renderReport,
@@ -159,6 +167,7 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     readJson<CharacterManifest>(
       path.join(motionRepoRoot, "assets/character-packs.json"),
     ),
+    readJson<VoiceManifest>(path.join(repoRoot, "assets/voice-presets.json")),
     readJson<PackageManifest>(path.join(repoRoot, "package.json")),
     readJson<RequirementsContract>(path.join(repoRoot, "requirements.json")),
     readJson<RenderReport>(
@@ -173,18 +182,39 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   const finale = renderReport.timeline.finale.start;
   const closing = renderReport.timeline.closingChorus.start;
   const replay = renderReport.timeline.loopBridge.start;
-  const characterOrder = ["spongebob", "patrick", "mr-krabs", "squilliam"];
-  const includedCharacters = characterOrder.map((id) => {
-    const character = characters.packs.find((pack) => pack.id === id);
-    if (!character) throw new Error(`Missing packaged character ${id}.`);
+  const interactivePreviewIds = new Set([
+    "spongebob",
+    "patrick",
+    "mr-krabs",
+    "squilliam",
+  ]);
+  const voiceReadyIds = new Set(
+    voicePresets.voices.map((voice) => voice.characterId),
+  );
+  const characterOrder = [
+    "spongebob",
+    "patrick",
+    "mr-krabs",
+    "squilliam",
+    "sonic-modern",
+    "flynn-rider",
+    "kermit-pirate",
+    "kermit-sci-fi",
+  ];
+  const includedCharacters = characterOrder.map((characterId) => {
+    const character = characters.packs.find((pack) => pack.id === characterId);
+    if (!character) throw new Error(`Missing packaged character ${characterId}.`);
     if (character.status !== "motion-ready") {
-      throw new Error(`Packaged character ${id} is not motion-ready.`);
+      throw new Error(`Packaged character ${characterId} is not motion-ready.`);
     }
     return {
       id: character.id,
       label: character.label,
-      modelSrc: `${characterPreviewRoot}/${id}.glb`,
-      posterSrc: `${characterPreviewRoot}/${id}.png`,
+      ...(interactivePreviewIds.has(character.id)
+        ? { modelSrc: `${characterPreviewRoot}/${character.id}.glb` }
+        : {}),
+      posterSrc: `${characterPreviewRoot}/${character.id}.png`,
+      voiceReady: voiceReadyIds.has(character.id),
     };
   });
   const sampleMotionIds = new Set([
@@ -273,6 +303,8 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
     },
     stats: {
       motions: motions.motions.length,
+      motionReadyCharacters: includedCharacters.length,
+      voiceReadyCharacters: voiceReadyIds.size,
     },
     includedAssets: {
       characters: includedCharacters,
@@ -413,6 +445,10 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         { label: "Timeline engine", path: "runtime/timeline.mjs" },
         { label: "Background options", path: "assets/background-options.json" },
         { label: "Voice presets", path: "assets/voice-presets.json" },
+        {
+          label: "Character import audit",
+          path: "mixamo-character-motion-v1/assets/character-import-audit.json",
+        },
         {
           label: "Dance library",
           path: "mixamo-character-motion-v1/assets/motions/manifest.json",

@@ -2,7 +2,7 @@
 
 A 47-second 9:16 Format that turns one song excerpt and twelve user-selected motion assignments into a four-way character dance battle. The Reel opens on a silent-song 3–2–1 countdown over dimmed character panels, then alternates spoken character roasts with solos lasting at least five seconds: each incoming challenger taunts the dancer immediately before them and takes over. Captions use a dedicated lane below the character grid instead of covering the cast. All four return for a nine-second group showcase, then say the comment prompt together in time-matched voices while using their selected reaction motions. The closing vote prompt hands back to the matching dimmed-character countdown so the Reel loops without a visible cut.
 
-This Repo sequences character clips; it does not own another character renderer. SpongeBob, Patrick, Mr. Krabs, and Squilliam are rendered by the existing Character Dance Lab runtime, including its protected faces, grounding, and Squilliam paired-leg profile.
+This Repo sequences character clips; it does not own another character renderer. Its shared Character Dance Lab dependency now contains eight individually verified motion-ready characters: SpongeBob, Patrick, Mr. Krabs, Squilliam, Sonic (Modern), Flynn Rider, Kermit (Pirate), and Kermit (Sci-Fi). The complete spoken format remains restricted to the original four voice-ready characters until the separate voice-discovery goal is completed. The shared character catalog defines motion readiness; `assets/voice-presets.json` and the input contract define voice readiness.
 
 ```bash
 npm run check
@@ -42,7 +42,7 @@ See `EVALUATION-FRAMEWORK.md` for the protocol and primary research, and `CALIBR
 
 The supplied song is copied into the local run folder and remains untracked. It plays only during dance windows. Countdown gaps remain silent except for beeps; opening, taunts, and CTA contain Fish Audio dialogue with no song underneath. Generated voice clips are measured before the runtime divides the solo budget evenly among the four dancers; the group showcase then receives nine uninterrupted seconds from dedicated finale motions that are never clip-looped.
 
-Set `FISH_STUDIO_APIKEY` locally. The approved reference presets for SpongeBob, Patrick, Mr. Krabs, and Squilliam are packaged with the Format. Missing or stale dialogue requires explicit `--approve-provider`; accepted clips are cached with non-secret receipts in the ignored run folder.
+Set `FISH_STUDIO_APIKEY` locally. The approved reference presets for SpongeBob, Patrick, Mr. Krabs, and Squilliam are packaged with the Format. Sonic, Flynn, and both Kermit variants are dance-ready but not voice-ready, so the current input contract does not offer them for spoken episodes. Missing or stale dialogue requires explicit `--approve-provider`; accepted clips are cached with non-secret receipts in the ignored run folder.
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|

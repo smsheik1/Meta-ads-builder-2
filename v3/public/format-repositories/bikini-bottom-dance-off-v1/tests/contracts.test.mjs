@@ -44,6 +44,26 @@ test("the smoke roster uses every verified character once", async () => {
   assert.ok(input.characters.every((character) => character.reactionMotionId));
 });
 
+test("the existing manifests expose all motion-ready characters without inventing voices", async () => {
+  const [catalog, voices, audit, inputContract] = await Promise.all([
+    readJson("../mixamo-character-motion-v1/assets/character-packs.json"),
+    readJson("assets/voice-presets.json"),
+    readJson("../mixamo-character-motion-v1/assets/character-import-audit.json"),
+    readJson("input-contract.json"),
+  ]);
+  assert.equal(catalog.packs.length, 8);
+  assert.equal(voices.voices.length, 4);
+  assert.deepEqual(
+    inputContract.properties.characters.items.properties.characterId.enum.slice().sort(),
+    voices.voices.map((voice) => voice.characterId).sort(),
+  );
+  const voiceReadyIds = new Set(voices.voices.map((voice) => voice.characterId));
+  assert.deepEqual(
+    catalog.packs.filter((character) => !voiceReadyIds.has(character.id)).map((character) => character.id).sort(),
+    audit.acceptedNew.flatMap((entry) => entry.characterIds).sort(),
+  );
+});
+
 test("a second proof input replaces every solo and finale without runtime changes", async () => {
   const original = await readJson("fixtures/smoke/input.json");
   const alternate = await readJson("fixtures/alternate/input.json");

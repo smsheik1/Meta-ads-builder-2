@@ -1,17 +1,19 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.10.8`
+Format version: `0.11.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
 
-- The official character renderer and retargeter, four verified character profiles, 25 normalized starter motions, local motion import, the 9:16 compositor, four selectable outer backgrounds, the Fish News panel background, inspection, and delivery.
+- The official character renderer and retargeter, eight verified motion-ready character profiles, 25 normalized starter motions, local motion import, the 9:16 compositor, four selectable outer backgrounds, the Fish News panel background, inspection, and delivery. Four characters currently have approved voice presets; the four new dancers remain explicitly voice-pending.
 - The song, script, cast order, colors, outer background, and solo/finale/reaction assignments remain episode inputs.
 - Fish Audio is the only runtime provider and remains approval-gated. Mixamo is an operator-time source for local Collada import, not a runtime API.
 
 The machine-readable boundary is `content-boundary.json`.
 
 Version `0.10.8` retains all four user-approved Fish Audio voice references and the package-owned cross-agent entrypoint. It enlarges the four-character stage, removes the crop-like handoff flash, uses maximum-compatibility H.264 delivery settings, holds the complete winner CTA for more than five seconds, and gives the replay countdown enough screen time to register. It also counts only completed videos against the render-attempt budget, uses deterministic single-threaded H.264 encoding to prevent isolated transition-frame corruption, and packages the proof render report used by the public page. The finished-video proof below remains the archived `0.9.1` calibration proof and is labeled accordingly.
+
+Version `0.11.0` consumes the Character Dance Lab's 51-archive, one-character-at-a-time audit. Sonic (Modern), Flynn Rider, Kermit (Pirate), and Kermit (Sci-Fi) join the four existing characters as motion-ready assets after two individually reviewed dances each. The existing shared character catalog and Fish voice-preset manifest remain the two definitive status sources; complete spoken episodes remain limited to the four characters with approved Fish presets until the separate voice goal.
 
 ## Two independent format fixtures
 

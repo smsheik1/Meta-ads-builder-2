@@ -10,6 +10,10 @@ const characterAccent: Record<string, string> = {
   patrick: "#ff78bd",
   "mr-krabs": "#ff765b",
   squilliam: "#9cebd3",
+  "sonic-modern": "#4f8cff",
+  "flynn-rider": "#a6785b",
+  "kermit-pirate": "#56c86f",
+  "kermit-sci-fi": "#8be05f",
 };
 
 export function BikiniBottomDanceOffIncludedAssets({
@@ -49,7 +53,8 @@ export function BikiniBottomDanceOffIncludedAssets({
             </h2>
           </div>
           <p className="text-sm font-black min-[701px]:pb-1 min-[701px]:text-right">
-            {assets.characters.length} characters ·{" "}
+            {data.stats.motionReadyCharacters} motion-ready ·{" "}
+            {data.stats.voiceReadyCharacters} voice-ready ·{" "}
             {assets.backgrounds.length + 1} backgrounds · {data.stats.motions}{" "}
             dances
           </p>
@@ -58,12 +63,12 @@ export function BikiniBottomDanceOffIncludedAssets({
         <div className="mt-8 flex items-end justify-between gap-3">
           <h3 className="text-xl font-black">Character models</h3>
           <p className="text-sm font-bold text-[#667087]">
-            Drag to inspect in 3D
+            Original four: drag in 3D · New four: verified dance frames
           </p>
         </div>
         <div
           className="mt-3 grid gap-3 min-[430px]:grid-cols-2 min-[821px]:grid-cols-4"
-          aria-label="Four included character models"
+          aria-label="Included motion-ready character models"
         >
           {assets.characters.map((character) => (
             <article
@@ -72,19 +77,31 @@ export function BikiniBottomDanceOffIncludedAssets({
               style={{ borderTopColor: characterAccent[character.id] }}
             >
               <div className="relative aspect-[4/5] bg-white">
-                <DiscoveryCharacterModelViewer
-                  src={character.modelSrc}
-                  poster={character.posterSrc}
-                  alt={`${character.label} packaged interactive 3D character model`}
-                  characterId={character.id}
-                />
+                {character.modelSrc ? (
+                  <DiscoveryCharacterModelViewer
+                    src={character.modelSrc}
+                    poster={character.posterSrc}
+                    alt={`${character.label} packaged interactive 3D character model`}
+                    characterId={character.id}
+                  />
+                ) : (
+                  <Image
+                    src={character.posterSrc}
+                    alt={`${character.label} verified dance render`}
+                    fill
+                    sizes="(min-width: 821px) 230px, (min-width: 430px) 50vw, 100vw"
+                    className="object-contain"
+                  />
+                )}
               </div>
               <div className="border-t-2 border-[#080817] p-3.5">
                 <h4 className="text-lg font-black leading-tight">
                   {character.label}
                 </h4>
                 <p className="mt-1 text-xs font-bold text-[#667087]">
-                  3D model
+                  {character.voiceReady
+                    ? "Dance + voice ready"
+                    : "Dance-ready · voice pending"}
                 </p>
               </div>
             </article>
