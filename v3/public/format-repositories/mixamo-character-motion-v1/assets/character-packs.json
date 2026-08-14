@@ -1518,6 +1518,104 @@
         ]
       },
       "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Larry the Lobster.zip"
+    },
+    {
+      "id": "man-ray",
+      "label": "Man Ray",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/man-ray/csm_manray_bindpose.dae",
+      "scale": 0.18,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "tex_0000_man_ray_256.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 41,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Dummy003",
+        "feet": {
+          "left": "Dummy058",
+          "right": "Dummy054"
+        },
+        "legChains": {
+          "left": [
+            "Dummy049",
+            "Dummy056",
+            "Dummy057"
+          ],
+          "right": [
+            "Dummy050",
+            "Dummy052",
+            "Dummy053"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Dummy003": "mixamorig_Hips",
+          "Dummy005": "mixamorig_Spine",
+          "Dummy006": "mixamorig_Spine2",
+          "Dummy009": "mixamorig_Neck",
+          "Dummy010": "mixamorig_Head",
+          "Dummy007": "mixamorig_LeftShoulder",
+          "Dummy035": "mixamorig_LeftArm",
+          "Dummy036": "mixamorig_LeftForeArm",
+          "Dummy038": "mixamorig_LeftHand",
+          "Dummy039": "mixamorig_LeftHandThumb1",
+          "Dummy048": "mixamorig_LeftHandThumb3",
+          "Dummy040": "mixamorig_LeftHandIndex1",
+          "Dummy047": "mixamorig_LeftHandIndex3",
+          "Dummy041": "mixamorig_LeftHandMiddle1",
+          "Dummy046": "mixamorig_LeftHandMiddle3",
+          "Dummy042": "mixamorig_LeftHandRing1",
+          "Dummy045": "mixamorig_LeftHandRing3",
+          "Dummy043": "mixamorig_LeftHandPinky1",
+          "Dummy044": "mixamorig_LeftHandPinky3",
+          "Dummy008": "mixamorig_RightShoulder",
+          "Dummy021": "mixamorig_RightArm",
+          "Dummy022": "mixamorig_RightForeArm",
+          "Dummy024": "mixamorig_RightHand",
+          "Dummy025": "mixamorig_RightHandThumb1",
+          "Dummy034": "mixamorig_RightHandThumb3",
+          "Dummy026": "mixamorig_RightHandIndex1",
+          "Dummy033": "mixamorig_RightHandIndex3",
+          "Dummy027": "mixamorig_RightHandMiddle1",
+          "Dummy032": "mixamorig_RightHandMiddle3",
+          "Dummy028": "mixamorig_RightHandRing1",
+          "Dummy031": "mixamorig_RightHandRing3",
+          "Dummy029": "mixamorig_RightHandPinky1",
+          "Dummy030": "mixamorig_RightHandPinky3",
+          "Dummy049": "mixamorig_LeftUpLeg",
+          "Dummy056": "mixamorig_LeftLeg",
+          "Dummy057": "mixamorig_LeftFoot",
+          "Dummy058": "mixamorig_LeftToeBase",
+          "Dummy050": "mixamorig_RightUpLeg",
+          "Dummy052": "mixamorig_RightLeg",
+          "Dummy053": "mixamorig_RightFoot",
+          "Dummy054": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Dummy011",
+          "Dummy012",
+          "Dummy013",
+          "Dummy014",
+          "Dummy015",
+          "Dummy016",
+          "Dummy017",
+          "Dummy018",
+          "Dummy019",
+          "Dummy020"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip"
     }
   ]
 }

@@ -230,6 +230,27 @@ test("Larry keeps the verified unusual-anatomy map, source-unit correction, and 
   assert.doesNotMatch(model, /file:\/\//);
 });
 
+test("Man Ray keeps the verified Y-up anonymous-joint map and authored face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const manRay = catalog.packs.find((pack) => pack.id === "man-ray");
+  assert.ok(manRay);
+  assert.equal(manRay.scale, 0.18);
+  assert.equal(manRay.pitch, 0);
+  assert.equal(manRay.yaw, 0);
+  assert.equal(manRay.motionProfile.rootBone, "Dummy003");
+  assert.deepEqual(manRay.motionProfile.feet, { left: "Dummy058", right: "Dummy054" });
+  assert.equal(Object.keys(manRay.motionProfile.boneMap).length, 41);
+  assert.equal(manRay.motionProfile.boneMap.Dummy010, "mixamorig_Head");
+  assert.equal(manRay.motionProfile.boneMap.Dummy048, "mixamorig_LeftHandThumb3");
+  assert.equal(manRay.motionProfile.boneMap.Dummy034, "mixamorig_RightHandThumb3");
+  for (const bone of ["Dummy011", "Dummy012", "Dummy015", "Dummy016", "Dummy017", "Dummy020"]) {
+    assert.ok(manRay.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+  const model = await readFile(path.join(root, manRay.model), "utf8");
+  assert.match(model, /<init_from>tex_0000_man_ray_256\.png<\/init_from>/);
+  assert.doesNotMatch(model, /file:\/\//);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -242,9 +263,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 12);
+  assert.equal(audit.acceptedNew.length, 13);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 35);
+  assert.equal(audit.rejected.length, 34);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

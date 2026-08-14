@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 12,
-    "acceptedNewCharacters": 12,
-    "rejectedArchives": 35,
-    "finalMotionReadyCharacters": 16
+    "acceptedNewArchives": 13,
+    "acceptedNewCharacters": 13,
+    "rejectedArchives": 34,
+    "finalMotionReadyCharacters": 17
   },
   "acceptedNew": [
     {
@@ -119,6 +119,15 @@
         "evidence/character-imports/larry-macarena-dance.png"
       ],
       "reason": "Complete, textured, front-facing character with readable motion on two dances after identifying the anonymous Dummy skeleton from hierarchy and single-weight skin regions, correcting the omitted source unit, and preserving face, eye-stalk, and tail bones."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",
+      "characterIds": ["man-ray"],
+      "proof": [
+        "evidence/character-imports/man-ray-silly-dancing.png",
+        "evidence/character-imports/man-ray-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable motion on two dances after identifying the anonymous Dummy skeleton from hierarchy and skin regions and declaring the source's omitted Y-up orientation; authored face bones remain protected."
     }
   ],
   "alreadyIncluded": [
@@ -149,11 +158,6 @@
       "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Gary.zip",
       "reasonCode": "static-only",
       "reason": "No skinned armature or rigged model was present."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Non-Playable Characters - Man Ray.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned Collada rig exposes only anonymous Dummy joint names, so a safe anatomical motion map cannot be verified."
     },
     {
       "archive": "Mobile - Marvel Future Fight - Heroes - Spider-Man (Miles Morales, Classic).zip",
