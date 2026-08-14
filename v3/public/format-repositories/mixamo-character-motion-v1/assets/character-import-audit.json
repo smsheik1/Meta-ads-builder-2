@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 9,
-    "acceptedNewCharacters": 9,
-    "rejectedArchives": 38,
-    "finalMotionReadyCharacters": 13
+    "acceptedNewArchives": 10,
+    "acceptedNewCharacters": 10,
+    "rejectedArchives": 37,
+    "finalMotionReadyCharacters": 14
   },
   "acceptedNew": [
     {
@@ -92,6 +92,15 @@
         "evidence/character-imports/sandy-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded character with readable motion on two dances after assigning declarative opacity to the solid gray glass material, revealing the intact face geometry."
+    },
+    {
+      "archive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip",
+      "characterIds": ["aqua"],
+      "proof": [
+        "evidence/character-imports/aqua-silly-dancing.png",
+        "evidence/character-imports/aqua-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after a one-time offline conversion of the supplied skinned glTF into the existing Collada contract; no second runtime loader or dependency was added."
     }
   ],
   "alreadyIncluded": [
@@ -247,11 +256,6 @@
       "archive": "PlayStation 4 - Kingdom Hearts III - Non-Playable Characters (Kingdom of Corona) - Rapunzel.zip",
       "reasonCode": "broken-deformation",
       "reason": "The skin/hair stretches into a full-frame vertical spike while the character body disappears."
-    },
-    {
-      "archive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip",
-      "reasonCode": "unsupported-runtime-format",
-      "reason": "The archive has skinned glTF/FBX assets but no skinned Collada model; adding a second model loader is out of scope for this content-only expansion."
     },
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",

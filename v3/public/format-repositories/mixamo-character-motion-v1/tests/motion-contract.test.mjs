@@ -177,6 +177,23 @@ test("Sandy reveals her intact face through declarative helmet-glass opacity", a
   assert.match(renderer, /opacity < 1/);
 });
 
+test("Aqua stays on the single Collada runtime after an offline skinned-model conversion", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const aqua = catalog.packs.find((pack) => pack.id === "aqua");
+  assert.ok(aqua);
+  assert.equal(aqua.format, "collada");
+  assert.equal(aqua.scale, 0.38);
+  assert.equal(aqua.pitch, 0);
+  assert.equal(aqua.motionProfile.rootBone, "center");
+  assert.equal(Object.keys(aqua.motionProfile.boneMap).length, 25);
+  assert.deepEqual(aqua.motionProfile.feet, { left: "L_ashi1", right: "R_ashi1" });
+  assert.deepEqual(aqua.transparentTextures, ["Aqua_PS2_Cloth.png", "Aqua_PS2_Hair.png", "Aqua_PS2_Skin.png"]);
+  const model = await readFile(path.join(root, aqua.model), "utf8");
+  assert.match(model, /Wiggly one-time glTF-to-Collada compatibility conversion/);
+  assert.match(model, /<up_axis>Y_UP<\/up_axis>/);
+  assert.match(model, /<Name_array[^>]+count="77"/);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -189,9 +206,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 9);
+  assert.equal(audit.acceptedNew.length, 10);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 38);
+  assert.equal(audit.rejected.length, 37);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

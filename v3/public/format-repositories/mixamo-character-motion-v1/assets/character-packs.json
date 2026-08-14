@@ -1157,6 +1157,132 @@
         ]
       },
       "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip"
+    },
+    {
+      "id": "aqua",
+      "label": "Aqua",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/aqua/aqua.dae",
+      "scale": 0.38,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "Aqua_PS2_Cloth.png",
+        "Aqua_PS2_Hair.png",
+        "Aqua_PS2_Skin.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 25,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "center",
+        "feet": {
+          "left": "L_ashi1",
+          "right": "R_ashi1"
+        },
+        "legChains": {
+          "left": [
+            "L_momo",
+            "L_sune",
+            "L_ashi1"
+          ],
+          "right": [
+            "R_momo",
+            "R_sune",
+            "R_ashi1"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "center": "mixamorig_Hips",
+          "hara": "mixamorig_Spine",
+          "mune": "mixamorig_Spine2",
+          "kubi": "mixamorig_Neck",
+          "atama": "mixamorig_Head",
+          "L_kata": "mixamorig_LeftShoulder",
+          "L_ude1": "mixamorig_LeftArm",
+          "L_ude2": "mixamorig_LeftForeArm",
+          "L_te": "mixamorig_LeftHand",
+          "L_yubiA": "mixamorig_LeftHandThumb1",
+          "L_yubiB": "mixamorig_LeftHandMiddle1",
+          "R_kata": "mixamorig_RightShoulder",
+          "R_ude1": "mixamorig_RightArm",
+          "R_ude2": "mixamorig_RightForeArm",
+          "R_te": "mixamorig_RightHand",
+          "R_yubiA": "mixamorig_RightHandThumb1",
+          "R_yubiB": "mixamorig_RightHandMiddle1",
+          "L_momo": "mixamorig_LeftUpLeg",
+          "L_sune": "mixamorig_LeftLeg",
+          "L_ashi1": "mixamorig_LeftFoot",
+          "L_ashi1_end": "mixamorig_LeftToeBase",
+          "R_momo": "mixamorig_RightUpLeg",
+          "R_sune": "mixamorig_RightLeg",
+          "R_ashi1": "mixamorig_RightFoot",
+          "R_ashi1_end": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Root",
+          "ago",
+          "ago_end",
+          "kamiA",
+          "kamiA_end",
+          "kamiB",
+          "kamiB_end",
+          "kamiC",
+          "kamiC_end",
+          "kamiD",
+          "kamiD_end",
+          "kamiE",
+          "kamiE_end",
+          "kamiF",
+          "kamiF_end",
+          "kamiG",
+          "kamiG_end",
+          "R_yubiB_end",
+          "R_yubiA_end",
+          "R_buki",
+          "R_buki_end",
+          "R_sodeB",
+          "R_sodeB_end",
+          "R_sodeA",
+          "R_sodeA_end",
+          "R_armour",
+          "R_armour_end",
+          "L_yubiB_end",
+          "L_yubiA_end",
+          "L_sodeA",
+          "L_sodeA_end",
+          "L_sodeB",
+          "L_sodeB_end",
+          "L_armour",
+          "L_armour_end",
+          "koshi",
+          "L_susoB",
+          "L_susoB_end",
+          "L_susoA1",
+          "L_susoA1_end",
+          "L_susoC1",
+          "L_susoC1_end",
+          "R_susoC1",
+          "R_susoC1_end",
+          "L_skt",
+          "L_skt_end",
+          "R_skt",
+          "R_skt_end",
+          "R_susoB",
+          "R_susoB_end",
+          "R_susoA1",
+          "R_susoA1_end"
+        ]
+      },
+      "sourceArchive": "PlayStation Portable - Kingdom Hearts_ Birth by Sleep - Unused Models - Aqua (PlayStation 2).zip"
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Character Dance Lab
 
-This Wiggly Repo is an interactive audition room for 25 bundled starter motions, an extensible local user-motion library, and thirteen verified character rigs: SpongeBob, Squilliam Fancyson, Mr. Krabs, Patrick Star, Sonic the Hedgehog (Modern), Flynn Rider, Kermit (Pirate), Kermit (Sci-Fi), Agent P, Squidward Tentacles, Mario, Olaf, and Sandy Cheeks. Pick a character, click a motion, and the shared Three.js renderer plays it immediately. Download the current pairing as an exact-frame MP4 or a smaller 640-pixel, 15 fps looping GIF. Only the active character and motion are loaded; visited assets are cached for fast replay. Slow or rapid selections are committed atomically, so the current dancer remains visible until the newest complete character-and-motion pair is ready.
+This Wiggly Repo is an interactive audition room for 25 bundled starter motions, an extensible local user-motion library, and fourteen verified character rigs: SpongeBob, Squilliam Fancyson, Mr. Krabs, Patrick Star, Sonic the Hedgehog (Modern), Flynn Rider, Kermit (Pirate), Kermit (Sci-Fi), Agent P, Squidward Tentacles, Mario, Olaf, Sandy Cheeks, and Aqua. Pick a character, click a motion, and the shared Three.js renderer plays it immediately. Download the current pairing as an exact-frame MP4 or a smaller 640-pixel, 15 fps looping GIF. Only the active character and motion are loaded; visited assets are cached for fast replay. Slow or rapid selections are committed atomically, so the current dancer remains visible until the newest complete character-and-motion pair is ready.
 
 The same renderer also produces deterministic 1280×720 clips. It keeps every source frame, scales root travel from actual leg-chain lengths, grounds feet with deterministic constraints, maps fingers where supported, and restores protected face and eye bones every frame. Squilliam's tentacles are paired into two readable screen legs. Patrick's authored knee and foot scale helpers are delegated to the shared foot IK instead of receiving redundant Mixamo rotations. Character differences live in semantic motion profiles, not motion-specific animation code.
 
@@ -44,11 +44,11 @@ npm run prove:character -- --character=sonic-modern
 
 The proof command requires exactly one character ID. It will not batch a roster.
 
-The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, nine new rigs passed both Silly Dancing and Macarena visual proofs, and 38 remain rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Rejection never weakens the runtime contract.
+The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, ten new rigs passed both Silly Dancing and Macarena visual proofs, and 37 remain rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Aqua's supplied skinned glTF was converted once, offline, into the same packaged Collada contract; the runtime still has one loader and no added conversion dependency. Rejection never weakens the runtime contract.
 
 ## Add another character
 
-1. Work on exactly one source archive. Confirm it contains a skinned Collada rig with named bones; a static mesh is not motion-ready.
+1. Work on exactly one source archive. Prefer a skinned Collada rig with named bones; a static mesh is not motion-ready. A skinned glTF/FBX may be converted offline into Collada when the conversion is bounded and visually proven, but never add a runtime loader for one character.
 2. Copy only that character's production `.dae` and referenced textures into `assets/characters/<id>/`.
 3. Add one declarative entry to `assets/character-packs.json`: model path, display scale, optional pitch/yaw, optional per-material opacity for solid glass, semantic `boneMap`, root, feet, leg chains, and protected face or overlay bones. Use `pitch: 0` only for a Y-up Collada source that omits the usual `Z_UP` declaration. Do not add character-specific renderer code.
 4. Run `npm run prove:character -- --character=<id>`. The command renders Silly Dancing and Macarena for that character only.
@@ -66,7 +66,7 @@ This version is deliberately a playground, not a rating system or music editor. 
 
 ## What good means
 
-- The lab exposes exactly 25 bundled starter motions plus any operator-imported user motions, and thirteen motion-ready characters.
+- The lab exposes exactly 25 bundled starter motions plus any operator-imported user motions, and fourteen motion-ready characters.
 - Startup fetches one character and one motion—not all 25 motion payloads.
 - Selecting a motion restarts it immediately; selecting a character preserves the current motion.
 - Rapid selections converge on the newest requested character-and-motion pair without blanking the stage.
