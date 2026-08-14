@@ -317,6 +317,21 @@ test("Ferb retargets his true parent root while preserving the pre-rotated pelvi
   assert.equal(Object.keys(ferb.motionProfile.boneMap).length, 22);
 });
 
+test("Phineas retargets his true parent root while preserving the pre-rotated pelvis and face", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const phineas = catalog.packs.find((pack) => pack.id === "phineas");
+  assert.ok(phineas);
+  assert.equal(phineas.scale, 1);
+  assert.equal(phineas.pitch, 0);
+  assert.equal(phineas.motionProfile.rootBone, "Bone_Phineas__Root");
+  assert.equal(phineas.motionProfile.boneMap.Bone_Phineas__Root, "mixamorig_Hips");
+  assert.equal(phineas.motionProfile.boneMap.Bone_Phineas__Pelvis, undefined);
+  for (const bone of ["Bone_Phineas__Pelvis", "Bone_Phineas__Facial_R", "Bone_Phineas__Eyelid_L"]) {
+    assert.ok(phineas.motionProfile.protectedBones.includes(bone));
+  }
+  assert.equal(Object.keys(phineas.motionProfile.boneMap).length, 22);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -329,9 +344,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 17);
+  assert.equal(audit.acceptedNew.length, 18);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 30);
+  assert.equal(audit.rejected.length, 29);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

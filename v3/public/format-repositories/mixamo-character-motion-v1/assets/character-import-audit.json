@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 17,
-    "acceptedNewCharacters": 17,
-    "rejectedArchives": 30,
-    "finalMotionReadyCharacters": 21
+    "acceptedNewArchives": 18,
+    "acceptedNewCharacters": 18,
+    "rejectedArchives": 29,
+    "finalMotionReadyCharacters": 22
   },
   "acceptedNew": [
     {
@@ -164,6 +164,15 @@
         "evidence/character-imports/ferb-macarena-dance.png"
       ],
       "reason": "Complete, textured, upright character with readable grounded motion on two dances after mapping the actual parent root as the Mixamo hips while preserving the source's pre-rotated pelvis and declaring the omitted Y-up orientation."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip",
+      "characterIds": ["phineas"],
+      "proof": [
+        "evidence/character-imports/phineas-silly-dancing.png",
+        "evidence/character-imports/phineas-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, upright character with readable grounded motion on two dances after mapping the actual parent root as the Mixamo hips while preserving the source's pre-rotated pelvis and declaring the omitted Y-up orientation."
     }
   ],
   "alreadyIncluded": [
@@ -299,11 +308,6 @@
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",
       "reasonCode": "collapsed-motion",
       "reason": "The archive contains one skinned rig whose pelvis, thighs, clavicles, and arms use heavily pre-rotated, mutually inconsistent bind axes. Its verified 23-bone anatomy map passes numerical retarget checks, but both the original and corrected root-orientation proofs leave the intact textured skin sideways and folded through the stage across the full sampled motion. Recovery requires per-bone bind-axis reconstruction, so the character was skipped."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Phineas.zip",
-      "reasonCode": "collapsed-motion",
-      "reason": "The body collapses into the head/face and never becomes a complete dancing silhouette."
     },
     {
       "archive": "Xbox - Shrek - Playable Characters - Shrek.zip",
