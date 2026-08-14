@@ -387,8 +387,9 @@ assert.match(includedAssetsComponent, /Drag every character in 3D/);
 assert.doesNotMatch(includedAssetsComponent, /verified dance frames/);
 assert.doesNotMatch(includedAssetsComponent, /character\.modelSrc \?/);
 assert.doesNotMatch(includedAssetsComponent, /Included in Repo/);
-assert.match(includedAssetsComponent, /Dance \+ voice ready/);
-assert.match(includedAssetsComponent, /Dance-ready · voice pending/);
+assert.match(includedAssetsComponent, /\{character\.sourceLabel\}/);
+assert.doesNotMatch(includedAssetsComponent, /Dance \+ voice ready/);
+assert.doesNotMatch(includedAssetsComponent, /Dance-ready · voice pending/);
 assert.match(includedAssetsComponent, /1 fixed character stage/);
 assert.match(includedAssetsComponent, /aria-pressed=\{isSelected\}/);
 assert.doesNotMatch(includedAssetsComponent, /No Mixamo download required/);
@@ -463,6 +464,39 @@ assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
   motionReadyCharacterCatalog.map(({ id, label }) => ({ id, label })),
   "Every motion-ready catalog character should automatically receive the same discovery card.",
+);
+assert.deepEqual(
+  Object.fromEntries(
+    trustData.includedAssets.characters.map(({ id, sourceLabel }) => [
+      id,
+      sourceLabel,
+    ]),
+  ),
+  {
+    spongebob: "SpongeBob SquarePants",
+    squilliam: "SpongeBob SquarePants",
+    "mr-krabs": "SpongeBob SquarePants",
+    patrick: "SpongeBob SquarePants",
+    "sonic-modern": "Sonic Generations",
+    "flynn-rider": "Tangled",
+    "kermit-pirate": "The Muppets",
+    "kermit-sci-fi": "The Muppets",
+    "agent-p": "Phineas and Ferb",
+    squidward: "SpongeBob SquarePants",
+    mario: "Super Mario 3D World",
+    olaf: "Frozen",
+    sandy: "SpongeBob SquarePants",
+    aqua: "Kingdom Hearts: Birth by Sleep",
+    ratchet: "Ratchet & Clank",
+    larry: "SpongeBob SquarePants",
+    "man-ray": "SpongeBob SquarePants",
+    "batman-animated": "Batman: The Animated Series",
+    "batman-beyond": "Batman Beyond",
+    "dr-doofenshmirtz": "Phineas and Ferb",
+    ferb: "Phineas and Ferb",
+    phineas: "Phineas and Ferb",
+  },
+  "Every Dance Off card should identify the character's recognizable source.",
 );
 assert.equal(
   trustData.includedAssets.performerStage.src,
