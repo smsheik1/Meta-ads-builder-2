@@ -46,6 +46,16 @@ The proof command requires exactly one character ID. It will not batch a roster.
 
 The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, four new rigs passed both Silly Dancing and Macarena visual proofs, and 43 were rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Rejection never weakens the runtime contract.
 
+## Add another character
+
+1. Work on exactly one source archive. Confirm it contains a skinned Collada rig with named bones; a static mesh is not motion-ready.
+2. Copy only that character's production `.dae` and referenced textures into `assets/characters/<id>/`.
+3. Add one declarative entry to `assets/character-packs.json`: model path, display scale, optional yaw, semantic `boneMap`, root, feet, leg chains, and protected face or overlay bones. Do not add character-specific renderer code.
+4. Run `npm run prove:character -- --character=<id>`. The command renders Silly Dancing and Macarena for that character only.
+5. Inspect both outputs. Accept only a complete, textured, readable full-body performance; otherwise record the exact rejection reason in the import audit and leave the character out of the catalog.
+
+Do not add another model loader, automatic rigger, or fallback renderer for a single incompatible archive. A new loader is justified only when several otherwise usable future characters share the same unsupported format and it can preserve the existing renderer contract.
+
 ## Proof boundary
 
 This version is deliberately a playground, not a rating system or music editor. It proves the selector, retargeter, and motion catalog. Beat analysis, song synchronization, motion scoring, playlists, and automatic transition choreography are future work.
