@@ -1786,6 +1786,65 @@
         ]
       },
       "sourceArchive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip"
+    },
+    {
+      "id": "dr-doofenshmirtz",
+      "label": "Dr. Doofenshmirtz",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/dr-doofenshmirtz/dr-doofenshmirtz.dae",
+      "scale": 0.7,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": ["Dr_Doof_D.png"],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Root_Dr_Doof",
+        "feet": {
+          "left": "Bone_Dr_Doof__L_Toe0",
+          "right": "Bone_Dr_Doof__R_Toe0"
+        },
+        "legChains": {
+          "left": ["Bone_Dr_Doof__L_Thigh", "Bone_Dr_Doof__L_Calf", "Bone_Dr_Doof__L_Foot"],
+          "right": ["Bone_Dr_Doof__R_Thigh", "Bone_Dr_Doof__R_Calf", "Bone_Dr_Doof__R_Foot"]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [1, 1, 1],
+        "boneMap": {
+          "Root_Dr_Doof": "mixamorig_Hips",
+          "Bone_Dr_Doof__Spine": "mixamorig_Spine",
+          "Bone_Dr_Doof__Spine1": "mixamorig_Spine2",
+          "Bone_Dr_Doof__Neck": "mixamorig_Neck",
+          "Bone_Dr_Doof__Head": "mixamorig_Head",
+          "Bone_Dr_Doof__L_Clavicle": "mixamorig_LeftShoulder",
+          "Bone_Dr_Doof__L_UpperArm": "mixamorig_LeftArm",
+          "Bone_Dr_Doof__L_Forearm": "mixamorig_LeftForeArm",
+          "Bone_Dr_Doof__L_Hand": "mixamorig_LeftHand",
+          "Bone_Dr_Doof__L_Finger1": "mixamorig_LeftHandIndex1",
+          "Bone_Dr_Doof__R_Clavicle": "mixamorig_RightShoulder",
+          "Bone_Dr_Doof__R_UpperArm": "mixamorig_RightArm",
+          "Bone_Dr_Doof__R_Forearm": "mixamorig_RightForeArm",
+          "Bone_Dr_Doof__R_Hand": "mixamorig_RightHand",
+          "Bone_Dr_Doof__R_Finger1": "mixamorig_RightHandIndex1",
+          "Bone_Dr_Doof__L_Thigh": "mixamorig_LeftUpLeg",
+          "Bone_Dr_Doof__L_Calf": "mixamorig_LeftLeg",
+          "Bone_Dr_Doof__L_Foot": "mixamorig_LeftFoot",
+          "Bone_Dr_Doof__L_Toe0": "mixamorig_LeftToeBase",
+          "Bone_Dr_Doof__R_Thigh": "mixamorig_RightUpLeg",
+          "Bone_Dr_Doof__R_Calf": "mixamorig_RightLeg",
+          "Bone_Dr_Doof__R_Foot": "mixamorig_RightFoot",
+          "Bone_Dr_Doof__R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bone_Dr_Doof__Pelvis",
+          "Bone_Dr_Doof__Prop1",
+          "Bone_Dr_Doof__Prop2"
+        ]
+      },
+      "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip"
     }
   ]
 }

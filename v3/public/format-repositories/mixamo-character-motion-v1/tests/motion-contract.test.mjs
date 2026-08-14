@@ -285,6 +285,23 @@ test("Batman Beyond repairs local Collada references without packaging the malfo
   assert.match(model, /<init_from>DLC8_Batman_Beyond_torso_D\.png<\/init_from>/);
 });
 
+test("Dr. Doofenshmirtz retargets his true parent root while preserving the pre-rotated pelvis", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const doof = catalog.packs.find((pack) => pack.id === "dr-doofenshmirtz");
+  assert.ok(doof);
+  assert.equal(doof.scale, 0.7);
+  assert.equal(doof.pitch, 0);
+  assert.equal(doof.motionProfile.rootBone, "Root_Dr_Doof");
+  assert.equal(doof.motionProfile.boneMap.Root_Dr_Doof, "mixamorig_Hips");
+  assert.equal(doof.motionProfile.boneMap.Bone_Dr_Doof__Pelvis, undefined);
+  assert.ok(doof.motionProfile.protectedBones.includes("Bone_Dr_Doof__Pelvis"));
+  assert.deepEqual(doof.motionProfile.feet, {
+    left: "Bone_Dr_Doof__L_Toe0",
+    right: "Bone_Dr_Doof__R_Toe0",
+  });
+  assert.equal(Object.keys(doof.motionProfile.boneMap).length, 23);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -297,9 +314,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 15);
+  assert.equal(audit.acceptedNew.length, 16);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 32);
+  assert.equal(audit.rejected.length, 31);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

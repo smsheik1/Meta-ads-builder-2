@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 15,
-    "acceptedNewCharacters": 15,
-    "rejectedArchives": 32,
-    "finalMotionReadyCharacters": 19
+    "acceptedNewArchives": 16,
+    "acceptedNewCharacters": 16,
+    "rejectedArchives": 31,
+    "finalMotionReadyCharacters": 20
   },
   "acceptedNew": [
     {
@@ -146,6 +146,15 @@
         "evidence/character-imports/batman-beyond-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded body and head with readable motion on two dances after repairing the omitted Collada skeleton-root declarations, removing the malformed oversized cape instance, repairing local texture references, and normalizing display scale; no second runtime loader was added."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
+      "characterIds": ["dr-doofenshmirtz"],
+      "proof": [
+        "evidence/character-imports/dr-doofenshmirtz-silly-dancing.png",
+        "evidence/character-imports/dr-doofenshmirtz-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, upright character with readable grounded motion on two dances after mapping the actual parent root as the Mixamo hips while preserving the source's pre-rotated pelvis and declaring the omitted Y-up orientation."
     }
   ],
   "alreadyIncluded": [
@@ -281,11 +290,6 @@
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Candace.zip",
       "reasonCode": "collapsed-motion",
       "reason": "The archive contains one skinned rig whose pelvis, thighs, clavicles, and arms use heavily pre-rotated, mutually inconsistent bind axes. Its verified 23-bone anatomy map passes numerical retarget checks, but both the original and corrected root-orientation proofs leave the intact textured skin sideways and folded through the stage across the full sampled motion. Recovery requires per-bone bind-axis reconstruction, so the character was skipped."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
-      "reasonCode": "collapsed-motion",
-      "reason": "The character lies sideways and folded into the stage across the full sampled motion."
     },
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip",
