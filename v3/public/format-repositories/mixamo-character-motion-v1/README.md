@@ -53,6 +53,7 @@ The August 2026 character import audited 51 user-supplied archives one character
 3. Add one declarative entry to `assets/character-packs.json`: model path, display scale, optional pitch/yaw, optional per-material opacity for solid glass, semantic `boneMap`, root, feet, leg chains, and protected face or overlay bones. Use `pitch: 0` only for a Y-up Collada source that omits the usual `Z_UP` declaration. Do not add character-specific renderer code.
 4. Run `npm run prove:character -- --character=<id>`. The command renders Silly Dancing and Macarena for that character only.
 5. Inspect both outputs. Accept only a complete, textured, readable full-body performance; otherwise record the exact rejection reason in the import audit and leave the character out of the catalog.
+6. When publishing through the Wiggly web app, run `npm run generate:dance-off-character-previews -- --character=<id>` from `v3/`. That command uses the same Collada scale, transparency, and material rules to create the clean interactive discovery model and poster. The discovery page reads the accepted catalog directly, so no second character list should be edited.
 
 Do not add another model loader, automatic rigger, or fallback renderer for a single incompatible archive. A new loader is justified only when several otherwise usable future characters share the same unsupported format and it can preserve the existing renderer contract.
 
@@ -66,7 +67,7 @@ This version is deliberately a playground, not a rating system or music editor. 
 
 ## What good means
 
-- The lab exposes exactly 25 bundled starter motions plus any operator-imported user motions, and seventeen motion-ready characters.
+- The lab exposes exactly 25 bundled starter motions plus any operator-imported user motions, and 22 motion-ready characters.
 - Startup fetches one character and one motion—not all 25 motion payloads.
 - Selecting a motion restarts it immediately; selecting a character preserves the current motion.
 - Rapid selections converge on the newest requested character-and-motion pair without blanking the stage.

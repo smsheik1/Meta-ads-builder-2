@@ -185,31 +185,17 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
   const voiceReadyIds = new Set(
     voicePresets.voices.map((voice) => voice.characterId),
   );
-  const characterOrder = [
-    "spongebob",
-    "patrick",
-    "mr-krabs",
-    "squilliam",
-    "sonic-modern",
-    "flynn-rider",
-    "kermit-pirate",
-    "kermit-sci-fi",
-  ];
-  const includedCharacters = characterOrder.map((characterId) => {
-    const character = characters.packs.find((pack) => pack.id === characterId);
-    if (!character)
-      throw new Error(`Missing packaged character ${characterId}.`);
-    if (character.status !== "motion-ready") {
-      throw new Error(`Packaged character ${characterId} is not motion-ready.`);
-    }
-    return {
-      id: character.id,
-      label: character.label,
-      modelSrc: `${characterPreviewRoot}/${character.id}.glb`,
-      posterSrc: `${characterPreviewRoot}/${character.id}.png`,
-      voiceReady: voiceReadyIds.has(character.id),
-    };
-  });
+  const includedCharacters = characters.packs
+    .filter((character) => character.status === "motion-ready")
+    .map((character) => {
+      return {
+        id: character.id,
+        label: character.label,
+        modelSrc: `${characterPreviewRoot}/${character.id}.glb`,
+        posterSrc: `${characterPreviewRoot}/${character.id}.png`,
+        voiceReady: voiceReadyIds.has(character.id),
+      };
+    });
   const sampleMotionIds = new Set([
     "macarena-dance",
     "ymca-dance",
