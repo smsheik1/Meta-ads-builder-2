@@ -1703,6 +1703,89 @@
         ]
       },
       "sourceArchive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Animated).zip"
+    },
+    {
+      "id": "batman-beyond",
+      "label": "Batman Beyond",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/batman-beyond/batman-beyond.dae",
+      "scale": 0.015,
+      "pitch": 0,
+      "yaw": 0,
+      "transparentTextures": [
+        "DLC8_Batman_Beyond_torso_D.png",
+        "DLC8_Batman_Beyond_Leg_D.png",
+        "DLC8_Batman_Beyond_Leg_M.png",
+        "DLC8_Batman_Beyond_Head_D.png",
+        "DLC8_Batman_Beyond_Head_M.png"
+      ],
+      "transparentMaterials": [],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 21,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "Bip01_Pelvis",
+        "feet": {
+          "left": "Bip01_L_Toe0",
+          "right": "Bip01_R_Toe0"
+        },
+        "legChains": {
+          "left": [
+            "Bip01_L_Thigh",
+            "Bip01_L_Calf",
+            "Bip01_L_Foot"
+          ],
+          "right": [
+            "Bip01_R_Thigh",
+            "Bip01_R_Calf",
+            "Bip01_R_Foot"
+          ]
+        },
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "Bip01_Pelvis": "mixamorig_Hips",
+          "Bip01_Spine": "mixamorig_Spine",
+          "Bip01_Spine2": "mixamorig_Spine2",
+          "Bip01_Neck": "mixamorig_Neck",
+          "Bip01_Head": "mixamorig_Head",
+          "Bip01_L_Clavicle": "mixamorig_LeftShoulder",
+          "Bip01_L_UpperArm": "mixamorig_LeftArm",
+          "Bip01_L_Forearm": "mixamorig_LeftForeArm",
+          "Bip01_L_Hand": "mixamorig_LeftHand",
+          "Bip01_R_Clavicle": "mixamorig_RightShoulder",
+          "Bip01_R_UpperArm": "mixamorig_RightArm",
+          "Bip01_R_Forearm": "mixamorig_RightForeArm",
+          "Bip01_R_Hand": "mixamorig_RightHand",
+          "Bip01_L_Thigh": "mixamorig_LeftUpLeg",
+          "Bip01_L_Calf": "mixamorig_LeftLeg",
+          "Bip01_L_Foot": "mixamorig_LeftFoot",
+          "Bip01_L_Toe0": "mixamorig_LeftToeBase",
+          "Bip01_R_Thigh": "mixamorig_RightUpLeg",
+          "Bip01_R_Calf": "mixamorig_RightLeg",
+          "Bip01_R_Foot": "mixamorig_RightFoot",
+          "Bip01_R_Toe0": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "Bip01",
+          "FcFX_Jaw",
+          "FcFx_Eye_L",
+          "FcFx_Eye_R",
+          "Bone_Cape_1_00",
+          "Bone_Cape_2_00",
+          "Bone_Cape_3_00",
+          "Bone_Cape_4_00",
+          "Bone_Cape_5_00",
+          "Bone_Cape_6_00",
+          "Bone_Cape_7_00"
+        ]
+      },
+      "sourceArchive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip"
     }
   ]
 }

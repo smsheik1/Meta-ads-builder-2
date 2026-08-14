@@ -44,7 +44,7 @@ npm run prove:character -- --character=sonic-modern
 
 The proof command requires exactly one character ID. It will not batch a roster.
 
-The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, fourteen new rigs passed both Silly Dancing and Macarena visual proofs, and 33 remain rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Aqua's supplied skinned glTF was converted once, offline, into the same packaged Collada contract; Ratchet, Larry, and Man Ray's anonymous skeletons were identified from hierarchy and skin influences; Batman Animated's omitted Collada skeleton roots were repaired in the packaged asset while its malformed oversized cape instance was excluded. The runtime still has one loader and no added conversion dependency. Rejection never weakens the runtime contract.
+The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, fifteen new rigs passed both Silly Dancing and Macarena visual proofs, and 32 remain rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Aqua's supplied skinned glTF was converted once, offline, into the same packaged Collada contract; Ratchet, Larry, and Man Ray's anonymous skeletons were identified from hierarchy and skin influences; Batman Animated and Batman Beyond's omitted Collada skeleton roots were repaired in their packaged assets while their malformed oversized cape instances were excluded. The runtime still has one loader and no added conversion dependency. Rejection never weakens the runtime contract.
 
 ## Add another character
 

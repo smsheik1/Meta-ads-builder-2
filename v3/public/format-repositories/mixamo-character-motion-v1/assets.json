@@ -85,6 +85,15 @@
     {"path": "assets/characters/batman-animated/Animated_Series_Batman_leg_D.png", "role": "transparent Batman Animated leg texture"},
     {"path": "assets/characters/batman-animated/Animated_Series_Batman_leg_M.png", "role": "Batman Animated leg mask texture"},
     {"path": "assets/characters/batman-animated/Cartoon_Outline_MAT.png", "role": "Batman Animated outline mask retained while broken outline shells are hidden declaratively"},
+    {"path": "assets/characters/batman-beyond/batman-beyond.dae", "role": "verified Batman Beyond body and head with repaired Collada skeleton roots and malformed cape instance removed"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_torso_D.png", "role": "transparent Batman Beyond torso texture"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Leg_D.png", "role": "transparent Batman Beyond leg texture"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Leg_M.png", "role": "Batman Beyond leg mask texture"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Head_D.png", "role": "transparent Batman Beyond head texture"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Head_M.png", "role": "Batman Beyond head mask texture"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Cape_D.png", "role": "Batman Beyond source cape texture retained for provenance"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Cape_S.png", "role": "Batman Beyond source cape specular texture retained for provenance"},
+    {"path": "assets/characters/batman-beyond/DLC8_Batman_Beyond_Cape_A.png", "role": "Batman Beyond source cape alpha texture retained for provenance"},
     {"path": "evidence/character-imports/sonic-modern-silly-dancing.png", "role": "Sonic individual visual proof"},
     {"path": "evidence/character-imports/sonic-modern-macarena-dance.png", "role": "Sonic second-motion visual proof"},
     {"path": "evidence/character-imports/flynn-rider-silly-dancing.png", "role": "Flynn individual visual proof"},
@@ -112,7 +121,9 @@
     {"path": "evidence/character-imports/man-ray-silly-dancing.png", "role": "Man Ray individual visual proof"},
     {"path": "evidence/character-imports/man-ray-macarena-dance.png", "role": "Man Ray second-motion visual proof"},
     {"path": "evidence/character-imports/batman-animated-silly-dancing.png", "role": "Batman Animated individual visual proof"},
-    {"path": "evidence/character-imports/batman-animated-macarena-dance.png", "role": "Batman Animated second-motion visual proof"}
+    {"path": "evidence/character-imports/batman-animated-macarena-dance.png", "role": "Batman Animated second-motion visual proof"},
+    {"path": "evidence/character-imports/batman-beyond-silly-dancing.png", "role": "Batman Beyond individual visual proof"},
+    {"path": "evidence/character-imports/batman-beyond-macarena-dance.png", "role": "Batman Beyond second-motion visual proof"}
   ],
   "generated": ["newly imported normalized Mixamo motion JSON", "downloaded MP4", "downloaded looping GIF", "motion report", "contact sheet", "quality report", "lab smoke screenshot"],
   "sourceNotes": "Character assets come from user-provided game archives. The 51-archive import audit records accepted, already-included, and rejected sources without redistributing rejected archives. Motion JSON files are locally normalized from user-downloaded Mixamo Collada clips; source DAE files are not packaged. The Fish News background is an exact packaged copy of public/talking-fish-news-assets/underwater-studio-background.png."

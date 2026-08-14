@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 14,
-    "acceptedNewCharacters": 14,
-    "rejectedArchives": 33,
-    "finalMotionReadyCharacters": 18
+    "acceptedNewArchives": 15,
+    "acceptedNewCharacters": 15,
+    "rejectedArchives": 32,
+    "finalMotionReadyCharacters": 19
   },
   "acceptedNew": [
     {
@@ -137,6 +137,15 @@
         "evidence/character-imports/batman-animated-macarena-dance.png"
       ],
       "reason": "Complete, textured, grounded body and head with readable motion on two dances after repairing the three omitted Collada skeleton-root declarations, hiding broken outline shells, removing the malformed oversized cape instance, and normalizing display scale; no second runtime loader was added."
+    },
+    {
+      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip",
+      "characterIds": ["batman-beyond"],
+      "proof": [
+        "evidence/character-imports/batman-beyond-silly-dancing.png",
+        "evidence/character-imports/batman-beyond-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded body and head with readable motion on two dances after repairing the omitted Collada skeleton-root declarations, removing the malformed oversized cape instance, repairing local texture references, and normalizing display scale; no second runtime loader was added."
     }
   ],
   "alreadyIncluded": [
@@ -182,11 +191,6 @@
       "archive": "Nintendo Switch - Super Smash Bros. Ultimate - Stage Elements - Villagers.zip",
       "reasonCode": "collapsed-motion",
       "reason": "All five models share an exporter hierarchy whose limbs and torso use conflicting axes. A second bounded repair on the representative boy rig mapped the real base/limbs and tested both the declared Z-up orientation and a 180-degree correction; the result changed from lying on its back to standing upside down, never a readable full-body dance. Fixing the set requires manual bind-pose reconstruction, so all five were skipped."
-    },
-    {
-      "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman (Beyond).zip",
-      "reasonCode": "broken-skin-binding",
-      "reason": "The isolated loader fails before frame zero because the skin references a missing bone matrix."
     },
     {
       "archive": "PC _ Computer - Batman_ Arkham City - Heroes - Batman.zip",
