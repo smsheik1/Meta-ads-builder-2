@@ -214,8 +214,8 @@
     },
     {
       "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Buzz Lightyear.zip",
-      "reasonCode": "anonymous-rig",
-      "reason": "The skinned rig exposes only bone000-style anonymous joints, so a safe anatomical motion map cannot be verified."
+      "reasonCode": "missing-diffuse-texture",
+      "reason": "The anonymous skeleton was anatomically mapped and passed coherent two-dance motion tests, but the only supplied texture is a rainbow UV-debug gradient rather than Buzz's diffuse character art. Repainting a full UV atlas is disproportionate manual asset reconstruction, so the neon test render was not accepted."
     },
     {
       "archive": "PlayStation 2 - Kingdom Hearts II Final Mix - Unused Content - Woody.zip",
