@@ -758,6 +758,118 @@
         ]
       },
       "sourceArchive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip"
+    },
+    {
+      "id": "squidward",
+      "label": "Squidward Tentacles",
+      "status": "motion-ready",
+      "format": "collada",
+      "model": "assets/characters/squidward/chr_squid_bindpose.dae",
+      "scale": 1.67,
+      "transparentTextures": [
+        "tx8_0000_squideyes_128.PNG"
+      ],
+      "transparentMaterials": [
+        "unnamed.0",
+        "unnamed.001"
+      ],
+      "motionProfile": {
+        "profile": "mixamo-humanoid-world-delta-v1",
+        "minimumMappedBones": 23,
+        "maximumMappedPoseErrorRadians": 0.002,
+        "rootBone": "squidward_sub_root",
+        "feet": {
+          "left": "squidward_front_toe_L",
+          "right": "squidward_front_toe_R"
+        },
+        "legChains": {
+          "left": [
+            "squidward_front_thigh_L",
+            "squidward_front_knee_L",
+            "squidward_front_ankle_L"
+          ],
+          "right": [
+            "squidward_front_thigh_R",
+            "squidward_front_knee_R",
+            "squidward_front_ankle_R"
+          ]
+        },
+        "pairedBoneChains": [
+          {
+            "driver": [
+              "squidward_front_thigh_L",
+              "squidward_front_knee_L",
+              "squidward_front_ankle_L",
+              "squidward_front_toe_L"
+            ],
+            "follower": [
+              "squidward_rear_thigh_L",
+              "squidward_rear_knee_L",
+              "squidward_rear_ankle_L",
+              "squidward_rear_toe_L"
+            ]
+          },
+          {
+            "driver": [
+              "squidward_front_thigh_R",
+              "squidward_front_knee_R",
+              "squidward_front_ankle_R",
+              "squidward_front_toe_R"
+            ],
+            "follower": [
+              "squidward_rear_thigh_R",
+              "squidward_rear_knee_R",
+              "squidward_rear_ankle_R",
+              "squidward_rear_toe_R"
+            ]
+          }
+        ],
+        "maximumVerticalRootCorrection": 0.12,
+        "rootMotionGain": [
+          1,
+          1,
+          1
+        ],
+        "boneMap": {
+          "squidward_sub_root": "mixamorig_Hips",
+          "squidward_spine_base": "mixamorig_Spine",
+          "squidward_chest": "mixamorig_Spine2",
+          "squidward_neck_base": "mixamorig_Neck",
+          "squidward_head": "mixamorig_Head",
+          "squidward_clavicle_L": "mixamorig_LeftShoulder",
+          "squidward_bicep_L": "mixamorig_LeftArm",
+          "squidward_elbow_L": "mixamorig_LeftForeArm",
+          "squidward_hand_L": "mixamorig_LeftHand",
+          "squidward_fingers_L": "mixamorig_LeftHandMiddle1",
+          "squidward_clavicle_R": "mixamorig_RightShoulder",
+          "squidward_bicep_R": "mixamorig_RightArm",
+          "squidward_elbow_R": "mixamorig_RightForeArm",
+          "squidward_hand_R": "mixamorig_RightHand",
+          "squidward_fingers_R": "mixamorig_RightHandMiddle1",
+          "squidward_front_thigh_L": "mixamorig_LeftUpLeg",
+          "squidward_front_knee_L": "mixamorig_LeftLeg",
+          "squidward_front_ankle_L": "mixamorig_LeftFoot",
+          "squidward_front_toe_L": "mixamorig_LeftToeBase",
+          "squidward_front_thigh_R": "mixamorig_RightUpLeg",
+          "squidward_front_knee_R": "mixamorig_RightLeg",
+          "squidward_front_ankle_R": "mixamorig_RightFoot",
+          "squidward_front_toe_R": "mixamorig_RightToeBase"
+        },
+        "protectedBones": [
+          "squidward_eye_rotate_space_L",
+          "squidward_eye_scale_space_L",
+          "pupil_L",
+          "squidward_eye_rotate_space_R",
+          "squidward_eye_scale_space_R",
+          "pupil_R",
+          "squidward_mouth",
+          "squidward_mouth_corner_L",
+          "squidward_mouth_corner_R",
+          "squidward_nose_base",
+          "squidward_nose_end"
+        ]
+      },
+      "sourceArchive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip"
     }
   ]
 }

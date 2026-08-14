@@ -1,6 +1,6 @@
 # Character Dance Lab
 
-This Wiggly Repo is an interactive audition room for 25 bundled starter motions, an extensible local user-motion library, and nine verified character rigs: SpongeBob, Squilliam Fancyson, Mr. Krabs, Patrick Star, Sonic the Hedgehog (Modern), Flynn Rider, Kermit (Pirate), Kermit (Sci-Fi), and Agent P. Pick a character, click a motion, and the shared Three.js renderer plays it immediately. Download the current pairing as an exact-frame MP4 or a smaller 640-pixel, 15 fps looping GIF. Only the active character and motion are loaded; visited assets are cached for fast replay. Slow or rapid selections are committed atomically, so the current dancer remains visible until the newest complete character-and-motion pair is ready.
+This Wiggly Repo is an interactive audition room for 25 bundled starter motions, an extensible local user-motion library, and ten verified character rigs: SpongeBob, Squilliam Fancyson, Mr. Krabs, Patrick Star, Sonic the Hedgehog (Modern), Flynn Rider, Kermit (Pirate), Kermit (Sci-Fi), Agent P, and Squidward Tentacles. Pick a character, click a motion, and the shared Three.js renderer plays it immediately. Download the current pairing as an exact-frame MP4 or a smaller 640-pixel, 15 fps looping GIF. Only the active character and motion are loaded; visited assets are cached for fast replay. Slow or rapid selections are committed atomically, so the current dancer remains visible until the newest complete character-and-motion pair is ready.
 
 The same renderer also produces deterministic 1280×720 clips. It keeps every source frame, scales root travel from actual leg-chain lengths, grounds feet with deterministic constraints, maps fingers where supported, and restores protected face and eye bones every frame. Squilliam's tentacles are paired into two readable screen legs. Patrick's authored knee and foot scale helpers are delegated to the shared foot IK instead of receiving redundant Mixamo rotations. Character differences live in semantic motion profiles, not motion-specific animation code.
 
@@ -44,7 +44,7 @@ npm run prove:character -- --character=sonic-modern
 
 The proof command requires exactly one character ID. It will not batch a roster.
 
-The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, five new rigs passed both Silly Dancing and Macarena visual proofs, and 42 remain rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Rejection never weakens the runtime contract.
+The August 2026 character import audited 51 user-supplied archives one character at a time. Four archives were already represented, six new rigs passed both Silly Dancing and Macarena visual proofs, and 41 remain rejected with exact rig or rendering reasons in `assets/character-import-audit.json`. Rejection never weakens the runtime contract.
 
 ## Add another character
 
@@ -66,7 +66,7 @@ This version is deliberately a playground, not a rating system or music editor. 
 
 ## What good means
 
-- The lab exposes exactly 25 bundled starter motions plus any operator-imported user motions, and nine motion-ready characters.
+- The lab exposes exactly 25 bundled starter motions plus any operator-imported user motions, and ten motion-ready characters.
 - Startup fetches one character and one motion—not all 25 motion payloads.
 - Selecting a motion restarts it immediately; selecting a character preserves the current motion.
 - Rapid selections converge on the newest requested character-and-motion pair without blanking the stage.

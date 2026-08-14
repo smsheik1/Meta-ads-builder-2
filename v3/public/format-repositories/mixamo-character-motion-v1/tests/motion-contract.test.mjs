@@ -111,6 +111,27 @@ test("Y-up Collada characters can opt out of the default Z-up pitch without a se
   assert.match(renderer, /characterPack\.pitch \?\? -Math\.PI \/ 2/);
 });
 
+test("Squidward keeps the approved eye overlay and facial rig while sharing the paired-tentacle runtime", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const squidward = catalog.packs.find((pack) => pack.id === "squidward");
+  assert.ok(squidward);
+  assert.deepEqual(squidward.transparentTextures, ["tx8_0000_squideyes_128.PNG"]);
+  assert.deepEqual(squidward.transparentMaterials, ["unnamed.0", "unnamed.001"]);
+  assert.equal(squidward.motionProfile.pairedBoneChains.length, 2);
+  for (const bone of [
+    "squidward_eye_rotate_space_L",
+    "squidward_eye_scale_space_L",
+    "pupil_L",
+    "squidward_eye_rotate_space_R",
+    "squidward_eye_scale_space_R",
+    "pupil_R",
+    "squidward_mouth",
+    "squidward_nose_base",
+  ]) {
+    assert.ok(squidward.motionProfile.protectedBones.includes(bone), `${bone} must retain its authored transform`);
+  }
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -123,9 +144,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 5);
+  assert.equal(audit.acceptedNew.length, 6);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 42);
+  assert.equal(audit.rejected.length, 41);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

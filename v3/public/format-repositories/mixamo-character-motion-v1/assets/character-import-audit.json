@@ -6,10 +6,10 @@
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 5,
-    "acceptedNewCharacters": 5,
-    "rejectedArchives": 42,
-    "finalMotionReadyCharacters": 9
+    "acceptedNewArchives": 6,
+    "acceptedNewCharacters": 6,
+    "rejectedArchives": 41,
+    "finalMotionReadyCharacters": 10
   },
   "acceptedNew": [
     {
@@ -56,6 +56,15 @@
         "evidence/character-imports/agent-p-macarena-dance.png"
       ],
       "reason": "Complete, textured, front-facing character with readable motion on two dances after declaring the source's omitted Y-up orientation."
+    },
+    {
+      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip",
+      "characterIds": ["squidward"],
+      "proof": [
+        "evidence/character-imports/squidward-silly-dancing.png",
+        "evidence/character-imports/squidward-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, grounded character with readable motion on two dances after restoring the approved eye texture and transparent eye material assignments."
     }
   ],
   "alreadyIncluded": [
@@ -101,11 +110,6 @@
       "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Sandy Cheeks.zip",
       "reasonCode": "incomplete-render",
       "reason": "The body animates, but the helmet remains opaque and the face is absent across the full sampled motion, including after one bounded transparency repair."
-    },
-    {
-      "archive": "GameCube - SpongeBob SquarePants_ Lights, Camera, Pants! - Playable Characters - Squidward Tentacles.zip",
-      "reasonCode": "incomplete-render",
-      "reason": "The body animates, but the eyes/pupils are blank across the full sampled motion, leaving an incomplete face."
     },
     {
       "archive": "Mobile - Marvel Future Fight - Heroes - Spider-Man (Miles Morales, Classic).zip",
