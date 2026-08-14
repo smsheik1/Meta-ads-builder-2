@@ -107,7 +107,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.14.0");
+assert.equal(profile.version, "0.15.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -140,6 +140,7 @@ for (const entry of [
   "bikini-bottom-dance-off-v1/assets/voice-previews/spongebob.mp3",
   "bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/render-report.json",
   "mixamo-character-motion-v1/assets/character-import-audit.json",
+  "mixamo-character-motion-v1/evidence/character-preview-repairs/receipt.json",
 ]) {
   assert.match(
     zipEntries,
@@ -154,7 +155,7 @@ const readArchivedText = async (relativePath: string) => {
 const archivedManifest = JSON.parse(
   await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.14.0");
+assert.equal(archivedManifest.formatVersion, "0.15.0");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
@@ -222,6 +223,10 @@ const includedAssetsComponent = readFileSync(
 );
 const characterModelViewerComponent = readFileSync(
   "features/discovery/DiscoveryCharacterModelViewer.tsx",
+  "utf8",
+);
+const characterPreviewGenerator = readFileSync(
+  "scripts/generate-dance-off-character-previews.mjs",
   "utf8",
 );
 const voicePreviewGenerator = readFileSync(
@@ -411,6 +416,18 @@ assert.match(characterModelViewerComponent, /Voice pending/);
 assert.match(characterModelViewerComponent, /character-voice-preview/);
 assert.match(characterModelViewerComponent, /aria-pressed/);
 assert.match(characterModelViewerComponent, /voicePreview\.line/);
+assert.match(characterModelViewerComponent, /const MIN_CAMERA_ORBIT = "auto 65deg auto"/);
+assert.match(characterModelViewerComponent, /const MAX_CAMERA_ORBIT = "auto 85deg auto"/);
+assert.match(characterModelViewerComponent, /"min-camera-orbit": MIN_CAMERA_ORBIT/);
+assert.match(characterModelViewerComponent, /"max-camera-orbit": MAX_CAMERA_ORBIT/);
+assert.match(characterPreviewGenerator, /function applyDisplayRules\(character, characterPack\)/);
+assert.match(characterPreviewGenerator, /mesh\.visible = false/);
+assert.match(characterPreviewGenerator, /characterPack\.restPoseAdjustments \|\| \[\]/);
+assert.match(characterPreviewGenerator, /onlyVisible: true/);
+assert.doesNotMatch(
+  characterPreviewGenerator,
+  /characterPack\.id === ["'](?:sandy|mario|sonic-modern|larry)["']/,
+);
 assert.match(
   voicePreviewGenerator,
   /process\.loadEnvFile\(path\.join\(workspaceRoot, "secrets\.env"\)\)/,
@@ -486,7 +503,7 @@ const motionReadyCharacterCatalog = (
     packs: Array<{ id: string; label: string; status: string }>;
   }
 ).packs.filter((character) => character.status === "motion-ready");
-assert.equal(trustData.version, "0.14.0");
+assert.equal(trustData.version, "0.15.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   motionReadyCharacters: 22,
@@ -694,6 +711,65 @@ for (const character of trustData.includedAssets.characters) {
     preview.modelSha256,
   );
 }
+const characterPreviewRepairRoot =
+  "public/format-repositories/mixamo-character-motion-v1";
+const characterPreviewRepairReceipt = JSON.parse(
+  readFileSync(
+    `${characterPreviewRepairRoot}/evidence/character-preview-repairs/receipt.json`,
+    "utf8",
+  ),
+) as {
+  schemaVersion: number;
+  characters: Array<{
+    id: string;
+    acceptedPosterSha256: string;
+    acceptedModelSha256: string;
+    rejectedCandidatePosterSha256?: string;
+    evidence:
+      | { path: string; sha256: string }
+      | Array<{ path: string; sha256: string }>;
+  }>;
+};
+assert.equal(characterPreviewRepairReceipt.schemaVersion, 1);
+assert.deepEqual(
+  characterPreviewRepairReceipt.characters.map((character) => character.id),
+  ["sandy", "mario", "sonic-modern", "larry"],
+);
+for (const repair of characterPreviewRepairReceipt.characters) {
+  const character = trustData.includedAssets.characters.find(
+    (candidate) => candidate.id === repair.id,
+  );
+  assert.ok(character);
+  assert.equal(
+    createHash("sha256")
+      .update(readFileSync(`public${character.posterSrc}`))
+      .digest("hex"),
+    repair.acceptedPosterSha256,
+  );
+  assert.equal(
+    createHash("sha256")
+      .update(readFileSync(`public${character.modelSrc}`))
+      .digest("hex"),
+    repair.acceptedModelSha256,
+  );
+  for (const evidence of Array.isArray(repair.evidence)
+    ? repair.evidence
+    : [repair.evidence]) {
+    const evidencePath = `${characterPreviewRepairRoot}/${evidence.path}`;
+    const evidenceBytes = readFileSync(evidencePath);
+    assert.ok(evidenceBytes.byteLength > 10_000);
+    assert.equal(
+      createHash("sha256").update(evidenceBytes).digest("hex"),
+      evidence.sha256,
+    );
+  }
+}
+assert.match(
+  characterPreviewRepairReceipt.characters.find(
+    (character) => character.id === "mario",
+  )?.rejectedCandidatePosterSha256 ?? "",
+  /^[0-9a-f]{64}$/,
+);
 for (const background of trustData.includedAssets.backgrounds) {
   assert.equal(existsSync(`public${background.src}`), true);
 }

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "validatedAt": "2026-08-14",
+  "characters": [
+    {
+      "id": "sandy",
+      "decision": "Use alpha cutouts for the eye and lash materials while keeping the helmet glass blended.",
+      "baselinePosterSha256": "bb3bf8de467feec9f5a1be2977b4dc5820c56355035d6177bc91e8aad9d3740a",
+      "acceptedPosterSha256": "2849baa3003812fc9f4ee7d3086ad28c981bad5ed94e0dc40aa06d866d47132f",
+      "acceptedModelSha256": "d3c7d1108f1fd7b547e80a15a592bdca80af7624e79c6b8de584de9c6e5d55e3",
+      "evidence": {
+        "path": "evidence/character-preview-repairs/sandy-before-after.png",
+        "sha256": "661d3055f887a35f19ff4c685acd0aff2d212aaf3a5ce9c86724e188b97a0a90"
+      }
+    },
+    {
+      "id": "mario",
+      "decision": "Hide the two alternate closed-lid meshes; repositioning was rejected because it left the closed line and exposed white crescents.",
+      "baselinePosterSha256": "28d6413432f819a838205db28c5f926230c7ee51bcc336ac8a163c10438a0d6d",
+      "rejectedCandidatePosterSha256": "92e281838bb7167a939ef61af79debf71b2b9f7cb4d7d456a1ea45768d546f1c",
+      "acceptedPosterSha256": "f02ecd6d8e79d7f1a7621b472d07e1fb86bc3be08f1476e3cb1fc284d6ece737",
+      "acceptedModelSha256": "aecbafca34bb4b232610fe921daf0efadd8f469b4366d5fd9d2a344e8985af3d",
+      "evidence": {
+        "path": "evidence/character-preview-repairs/mario-ab-comparison.png",
+        "sha256": "61e1be02ad65b5863ec0cea26b6e17d1a37b0341313d5fb48c20ef4136086171"
+      }
+    },
+    {
+      "id": "sonic-modern",
+      "decision": "Calibrate and protect the existing upper and lower eyelid facial bones in an open-eye rest pose.",
+      "baselinePosterSha256": "6bc74773b663d6672a7b9acabcb4746dcd9a0525e43b75f76aa6fd4cea78d1ff",
+      "acceptedPosterSha256": "b083c95c3769a3f5553262c4c1d76715f1dac6bbea15405dffe6658f030600c0",
+      "acceptedModelSha256": "66ed3d6eddef5595f43e13e19ce714b71d699900bb092a405c203b6136a88ea2",
+      "evidence": {
+        "path": "evidence/character-preview-repairs/sonic-before-after.png",
+        "sha256": "72e26157f593997afa64b33d8497a1d83cd0188329d01b38dc1d7b8d30fa37c4"
+      }
+    },
+    {
+      "id": "larry",
+      "decision": "Opt the Y-up source rig out of the shared Z-up pitch and remove the obsolete half-turn; keep the authored bind pose.",
+      "baselinePosterSha256": "7d57f58452814c868de6440310063819c44f15b88a5855d9622102c6efcb7bce",
+      "acceptedPosterSha256": "ad69e87e8dbe367aceecd4897f3ae18a705404043dd9e9014b93df6f7dc3811e",
+      "acceptedModelSha256": "4858a3375253f4b7339178cdd9d39cad6abd8c60a9bf1fa6ac657c346888ef30",
+      "evidence": [
+        {
+          "path": "evidence/character-preview-repairs/larry-before-after.png",
+          "sha256": "1680dd4aba6cb9a170e5efffd2d4dd35220e10ac179b847cbbcc545d222ad1ed"
+        },
+        {
+          "path": "evidence/character-preview-repairs/larry-browser-default-rotated.png",
+          "sha256": "56d4b951f2e49bc4d73b277139dc10becee0d4f664712a5d770e1d0a5d016463"
+        }
+      ]
+    }
+  ]
+}

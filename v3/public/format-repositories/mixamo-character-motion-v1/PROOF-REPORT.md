@@ -12,6 +12,16 @@ Version 0.6 audits 51 supplied character archives strictly one character at a ti
 
 Version 0.7 completes that ordered recovery audit. Four archives were already represented, eighteen new rigs passed two individually inspected dance proofs, and 29 were skipped with exact evidence because they lacked textures, required disproportionate bind reconstruction, or remained structurally invalid. The verified roster is now 22 characters. Every accepted character still uses the one Collada loader, declarative retargeting profile, and official renderer; Aqua's glTF conversion was bounded to an offline asset conversion rather than adding a second runtime loader.
 
+Version 0.8 repairs the discovery rest views for Sandy, Mario, Sonic, and
+Larry without adding another renderer. Sandy's face uses alpha cutouts while
+the helmet glass remains blended. Mario's rejected eyelid-repositioning
+candidate is preserved beside the accepted removal of two alternate closed-lid
+meshes. Sonic's existing upper and lower eyelid bones are calibrated and
+protected in an open-eye rest pose. Larry's Collada source is already Y-up, so
+it now opts out of the default Z-up pitch and stays upright in both the default
+and horizontally rotated browser views. The exact before/after evidence and
+hash receipt are committed under `evidence/character-preview-repairs/`.
+
 | Motion | Original frames | Exact duration | Mapped bones | Planar root retained | Automatic quality |
 |---|---:|---:|---:|---:|---|
 | Hip Hop Dancing | 135 | 4.500 s | 35 | 100% | Pass |

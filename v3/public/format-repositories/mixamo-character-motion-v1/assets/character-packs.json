@@ -390,6 +390,16 @@
       "scale": 0.07,
       "transparentTextures": [],
       "transparentMaterials": [],
+      "restPoseAdjustments": [
+        { "node": "joint22", "positionDelta": [3, 0, 0] },
+        { "node": "joint23", "positionDelta": [3, 0, 0] },
+        { "node": "joint24", "positionDelta": [3, 0, 0] },
+        { "node": "joint25", "positionDelta": [3, 0, 0] },
+        { "node": "joint26", "positionDelta": [3, 0, 0] },
+        { "node": "joint27", "positionDelta": [-1.5, 0, 0] },
+        { "node": "joint28", "positionDelta": [-1.5, 0, 0] },
+        { "node": "joint29", "positionDelta": [-1.5, 0, 0] }
+      ],
       "motionProfile": {
         "profile": "mixamo-humanoid-world-delta-v1",
         "minimumMappedBones": 26,
@@ -447,10 +457,18 @@
         },
         "protectedBones": [
           "joint6",
-          "joint7",
-          "joint8",
-          "joint21",
-          "joint88",
+        "joint7",
+        "joint8",
+        "joint21",
+        "joint22",
+        "joint23",
+        "joint24",
+        "joint25",
+        "joint26",
+        "joint27",
+        "joint28",
+        "joint29",
+        "joint88",
           "joint93",
           "joint95",
           "joint100"
@@ -883,6 +901,10 @@
         "mariohandnew_alb.png"
       ],
       "transparentMaterials": [],
+      "hiddenMeshes": [
+        "Eyelid00__MarioFaceMat00",
+        "Eyelid01__MarioFaceMat00"
+      ],
       "motionProfile": {
         "profile": "mixamo-humanoid-world-delta-v1",
         "minimumMappedBones": 20,
@@ -1069,11 +1091,16 @@
       "model": "assets/characters/sandy/chr_sandy_bindpose.dae",
       "scale": 1.67,
       "transparentTextures": [
-        "tx1_0000_lashes.PNG",
-        "tx1_0000_sandyeyes_64.PNG",
         "tx8_0000_sandyglass.PNG"
       ],
       "transparentMaterials": [],
+      "alphaCutoutMaterials": [
+        "unnamed.003",
+        "unnamed.005",
+        "unnamed.006",
+        "unnamed.008"
+      ],
+      "alphaCutoff": 0.08,
       "materialOpacities": {
         "unnamed.007": 0.18
       },
@@ -1439,7 +1466,8 @@
       "format": "collada",
       "model": "assets/characters/larry/chr_larry_bindpose.dae",
       "scale": 0.18,
-      "yaw": 3.1415926536,
+      "pitch": 0,
+      "yaw": 0,
       "transparentTextures": [
         "tex_0000_larry.png"
       ],
