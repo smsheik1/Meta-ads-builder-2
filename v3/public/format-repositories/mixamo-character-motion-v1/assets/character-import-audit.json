@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-08-13",
+  "auditedAt": "2026-08-14",
   "sourceDirectory": "user Downloads folder",
   "policy": "Each rigged candidate was rendered and visually inspected one character at a time. A renderer exit code was never treated as visual acceptance.",
   "counts": {
     "archivesDiscovered": 51,
     "alreadyIncluded": 4,
-    "acceptedNewArchives": 4,
-    "acceptedNewCharacters": 4,
-    "rejectedArchives": 43,
-    "finalMotionReadyCharacters": 8
+    "acceptedNewArchives": 5,
+    "acceptedNewCharacters": 5,
+    "rejectedArchives": 42,
+    "finalMotionReadyCharacters": 9
   },
   "acceptedNew": [
     {
@@ -47,6 +47,15 @@
         "evidence/character-imports/kermit-sci-fi-macarena-dance.png"
       ],
       "reason": "Complete, textured character with readable motion on two dances after a bounded framing-scale correction."
+    },
+    {
+      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip",
+      "characterIds": ["agent-p"],
+      "proof": [
+        "evidence/character-imports/agent-p-silly-dancing.png",
+        "evidence/character-imports/agent-p-macarena-dance.png"
+      ],
+      "reason": "Complete, textured, front-facing character with readable motion on two dances after declaring the source's omitted Y-up orientation."
     }
   ],
   "alreadyIncluded": [
@@ -232,11 +241,6 @@
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Non-Playable Characters - Dr. Doofenshmirtz.zip",
       "reasonCode": "collapsed-motion",
       "reason": "The character lies sideways and folded into the stage across the full sampled motion."
-    },
-    {
-      "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Agent P.zip",
-      "reasonCode": "wrong-facing-performance",
-      "reason": "Only the back, hat, and tail remain readable; no front-facing performance appears in the full sampled motion."
     },
     {
       "archive": "PlayStation Vita - Phineas and Ferb_ Day of Doofenshmirtz - Playable Characters - Ferb.zip",

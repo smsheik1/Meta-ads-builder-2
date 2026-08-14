@@ -98,6 +98,19 @@ test("Patrick delegates authored scale-helper legs to shared IK and protects his
   assert.equal(patrick.motionProfile.maximumVerticalRootCorrection, 0.14);
 });
 
+test("Y-up Collada characters can opt out of the default Z-up pitch without a second loader", async () => {
+  const catalog = await readJson("assets/character-packs.json");
+  const agentP = catalog.packs.find((pack) => pack.id === "agent-p");
+  assert.ok(agentP);
+  assert.equal(agentP.pitch, 0);
+  assert.equal(agentP.yaw, 0);
+  const model = await readFile(path.join(root, agentP.model), "utf8");
+  assert.doesNotMatch(model, /<up_axis>/);
+  assert.match(model, /<init_from>Agent_P_D\.png<\/init_from>/);
+  const renderer = await readFile(path.join(root, "runtime/renderer/app.js"), "utf8");
+  assert.match(renderer, /characterPack\.pitch \?\? -Math\.PI \/ 2/);
+});
+
 test("the one-character import audit accounts for every supplied archive and every accepted proof", async () => {
   const catalog = await readJson("assets/character-packs.json");
   const audit = await readJson("assets/character-import-audit.json");
@@ -110,9 +123,9 @@ test("the one-character import audit accounts for every supplied archive and eve
   ].map((entry) => entry.archive);
 
   assert.equal(audit.counts.archivesDiscovered, 51);
-  assert.equal(audit.acceptedNew.length, 4);
+  assert.equal(audit.acceptedNew.length, 5);
   assert.equal(audit.alreadyIncluded.length, 4);
-  assert.equal(audit.rejected.length, 43);
+  assert.equal(audit.rejected.length, 42);
   assert.equal(archives.length, 51);
   assert.equal(new Set(archives).size, 51, "every source archive must be accounted for exactly once");
   assert.deepEqual([...existing, ...accepted].sort(), catalog.packs.map((pack) => pack.id).sort());

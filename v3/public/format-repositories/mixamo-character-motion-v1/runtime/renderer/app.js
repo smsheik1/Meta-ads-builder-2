@@ -421,7 +421,7 @@ async function loadCharacter(characterPack) {
   const collada = await characterLoader.loadAsync(new URL(`../../${characterPack.model}`, location.href).href);
   const character = collada.scene;
   const characterRoot = new THREE.Group();
-  character.rotation.set(-Math.PI / 2, 0, 0);
+  character.rotation.set(characterPack.pitch ?? -Math.PI / 2, 0, 0);
   characterRoot.add(character);
 
   character.traverse((object) => {
