@@ -2,11 +2,17 @@
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { access, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeAudio } from "./runtime/analyze-audio.mjs";
 import { resolveOuterBackground } from "./runtime/backgrounds.mjs";
+import {
+  CHOREOGRAPHY_ALGORITHM_VERSION,
+  choreographySelectionSignature,
+  createChoreographySeed,
+  selectChoreography,
+} from "./runtime/choreography.mjs";
 import { composeRun } from "./runtime/compose.mjs";
 import { inspectVideo } from "./runtime/inspect.mjs";
 import { writeEvaluation } from "./runtime/evaluate.mjs";
@@ -59,6 +65,149 @@ function runDirectory(runId) {
 
 async function sha256(file) {
   return createHash("sha256").update(await readFile(file)).digest("hex");
+}
+
+async function loadMotionExclusions() {
+  const exclusionPath = path.join(root, "assets/motion-exclusions.json");
+  const config = await readJson(exclusionPath);
+  if (config.schemaVersion !== 1 || !Array.isArray(config.exclusions)) {
+    throw new Error("assets/motion-exclusions.json must use schemaVersion 1 with an exclusions array.");
+  }
+  const validRoles = new Set(["solo", "finale", "reaction"]);
+  for (const exclusion of config.exclusions) {
+    if (!exclusion.characterId || !exclusion.motionId || !exclusion.reason || !exclusion.evidencePath) {
+      throw new Error("Every motion exclusion requires characterId, motionId, reason, and evidencePath.");
+    }
+    if (!Array.isArray(exclusion.roles) || !exclusion.roles.length || exclusion.roles.some((role) => !validRoles.has(role))) {
+      throw new Error(`Motion exclusion ${exclusion.characterId}/${exclusion.motionId} has invalid roles.`);
+    }
+    if (!(await exists(path.resolve(root, exclusion.evidencePath)))) {
+      throw new Error(`Motion exclusion evidence is missing: ${exclusion.evidencePath}`);
+    }
+  }
+  return { config, exclusionPath };
+}
+
+async function recentChoreographyRuns(currentRunId) {
+  const runsRoot = path.join(root, "agent-runs");
+  if (!(await exists(runsRoot))) return [];
+  const receipts = [];
+  for (const entry of await readdir(runsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.name === currentRunId || entry.name.startsWith("_")) continue;
+    const receiptPath = path.join(runsRoot, entry.name, "choreography-receipt.json");
+    if (!(await exists(receiptPath))) continue;
+    try {
+      const receipt = await readJson(receiptPath);
+      if (receipt.algorithmVersion === CHOREOGRAPHY_ALGORITHM_VERSION && Array.isArray(receipt.selections)) {
+        receipts.push(receipt);
+      }
+    } catch {
+      // A broken old receipt is ignored rather than making a new local run unusable.
+    }
+  }
+  return receipts.sort((left, right) => (
+    Date.parse(right.selectedAt || 0) - Date.parse(left.selectedAt || 0)
+  ));
+}
+
+async function applyChoreography({ directory, runId, explicitSeed, recentRuns }) {
+  const inputPath = path.join(directory, "input.json");
+  const [input, format, catalog, exclusionResult] = await Promise.all([
+    readJson(inputPath),
+    readJson(path.join(root, "format.json")),
+    loadMotionCatalog(),
+    loadMotionExclusions(),
+  ]);
+  if (!Array.isArray(input.characters) || input.characters.length !== 4) {
+    throw new Error("Set exactly four characters in input.json before running choreograph.");
+  }
+  const songPath = path.join(directory, input.songFile || "");
+  if (!(await exists(songPath))) throw new Error(`Song file is missing: ${input.songFile}`);
+  const songSha256 = await sha256(songPath);
+  const seed = createChoreographySeed({
+    formatVersion: format.version,
+    runId,
+    songSha256,
+    characterIds: input.characters.map((character) => character.characterId),
+    explicitSeed,
+  });
+  const history = recentRuns ?? await recentChoreographyRuns(runId);
+  const choreography = selectChoreography({
+    characters: input.characters,
+    motions: catalog.motions,
+    exclusions: exclusionResult.config.exclusions,
+    recentRuns: history,
+    seedUint32: seed.seedUint32,
+  });
+  const selectionByCharacter = new Map(choreography.selections.map((selection) => [selection.characterId, selection]));
+  input.characters = input.characters.map((character) => {
+    const selection = selectionByCharacter.get(character.characterId);
+    return {
+      ...character,
+      motionId: selection.solo,
+      finaleMotionId: selection.finale,
+      reactionMotionId: selection.reaction,
+    };
+  });
+  await writeJson(inputPath, input);
+  const receipt = {
+    schemaVersion: 1,
+    algorithmVersion: choreography.algorithmVersion,
+    selectedAt: new Date().toISOString(),
+    runId,
+    seed,
+    songSha256,
+    exclusionConfigSha256: await sha256(exclusionResult.exclusionPath),
+    starterMotionCount: catalog.starter.motions.length,
+    totalMotionCount: catalog.motions.length,
+    finaleEligibleCount: catalog.motions.filter((motion) => motion.durationSeconds >= 9).length,
+    cooldownRunIds: choreography.cooldownRunIds,
+    relaxations: choreography.relaxations,
+    selections: choreography.selections,
+    selectionSignature: choreographySelectionSignature(choreography.selections),
+  };
+  await writeJson(path.join(directory, "choreography-receipt.json"), receipt);
+  const statePath = path.join(directory, "state.json");
+  if (await exists(statePath)) {
+    const state = await readJson(statePath);
+    await writeJson(statePath, { ...state, status: "choreographed", choreographedAt: receipt.selectedAt });
+  }
+  return { input, receipt };
+}
+
+async function verifyChoreographyReceipt(input, directory, songPath, errors) {
+  const receiptPath = path.join(directory, "choreography-receipt.json");
+  if (!(await exists(receiptPath))) {
+    errors.push("Missing choreography-receipt.json. Run choreograph after choosing the four-character roster.");
+    return null;
+  }
+  let receipt;
+  try {
+    receipt = await readJson(receiptPath);
+  } catch {
+    errors.push("choreography-receipt.json is not valid JSON. Run choreograph again.");
+    return null;
+  }
+  const selections = input.characters.map((character) => ({
+    characterId: character.characterId,
+    solo: character.motionId,
+    finale: character.finaleMotionId,
+    reaction: character.reactionMotionId,
+  }));
+  if (receipt.algorithmVersion !== CHOREOGRAPHY_ALGORITHM_VERSION) {
+    errors.push("The choreography receipt uses an old algorithm. Run choreograph again.");
+  }
+  if (receipt.selectionSignature !== choreographySelectionSignature(selections)) {
+    errors.push("The roster or motion assignments changed after choreography selection. Run choreograph again.");
+  }
+  if (await exists(songPath) && receipt.songSha256 !== await sha256(songPath)) {
+    errors.push("The song changed after choreography selection. Run choreograph again.");
+  }
+  const exclusionPath = path.join(root, "assets/motion-exclusions.json");
+  if (receipt.exclusionConfigSha256 !== await sha256(exclusionPath)) {
+    errors.push("The evidence-backed motion exclusions changed. Run choreograph again.");
+  }
+  return receipt;
 }
 
 async function probeDuration(file) {
@@ -235,7 +384,7 @@ async function generateDialogue(input, directory) {
   return assets;
 }
 
-async function validateInput(inputPath, { receiptPath } = {}) {
+async function validateInput(inputPath, { receiptPath, requireChoreographyReceipt = false } = {}) {
   const input = await readJson(inputPath);
   const directory = path.dirname(inputPath);
   const errors = [];
@@ -248,9 +397,10 @@ async function validateInput(inputPath, { receiptPath } = {}) {
   if (!Number.isFinite(input.songExcerptStart) || input.songExcerptStart < 0) errors.push("songExcerptStart must be non-negative.");
   if (!Array.isArray(input.characters) || input.characters.length !== 4) errors.push("Exactly four characters are required.");
 
-  const [catalog, motionCatalog] = await Promise.all([
+  const [catalog, motionCatalog, exclusionResult] = await Promise.all([
     readJson(path.join(motionRoot, "assets/character-packs.json")),
     loadMotionCatalog(),
+    loadMotionExclusions(),
   ]);
   let outerBackground = null;
   try {
@@ -274,6 +424,21 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     else if (finaleMotion.durationSeconds < 9) errors.push(`Finale motion must cover nine uninterrupted seconds: ${character.finaleMotionId}`);
     if (!/^#[0-9a-fA-F]{6}$/.test(character.color || "")) errors.push(`Invalid color for ${character.characterId}`);
     if (typeof character.taunt !== "string" || character.taunt.length > 58 || (index > 0 && !character.taunt.trim())) errors.push(`Invalid taunt for ${character.characterId}`);
+    for (const [role, motionId] of [["solo", character.motionId], ["finale", character.finaleMotionId], ["reaction", character.reactionMotionId]]) {
+      if (exclusionResult.config.exclusions.some((exclusion) => (
+        exclusion.characterId === character.characterId
+        && exclusion.motionId === motionId
+        && exclusion.roles.includes(role)
+      ))) errors.push(`Evidence-backed exclusion blocks ${character.characterId}/${motionId} as ${role}.`);
+    }
+  }
+  const selectedMotionIds = (input.characters || []).flatMap((character) => [
+    character.motionId,
+    character.finaleMotionId,
+    character.reactionMotionId,
+  ]);
+  if (new Set(selectedMotionIds).size !== selectedMotionIds.length) {
+    errors.push("All twelve solo, finale, and reaction assignments must be distinct within one video.");
   }
   const songPath = path.join(directory, input.songFile || "");
   if (!(await exists(songPath))) errors.push(`Song file is missing: ${input.songFile}`);
@@ -283,6 +448,9 @@ async function validateInput(inputPath, { receiptPath } = {}) {
     songDuration = Number(probe.format.duration);
     if (input.songExcerptStart + 30 > songDuration + 0.01) errors.push("The selected excerpt extends beyond the song.");
   }
+  const choreographyReceipt = requireChoreographyReceipt
+    ? await verifyChoreographyReceipt(input, directory, songPath, errors)
+    : null;
   if (errors.length) throw new Error(`Validation failed:\n- ${errors.join("\n- ")}`);
   const dialogueCache = await dialogueCacheStatus(input, directory);
   const receipt = {
@@ -300,6 +468,13 @@ async function validateInput(inputPath, { receiptPath } = {}) {
       finale: finaleMotionId,
       reaction: reactionMotionId,
     })),
+    choreography: choreographyReceipt && {
+      algorithmVersion: choreographyReceipt.algorithmVersion,
+      seedSha256: choreographyReceipt.seed.seedSha256,
+      cooldownRunIds: choreographyReceipt.cooldownRunIds,
+      relaxations: choreographyReceipt.relaxations,
+      receipt: "choreography-receipt.json",
+    },
     providerPlan: {
       mixamoApiCalls: 0,
       fishAudioCallsRequired: dialogueCache.filter((entry) => !entry.cached).length,
@@ -330,12 +505,22 @@ async function initialize() {
   await writeJson(path.join(directory, "input.json"), input);
   await writeJson(path.join(directory, "analysis.json"), analysis);
   await writeJson(path.join(directory, "state.json"), { status: "initialized", attempts: 0, createdAt: new Date().toISOString() });
-  console.log(JSON.stringify({ directory, analysis, input }, null, 2));
+  const choreography = await applyChoreography({ directory, runId: args.run, explicitSeed: args.seed });
+  console.log(JSON.stringify({ directory, analysis, input: choreography.input, choreography: choreography.receipt }, null, 2));
+}
+
+async function choreographRun() {
+  const directory = runDirectory(args.run);
+  const result = await applyChoreography({ directory, runId: args.run, explicitSeed: args.seed });
+  console.log(JSON.stringify(result.receipt, null, 2));
 }
 
 async function validateRun() {
   const directory = runDirectory(args.run);
-  const result = await validateInput(path.join(directory, "input.json"), { receiptPath: path.join(directory, ".validation.json") });
+  const result = await validateInput(path.join(directory, "input.json"), {
+    receiptPath: path.join(directory, ".validation.json"),
+    requireChoreographyReceipt: true,
+  });
   const state = await readJson(path.join(directory, "state.json"));
   await writeJson(path.join(directory, "state.json"), { ...state, status: "validated", validatedAt: new Date().toISOString() });
   console.log(JSON.stringify(result.receipt, null, 2));
@@ -343,7 +528,10 @@ async function validateRun() {
 
 async function renderRun() {
   const directory = runDirectory(args.run);
-  const { input } = await validateInput(path.join(directory, "input.json"), { receiptPath: path.join(directory, ".validation.json") });
+  const { input } = await validateInput(path.join(directory, "input.json"), {
+    receiptPath: path.join(directory, ".validation.json"),
+    requireChoreographyReceipt: true,
+  });
   const dialogueAssets = await generateDialogue(input, directory);
   const statePath = path.join(directory, "state.json");
   const state = await readJson(statePath);
@@ -475,7 +663,7 @@ async function finalizeRun() {
       friendly: "eval-report.md",
     },
     evidence: [
-      "contact-sheet.png", "quality-report.json", "render-report.json", ".validation.json", "review-packet.json",
+      "contact-sheet.png", "quality-report.json", "render-report.json", "choreography-receipt.json", ".validation.json", "review-packet.json",
       "blind-review.submission.json", "blind-review.json",
       ...(secondaryReview ? ["blind-review.secondary.submission.json", "blind-review.secondary.json", "blind-review-comparison.json"] : []),
     ],
@@ -495,8 +683,9 @@ async function finalizeRun() {
 
 async function checkRepo() {
   for (const tool of ["node", "npm", "ffmpeg", "ffprobe"]) await execute(tool, tool === "node" || tool === "npm" ? ["--version"] : ["-version"], { capture: true });
-  for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/voice-presets.json", "assets/voice-previews/manifest.json"]) await readJson(path.join(root, file));
-  for (const file of ["runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "runtime/review.mjs", "prompts/blind-review.md", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
+  for (const file of ["format.json", "requirements.json", "input-contract.json", "composition-contract.json", "output-contract.json", "quality.json", "assets.json", "content-boundary.json", "assets/motion-exclusions.json", "assets/voice-presets.json", "assets/voice-previews/manifest.json"]) await readJson(path.join(root, file));
+  await loadMotionExclusions();
+  for (const file of ["runtime/choreography.mjs", "runtime/compose.mjs", "runtime/timeline.mjs", "runtime/analyze-audio.mjs", "runtime/inspect.mjs", "runtime/review.mjs", "prompts/blind-review.md", "../mixamo-character-motion-v1/runtime/renderer/app.js"]) await access(path.join(root, file));
   await execute("npm", ["test"]);
   await execute("npm", ["test"], { cwd: motionRoot });
   console.log(JSON.stringify({ status: "pass", renderer: "mixamo-character-motion-v1/runtime/renderer/app.js" }, null, 2));
@@ -546,6 +735,13 @@ async function smoke() {
   input.songFile = "source.wav";
   await writeJson(path.join(directory, "input.json"), input);
   await generateSmokeTone(path.join(directory, input.songFile), 60, 220);
+  const choreography = await applyChoreography({
+    directory,
+    runId: "_smoke",
+    explicitSeed: "packaged-smoke",
+    recentRuns: [],
+  });
+  Object.assign(input, choreography.input);
 
   const specs = dialogueSpecs(input);
   const assets = [];
@@ -569,7 +765,10 @@ async function smoke() {
     provider: "synthetic-smoke",
     assets: assets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(directory, file) })),
   });
-  await validateInput(path.join(directory, "input.json"), { receiptPath: path.join(directory, ".validation.json") });
+  await validateInput(path.join(directory, "input.json"), {
+    receiptPath: path.join(directory, ".validation.json"),
+    requireChoreographyReceipt: true,
+  });
   await composeRun({ input, dialogueAssets: assets, runDirectory: directory, outputPath: path.join(directory, "smoke.mp4") });
   const report = await inspectVideo({
     videoPath: path.join(directory, "smoke.mp4"),
@@ -583,11 +782,12 @@ switch (command) {
   case "check": await checkRepo(); break;
   case "smoke": await smoke(); break;
   case "init": await initialize(); break;
+  case "choreograph": await choreographRun(); break;
   case "validate": await validateRun(); break;
   case "render": await renderRun(); break;
   case "inspect": await inspectRun(); break;
   case "finalize": await finalizeRun(); break;
   case "list-motions": await listMotions(); break;
   case "import-motion": await importMotion(); break;
-  default: throw new Error("Use check, init, validate, render, inspect, finalize, list-motions, or import-motion.");
+  default: throw new Error("Use check, init, choreograph, validate, render, inspect, finalize, list-motions, or import-motion.");
 }

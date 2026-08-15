@@ -34,6 +34,8 @@
   "motionAssignments": {
     "perCharacter": ["motionId", "finaleMotionId", "reactionMotionId"],
     "source": "the local normalized motion catalog",
+    "selection": "the official seeded choreography selector materializes twelve distinct assignments before validation; all bundled motions are solo-eligible and finale motions must last at least nine seconds",
+    "cooldown": "corresponding role assignments from the two newest local choreography receipts are avoided; the oldest receipt is relaxed first only if required",
     "newMotionPath": "operator-downloaded DAE normalized by runner.mjs import-motion",
     "runtimeProviderCalls": 0
   },
@@ -45,5 +47,5 @@
     "blindReview": "blind-review.json",
     "rule": "finalize emits one ready-to-return bundle only after all technical gates and the hash-bound blind creative review pass; near-threshold and critical-floor passes also require independent second-review agreement"
   },
-  "evidence": ["analysis.json", ".validation.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "review-packet.json", "blind-review.submission.json", "blind-review.json", "blind-review.secondary.submission.json (when escalated)", "blind-review.secondary.json (when escalated)", "blind-review-comparison.json (when escalated)", "eval-report.json", "eval-report.md", "delivery.json", "state.json"]
+  "evidence": ["analysis.json", "choreography-receipt.json", ".validation.json", "dialogue/manifest.json", "render-report.json", "contact-sheet.png", "quality-report.json", "review-packet.json", "blind-review.submission.json", "blind-review.json", "blind-review.secondary.submission.json (when escalated)", "blind-review.secondary.json (when escalated)", "blind-review-comparison.json (when escalated)", "eval-report.json", "eval-report.md", "delivery.json", "state.json"]
 }

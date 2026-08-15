@@ -1,5 +1,15 @@
 {
   "schemaVersion": 1,
+  "choreographySelection": {
+    "command": "node runner.mjs choreograph --run=<id>",
+    "seedRule": "The song, run ID, Format version, and ordered roster produce a reproducible default seed; --seed=<label> deliberately rerolls it.",
+    "soloRule": "All 25 bundled starter motions are eligible; the four solo assignments are distinct.",
+    "finaleRule": "Only motions lasting at least nine seconds are eligible; the four finale assignments are distinct.",
+    "reactionRule": "Reaction assignments are distinct while the catalog has enough compatible motions.",
+    "withinRunRule": "The official selector does not repeat any motion across the twelve assignments in one video.",
+    "cooldownRule": "The selector avoids the corresponding role assignments from the two most recent local runs and relaxes the oldest run first only when required.",
+    "exclusionRule": "Character-motion exclusions require preserved rendered evidence in assets/motion-exclusions.json."
+  },
   "required": ["title", "songTitle", "songFile", "songExcerptStart", "openingLine", "closingLine", "characters"],
   "properties": {
     "title": {"type": "string", "minLength": 1, "maxLength": 60},

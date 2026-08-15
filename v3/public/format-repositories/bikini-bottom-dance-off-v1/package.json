@@ -1,13 +1,14 @@
 {
   "name": "wiggly-bikini-bottom-dance-off-format-kit",
   "private": true,
-  "version": "0.16.0",
+  "version": "0.17.0",
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "check": "node runner.mjs check",
     "smoke": "node runner.mjs smoke",
     "list-motions": "node runner.mjs list-motions",
+    "choreograph": "node runner.mjs choreograph",
     "build:kit": "node build-kit.mjs",
     "init": "node runner.mjs init",
     "validate": "node runner.mjs validate",

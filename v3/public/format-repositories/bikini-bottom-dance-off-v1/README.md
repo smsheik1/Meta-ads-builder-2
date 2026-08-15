@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off
 
-A 47-second 9:16 Format that turns one song excerpt and twelve user-selected motion assignments into a four-way character dance battle. The Reel opens on a silent-song 3–2–1 countdown over dimmed character panels, then alternates spoken character roasts with solos lasting at least five seconds: each incoming challenger taunts the dancer immediately before them and takes over. Captions use a dedicated lane below the character grid instead of covering the cast. All four return for a nine-second group showcase, then say the comment prompt together in time-matched voices while using their selected reaction motions. The closing vote prompt hands back to the matching dimmed-character countdown so the Reel loops without a visible cut.
+A 47-second 9:16 Format that turns one song excerpt into a four-way character dance battle with twelve reproducibly selected, non-repeating motion assignments. The Reel opens on a silent-song 3–2–1 countdown over dimmed character panels, then alternates spoken character roasts with solos lasting at least five seconds: each incoming challenger taunts the dancer immediately before them and takes over. Captions use a dedicated lane below the character grid instead of covering the cast. All four return for a nine-second group showcase, then say the comment prompt together in time-matched voices while using distinct reaction motions. The closing vote prompt hands back to the matching dimmed-character countdown so the Reel loops without a visible cut.
 
 This Repo sequences character clips; it does not own another character renderer. Its shared Character Dance Lab dependency now contains 22 individually verified motion-ready characters. The discovery page derives that roster directly from the shared catalog and uses the same clean interactive 3D card for every accepted character. Character-specific rest-view repairs remain declarative in that catalog, share the official runtime and preview exporter, and require committed before/after evidence. Twenty cards include fixed, hashed audio previews: 18 user-approved public Fish Audio voices, one user-approved private Olaf clone preview, and one original locally synthesized Agent P cue. Man Ray and Batman Beyond remain motion-ready but visibly voice-pending because character- and actor-name searches found no credible model. The shared character catalog defines motion readiness; `assets/voice-presets.json` and the input contract define episode voice readiness; `assets/voice-previews/manifest.json` defines public preview playback.
 
@@ -9,6 +9,7 @@ npm run check
 npm run smoke
 npm run list-motions
 node runner.mjs init --run=wiggle-proof --song=/absolute/path/to/song.mp3
+node runner.mjs choreograph --run=wiggle-proof
 node runner.mjs validate --run=wiggle-proof
 node runner.mjs render --run=wiggle-proof --approve-provider
 node runner.mjs inspect --run=wiggle-proof
@@ -17,7 +18,9 @@ node runner.mjs finalize --run=wiggle-proof --review=/absolute/path/to/blind-rev
 
 `npm run check` verifies both the Dance Off contracts and the bundled character-motion foundation, including an isolated local `import-motion` round trip.
 
-Every character chooses three motion IDs in `input.json`: `motionId` for the solo, `finaleMotionId` for the uninterrupted group showcase, and `reactionMotionId` for dialogue and the closing CTA. The bundled `assets/motions/manifest.json` is a frozen 25-motion starter library. To add motion 26 or 260 without changing that foundation, download one Collada file with skin from Mixamo and import it into the separate ignored `user-motions/` library:
+The official `choreograph` command materializes three motion IDs per character in `input.json`: `motionId` for the solo, `finaleMotionId` for the uninterrupted group showcase, and `reactionMotionId` for dialogue and the closing CTA. Its default seed is derived from the Format version, run ID, song hash, and ordered roster; `--seed=<label>` produces a deliberate reproducible reroll. All 25 bundled starter motions are eligible for solos, while the 13 motions lasting at least nine seconds are finale-eligible. The selector uses twelve distinct motions in a video, avoids same-role usage from the two newest local run receipts, and relaxes the oldest receipt first only if the compatible pool becomes too small. `assets/motion-exclusions.json` is deliberately empty until a rendered character-motion failure and its evidence justify an entry.
+
+To add motion 26 or 260 without changing that foundation, download one Collada file with skin from Mixamo and import it into the separate ignored `user-motions/` library:
 
 ```bash
 node runner.mjs import-motion --source=/absolute/path/to/Motion.dae --id=my-motion --label="My Motion"
@@ -46,4 +49,4 @@ Export `FISH_STUDIO_APIKEY` locally; never add an env file to the kit. The 19 ap
 
 | Fixed mechanics | Replaceable inputs |
 |---|---|
-| 9:16 Reel, 2×2 grid, countdown, four solo rounds, uninterrupted finale, replay bridge, voice/song gating, official character renderer | Song/excerpt, outer background, verified roster/order, solo/finale/reaction motion IDs, opening, taunts, closing, panel colors |
+| 9:16 Reel, 2×2 grid, countdown, four solo rounds, uninterrupted finale, replay bridge, voice/song gating, seeded non-repeating choreography selector, official character renderer | Song/excerpt, outer background, verified roster/order, choreography seed, opening, taunts, closing, panel colors |
