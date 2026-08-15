@@ -63,7 +63,8 @@ try {
     scripts: {
       check: "node verify-entrypoints.mjs && npm --workspace wiggly-bikini-bottom-dance-off-format-kit run check",
       smoke: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run smoke",
-      "list-motions": "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run list-motions"
+      "list-motions": "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run list-motions",
+      choreograph: "npm --workspace wiggly-bikini-bottom-dance-off-format-kit run choreograph"
     }
   }, null, 2)}\n`);
   const files = await listFiles(staged);

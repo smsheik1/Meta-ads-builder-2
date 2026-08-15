@@ -13,9 +13,10 @@
     "Four-character spoken comment chorus time-matched to the final character's closing delivery while every character uses its selected reaction motion",
     "One-second vote-to-countdown replay bridge whose dimmed-character final frame matches the opening countdown",
     "Dedicated caption lane below the character grid",
+    "Seeded choreography selection with twelve distinct within-video motions, two-run role cooldown, and oldest-first deterministic relaxation",
     "Character pixels rendered only by the Character Dance Lab renderer"
   ],
-  "replaceable": ["song and excerpt", "outer-canvas background", "verified four-character roster and order", "solo, finale, and reaction motions per character", "opening line", "taunt text", "closing line", "panel accent colors"],
+  "replaceable": ["song and excerpt", "outer-canvas background", "verified four-character roster and order", "choreography seed", "opening line", "taunt text", "closing line", "panel accent colors"],
   "outOfScope": ["automatic rights clearance", "creating new voice clones", "motion-specific rig patches", "timeline editor"],
   "rendererInvariant": "The compositor may crop, dim, sequence, label, and frame clips, but every animated character frame must come from mixamo-character-motion-v1/runtime/renderer/app.js."
 }

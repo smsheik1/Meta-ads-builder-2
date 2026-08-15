@@ -443,6 +443,29 @@ test("the compositor delegates character pixels to the motion repo", async () =>
   assert.match(compositor, /characterClipName/);
 });
 
+test("real runs use the official reproducible choreography receipt instead of smoke defaults", async () => {
+  const [runner, packageJson, inputContract, outputContract, exclusions, skill] = await Promise.all([
+    readFile(new URL("runner.mjs", root), "utf8"),
+    readJson("package.json"),
+    readJson("input-contract.json"),
+    readJson("output-contract.json"),
+    readJson("assets/motion-exclusions.json"),
+    readFile(new URL("SKILL.md", root), "utf8"),
+  ]);
+  assert.equal(packageJson.scripts.choreograph, "node runner.mjs choreograph");
+  assert.match(runner, /case "choreograph"/);
+  assert.match(runner, /requireChoreographyReceipt: true/);
+  assert.match(runner, /All twelve solo, finale, and reaction assignments must be distinct/);
+  assert.match(runner, /Run choreograph again/);
+  assert.match(skill, /node runner\.mjs choreograph --run=<id>/);
+  assert.match(skill, /all 25 bundled starters are solo-eligible/i);
+  assert.equal(inputContract.choreographySelection.withinRunRule.includes("twelve assignments"), true);
+  assert.match(inputContract.choreographySelection.cooldownRule, /two most recent/);
+  assert.match(outputContract.evidence.join("\n"), /choreography-receipt\.json/);
+  assert.deepEqual(exclusions.exclusions, []);
+  assert.match(exclusions.policy, /rendered visual failure/);
+});
+
 test("the package boundary keeps Mixamo local and external calls explicit", async () => {
   const boundary = await readJson("content-boundary.json");
   assert.equal(boundary.localImports[0].providerApiCalls, 0);

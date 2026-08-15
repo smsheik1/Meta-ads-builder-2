@@ -182,6 +182,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Bikini Bottom Dance Off established the structure, and Animal Conversations reused the same shared page components while preserving its zero-provider audio workflow, character assets, camera grammar, proof, and exact v0.7.0 download. The publication guard rejects unknown future Formats until they register the rich presentation.
 
+### 21. Keep smoke content out of real initialization
+
+**Rule:** A smoke fixture may prove structure, but a real `init` must either run the official content selector or leave replaceable creative choices explicitly unresolved. Validation must reject stale fixture-derived selections after a dependent input such as the roster changes.
+
+**Why:** Bikini Bottom Dance Off initialized every song with the same smoke choreography, then relied on an agent to replace twelve motion IDs manually. Agents kept familiar safe assignments, so nominally random episodes repeated the same dances.
+
+**Evidence:** The first randomized-cast `Life Goes On` run exposed the repetition. Dance Off `0.17.0` moved choreography into a seeded selector, proved identical-seed reproducibility, rejected a roster changed after selection, recorded a two-run cooldown, and rendered a 47-second smoke with twelve distinct motions through the unchanged official renderer.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

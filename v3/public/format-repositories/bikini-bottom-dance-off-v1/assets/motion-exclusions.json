@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "policy": "Add a character-motion exclusion only after a rendered visual failure is preserved at evidencePath.",
+  "exclusions": []
+}

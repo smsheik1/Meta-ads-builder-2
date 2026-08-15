@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.16.0`
+Format version: `0.17.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -55,6 +55,39 @@ The rebuilt `0.16.0` ZIP was then extracted into a clean temporary directory,
 installed with zero audit vulnerabilities, passed its cross-agent entrypoint
 check and all 52 package tests, and independently completed the same 47-second
 smoke render without a provider call.
+
+Version `0.17.0` fixes the repeated-choreography failure observed in the first
+blind run with a new song and randomized cast. Earlier runs began by copying the
+same smoke-fixture assignments, then relied on an agent to replace them by hand;
+validation checked only existence and finale duration. The official
+`choreograph` command now derives a reproducible seed from the run, song, Format,
+and ordered roster, assigns twelve distinct motions, keeps every one of the 25
+bundled starters solo-eligible, limits finales to the 13 motions lasting at
+least nine seconds, and avoids same-role assignments from the two newest local
+runs. If compatibility leaves too few choices, it records an oldest-run-first
+cooldown relaxation. Character-motion exclusions remain empty until a rendered
+failure and preserved evidence justify one. Validation requires the matching
+receipt for real runs and rejects repeated or stale assignments.
+
+The `0.17.0` source proof passed all 56 Dance Off and Character Motion tests.
+An explicit-seed rerun preserved the exact `input.json` SHA-256; changing the
+roster made validation reject the stale receipt; rerunning `choreograph`
+restored a clean validation; and a second local run recorded the first as its
+cooldown source without repeating any same-role assignment. The full free smoke
+then rendered twelve distinct selected motions through the one official
+renderer and passed all 16 deterministic gates at 1080×1920, 30 fps, and
+47 seconds.
+
+The rebuilt kit was also installed and exercised from a clean extraction. It
+passed the cross-agent entrypoint, all 56 package tests, and the complete
+provider-free smoke. A separate real-song run from that extraction randomly
+drew Larry, Mr. Krabs, Phineas, and Squidward, selected twelve distinct motions
+without relaxing the cooldown, made eight approved Fish Audio calls, and passed
+all 16 deterministic inspection gates. The resulting 47-second MP4 preserved
+four 5.34-second solos, four continuously moving nine-second finale panels, four
+closing voices, and a `0.998655` loop-seam SSIM. The operator-supplied song,
+generated dialogue cache, and finished episode remain runtime evidence outside
+the distributable ZIP.
 
 ## Two independent format fixtures
 
