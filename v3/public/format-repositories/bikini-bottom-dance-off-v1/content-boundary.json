@@ -11,8 +11,8 @@
     "the frozen 25-motion normalized starter catalog",
     "the four operator-supplied character packs",
     "four generated 1080x1920 outer-canvas background plates",
-    "public Fish Audio reference IDs and non-secret delivery presets",
-    "twenty hashed discovery voice previews: nineteen approved Fish generations and one original nonverbal Agent P cue"
+    "public Fish Audio fallback reference IDs, optional private-override environment-variable names without values, and non-secret delivery presets",
+    "twenty hashed discovery voice previews: eighteen approved public Fish generations, one user-approved private Olaf generation, and one original nonverbal Agent P cue"
   ],
   "episodeInputs": [
     "a local song file and excerpt",
@@ -37,7 +37,7 @@
       "provider": "Fish Audio",
       "when": "a required dialogue clip is missing or stale",
       "approval": "render requires --approve-provider",
-      "secretNames": ["FISH_STUDIO_APIKEY"],
+      "secretNames": ["FISH_STUDIO_APIKEY", "BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID"],
       "outputs": "ignored run-local WAV files and non-secret receipts"
     }
   ],

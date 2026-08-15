@@ -60,3 +60,19 @@ test("the interactive renderer owns a recoverable atomic selection lifecycle", a
   assert.match(app, /Math\.max\(0, now - state\.startedAt\)/);
   assert.match(app, /finally\s*{\s*requestAnimationFrame\(animate\)/);
 });
+
+test("completed frame exports cannot hang on browser or static-server teardown", async () => {
+  const render = await readFile(new URL("../runtime/render.mjs", import.meta.url), "utf8");
+  assert.match(render, /finishWithin\(\(\) => browser\.close\(\), "Headless browser"\)/);
+  assert.match(render, /server\.closeIdleConnections\?\.\(\)/);
+  assert.match(render, /server\.closeAllConnections\?\.\(\)/);
+  assert.ok(
+    render.indexOf("await closeStaticServer(server)") <
+      render.indexOf('await execute("ffmpeg"'),
+    "renderer teardown must finish before ffmpeg encoding begins",
+  );
+  assert.ok(
+    render.indexOf("process.stdout.write") < render.indexOf("process.exit(0)"),
+    "the successful CLI renderer must flush its receipt before forcing retained Playwright handles closed",
+  );
+});

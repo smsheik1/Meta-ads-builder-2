@@ -27,6 +27,26 @@ function execute(program, args) {
   });
 }
 
+async function finishWithin(action, label, timeoutMs = 5_000) {
+  let timeout;
+  const completed = await Promise.race([
+    Promise.resolve().then(action).then(() => true),
+    new Promise((resolve) => {
+      timeout = setTimeout(() => resolve(false), timeoutMs);
+    }),
+  ]);
+  clearTimeout(timeout);
+  if (!completed) console.warn(`${label} did not close within ${timeoutMs}ms; continuing teardown.`);
+}
+
+async function closeStaticServer(server) {
+  await finishWithin(() => new Promise((resolve, reject) => {
+    server.close((error) => error ? reject(error) : resolve());
+    server.closeIdleConnections?.();
+    server.closeAllConnections?.();
+  }), "Static renderer server");
+}
+
 function insideRoot(file) {
   const resolved = path.resolve(file);
   if (resolved !== formatRoot && !resolved.startsWith(`${formatRoot}${path.sep}`)) {
@@ -142,8 +162,11 @@ try {
     if (smoke || order % 30 === 0) console.log(`Rendered ${order + 1}/${sourceFrames.length} (source frame ${sourceFrame})`);
   }
 } finally {
-  if (browser) await browser.close();
-  await new Promise((resolve) => server.close(resolve));
+  try {
+    if (browser) await finishWithin(() => browser.close(), "Headless browser");
+  } finally {
+    await closeStaticServer(server);
+  }
 }
 
 const outputFps = smoke ? 3 : info.fps;
@@ -243,4 +266,10 @@ const report = {
   frames: diagnostics,
 };
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-console.log(JSON.stringify({ output: outputPath, report: reportPath, frames: outputFrames, rootTravelRetention: report.retarget.rootTravelRetention }, null, 2));
+await new Promise((resolve) => process.stdout.write(`${JSON.stringify({
+  output: outputPath,
+  report: reportPath,
+  frames: outputFrames,
+  rootTravelRetention: report.retarget.rootTravelRetention,
+}, null, 2)}\n`, resolve));
+process.exit(0);

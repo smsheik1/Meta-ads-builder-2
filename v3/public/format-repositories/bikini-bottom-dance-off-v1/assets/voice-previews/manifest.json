@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "provider": "Fish Audio",
   "model": "s2.1-pro-free",
-  "generatedAt": "2026-08-14T19:40:15.790Z",
+  "generatedAt": "2026-08-15T01:32:14Z",
   "previews": [
     {
       "characterId": "spongebob",
@@ -138,15 +138,18 @@
     },
     {
       "characterId": "olaf",
-      "line": "Hi, I'm Olaf, and I like warm hugs.",
+      "line": "Hi! I'm Olaf, and I like warm hugs.",
       "kind": "fish-tts",
       "status": "ready",
       "path": "assets/voice-previews/olaf.mp3",
-      "contentHash": "f86dcf55e794f17c683c6f8b37091dfceb0dba7f65c36b209f42975a7f72efa7",
-      "voiceReferenceFingerprint": "673d7821b93f",
-      "durationSeconds": 2.92,
-      "bytes": 47691,
-      "sha256": "de413e2b88f94a9d103d1d740624f60ed005347052926e9d5af4bafcb4ba5e90"
+      "contentHash": "efc8800b5178c5fd5530a328f82f80b4a94bde08018c2a6d9b7582e0edc95caa",
+      "voiceReferenceFingerprint": "80aa19302c31",
+      "referenceSource": "operator-private-override",
+      "model": "s2-pro",
+      "source": "User-approved preview generated from an operator-private Fish Audio clone. The model ID and reference audio are not packaged.",
+      "durationSeconds": 3.135,
+      "bytes": 50646,
+      "sha256": "866f72a1e71c719ba49f4d3bb23bc47c354a6faae4dfa9eaebab8d102621cefd"
     },
     {
       "characterId": "sandy",

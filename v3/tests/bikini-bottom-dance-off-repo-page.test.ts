@@ -107,7 +107,7 @@ assert.equal(delivery.finalVideo.path, "final.mp4");
 assert.match(delivery.finalVideo.sha256, /^[0-9a-f]{64}$/);
 
 assert.ok(profile?.handoff);
-assert.equal(profile.version, "0.15.0");
+assert.equal(profile.version, "0.16.0");
 assert.equal(profile.technicalHref, "/format-lab/character-dance-lab");
 assert.equal(
   profile.handoff.output,
@@ -129,6 +129,7 @@ assert.ok(
 const kitRoot = "wiggly-bikini-bottom-dance-off-format-kit";
 const archive = await JSZip.loadAsync(readFileSync(download));
 const zipEntries = Object.keys(archive.files).join("\n");
+assert.doesNotMatch(zipEntries, /secrets\.env|\.env\.local|agent-runs\//);
 for (const entry of [
   "AGENTS.md",
   "CLAUDE.md",
@@ -138,6 +139,7 @@ for (const entry of [
   "bikini-bottom-dance-off-v1/SKILL.md",
   "bikini-bottom-dance-off-v1/assets/voice-previews/manifest.json",
   "bikini-bottom-dance-off-v1/assets/voice-previews/spongebob.mp3",
+  "bikini-bottom-dance-off-v1/assets/voice-previews/olaf.mp3",
   "bikini-bottom-dance-off-v1/examples/wiggle-proof/evidence/render-report.json",
   "mixamo-character-motion-v1/assets/character-import-audit.json",
   "mixamo-character-motion-v1/evidence/character-preview-repairs/receipt.json",
@@ -155,7 +157,7 @@ const readArchivedText = async (relativePath: string) => {
 const archivedManifest = JSON.parse(
   await readArchivedText("KIT-MANIFEST.json"),
 ) as { formatVersion: string };
-assert.equal(archivedManifest.formatVersion, "0.15.0");
+assert.equal(archivedManifest.formatVersion, "0.16.0");
 const archivedAgents = await readArchivedText("AGENTS.md");
 assert.match(archivedAgents, /bikini-bottom-dance-off-v1\/SKILL\.md/);
 assert.match(archivedAgents, /exact resolved version/);
@@ -430,9 +432,16 @@ assert.doesNotMatch(
 );
 assert.match(
   voicePreviewGenerator,
-  /process\.loadEnvFile\(path\.join\(workspaceRoot, "secrets\.env"\)\)/,
+  /readNamedEnvironmentValue/,
 );
-assert.doesNotMatch(voicePreviewGenerator, /\.env\.local/);
+assert.match(
+  voicePreviewGenerator,
+  /BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID|operatorReferenceEnvironmentVariable/,
+);
+assert.doesNotMatch(
+  voicePreviewGenerator,
+  /\.env\.local|process\.loadEnvFile/,
+);
 assert.match(
   voicePreviewGenerator,
   /!\(await fileMatchesHash\(output, preview\.sha256\)\)/,
@@ -503,7 +512,7 @@ const motionReadyCharacterCatalog = (
     packs: Array<{ id: string; label: string; status: string }>;
   }
 ).packs.filter((character) => character.status === "motion-ready");
-assert.equal(trustData.version, "0.15.0");
+assert.equal(trustData.version, "0.16.0");
 assert.deepEqual(trustData.stats, {
   motions: 25,
   motionReadyCharacters: 22,
@@ -546,6 +555,19 @@ const agentPPreview = voicePreviewManifest.previews.find(
 assert.ok(agentPPreview);
 assert.equal(agentPPreview.kind, "original-nonverbal-cue");
 assert.equal(agentPPreview.status, "ready");
+const olafPreview = voicePreviewManifest.previews.find(
+  (preview) => preview.characterId === "olaf",
+);
+assert.ok(olafPreview);
+assert.equal(olafPreview.line, "Hi! I'm Olaf, and I like warm hugs.");
+assert.equal(
+  (olafPreview as { referenceSource?: string }).referenceSource,
+  "operator-private-override",
+);
+assert.match(
+  (olafPreview as { source?: string }).source ?? "",
+  /operator-private Fish Audio clone.*not packaged/i,
+);
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label }) => ({ id, label })),
   motionReadyCharacterCatalog.map(({ id, label }) => ({ id, label })),
@@ -798,6 +820,15 @@ assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
 assert.deepEqual(trustData.requirements.environmentVariables, [
   "FISH_STUDIO_APIKEY",
 ]);
+assert.deepEqual(
+  trustData.requirements.optionalOperatorEnvironmentVariables,
+  [{
+    name: "BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID",
+    purpose: "Use Wiggly's approved private Olaf clone instead of the packaged transferable public fallback.",
+    valuePackaged: false,
+    requiredForPublicKit: false,
+  }],
+);
 assert.equal(
   trustData.commands.includes(
     "npm run render -- --run=episode-01 --approve-provider",

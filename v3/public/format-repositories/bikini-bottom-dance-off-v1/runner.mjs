@@ -61,13 +61,6 @@ async function sha256(file) {
   return createHash("sha256").update(await readFile(file)).digest("hex");
 }
 
-async function loadLocalEnv() {
-  for (const filename of [".env.local", ".env"]) {
-    const file = path.join(root, filename);
-    if (await exists(file)) process.loadEnvFile(file);
-  }
-}
-
 async function probeDuration(file) {
   const result = JSON.parse(await execute("ffprobe", [
     "-v", "error", "-show_entries", "format=duration", "-of", "json", file,
@@ -89,13 +82,52 @@ function dialogueSpecs(input) {
   ];
 }
 
-async function dialogueCacheStatus(input, directory) {
+function resolveVoicePreset(catalog, characterId) {
+  const preset = catalog.voices.find((voice) => voice.characterId === characterId);
+  if (!preset) throw new Error(`No Fish Audio preset for ${characterId}.`);
+  const operatorReferenceId = preset.operatorReferenceEnvironmentVariable
+    ? process.env[preset.operatorReferenceEnvironmentVariable]?.trim()
+    : "";
+  if (operatorReferenceId && !/^[0-9a-f]{32}$/.test(operatorReferenceId)) {
+    throw new Error(
+      `${preset.operatorReferenceEnvironmentVariable} must contain a Fish Audio model ID.`,
+    );
+  }
+  return {
+    referenceId: operatorReferenceId || preset.referenceId,
+    speed: preset.speed,
+    model: preset.model || catalog.model,
+    referenceSource: operatorReferenceId
+      ? "operator-private-override"
+      : "packaged-public-reference",
+    operatorReferenceEnvironmentVariable:
+      preset.operatorReferenceEnvironmentVariable || null,
+  };
+}
+
+function voiceContentHash(spec) {
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        text: spec.text,
+        referenceId: spec.referenceId,
+        speed: spec.speed,
+        model: spec.model,
+      }),
+    )
+    .digest("hex");
+}
+
+async function dialogueCacheStatus(input, directory, voiceCatalog) {
   const specs = dialogueSpecs(input);
+  const catalog = voiceCatalog || await readJson(path.join(root, "assets/voice-presets.json"));
   const dialogueDirectory = path.join(directory, "dialogue");
   const manifestPath = path.join(dialogueDirectory, "manifest.json");
   const manifest = await exists(manifestPath) ? await readJson(manifestPath) : { assets: [] };
   const entries = [];
   for (const spec of specs) {
+    const voice = resolveVoicePreset(catalog, spec.characterId);
+    const contentHash = voiceContentHash({ ...spec, ...voice });
     const asset = manifest.assets?.find((candidate) => candidate.id === spec.id);
     const file = asset?.file ? path.join(directory, asset.file) : null;
     const receiptPath = path.join(dialogueDirectory, `${spec.id}.receipt.json`);
@@ -103,8 +135,9 @@ async function dialogueCacheStatus(input, directory) {
     const cached = Boolean(asset && file && await exists(file) && receipt
       && asset.characterId === spec.characterId && asset.text === spec.text
       && (asset.timelineEventId || asset.id) === spec.timelineEventId
-      && receipt.characterId === spec.characterId && receipt.text === spec.text);
-    entries.push({ spec, asset, file, cached });
+      && receipt.characterId === spec.characterId && receipt.text === spec.text
+      && receipt.contentHash === contentHash);
+    entries.push({ spec, voice, asset, file, cached });
   }
   return entries;
 }
@@ -113,7 +146,8 @@ async function generateDialogue(input, directory) {
   const specs = dialogueSpecs(input);
   const dialogueDirectory = path.join(directory, "dialogue");
   const manifestPath = path.join(dialogueDirectory, "manifest.json");
-  const cache = await dialogueCacheStatus(input, directory);
+  const catalog = await readJson(path.join(root, "assets/voice-presets.json"));
+  const cache = await dialogueCacheStatus(input, directory, catalog);
   if (cache.every((entry) => entry.cached)) return Promise.all(cache.map(async ({ spec, file }) => ({
     ...spec,
     file,
@@ -121,15 +155,11 @@ async function generateDialogue(input, directory) {
     sha256: await sha256(file),
   })));
 
-  await loadLocalEnv();
   const apiKey = process.env.FISH_STUDIO_APIKEY || process.env.FISH_AUDIO_API_KEY || process.env.FISH_API_KEY;
-  if (!apiKey) throw new Error("Missing FISH_STUDIO_APIKEY. Add it locally; never paste it into chat.");
-  const catalog = await readJson(path.join(root, "assets/voice-presets.json"));
-  const presets = new Map(catalog.voices.map((voice) => [voice.characterId, voice]));
+  if (!apiKey) throw new Error("Missing FISH_STUDIO_APIKEY. Export it locally; never paste it into chat or add an env file to the kit.");
   const resolved = specs.map((spec) => {
-    const preset = presets.get(spec.characterId);
-    if (!preset) throw new Error(`No Fish Audio preset for ${spec.characterId}.`);
-    return { ...spec, referenceId: preset.referenceId, speed: preset.speed };
+    const voice = resolveVoicePreset(catalog, spec.characterId);
+    return { ...spec, ...voice };
   });
   await mkdir(dialogueDirectory, { recursive: true });
   const assets = [];
@@ -138,9 +168,7 @@ async function generateDialogue(input, directory) {
     const output = path.join(dialogueDirectory, `${spec.id}.wav`);
     const raw = path.join(dialogueDirectory, `${spec.id}.source.wav`);
     const receiptPath = path.join(dialogueDirectory, `${spec.id}.receipt.json`);
-    const contentHash = spec.referenceId
-      ? createHash("sha256").update(JSON.stringify({ text: spec.text, referenceId: spec.referenceId, speed: spec.speed, model: catalog.model })).digest("hex")
-      : null;
+    const contentHash = spec.referenceId ? voiceContentHash(spec) : null;
     let receipt = await exists(receiptPath) ? await readJson(receiptPath) : null;
     const cached = receipt && await exists(output)
       && receipt.characterId === spec.characterId && receipt.text === spec.text
@@ -150,7 +178,7 @@ async function generateDialogue(input, directory) {
       if (!args["approve-provider"]) throw new Error(`Fish Audio generation is required for ${spec.id}. Re-run render with --approve-provider after reviewing the script.`);
       const response = await fetch("https://api.fish.audio/v1/tts", {
         method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", model: catalog.model },
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", model: spec.model },
         body: JSON.stringify({
           text: spec.text,
           reference_id: spec.referenceId,
@@ -182,23 +210,25 @@ async function generateDialogue(input, directory) {
       const durationSeconds = await probeDuration(output);
       receipt = {
         provider: catalog.provider,
-        model: catalog.model,
+        model: spec.model,
         generatedAt: new Date().toISOString(),
         id: spec.id,
         characterId: spec.characterId,
         text: spec.text,
         contentHash,
         voiceReferenceFingerprint: createHash("sha256").update(spec.referenceId).digest("hex").slice(0, 12),
+        referenceSource: spec.referenceSource,
+        operatorReferenceEnvironmentVariable: spec.operatorReferenceEnvironmentVariable,
         durationSeconds,
         bytes: (await readFile(output)).length,
       };
       await writeJson(receiptPath, receipt);
     }
-    assets.push({ id: spec.id, timelineEventId: spec.timelineEventId, characterId: spec.characterId, text: spec.text, file: output, durationSeconds: await probeDuration(output), sha256: await sha256(output) });
+    assets.push({ id: spec.id, timelineEventId: spec.timelineEventId, characterId: spec.characterId, text: spec.text, model: spec.model, referenceSource: spec.referenceSource, file: output, durationSeconds: await probeDuration(output), sha256: await sha256(output) });
   }
   await writeJson(manifestPath, {
     provider: catalog.provider,
-    model: catalog.model,
+    models: [...new Set(assets.map((asset) => asset.model))],
     generatedAt: new Date().toISOString(),
     assets: assets.map(({ file, ...asset }) => ({ ...asset, file: path.relative(directory, file) })),
   });
