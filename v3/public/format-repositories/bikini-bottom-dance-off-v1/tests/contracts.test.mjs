@@ -123,6 +123,13 @@ test("the public character previews are complete, hashed, and honest about unava
       `${preview.characterId} should be a browser-ready MP3`,
     );
   }
+  const olaf = ready.find((preview) => preview.characterId === "olaf");
+  assert.ok(olaf);
+  assert.equal(olaf.line, "Hi! I'm Olaf, and I like warm hugs.");
+  assert.equal(olaf.referenceSource, "operator-private-override");
+  assert.equal(olaf.model, "s2-pro");
+  assert.match(olaf.source, /User-approved preview.*operator-private Fish Audio clone/);
+  assert.match(olaf.source, /model ID and reference audio are not packaged/);
 });
 
 test("the Fish voice audit covers the full motion roster without re-searching known voices", async () => {
@@ -304,16 +311,34 @@ test("the approved Fish voice presets are registered and provider calls require 
   assert.equal(voices.voices.every((voice) => voice.speed >= 1 && voice.speed <= 1.2), true);
   assert.equal(voices.voices.every((voice) => !("delivery" in voice)), true);
   assert.equal(new Set(voices.voices.map((voice) => voice.characterId)).size, 19);
-  assert.equal("privateReferenceEnvironmentVariable" in voices, false);
+  const olaf = voices.voices.find((voice) => voice.characterId === "olaf");
+  assert.ok(olaf);
+  assert.equal(
+    olaf.operatorReferenceEnvironmentVariable,
+    "BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID",
+  );
+  assert.equal(olaf.model, "s2-pro");
+  assert.equal(olaf.speed, 1);
+  assert.equal("privateReferenceId" in olaf, false);
+  assert.ok(voices.voices
+    .filter((voice) => voice.characterId !== "olaf")
+    .every((voice) => !("operatorReferenceEnvironmentVariable" in voice)));
   const runner = await readFile(new URL("runner.mjs", root), "utf8");
   assert.doesNotMatch(runner, /SQUILLIAM_VOICE_ID/);
+  assert.doesNotMatch(runner, /\.env\.local|process\.loadEnvFile|loadLocalEnv/);
   assert.match(runner, /approve-provider/);
   assert.match(runner, /api\.fish\.audio\/v1\/tts/);
+  assert.match(runner, /operatorReferenceEnvironmentVariable/);
+  assert.match(runner, /operator-private-override/);
   assert.match(runner, /sample_rate: 44100/);
   assert.match(runner, /closing-\$\{character\.characterId\}/);
   assert.match(runner, /timelineEventId: "closing"/);
   assert.match(runner, /timelineEventId: spec\.timelineEventId/);
-  assert.ok(runner.indexOf("const cache = await dialogueCacheStatus") < runner.indexOf("await loadLocalEnv()"));
+  assert.ok(
+    runner.indexOf("receipt.contentHash === contentHash") <
+      runner.indexOf("cache.every((entry) => entry.cached)"),
+    "cache validity must include the resolved voice before cached dialogue can return early",
+  );
   assert.ok(
     runner.indexOf("const cached = receipt && await exists(output)") <
       runner.indexOf("Missing packaged Fish Audio reference"),

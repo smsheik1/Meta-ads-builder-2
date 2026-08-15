@@ -1,6 +1,6 @@
 # Bikini Bottom Dance Off Wiggly Repo proof
 
-Format version: `0.15.0`
+Format version: `0.16.0`
 Current rubric: `1.1.1`
 
 ## What is packaged
@@ -28,6 +28,33 @@ receives the shared Z-up pitch correction. The page also bounds vertical orbit
 while preserving horizontal rotation. Committed before/after images and
 Larry's default/rotated browser proof live in the motion Repo's
 `evidence/character-preview-repairs/` directory.
+
+Version `0.16.0` replaces Olaf's rejected public card voice with the exact
+private-clone audition the user approved. Wiggly operator runs resolve that
+private Fish model through `BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID`, while the
+downloadable kit keeps an approved public fallback so recipients are not given
+an unusable private reference. The runtime binds cache validity to the resolved
+voice and per-voice model, so an old public-fallback Olaf clip cannot survive
+after the private override is enabled. The public package contains the fixed,
+hashed preview and environment-variable name, but excludes the private model
+ID and user-supplied reference audio.
+
+The `0.16.0` full smoke also exposed a shared Character Motion teardown bug:
+two parallel exports completed every PNG frame but waited indefinitely for
+Playwright/server handles before ffmpeg. The first bounded attempt established
+the idle server-close signature; the second proved MP4s and motion reports were
+complete but successful Node workers still retained Playwright handles. Motion
+Repo `0.8.1` now bounds browser/server teardown, closes idle and active server
+connections, flushes the success receipt, and exits the completed CLI worker.
+A regression test protects that sequence. The third and final bounded attempt
+reused the ten valid clips, completed the remaining two reactions, composed a
+47-second 1080×1920 H.264/AAC Reel, and finished at
+`technical-pass-blind-review-pending`.
+
+The rebuilt `0.16.0` ZIP was then extracted into a clean temporary directory,
+installed with zero audit vulnerabilities, passed its cross-agent entrypoint
+check and all 52 package tests, and independently completed the same 47-second
+smoke render without a provider call.
 
 ## Two independent format fixtures
 

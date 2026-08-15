@@ -98,6 +98,12 @@ type RequirementsContract = {
     pricingSource: string;
   }>;
   environmentVariables: string[];
+  optionalOperatorEnvironmentVariables: Array<{
+    name: string;
+    purpose: string;
+    valuePackaged: boolean;
+    requiredForPublicKit: boolean;
+  }>;
 };
 
 export type BikiniBottomDanceOffTrustData = FormatRepoTrustData & {
@@ -336,9 +342,9 @@ export async function getBikiniBottomDanceOffTrustData(): Promise<BikiniBottomDa
         },
         {
           title: "Voice lines",
-          cost: "Free tier",
+          cost: "Free tier or tiny usage cost",
           description:
-            "Creates the opening, taunts, and closing line in four voices.",
+            "Creates the opening, taunts, and closing line in four approved voices.",
           waiting: "Waits for your approval",
         },
         {

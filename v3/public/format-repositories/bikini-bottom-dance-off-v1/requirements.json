@@ -5,18 +5,29 @@
     {
       "name": "Fish Audio",
       "model": "s2.1-pro-free",
+      "additionalModel": "s2-pro for the approved operator-private Olaf clone",
       "purpose": "Generate one opening, three taunts, and the same closing CTA in all four assigned character voices after validation and approval.",
-      "estimatedCost": "$0 through August 31, 2026 under Fish Audio's published fair-use window; recheck before later use",
-      "pricingSource": "https://fish.audio/blog/s2-1-pro-free-api/"
+      "estimatedCost": "S2.1 Pro Free is $0 through August 31, 2026 under Fish Audio's published fair-use window. S2-Pro private-Olaf calls are pay-as-you-go at $15 per million UTF-8 bytes; recheck both before later use.",
+      "pricingSource": "https://fish.audio/blog/s2-1-pro-free-api/",
+      "paidPricingSource": "https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits"
     }
   ],
   "environmentVariables": ["FISH_STUDIO_APIKEY"],
+  "optionalOperatorEnvironmentVariables": [
+    {
+      "name": "BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID",
+      "purpose": "Use Wiggly's approved private Olaf clone instead of the packaged transferable public fallback.",
+      "valuePackaged": false,
+      "requiredForPublicKit": false
+    }
+  ],
   "notes": [
     "Character pixels are rendered by the existing Character Dance Lab renderer.",
     "Mixamo is not a runtime provider and has no supported public API in this Repo. A new motion is downloaded by the operator and normalized locally with import-motion.",
     "The unsupported gnuton/mixamo_anims_downloader browser-token script is not packaged or executed.",
     "Song files are copied into local run folders and are not packaged.",
-    "Every character admitted by the input contract has an approved packaged reference preset; the operator supplies only their own Fish Audio API key.",
+    "Every character admitted by the input contract has an approved packaged public fallback; the operator supplies their own Fish Audio API key and may optionally supply a private voice override they are authorized to use.",
+    "Olaf's public card preview uses the exact user-approved private-clone audition. Its private model ID and reference audio are excluded from the package.",
     "The discovery page never calls Fish Audio. It plays fixed hashed previews from assets/voice-previews; Man Ray and Batman Beyond remain visibly disabled instead of receiving guessed voices.",
     "Validation completes before any Fish Audio call, and render requires --approve-provider whenever a dialogue cache entry is missing or stale."
   ]

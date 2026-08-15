@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
 import {
   mkdtemp,
   mkdir,
@@ -10,6 +11,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -48,17 +50,43 @@ const fileMatchesHash = async (file, expectedHash) =>
   (await fileExists(file)) &&
   (await sha256(file)) === expectedHash;
 
-function fishContentHash(preview, preset, model) {
+function fishContentHash(preview, preset, referenceId, model) {
   return createHash("sha256")
     .update(
       JSON.stringify({
         text: preview.line,
-        referenceId: preset.referenceId,
+        referenceId,
         speed: preset.speed,
         model,
       }),
     )
     .digest("hex");
+}
+
+async function readNamedEnvironmentValue(file, name) {
+  const configured = process.env[name]?.trim();
+  if (configured) return configured;
+  if (!(await fileExists(file))) return "";
+
+  const lines = createInterface({
+    input: createReadStream(file, { encoding: "utf8" }),
+    crlfDelay: Infinity,
+  });
+  const prefix = new RegExp(`^\\s*(?:export\\s+)?${name}\\s*=`);
+  for await (const line of lines) {
+    if (!prefix.test(line)) continue;
+    let value = line.slice(line.indexOf("=") + 1).trim();
+    if (
+      value.length >= 2 &&
+      ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'")))
+    ) {
+      value = value.slice(1, -1);
+    }
+    lines.close();
+    return value.trim();
+  }
+  return "";
 }
 
 function execute(program, args) {
@@ -268,6 +296,34 @@ if (
 const presetByCharacter = new Map(
   presets.voices.map((preset) => [preset.characterId, preset]),
 );
+const operatorReferences = new Map();
+for (const preset of presets.voices) {
+  if (!preset.operatorReferenceEnvironmentVariable) continue;
+  const referenceId = await readNamedEnvironmentValue(
+    path.join(workspaceRoot, "secrets.env"),
+    preset.operatorReferenceEnvironmentVariable,
+  );
+  if (referenceId) {
+    if (!/^[0-9a-f]{32}$/.test(referenceId)) {
+      throw new Error(
+        `${preset.operatorReferenceEnvironmentVariable} must contain a Fish Audio model ID.`,
+      );
+    }
+    operatorReferences.set(preset.operatorReferenceEnvironmentVariable, referenceId);
+  }
+}
+const resolveVoice = (preset) => {
+  const operatorReferenceId = preset.operatorReferenceEnvironmentVariable
+    ? operatorReferences.get(preset.operatorReferenceEnvironmentVariable)
+    : null;
+  return {
+    referenceId: operatorReferenceId || preset.referenceId,
+    model: preset.model || presets.model,
+    referenceSource: operatorReferenceId
+      ? "operator-private-override"
+      : "packaged-public-reference",
+  };
+};
 for (const preview of manifest.previews) {
   if (!preview.line?.trim()) {
     throw new Error(`Missing preview line for ${preview.characterId}.`);
@@ -286,9 +342,11 @@ const staleFishPreviews = [];
 for (const preview of manifest.previews) {
   if (preview.kind !== "fish-tts" || preview.status !== "ready") continue;
   const preset = presetByCharacter.get(preview.characterId);
+  const voice = resolveVoice(preset);
   const output = path.join(repoRoot, preview.path);
   if (
-    preview.contentHash !== fishContentHash(preview, preset, manifest.model) ||
+    preview.contentHash !==
+      fishContentHash(preview, preset, voice.referenceId, voice.model) ||
     !(await fileMatchesHash(output, preview.sha256))
   ) {
     staleFishPreviews.push(preview);
@@ -302,8 +360,10 @@ if (staleFishPreviews.length > 0 && !approved) {
 
 let apiKey;
 if (staleFishPreviews.length > 0) {
-  process.loadEnvFile(path.join(workspaceRoot, "secrets.env"));
-  apiKey = process.env.FISH_STUDIO_APIKEY?.trim();
+  apiKey = await readNamedEnvironmentValue(
+    path.join(workspaceRoot, "secrets.env"),
+    "FISH_STUDIO_APIKEY",
+  );
   if (!apiKey) {
     throw new Error(
       "FISH_STUDIO_APIKEY is missing from the canonical repo-root secrets.env.",
@@ -323,16 +383,22 @@ try {
 
     if (preview.kind === "fish-tts") {
       const preset = presetByCharacter.get(preview.characterId);
-      const contentHash = fishContentHash(preview, preset, manifest.model);
+      const voice = resolveVoice(preset);
+      const contentHash = fishContentHash(
+        preview,
+        preset,
+        voice.referenceId,
+        voice.model,
+      );
       if (staleFishPreviews.includes(preview)) {
         console.log(
           `[${index + 1}/${manifest.previews.length}] Generating ${preview.characterId}`,
         );
         await generateFishPreview({
           apiKey,
-          model: manifest.model,
+          model: voice.model,
           output,
-          referenceId: preset.referenceId,
+          referenceId: voice.referenceId,
           speed: preset.speed,
           text: preview.line,
           temporaryDirectory,
@@ -340,9 +406,11 @@ try {
         generatedSomething = true;
         preview.contentHash = contentHash;
         preview.voiceReferenceFingerprint = createHash("sha256")
-          .update(preset.referenceId)
+          .update(voice.referenceId)
           .digest("hex")
           .slice(0, 12);
+        preview.referenceSource = voice.referenceSource;
+        preview.model = voice.model;
       }
     } else if (preview.kind === "original-nonverbal-cue") {
       const contentHash = createHash("sha256")

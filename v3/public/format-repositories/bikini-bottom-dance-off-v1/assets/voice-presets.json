@@ -61,7 +61,9 @@
     {
       "characterId": "olaf",
       "referenceId": "9008533e334c4452839ab9df2fe5a078",
-      "speed": 1.12
+      "operatorReferenceEnvironmentVariable": "BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID",
+      "model": "s2-pro",
+      "speed": 1
     },
     {
       "characterId": "aqua",
