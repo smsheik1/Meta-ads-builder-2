@@ -385,7 +385,7 @@ export function DiscoveryClient({
       <section className={styles.hero}>
         <div>
           <p className={styles.kicker}>Finished ads. Repeatable Formats.</p>
-          <h1>{savedOnly ? "The ads you kept." : "Ads worth stealing."}</h1>
+          <h1>{savedOnly ? "The ads you kept." : "npm for generative video."}</h1>
         </div>
         <div className={styles.heroCopy}>
           <strong>{savedOnly ? "Your private short list." : "See it. Trust it. Make yours."}</strong>
