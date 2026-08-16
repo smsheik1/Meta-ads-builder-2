@@ -18,10 +18,7 @@ const child = spawn(cargo, [
   "test",
   "--manifest-path",
   path.join(converterRoot, "source", "Cargo.toml"),
-  "-p",
-  "tvg",
-  "--example",
-  "export_spec",
+  "--workspace",
 ], { stdio: "inherit" });
 
 child.on("error", (error) => {

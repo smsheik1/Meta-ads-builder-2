@@ -62,16 +62,39 @@ function validateManifest(manifest) {
     if (!layer.id || !layer.file) throw new Error(`Manifest ${manifest.id} has an invalid layer.`);
     if (ids.has(layer.id)) throw new Error(`Manifest ${manifest.id} repeats layer id ${layer.id}.`);
     ids.add(layer.id);
+    if (layer.transformRef && !manifest.transforms?.[layer.transformRef]) {
+      throw new Error(`Manifest ${manifest.id} layer ${layer.id} references missing transform ${layer.transformRef}.`);
+    }
+  }
+  for (const [group, layerIds] of Object.entries(manifest.variantGroups || {})) {
+    if (!Array.isArray(layerIds) || layerIds.length === 0) {
+      throw new Error(`Manifest ${manifest.id} variant group ${group} is empty.`);
+    }
+    for (const layerId of layerIds) {
+      if (!ids.has(layerId)) throw new Error(`Manifest ${manifest.id} variant group ${group} references missing layer ${layerId}.`);
+    }
   }
 }
 
-function resolveLayers(manifest, variants) {
+function resolveLayers(manifest, cliArgs) {
+  const variants = {};
+  for (const layer of manifest.layers) {
+    if (cliArgs[layer.id] !== undefined) variants[layer.id] = cliArgs[layer.id];
+  }
+  for (const [group, layerIds] of Object.entries(manifest.variantGroups || {})) {
+    if (cliArgs[group] === undefined) continue;
+    for (const layerId of layerIds) variants[layerId] = cliArgs[group];
+  }
+
   return manifest.layers.map((layer) => {
+    const resolved = layer.transformRef
+      ? { ...layer, transform: manifest.transforms[layer.transformRef] }
+      : layer;
     const variant = variants[layer.id];
-    if (variant === undefined) return layer;
+    if (variant === undefined) return resolved;
     if (!/^\d+$/.test(String(variant))) throw new Error(`${layer.id} variant must be a drawing number.`);
     if (!/-\d+\.tvg$/i.test(layer.file)) throw new Error(`${layer.id} source cannot select a numbered drawing: ${layer.file}`);
-    return { ...layer, file: layer.file.replace(/-\d+\.tvg$/i, `-${variant}.tvg`) };
+    return { ...resolved, file: layer.file.replace(/-\d+\.tvg$/i, `-${variant}.tvg`) };
   });
 }
 
@@ -147,7 +170,7 @@ async function main() {
   const receiptPath = outputPath.replace(/\.png$/i, ".receipt.json");
   const manifest = await readJson(manifestPath);
   validateManifest(manifest);
-  const layers = resolveLayers(manifest, { mouth: args.mouth, eyes: args.eyes });
+  const layers = resolveLayers(manifest, args);
   if (!outputPath.toLowerCase().endsWith(".png")) throw new Error("Output must be a PNG file.");
 
   for (const layer of layers) {
@@ -232,7 +255,11 @@ async function main() {
   process.stdout.write(`${JSON.stringify({ outputPath, receiptPath, ...inspection })}\n`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+export { resolveLayers, validateManifest };
+
+if (path.resolve(process.argv[1] || "") === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

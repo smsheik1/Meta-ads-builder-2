@@ -1,6 +1,6 @@
 //! XML deserialization structs for `.xstage` files
 
-use serde::de::{self, DeserializeSeed, MapAccess, Visitor};
+use serde::de::{self, DeserializeSeed, IgnoredAny, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 
@@ -115,6 +115,12 @@ pub enum ProjectionType {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub enum ImageProcessingFormat {
+    #[serde(rename = "rgbaFloat")]
+    RgbaFloat,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum XmlOption {
     /// Alignment tab in Scene Settings
@@ -168,6 +174,10 @@ pub enum XmlOption {
     CanvasForBitmapLayers {
         #[serde(rename = "@size")]
         size: String, // TODO: w,h string
+    },
+    ImageProcessingFormat {
+        #[serde(rename = "@val")]
+        val: ImageProcessingFormat,
     },
     CameraInSymbols {
         #[serde(rename = "@val")]
@@ -235,6 +245,10 @@ pub struct XmlColumn {
 #[serde(rename_all = "camelCase")]
 pub enum XmlColumnContents {
     ElementSeq(XmlColumnElementSeq),
+    HeldSeq {
+        #[serde(rename = "@exposures")]
+        exposures: String,
+    },
     Step {
         #[serde(rename = "@val")]
         val: u64,
@@ -563,6 +577,8 @@ impl<'de> Deserialize<'de> for XmlSceneNode {
             Attrs,
             Ports,
             OverrideColors,
+            #[serde(other)]
+            Other,
         }
 
         struct AttrsSeed {
@@ -639,6 +655,9 @@ impl<'de> Deserialize<'de> for XmlSceneNode {
                         }
                         Field::OverrideColors => {
                             override_colors = map.next_value()?;
+                        }
+                        Field::Other => {
+                            map.next_value::<IgnoredAny>()?;
                         }
                     }
                 }
@@ -1121,4 +1140,43 @@ pub struct XmlOverrideColorColor {
     pub name: String,
     #[serde(rename = "@id")]
     pub id: String, // TODO: hex string
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ImageProcessingFormat, XmlColumn, XmlColumnContents, XmlOption, XmlSceneNode};
+
+    #[test]
+    fn parses_harmony_22_image_processing_format() {
+        let option: XmlOption =
+            quick_xml::de::from_str(r#"<imageProcessingFormat val="rgbaFloat"/>"#).unwrap();
+        assert!(matches!(
+            option,
+            XmlOption::ImageProcessingFormat {
+                val: ImageProcessingFormat::RgbaFloat
+            }
+        ));
+    }
+
+    #[test]
+    fn parses_harmony_22_held_exposure_ranges() {
+        let column: XmlColumn = quick_xml::de::from_str(
+            r#"<column type="0" name="held" displayOrder="0" anonymous="true" id="1"><heldSeq exposures="1-122,176-184"/></column>"#,
+        )
+        .unwrap();
+        assert!(matches!(
+            &column.contents[0],
+            XmlColumnContents::HeldSeq { exposures } if exposures == "1-122,176-184"
+        ));
+    }
+
+    #[test]
+    fn ignores_harmony_22_fields_on_unknown_modules() {
+        let node: XmlSceneNode = quick_xml::de::from_str(
+            r#"<module type="CurveModule" name="Curve" pos="0,0,0"><shapedROI><pt pointOn="0,0"/></shapedROI><options><collapsed val="false"/><version val="2"/></options><attrs/></module>"#,
+        )
+        .unwrap();
+        assert_eq!(node.ty, "CurveModule");
+        assert_eq!(node.name, "Curve");
+    }
 }

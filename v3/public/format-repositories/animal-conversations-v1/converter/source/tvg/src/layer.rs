@@ -445,14 +445,77 @@ where
         shape_index += 1;
     }
 
-    let mut trailer = [0; LAYER_TRAILER.len()];
-    input.read_exact(&mut trailer)?;
-    if trailer != LAYER_TRAILER {
-        return Err(ReadError::UnknownMystery(format!(
-            "unexpected layer trailer: {:02?}",
-            trailer
-        )));
-    }
+    read_layer_trailer(&mut input)?;
 
     Ok(LayerData::Vector(shapes))
+}
+
+/// Harmony 22 may emit pencil metadata after the final counted shape and before
+/// the fixed vector-layer trailer. Older files go directly to the trailer.
+fn read_layer_trailer(input: &mut impl Read) -> Result<(), ReadError> {
+    loop {
+        let mut prefix = [0; 4];
+        input.read_exact(&mut prefix)?;
+
+        if prefix == *b"tGTB" {
+            let _ = read_tgtb(input)?;
+            continue;
+        }
+
+        if prefix == *b"tGTI" {
+            let len = input.read_u32::<LE>()?;
+            let mut skipped = vec![0u8; len as usize];
+            input.read_exact(&mut skipped)?;
+            continue;
+        }
+
+        let mut trailer = [0; LAYER_TRAILER.len()];
+        trailer[..prefix.len()].copy_from_slice(&prefix);
+        input.read_exact(&mut trailer[prefix.len()..])?;
+        if trailer != LAYER_TRAILER {
+            return Err(ReadError::UnknownMystery(format!(
+                "unexpected layer trailer: {:02?}",
+                trailer
+            )));
+        }
+        return Ok(());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{read_layer_trailer, LAYER_TRAILER};
+
+    #[test]
+    fn accepts_legacy_trailer_without_metadata() {
+        let mut input = LAYER_TRAILER;
+        read_layer_trailer(&mut input).unwrap();
+    }
+
+    #[test]
+    fn accepts_harmony_22_pencil_metadata_before_trailer() {
+        let mut data = Vec::new();
+        data.extend_from_slice(b"tGTB");
+        data.extend_from_slice(&29u32.to_le_bytes());
+        data.push(0); // reuse a previously defined thickness path
+        data.extend_from_slice(&0u32.to_le_bytes()); // path id
+        data.extend_from_slice(&0.0f32.to_le_bytes());
+        data.extend_from_slice(&0u64.to_le_bytes());
+        data.extend_from_slice(&1.0f32.to_le_bytes());
+        data.extend_from_slice(&0u64.to_le_bytes());
+        data.extend_from_slice(LAYER_TRAILER);
+
+        read_layer_trailer(&mut data.as_slice()).unwrap();
+    }
+
+    #[test]
+    fn accepts_pencil_info_before_trailer() {
+        let mut data = Vec::new();
+        data.extend_from_slice(b"tGTI");
+        data.extend_from_slice(&3u32.to_le_bytes());
+        data.extend_from_slice(&[1, 2, 3]);
+        data.extend_from_slice(LAYER_TRAILER);
+
+        read_layer_trailer(&mut data.as_slice()).unwrap();
+    }
 }

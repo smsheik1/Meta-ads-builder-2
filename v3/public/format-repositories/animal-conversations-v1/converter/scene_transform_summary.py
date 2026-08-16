@@ -4,13 +4,25 @@ import sys
 import xml.etree.ElementTree as ET
 
 
+def frame_expression_contains(expression, frame):
+    for value in expression.split(","):
+        if not value:
+            continue
+        if "-" in value:
+            start, end = [int(part) for part in value.split("-", 1)]
+            if start <= frame <= end:
+                return True
+        elif int(value) == frame:
+            return True
+    return False
+
+
 def column_value(column, frame=1):
     path_point = column.find(f".//path3D/points/pt[@lockedInTime='{frame}']")
     if path_point is not None:
         return [float(value) for value in path_point.attrib["val"].split(",")]
     for point in column.findall(".//points/pt"):
-        frames = [int(value) for value in point.attrib.get("x", "").split(",") if value]
-        if frame in frames:
+        if frame_expression_contains(point.attrib.get("x", ""), frame):
             return float(point.attrib["y"])
     return None
 

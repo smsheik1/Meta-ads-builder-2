@@ -14,5 +14,7 @@ Can currently decode:
     - Some stroke thickness data
 
 ## harmony-scene
-Reads the xstage scene format (for version 21).
+Reads the xstage scene format used by Harmony 21 plus the Harmony 22 fields
+required by the tested Shaz puppet (`imageProcessingFormat`, held exposures,
+and extra metadata on unsupported deformation modules).
 This is mostly just to read the palette and find the locations of tvg files at the moment.
