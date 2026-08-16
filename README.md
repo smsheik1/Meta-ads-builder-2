@@ -61,7 +61,7 @@ A prompt tells a model what to make. A **Wiggly Repo** tells an agent how to fin
 - **[Red Dead Redemption](https://wiggly.agentenamel.com/format-lab/red-dead-redemption)** — rebuild a portrait as an atmospheric 1899 Western scene.
 - **[Mood Notes](https://wiggly.agentenamel.com/format-lab/mood-notes)** — turn a lifestyle photo into a handwritten visual journal.
 - **[GTA VI](https://wiggly.agentenamel.com/format-lab/gta-vi)** — move a portrait into a grounded neon open-world frame.
-- **[Browse 30+ image transformations](https://wiggly.agentenamel.com/discover)** gathered from creators such as [@skaigenerated](https://www.instagram.com/skaigenerated/), with source attribution preserved.
+- **[Browse 30+ image transformations](https://wiggly.agentenamel.com/discover)** spanning cinematic filters, game-inspired portraits, editorial looks, and stylized photo treatments.
 
 ### Video
 
