@@ -3,8 +3,8 @@ import { getPublishedDiscoveryEntries } from "@/features/discovery/catalog";
 import { DiscoveryClient } from "./DiscoveryClient";
 
 export const metadata: Metadata = {
-  title: "Discover Ads Worth Making | Wiggly",
-  description: "Watch finished ads and discover the repeatable Wiggly Formats behind them.",
+  title: "npm for Generative Video | Wiggly",
+  description: "Browse runnable creative Formats for image, video, and audio—complete with prompts, references, assets, instructions, and quality checks.",
 };
 
 export default function DiscoverPage() {
