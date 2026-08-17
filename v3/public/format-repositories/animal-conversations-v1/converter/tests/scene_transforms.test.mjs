@@ -7,6 +7,7 @@ import {
   inverse,
   localMatrix,
   multiply,
+  worldMatrices,
 } from "../scene_transforms.mjs";
 
 function peg(path, groupPath, position = [0, 0, 0]) {
@@ -62,4 +63,24 @@ test("matrix multiplication applies child space before parent space", () => {
   const parent = [1, 0, 0, 1, 10, 0];
   const child = [2, 0, 0, 2, 0, 0];
   assert.deepEqual(applyToPoint(multiply(parent, child), [3, 4]), [16, 8]);
+});
+
+test("world matrices accept a sampled-node override without creating a second graph", () => {
+  const scene = {
+    nodes: [peg("Top/Root", "Top")],
+    groups: [],
+    links: [],
+    columns: [],
+  };
+  const matrices = worldMatrices(scene, 12, {
+    fieldGrid: { x: 10, y: 10 },
+    sampleNodeAtFrame(node) {
+      return {
+        path: node.path,
+        type: node.type,
+        attrs: { position: { attr3dpath: [3, 2, 0] } },
+      };
+    },
+  });
+  assert.deepEqual(matrices.get("Top/Root"), [1, 0, 0, 1, 30, -20]);
 });

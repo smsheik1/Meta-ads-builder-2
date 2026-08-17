@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -151,12 +152,13 @@ async function loadAssetRegistration(assetRoot, sourceXstageSha256) {
     throw new Error("asset receipt was compiled from a different Xstage source");
   }
   const assets = new Map(receipt.assets.map((asset) => [asset.filename, asset]));
-  if (assets.size === 0 || [...assets.values()].some((asset) => (
-    !Number.isFinite(asset.canvas?.width)
-    || !Number.isFinite(asset.canvas?.height)
-    || !Number.isFinite(asset.modelOrigin?.x)
-    || !Number.isFinite(asset.modelOrigin?.y)
-  ))) {
+  if (assets.size === 0 || assets.size !== receipt.assets.length
+    || [...assets.values()].some((asset) => (
+      !Number.isFinite(asset.canvas?.width)
+      || !Number.isFinite(asset.canvas?.height)
+      || !Number.isFinite(asset.modelOrigin?.x)
+      || !Number.isFinite(asset.modelOrigin?.y)
+    ))) {
     throw new Error("asset receipt contains invalid model-space registrations");
   }
   return { assets, receipt };
@@ -166,7 +168,15 @@ async function readTightAsset(assetRoot, filename, registration, cache) {
   const record = registration.assets.get(filename);
   if (!record) return null;
   const source = path.join(assetRoot, filename);
-  if (!cache.has(source)) cache.set(source, fs.readFile(source));
+  if (!cache.has(source)) {
+    cache.set(source, fs.readFile(source).then((buffer) => {
+      const checksum = crypto.createHash("sha256").update(buffer).digest("hex");
+      if (checksum !== record.outputSha256) {
+        throw new Error(`compiled asset checksum mismatch for ${filename}`);
+      }
+      return buffer;
+    }));
+  }
   return { buffer: await cache.get(source), ...record };
 }
 
@@ -174,10 +184,12 @@ async function renderRigFrame({
   manifest,
   frame,
   assetRoot,
+  poseRuntime = null,
   outputWidth = 1280,
   outputHeight = 720,
   background = { r: 255, g: 255, b: 255, alpha: 1 },
   assetCache = new Map(),
+  includeLayerBuffers = false,
 }) {
   if (manifest.schemaVersion !== "harmony-xstage-runtime-v1") {
     throw new Error(`unsupported manifest schema ${manifest.schemaVersion}`);
@@ -189,15 +201,20 @@ async function renderRigFrame({
   const columns = indexColumns(scene);
   const matrices = worldMatrices(scene, frame, {
     fieldGrid: fieldGridForManifest(manifest),
+    ...(poseRuntime ? { sampleNodeAtFrame: poseRuntime.sampleNodeAtFrame } : {}),
   });
   const layers = [];
 
   for (const { nodePath, variant } of READ_PAINT_PLAN) {
     const node = nodes.get(nodePath);
     if (!node) throw new Error(`missing expected rig READ ${nodePath}`);
-    const sampled = sampleNode(node, columns, frame);
+    const sampled = poseRuntime
+      ? poseRuntime.sampleNodeAtFrame(node, columns, frame)
+      : sampleNode(node, columns, frame);
     if ((sampled.attrs?.opacity ?? 100) <= 0) continue;
-    const drawing = resolveReadDrawing(manifest, scene, node, frame);
+    const drawing = poseRuntime
+      ? poseRuntime.resolveDrawing(node, frame)
+      : resolveReadDrawing(manifest, scene, node, frame);
     if (!drawing) continue;
     const filename = assetFilename(drawing, variant);
     const asset = await readTightAsset(
@@ -232,12 +249,18 @@ async function renderRigFrame({
 
   return {
     buffer: output,
+    ...(includeLayerBuffers ? { analysisLayers: layers } : {}),
     receipt: {
       schemaVersion: "shaz-rig-v2-frame-receipt-v1",
       sourceXstageSha256: manifest.source.sha256,
       assetReceiptSchema: registration.receipt.schemaVersion,
       frame,
-      renderer: "tight-tvg-layers-plus-absolute-xstage-world-matrices",
+      renderer: "tight-tvg-layers-plus-absolute-rig-world-matrices",
+      mode: poseRuntime ? "pose-recipe" : "xstage-calibration",
+      ...(poseRuntime ? {
+        poseRecipeId: poseRuntime.recipe.id,
+        poseRecipeSha256: poseRuntime.recipeSha256,
+      } : {}),
       artistRenderedFramesUsed: false,
       layers: layers.map(({ nodePath, drawing, variant, filename }) => ({
         nodePath,

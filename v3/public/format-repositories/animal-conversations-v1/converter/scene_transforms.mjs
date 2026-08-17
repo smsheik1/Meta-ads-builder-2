@@ -144,7 +144,11 @@ function buildTransformGraph(scene) {
 function worldMatrices(scene, frame, convention = {}) {
   const graph = buildTransformGraph(scene);
   const columns = indexColumns(scene);
-  const samples = new Map(scene.nodes.map((node) => [node.path, sampleNode(node, columns, frame)]));
+  const sampleNodeAtFrame = convention.sampleNodeAtFrame ?? sampleNode;
+  const samples = new Map(scene.nodes.map((node) => [
+    node.path,
+    sampleNodeAtFrame(node, columns, frame),
+  ]));
   const matrices = new Map();
   const visiting = new Set();
 

@@ -4,21 +4,33 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
+import {
+  createPoseRuntime,
+  loadPoseRecipe,
+} from "./pose-recipe.mjs";
 import { loadManifest, renderRigFrame } from "./rig-v2-renderer.mjs";
 
 function parseArgs(values) {
-  const args = { manifest: null, frame: null, assets: null, output: null, receipt: null };
+  const args = {
+    manifest: null,
+    frame: null,
+    assets: null,
+    recipe: null,
+    output: null,
+    receipt: null,
+  };
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
     if (value === "--manifest") args.manifest = values[++index];
     else if (value === "--frame") args.frame = Number(values[++index]);
     else if (value === "--assets") args.assets = values[++index];
+    else if (value === "--recipe") args.recipe = values[++index];
     else if (value === "--output") args.output = values[++index];
     else if (value === "--receipt") args.receipt = values[++index];
     else throw new Error(`unknown argument ${value}`);
   }
   if (!args.manifest || !Number.isInteger(args.frame) || !args.assets || !args.output) {
-    throw new Error("usage: render-xstage-frame.mjs --manifest runtime.json --frame N --assets rig-v2 --output frame.png [--receipt receipt.json]");
+    throw new Error("usage: render-xstage-frame.mjs --manifest runtime.json --frame N --assets rig-v2 [--recipe pose.json] --output frame.png [--receipt receipt.json]");
   }
   return args;
 }
@@ -26,10 +38,14 @@ function parseArgs(values) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const manifest = await loadManifest(path.resolve(args.manifest));
+  const poseRuntime = args.recipe
+    ? createPoseRuntime(manifest, await loadPoseRecipe(path.resolve(args.recipe)))
+    : null;
   const rendered = await renderRigFrame({
     manifest,
     frame: args.frame,
     assetRoot: path.resolve(args.assets),
+    poseRuntime,
   });
   await fs.mkdir(path.dirname(path.resolve(args.output)), { recursive: true });
   await fs.writeFile(path.resolve(args.output), rendered.buffer);
