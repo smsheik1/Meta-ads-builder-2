@@ -33,8 +33,9 @@ Supported numeric controls are `position` (`[x,y,z]`), `rotation`, `scale` (`[x,
 
 ```sh
 node runtime/render-xstage-range.mjs \
-  --manifest runtime.json \
-  --assets assets/rig-v2 \
+  --manifest rig-v2/runtime.json \
+  --assets rig-v2/assets \
+  --prop-assets assets/props \
   --recipe poses/my-pose.json \
   --output output.mp4 \
   --receipt output-receipt.json
@@ -43,3 +44,5 @@ node runtime/render-xstage-range.mjs \
 The command rejects the wrong rig SHA, unknown control names, unknown drawings, invalid frames, unsupported interpolation modes, and recipes that do not explicitly exclude artist-rendered frames.
 
 The dense recipes in `authored/` are lossless calibration goldens extracted from the supplied Xstage animation. New poses should be sparse and semantic; they should contain only controls and substitutions that actually change.
+
+After authoring, run `runtime/inspect-pose.mjs` with the same manifest, asset, prop, and recipe paths. Do not add the recipe to `poses/index.json` until that inspection passes and the registry stores the exact file SHA-256. Once registered, all user-facing sequence renders must go through `runner.mjs`.

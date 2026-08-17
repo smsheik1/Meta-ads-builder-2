@@ -1,6 +1,6 @@
 # Held-out shrug runtime review
 
-**Runtime clip:** `/private/tmp/shaz-rig-v2-heldout-shrug.mp4`  
+**Runtime clip:** local held-out runtime proof (video itself is not bundled in the runtime ZIP)  
 **Runtime clip SHA-256:** `869a701942acd5ba2deed622ce1b959c2e4fa21530259baa7fdacbe180aec38c`  
 **Range receipt SHA-256:** `163e6f2edd5114b1caf19e7793de808d6d3a5f6503e05ef89a7bc3b7af6dd850`  
 **Compiled TVG receipt SHA-256:** `cf21d44566f3b0ce857e8015c62245861baa1171a4f6251ec9b1b21042c2a8ae`  

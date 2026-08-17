@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "automaticGates": [
+    "source Xstage provenance",
+    "compiled asset checksums",
+    "pose recipe registry checksum",
+    "per-frame joint continuity",
+    "per-frame clipping",
+    "per-frame recovered layer order",
+    "per-frame facial pop limits",
+    "exact prop presence",
+    "1280x720 H.264 yuv420p at 24 fps",
+    "exact timeline duration"
+  ],
+  "humanReview": {
+    "required": true,
+    "questions": [
+      "Do the transitions read as fluid rig animation rather than animatic cuts?",
+      "Does Shaz remain on-model throughout every action?",
+      "Are props and substitution redraws integrated naturally?",
+      "Would the output be usable in the Shaz animated channel?"
+    ]
+  },
+  "attemptLimit": 3
+}

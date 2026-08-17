@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Free mechanics smoke",
+  "sequence": [
+    { "poseId": "present", "holdFrames": 3, "gapFrames": 2 },
+    { "poseId": "excited-celebration", "holdFrames": 3, "gapFrames": 0 }
+  ]
+}

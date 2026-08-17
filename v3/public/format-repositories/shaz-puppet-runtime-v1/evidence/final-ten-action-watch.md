@@ -1,6 +1,6 @@
 # Final unlabeled ten-action watch
 
-- Render: `/private/tmp/shaz-ten-action-unlabeled-v1.mp4`
+- Render: pre-packaging ten-action proof (video itself is not bundled in the runtime ZIP)
 - SHA-256: `fde72d3a6a834df350e92642109259a8a706e18e65479aeb0de993900f1a962f`
 - Media: H.264, yuv420p, 1280x720, 24 fps, 21.00 seconds
 - Browser playback metadata: 1280x720, 21 seconds, video element loaded successfully

@@ -1,6 +1,6 @@
 # Shaz artist reference review
 
-**Source:** `/Users/shaz/Downloads/8mb.video-jTO-D2RUyYY5.mp4`
+**Source:** user-supplied artist demonstration video (not bundled)
 **Duration:** 11.58 seconds at 24 fps
 **Review method:** `/watch-video`, 12 chronological frames, no transcript
 

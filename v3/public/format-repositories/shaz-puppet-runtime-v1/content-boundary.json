@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "fixed": [
+    "rig-v2/runtime.json",
+    "rig-v2/assets",
+    "runtime/rig-v2-renderer.mjs",
+    "recovered paint order and transform math",
+    "pose recipe schema and validation gates"
+  ],
+  "replaceable": [
+    "sequence order",
+    "pose selection",
+    "explicit final-pose hold duration",
+    "explicit inter-action separator duration",
+    "new pose recipes authored through named rig controls"
+  ],
+  "forbidden": [
+    "finished artist-rendered frames as runtime sprites or pose-generation inputs",
+    "a second renderer for preview or export",
+    "unregistered recipe file paths",
+    "silent relaxation of clipping, continuity, layer, prop, facial-pop, or provenance gates"
+  ]
+}

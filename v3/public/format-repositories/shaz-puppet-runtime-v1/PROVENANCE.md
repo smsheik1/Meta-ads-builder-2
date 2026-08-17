@@ -1,0 +1,13 @@
+# Provenance
+
+The runtime was recovered from the user-supplied Toon Boom Xstage project identified by SHA-256:
+
+`507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
+
+The original archive is not bundled. `rig-v2/runtime.json` contains the recovered hierarchy, channel data, drawing exposures, camera conversion, and compositing plan. `rig-v2/assets/receipt.json` records every compiled drawing asset and its source/output checksums.
+
+Finished artist-rendered video frames were used only for human comparison evidence during development. They are not bundled, are not runtime assets, and were not used as generation inputs for the five new actions. Every recipe and render receipt asserts `artistRenderedFramesUsed: false`; the validator rejects recipes that do not.
+
+The screen and phone are simple purpose-built props. `assets/props/substitution-arm.svg` is the one minimal character substitution drawing: it repairs an arm-depth silhouette that the recovered fixed paint topology cannot express. Its use is confined to the registered `arms-crossed-skeptical` recipe and is documented in that action's evidence.
+
+This kit packages the supplied character assets for the owner's authorized Wiggly workflow. It does not grant third parties rights to redistribute or commercially exploit the character or source art.

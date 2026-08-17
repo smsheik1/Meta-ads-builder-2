@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "rigManifest": "rig-v2/runtime.json",
+  "rigAssets": "rig-v2/assets/receipt.json",
+  "props": [
+    { "id": "screen", "path": "assets/props/screen.svg", "sha256": "cf15a5e725edcb3ef49f51cb299001d1d112b4951b6ea7e8a749bfe81159e9e1", "usage": "point-at-screen" },
+    { "id": "phone", "path": "assets/props/phone.svg", "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975", "usage": "look-at-phone" },
+    { "id": "substitution-arm", "path": "assets/props/substitution-arm.svg", "sha256": "c23081378f579d84b9a686729a3a657de8052e46f7d7e94cebaf5c8f8a75271f", "usage": "arms-crossed-skeptical; minimal depth-topology repair" }
+  ],
+  "provenance": {
+    "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+    "artistRenderedFramesUsed": false,
+    "compiledReceipt": "rig-v2/assets/receipt.json"
+  }
+}

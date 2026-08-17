@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "canvas": { "width": 1280, "height": 720, "fps": 24, "background": "#ffffff" },
+  "timeline": {
+    "action": "Render every recipe frame through the recovered rig-v2 renderer.",
+    "hold": "Clone the final rendered action frame for holdFrames.",
+    "gap": "Insert exactly gapFrames white frames between actions, except after the final action."
+  },
+  "renderer": "runtime/rig-v2-renderer.mjs",
+  "previewExportParity": "Smoke, proof, and final rendering all call the same renderRigFrame implementation.",
+  "audio": "not applicable"
+}
