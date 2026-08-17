@@ -10,7 +10,7 @@ import process from "node:process";
 import {
   attributeAtPath,
   resolveReadDrawing,
-} from "../../animal-conversations-v1/converter/runtime_channels.mjs";
+} from "./vendor/runtime_channels.mjs";
 import {
   ELEMENT_ASSET_IDS,
   READ_PAINT_ORDER,

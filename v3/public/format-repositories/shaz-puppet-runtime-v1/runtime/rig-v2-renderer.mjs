@@ -8,12 +8,12 @@ import {
   identity,
   multiply,
   worldMatrices,
-} from "../../animal-conversations-v1/converter/scene_transforms.mjs";
+} from "./vendor/scene_transforms.mjs";
 import {
   indexColumns,
   resolveReadDrawing,
   sampleNode,
-} from "../../animal-conversations-v1/converter/runtime_channels.mjs";
+} from "./vendor/runtime_channels.mjs";
 
 const ELEMENT_ASSET_IDS = Object.freeze({
   Back_Hair: "back-hair",

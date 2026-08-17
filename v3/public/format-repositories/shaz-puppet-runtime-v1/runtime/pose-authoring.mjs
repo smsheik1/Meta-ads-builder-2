@@ -5,7 +5,7 @@ import {
   indexColumns,
   resolveReadDrawing,
   sampleNode,
-} from "../../animal-conversations-v1/converter/runtime_channels.mjs";
+} from "./vendor/runtime_channels.mjs";
 import { controlStateForNode } from "./pose-recipe.mjs";
 
 function authorableNodes(scene) {

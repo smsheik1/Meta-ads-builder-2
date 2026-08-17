@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { applyToPoint } from "../../animal-conversations-v1/converter/scene_transforms.mjs";
+import { applyToPoint } from "../runtime/vendor/scene_transforms.mjs";
 
 import {
   READ_PAINT_ORDER,

@@ -6,7 +6,7 @@ import {
   indexColumns,
   resolveReadDrawing,
   sampleNode,
-} from "../../animal-conversations-v1/converter/runtime_channels.mjs";
+} from "./vendor/runtime_channels.mjs";
 
 const CONTROL_FIELDS = new Set([
   "position",
