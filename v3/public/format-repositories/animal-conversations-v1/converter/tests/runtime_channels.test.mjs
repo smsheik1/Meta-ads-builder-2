@@ -51,6 +51,16 @@ test("drawing channels distinguish explicit exposure, held exposure, and empty e
   assert.equal(drawingAtFrame(column, 7), null);
 });
 
+test("a blank exposure breaks a later held sequence", () => {
+  const column = {
+    exposures: [{ frames: [2], drawing: "1" }],
+    heldFrames: [3, 5, 6],
+  };
+  assert.equal(drawingAtFrame(column, 3), "1");
+  assert.equal(drawingAtFrame(column, 5), null);
+  assert.equal(drawingAtFrame(column, 6), null);
+});
+
 test("node attributes resolve their exact animation columns", () => {
   const scene = { columns: [
     { name: "position", type: 2, path3d: { points: [{ frame: 1, value: [3, 4, 0] }] } },

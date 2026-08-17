@@ -66,6 +66,57 @@ def project_options(root: ET.Element) -> dict[str, Any]:
     return options
 
 
+def project_stage(root: ET.Element) -> dict[str, Any]:
+    """Keep the camera/model-unit conversion needed by an external renderer."""
+
+    resolution = root.find("./options/resolution")
+    if resolution is None:
+        resolution = root.find("./resolution")
+    vector_scale = root.find("./options/pixelPerModelUnitForVectorLayers")
+    if vector_scale is None:
+        vector_scale = root.find("./pixelPerModelUnitForVectorLayers")
+    bitmap_scale = root.find("./options/pixelPerModelUnitForBitmapLayers")
+    if bitmap_scale is None:
+        bitmap_scale = root.find("./pixelPerModelUnitForBitmapLayers")
+    metrics = root.find("./options/metrics")
+    size = []
+    if resolution is not None:
+        size = [
+            int(component)
+            for component in resolution.attrib.get("size", "").split(",")
+            if component
+        ]
+    return {
+        "resolution": {
+            "name": resolution.attrib.get("name", "") if resolution is not None else "",
+            "size": size,
+            "fovFit": resolution.attrib.get("fovFit", "") if resolution is not None else "",
+            "fov": float(resolution.attrib.get("fov", "0")) if resolution is not None else 0,
+            "projection": resolution.attrib.get("projection", "") if resolution is not None else "",
+        },
+        "pixelPerModelUnitForVectorLayers": float(vector_scale.attrib.get("val", "0"))
+        if vector_scale is not None
+        else 0,
+        "pixelPerModelUnitForBitmapLayers": float(bitmap_scale.attrib.get("val", "0"))
+        if bitmap_scale is not None
+        else 0,
+        "metrics": {
+            "unitAspectRatioX": float(metrics.attrib.get("unitAspectRatioX", "1"))
+            if metrics is not None
+            else 1,
+            "unitAspectRatioY": float(metrics.attrib.get("unitAspectRatioY", "1"))
+            if metrics is not None
+            else 1,
+            "numberOfUnitsX": float(metrics.attrib.get("numberOfUnitsX", "0"))
+            if metrics is not None
+            else 0,
+            "numberOfUnitsY": float(metrics.attrib.get("numberOfUnitsY", "0"))
+            if metrics is not None
+            else 0,
+        },
+    }
+
+
 def elements(root: ET.Element) -> list[dict[str, Any]]:
     output = []
     for element in root.findall("./elements/element"):
@@ -75,6 +126,8 @@ def elements(root: ET.Element) -> list[dict[str, Any]]:
                 "name": element.attrib.get("elementName", ""),
                 "folder": element.attrib.get("elementFolder", ""),
                 "rootFolder": element.attrib.get("rootFolder", ""),
+                "fieldChart": int(element.attrib.get("fieldChart", "12")),
+                "vectorType": int(element.attrib.get("vectorType", "0")),
                 "drawings": [
                     drawing.attrib.get("name", "")
                     for drawing in list(element.findall("./drawings/drawing"))
@@ -265,6 +318,7 @@ def build_manifest(source: Path) -> dict[str, Any]:
             "build": root.attrib.get("build", ""),
         },
         "options": project_options(root),
+        "stage": project_stage(root),
         "elements": elements(root),
         "scenes": [scene_record(scene) for scene in root.findall("./scenes/scene")],
     }

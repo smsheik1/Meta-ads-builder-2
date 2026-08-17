@@ -59,7 +59,10 @@ function applyToPoint(matrix, point) {
   ];
 }
 
-function localMatrix(sampledNode) {
+function localMatrix(sampledNode, convention = {}) {
+  const invertY = convention.invertY ?? true;
+  const invertAngle = convention.invertAngle ?? true;
+  const fieldGrid = convention.fieldGrid ?? FIELD_GRID;
   const attrs = sampledNode.attrs ?? {};
   const isPeg = sampledNode.type === "PEG";
   const isRead = sampledNode.type === "READ";
@@ -70,17 +73,19 @@ function localMatrix(sampledNode) {
       ? attrs.position.attr3dpath
       : [attrs.position?.x ?? 0, attrs.position?.y ?? 0, attrs.position?.z ?? 0])
     : [attrs.offset?.x ?? 0, attrs.offset?.y ?? 0, attrs.offset?.z ?? 0];
-  const position = [sourcePosition[0] * FIELD_GRID.x, -sourcePosition[1] * FIELD_GRID.y];
+  const yDirection = invertY ? -1 : 1;
+  const position = [sourcePosition[0] * fieldGrid.x, yDirection * sourcePosition[1] * fieldGrid.y];
   const pivot = [
-    (attrs.pivot?.x ?? 0) * FIELD_GRID.x,
-    -(attrs.pivot?.y ?? 0) * FIELD_GRID.y,
+    (attrs.pivot?.x ?? 0) * fieldGrid.x,
+    yDirection * (attrs.pivot?.y ?? 0) * fieldGrid.y,
   ];
   let scaleX = attrs.scale?.x ?? attrs.scale?.xy ?? 1;
   let scaleY = attrs.scale?.y ?? attrs.scale?.xy ?? 1;
   if (isRead && attrs.flipHor) scaleX *= -1;
   if (isRead && attrs.flipVert) scaleY *= -1;
-  const angle = -(attrs.rotation?.anglez ?? attrs.angle ?? 0);
-  const skew = -(attrs.skew ?? 0);
+  const angleDirection = invertAngle ? -1 : 1;
+  const angle = angleDirection * (attrs.rotation?.anglez ?? attrs.angle ?? 0);
+  const skew = angleDirection * (attrs.skew ?? 0);
 
   return [
     translation(position[0], position[1]),
@@ -136,7 +141,7 @@ function buildTransformGraph(scene) {
   return { groups, incoming, nodes, parentPath, sourceForGroup };
 }
 
-function worldMatrices(scene, frame) {
+function worldMatrices(scene, frame, convention = {}) {
   const graph = buildTransformGraph(scene);
   const columns = indexColumns(scene);
   const samples = new Map(scene.nodes.map((node) => [node.path, sampleNode(node, columns, frame)]));
@@ -148,7 +153,7 @@ function worldMatrices(scene, frame) {
     if (visiting.has(nodePath)) throw new Error(`transform hierarchy cycle at ${nodePath}`);
     visiting.add(nodePath);
     const parent = graph.parentPath(nodePath);
-    const local = localMatrix(samples.get(nodePath));
+    const local = localMatrix(samples.get(nodePath), convention);
     const matrix = parent ? multiply(world(parent), local) : local;
     visiting.delete(nodePath);
     matrices.set(nodePath, matrix);
@@ -161,9 +166,9 @@ function worldMatrices(scene, frame) {
   return matrices;
 }
 
-function relativeWorldMatrices(scene, frame, baseFrame = 1) {
-  const base = worldMatrices(scene, baseFrame);
-  const current = worldMatrices(scene, frame);
+function relativeWorldMatrices(scene, frame, baseFrame = 1, convention = {}) {
+  const base = worldMatrices(scene, baseFrame, convention);
+  const current = worldMatrices(scene, frame, convention);
   return new Map([...current].map(([path, matrix]) => [
     path,
     multiply(matrix, inverse(base.get(path))),

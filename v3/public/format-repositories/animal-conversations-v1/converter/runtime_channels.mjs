@@ -56,7 +56,12 @@ function drawingAtFrame(column, frame) {
   if (exact) return exact.drawing;
   if (!(column.heldFrames ?? []).includes(frame)) return null;
   const previous = exposures.filter((exposure) => exposure.frame < frame).at(-1);
-  return previous?.drawing ?? null;
+  if (!previous) return null;
+  const heldFrames = new Set(column.heldFrames ?? []);
+  for (let candidate = previous.frame + 1; candidate <= frame; candidate += 1) {
+    if (!heldFrames.has(candidate)) return null;
+  }
+  return previous.drawing;
 }
 
 function childAt(value, name) {

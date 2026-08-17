@@ -26,8 +26,14 @@ async function withFixture(source, callback) {
 test("runtime manifest preserves nested node paths, ports, and unknown module attrs", async () => {
   await withFixture(`
 <project creator="harmony" source="Harmony Premium" version="2200" build="19000">
-  <elements><element id="7" elementName="Arm" elementFolder="Arm" rootFolder="elements"><drawings><dwg name="1"/><dwg name="2"/></drawings></element></elements>
-  <options><framerate val="24"/></options>
+  <elements><element id="7" elementName="Arm" elementFolder="Arm" rootFolder="elements" fieldChart="12" vectorType="2"><drawings><dwg name="1"/><dwg name="2"/></drawings></element></elements>
+  <options>
+    <resolution name="HDTV_1080p24" size="1920,1080" fovFit="VerticalFitFov" fov="41.112" projection="PerspectiveProjection"/>
+    <pixelPerModelUnitForVectorLayers val="0.288"/>
+    <pixelPerModelUnitForBitmapLayers val="0.144"/>
+    <metrics unitAspectRatioX="4" unitAspectRatioY="3" numberOfUnitsX="24" numberOfUnitsY="24"/>
+    <framerate val="24"/>
+  </options>
   <scenes><scene id="scene" name="Scene" nbframes="12" startFrame="1" stopFrame="12"><columns/>
     <rootgroup name="Top"><nodeslist><group name="Deform" pos="0,0,0"><options/>
       <nodeslist><module type="CurveModule" name="Curve" pos="0,0,0"><options/><attrs><length0 val="2" defaultValue="1" col="curve-length"/></attrs></module></nodeslist>
@@ -37,7 +43,18 @@ test("runtime manifest preserves nested node paths, ports, and unknown module at
 </project>`, async (manifest) => {
     assert.equal(manifest.schemaVersion, "harmony-xstage-runtime-v1");
     assert.equal(manifest.elements[0].name, "Arm");
+    assert.equal(manifest.elements[0].fieldChart, 12);
+    assert.equal(manifest.elements[0].vectorType, 2);
     assert.deepEqual(manifest.elements[0].drawings, ["1", "2"]);
+    assert.deepEqual(manifest.stage.resolution.size, [1920, 1080]);
+    assert.equal(manifest.stage.pixelPerModelUnitForVectorLayers, 0.288);
+    assert.equal(manifest.stage.pixelPerModelUnitForBitmapLayers, 0.144);
+    assert.deepEqual(manifest.stage.metrics, {
+      unitAspectRatioX: 4,
+      unitAspectRatioY: 3,
+      numberOfUnitsX: 24,
+      numberOfUnitsY: 24,
+    });
     const scene = manifest.scenes[0];
     assert.equal(scene.nodes[0].path, "Top/Deform/Curve");
     assert.equal(scene.nodes[0].type, "CurveModule");
