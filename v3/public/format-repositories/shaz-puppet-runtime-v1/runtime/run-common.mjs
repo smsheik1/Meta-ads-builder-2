@@ -52,24 +52,20 @@ async function writeJson(file, value) {
   await fs.writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function sha256Buffer(buffer) {
-  return crypto.createHash("sha256").update(buffer).digest("hex");
-}
-
 async function sha256(file) {
-  return sha256Buffer(await fs.readFile(file));
+  return crypto.createHash("sha256").update(await fs.readFile(file)).digest("hex");
 }
 
-function execute(program, values, { cwd, capture = true } = {}) {
+function execute(program, values, { cwd } = {}) {
   const result = spawnSync(program, values, {
     cwd,
     encoding: "utf8",
-    stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
+    stdio: ["ignore", "pipe", "pipe"],
   });
   if (result.status !== 0) {
     throw new Error(`${program} failed:\n${result.stderr || result.stdout || `exit ${result.status}`}`);
   }
-  return capture ? result.stdout : "";
+  return result.stdout;
 }
 
 function exactKeys(value, allowed, context) {
@@ -190,7 +186,6 @@ export {
   requireRunId,
   resolveRunDirectory,
   sha256,
-  sha256Buffer,
   validateInput,
   validateRun,
   writeJson,
