@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "canonical": {
+    "input": "fixtures/final-unlabeled-input.json",
+    "video": "goldens/ten-action-proof.mp4",
+    "poster": "goldens/ten-action-poster.jpg",
+    "contactSheet": "goldens/ten-action-contact-sheet.jpg",
+    "videoSha256": "1d8dbe67347548f21239ae0fd5eb15bcca538d0fa0eadc6247b27fd2d5a0d950",
+    "durationSeconds": 21,
+    "frames": 504,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "artistRenderedFramesUsed": false,
+    "userVisualApproval": "pending"
+  }
+}

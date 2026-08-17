@@ -12,6 +12,7 @@ Format version: 0.1.0
 - Ten-action proof: 504 frames, 21.0 seconds, 1280 × 720, H.264, yuv420p, 24 fps
 - Ten-action mechanical inspection: all ten unique actions passed every per-frame gate
 - Alternate proof: 220 frames, 9.166667 seconds, four actions in a different order and with different holds
+- Blind ZIP-only proof: 302 frames, 12.583 seconds, six independently chosen actions; mechanical pass and correctly blocked finalization without continuous-motion review
 - Provider calls: 0
 - Cost: $0
 - Finished artist-rendered frames used by runtime or generation: false

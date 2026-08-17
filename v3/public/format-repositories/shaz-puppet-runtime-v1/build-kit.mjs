@@ -19,6 +19,8 @@ function include(source) {
   if (parts.some((part) => excludedNames.has(part))) return false;
   if (parts[0] === "downloads" && parts.length > 1) return false;
   if (parts[0] === "agent-runs" && parts.length > 1 && parts.at(-1) !== ".gitkeep") return false;
+  if (parts[0] === "goldens") return false;
+  if (relative === "evidence/blind-kit-operation.md") return false;
   if (relative === "runtime/compile-tvg-assets.mjs") return false;
   return true;
 }

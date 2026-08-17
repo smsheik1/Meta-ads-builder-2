@@ -92,6 +92,7 @@ for (const slug of [
   "squilliam-news",
   "bikini-bottom-dance-off",
   "animal-conversations",
+  "shaz-puppet-runtime",
 ]) {
   const profile = getDiscoveryFormatProfile(slug);
   assert.ok(profile, `${slug} should have a consumer Format proof.`);
@@ -147,13 +148,15 @@ assert.ok(
     discoveryFormatSlugs.includes("talking-fish-news") &&
     discoveryFormatSlugs.includes("bikini-bottom-dance-off") &&
     discoveryFormatSlugs.includes("animal-conversations") &&
-    discoveryFormatSlugs.length === 49 &&
+    discoveryFormatSlugs.includes("shaz-puppet-runtime") &&
+    discoveryFormatSlugs.length === 50 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
 
 assert.deepEqual(richFormatRepoSlugs, [
   "bikini-bottom-dance-off",
   "animal-conversations",
+  "shaz-puppet-runtime",
 ]);
 await assert.rejects(
   getFormatRepoPagePresentation("future-format-example"),

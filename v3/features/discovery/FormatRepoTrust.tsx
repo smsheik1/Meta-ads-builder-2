@@ -111,7 +111,10 @@ export function FormatRepoTrust({
             </a>
           </div>
 
-          <div className={styles.proofGrid}>
+          <div
+            className={styles.proofGrid}
+            data-aspect={data.proof.aspectRatio ?? "9:16"}
+          >
             <div className={styles.videoColumn}>
               <div className={styles.videoFrame}>
                 <video
