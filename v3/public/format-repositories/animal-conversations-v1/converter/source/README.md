@@ -17,4 +17,8 @@ Can currently decode:
 Reads the xstage scene format used by Harmony 21 plus the Harmony 22 fields
 required by the tested Shaz puppet (`imageProcessingFormat`, held exposures,
 and extra metadata on unsupported deformation modules).
-This is mostly just to read the palette and find the locations of tvg files at the moment.
+
+`scene_runtime_manifest.py` is the lossless runtime boundary for modules the
+typed Rust reader does not execute yet. It preserves every nested node, link,
+port, drawing exposure, animation column, and attribute column reference. The
+finished Harmony preview frames are deliberately not inputs to that manifest.
