@@ -18,6 +18,7 @@ const CONTROL_FIELDS = new Set([
   "flipVertical",
 ]);
 const INTERPOLATIONS = new Set(["linear", "hold"]);
+const PROP_LAYERS = new Set(["behind", "front"]);
 
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -156,6 +157,56 @@ function sampleControlKeys(keys, frame) {
   return keys.at(-1).state;
 }
 
+function normalizePropKeys(keys, durationFrames, context) {
+  validateFrameKeys(keys, durationFrames, context);
+  let previous = {
+    position: [0.5, 0.5],
+    width: 0.25,
+    rotation: 0,
+    opacity: 100,
+  };
+  return keys.map((key, index) => {
+    const state = { ...previous };
+    if (key.position !== undefined) state.position = finiteVector(key.position, 2, `${context}[${index}].position`);
+    if (key.width !== undefined) state.width = finiteNumber(key.width, `${context}[${index}].width`);
+    if (state.width <= 0) throw new Error(`${context}[${index}].width must be positive`);
+    if (key.rotation !== undefined) state.rotation = finiteNumber(key.rotation, `${context}[${index}].rotation`);
+    if (key.opacity !== undefined) state.opacity = finiteNumber(key.opacity, `${context}[${index}].opacity`);
+    if (state.opacity < 0 || state.opacity > 100) {
+      throw new Error(`${context}[${index}].opacity must be between 0 and 100`);
+    }
+    const interpolation = key.interpolation ?? "linear";
+    if (!INTERPOLATIONS.has(interpolation)) {
+      throw new Error(`${context}[${index}].interpolation must be linear or hold`);
+    }
+    previous = state;
+    return { frame: key.frame, interpolation, state };
+  });
+}
+
+function samplePropKeys(keys, frame) {
+  if (frame <= keys[0].frame) return keys[0].state;
+  if (frame >= keys.at(-1).frame) return keys.at(-1).state;
+  for (let index = 1; index < keys.length; index += 1) {
+    const right = keys[index];
+    if (frame > right.frame) continue;
+    const left = keys[index - 1];
+    if (frame === right.frame || left.interpolation === "hold") {
+      return frame === right.frame ? right.state : left.state;
+    }
+    const progress = (frame - left.frame) / (right.frame - left.frame);
+    return {
+      position: left.state.position.map((value, component) => (
+        mix(value, right.state.position[component], progress)
+      )),
+      width: mix(left.state.width, right.state.width, progress),
+      rotation: mix(left.state.rotation, right.state.rotation, progress),
+      opacity: mix(left.state.opacity, right.state.opacity, progress),
+    };
+  }
+  return keys.at(-1).state;
+}
+
 function applyControlState(baseSample, state) {
   const sampled = structuredClone(baseSample);
   const attrs = sampled.attrs ?? (sampled.attrs = {});
@@ -210,6 +261,7 @@ function createPoseRuntime(manifest, recipe) {
   ]));
   const controlKeys = new Map();
   const drawingKeys = new Map();
+  const props = [];
 
   for (const [nodeName, keys] of Object.entries(recipe.controls ?? {})) {
     const node = nodesByName.get(nodeName);
@@ -239,6 +291,26 @@ function createPoseRuntime(manifest, recipe) {
     drawingKeys.set(node.path, { element, keys: normalized });
   }
 
+  const propIds = new Set();
+  for (const [index, prop] of (recipe.props ?? []).entries()) {
+    if (!prop.id || propIds.has(prop.id)) throw new Error(`props[${index}] requires a unique id`);
+    propIds.add(prop.id);
+    if (!prop.asset || pathLike(prop.asset)) {
+      throw new Error(`props[${index}].asset must be a filename without path traversal`);
+    }
+    if (!/^[a-f0-9]{64}$/.test(prop.sha256 ?? "")) {
+      throw new Error(`props[${index}].sha256 must be a lowercase SHA-256`);
+    }
+    if (!PROP_LAYERS.has(prop.layer)) throw new Error(`props[${index}].layer must be behind or front`);
+    props.push({
+      id: prop.id,
+      asset: prop.asset,
+      sha256: prop.sha256,
+      layer: prop.layer,
+      keys: normalizePropKeys(prop.keys, recipe.durationFrames, `props[${index}].keys`),
+    });
+  }
+
   function assertLocalFrame(frame) {
     if (!Number.isInteger(frame) || frame < 1 || frame > recipe.durationFrames) {
       throw new Error(`pose frame ${frame} is outside 1-${recipe.durationFrames}`);
@@ -266,12 +338,28 @@ function createPoseRuntime(manifest, recipe) {
     };
   }
 
+  function propsAtFrame(frame) {
+    assertLocalFrame(frame);
+    return props.map((prop) => ({
+      id: prop.id,
+      asset: prop.asset,
+      sha256: prop.sha256,
+      layer: prop.layer,
+      ...samplePropKeys(prop.keys, frame),
+    }));
+  }
+
   return {
     recipe,
     recipeSha256: poseRecipeSha256(recipe),
     sampleNodeAtFrame,
     resolveDrawing,
+    propsAtFrame,
   };
+}
+
+function pathLike(asset) {
+  return asset.includes("/") || asset.includes("\\") || asset === "." || asset === "..";
 }
 
 async function loadPoseRecipe(recipePath) {
@@ -285,4 +373,5 @@ export {
   loadPoseRecipe,
   poseRecipeSha256,
   sampleControlKeys,
+  samplePropKeys,
 };

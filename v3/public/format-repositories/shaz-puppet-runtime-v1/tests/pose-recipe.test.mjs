@@ -96,6 +96,16 @@ function recipe() {
         { frame: 3, drawing: "2" },
       ],
     },
+    props: [{
+      id: "screen",
+      asset: "screen.svg",
+      sha256: "a".repeat(64),
+      layer: "behind",
+      keys: [
+        { frame: 1, position: [0.2, 0.5], width: 0.3, opacity: 0 },
+        { frame: 5, position: [0.25, 0.5], width: 0.35, opacity: 100 },
+      ],
+    }],
   };
 }
 
@@ -119,6 +129,18 @@ test("pose recipes interpolate named controls and hold drawing substitutions", (
   assert.equal(body.attrs.angle, 10);
   assert.equal(runtime.resolveDrawing(scene.nodes[1], 2).drawing, "1");
   assert.equal(runtime.resolveDrawing(scene.nodes[1], 4).drawing, "2");
+  const prop = runtime.propsAtFrame(3)[0];
+  assert.deepEqual({ ...prop, width: 0.325 }, {
+    id: "screen",
+    asset: "screen.svg",
+    sha256: "a".repeat(64),
+    layer: "behind",
+    position: [0.225, 0.5],
+    width: 0.325,
+    rotation: 0,
+    opacity: 50,
+  });
+  assert.ok(Math.abs(prop.width - 0.325) < 1e-12);
 });
 
 test("pose recipe hashing ignores object key order", () => {
@@ -133,6 +155,12 @@ test("pose recipes reject a source-rig mismatch", () => {
     () => createPoseRuntime(fixture(), { ...recipe(), sourceXstageSha256: "other" }),
     /different Xstage source/,
   );
+});
+
+test("pose recipes reject prop path traversal", () => {
+  const invalid = recipe();
+  invalid.props[0].asset = "../screen.svg";
+  assert.throws(() => createPoseRuntime(fixture(), invalid), /without path traversal/);
 });
 
 test("control simplification keeps overshoots but removes exact linear in-betweens", () => {

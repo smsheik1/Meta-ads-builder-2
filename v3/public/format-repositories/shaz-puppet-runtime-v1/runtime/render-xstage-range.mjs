@@ -16,6 +16,7 @@ function parseArgs(values) {
   const args = {
     manifest: null,
     assets: null,
+    propAssets: null,
     recipe: null,
     start: null,
     end: null,
@@ -27,6 +28,7 @@ function parseArgs(values) {
     const value = values[index];
     if (value === "--manifest") args.manifest = values[++index];
     else if (value === "--assets") args.assets = values[++index];
+    else if (value === "--prop-assets") args.propAssets = values[++index];
     else if (value === "--recipe") args.recipe = values[++index];
     else if (value === "--start") args.start = Number(values[++index]);
     else if (value === "--end") args.end = Number(values[++index]);
@@ -37,7 +39,7 @@ function parseArgs(values) {
   }
   if (!args.manifest || !args.assets || !args.output
     || !Number.isFinite(args.fps) || args.fps <= 0) {
-    throw new Error("usage: render-xstage-range.mjs --manifest runtime.json --assets assets [--recipe pose.json] [--start N --end N] --output clip.mp4 [--fps 24] [--receipt receipt.json]");
+    throw new Error("usage: render-xstage-range.mjs --manifest runtime.json --assets assets [--prop-assets props] [--recipe pose.json] [--start N --end N] --output clip.mp4 [--fps 24] [--receipt receipt.json]");
   }
   if (!args.recipe && (!Number.isInteger(args.start) || !Number.isInteger(args.end))) {
     throw new Error("Xstage calibration renders require --start and --end");
@@ -66,6 +68,7 @@ async function main() {
   const output = path.resolve(args.output);
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-xstage-range-"));
   const assetCache = new Map();
+  const propCache = new Map();
   const frameReceipts = [];
   try {
     for (let sourceFrame = start; sourceFrame <= end; sourceFrame += 1) {
@@ -73,7 +76,9 @@ async function main() {
         manifest,
         frame: sourceFrame,
         assetRoot: path.resolve(args.assets),
+        propRoot: args.propAssets ? path.resolve(args.propAssets) : null,
         assetCache,
+        propCache,
         poseRuntime,
       });
       const outputFrame = sourceFrame - start + 1;

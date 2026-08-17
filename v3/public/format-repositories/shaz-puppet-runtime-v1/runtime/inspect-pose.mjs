@@ -21,17 +21,24 @@ const ALPHA_THRESHOLD = 24;
 const MIN_COMPONENT_PIXELS = 12;
 
 function parseArgs(values) {
-  const args = { manifest: null, assets: null, recipe: null, output: null };
+  const args = {
+    manifest: null,
+    assets: null,
+    propAssets: null,
+    recipe: null,
+    output: null,
+  };
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
     if (value === "--manifest") args.manifest = values[++index];
     else if (value === "--assets") args.assets = values[++index];
+    else if (value === "--prop-assets") args.propAssets = values[++index];
     else if (value === "--recipe") args.recipe = values[++index];
     else if (value === "--output") args.output = values[++index];
     else throw new Error(`unknown argument ${value}`);
   }
   if (!args.manifest || !args.assets || !args.recipe || !args.output) {
-    throw new Error("usage: inspect-pose.mjs --manifest runtime.json --assets assets --recipe pose.json --output inspection.json");
+    throw new Error("usage: inspect-pose.mjs --manifest runtime.json --assets assets [--prop-assets props] --recipe pose.json --output inspection.json");
   }
   return args;
 }
@@ -144,21 +151,24 @@ function expectedEdgesForFrame(recipe, frame) {
   )).map((policy) => policy.edge));
 }
 
-async function inspectPose({ manifest, assetRoot, recipe }) {
+async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
   const poseRuntime = createPoseRuntime(manifest, recipe);
   const failures = [];
   const approvedEdgeContacts = [];
   const frameReports = [];
   const previousFace = new Map();
   const assetCache = new Map();
+  const propCache = new Map();
 
   for (let frame = 1; frame <= recipe.durationFrames; frame += 1) {
     const rendered = await renderRigFrame({
       manifest,
       frame,
       assetRoot,
+      propRoot,
       poseRuntime,
       assetCache,
+      propCache,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
       includeLayerBuffers: true,
     });
@@ -170,15 +180,24 @@ async function inspectPose({ manifest, assetRoot, recipe }) {
       failures.push({ frame, gate: "layer-order", detail: "frame layers do not follow READ_PAINT_PLAN" });
     }
 
-    const composite = await alphaStats(rendered.buffer);
-    if (composite.empty) {
+    const characterBuffer = await sharp({
+      create: {
+        width: 1280,
+        height: 720,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    }).composite(rendered.analysisLayers.map(({ input }) => ({ input }))).png().toBuffer();
+    const character = await alphaStats(characterBuffer);
+    const sceneStats = await alphaStats(rendered.buffer);
+    if (character.empty) {
       failures.push({ frame, gate: "visible-character", detail: "frame is empty" });
     } else {
       const edgeMargins = {
-        left: composite.bbox.minX,
-        top: composite.bbox.minY,
-        right: composite.width - 1 - composite.bbox.maxX,
-        bottom: composite.height - 1 - composite.bbox.maxY,
+        left: sceneStats.bbox.minX,
+        top: sceneStats.bbox.minY,
+        right: sceneStats.width - 1 - sceneStats.bbox.maxX,
+        bottom: sceneStats.height - 1 - sceneStats.bbox.maxY,
       };
       const expectedEdges = expectedEdgesForFrame(recipe, frame);
       for (const [edge, margin] of Object.entries(edgeMargins)) {
@@ -189,13 +208,22 @@ async function inspectPose({ manifest, assetRoot, recipe }) {
           failures.push({ frame, gate: "clipping", detail: `${edge} alpha margin is ${margin}px` });
         }
       }
-      if (composite.componentPixels.length !== 1) {
+      if (character.componentPixels.length !== 1) {
         failures.push({
           frame,
           gate: "joint-continuity",
-          detail: `${composite.componentPixels.length} significant alpha components`,
+          detail: `${character.componentPixels.length} significant alpha components`,
         });
       }
+    }
+
+    const expectedPropIds = poseRuntime.propsAtFrame(frame)
+      .filter(({ opacity }) => opacity > 0)
+      .map(({ id }) => id)
+      .sort();
+    const renderedPropIds = rendered.receipt.props.map(({ id }) => id).sort();
+    if (JSON.stringify(expectedPropIds) !== JSON.stringify(renderedPropIds)) {
+      failures.push({ frame, gate: "prop-presence", detail: "visible recipe props were not rendered exactly once" });
     }
 
     const faceLayers = rendered.analysisLayers.filter((layer) => (
@@ -245,9 +273,10 @@ async function inspectPose({ manifest, assetRoot, recipe }) {
 
     frameReports.push({
       frame,
-      alphaBounds: composite.empty ? null : composite.bbox,
-      significantComponents: composite.componentPixels?.length ?? 0,
+      alphaBounds: character.empty ? null : character.bbox,
+      significantComponents: character.componentPixels?.length ?? 0,
       layerCount: rendered.receipt.layers.length,
+      propCount: rendered.receipt.props.length,
     });
   }
 
@@ -258,7 +287,14 @@ async function inspectPose({ manifest, assetRoot, recipe }) {
     poseRecipeId: recipe.id,
     poseRecipeSha256: poseRuntime.recipeSha256,
     artistRenderedFramesUsed: false,
-    gates: ["provenance", "layer-order", "clipping", "joint-continuity", "facial-pop"],
+    gates: [
+      "provenance",
+      "layer-order",
+      "clipping",
+      "joint-continuity",
+      "facial-pop",
+      "prop-presence",
+    ],
     failures,
     approvedEdgeContacts,
     frames: frameReports,
@@ -272,6 +308,7 @@ async function main() {
   const report = await inspectPose({
     manifest,
     assetRoot: path.resolve(args.assets),
+    propRoot: args.propAssets ? path.resolve(args.propAssets) : null,
     recipe,
   });
   const output = path.resolve(args.output);

@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { applyToPoint } from "../../animal-conversations-v1/converter/scene_transforms.mjs";
+
 import {
   READ_PAINT_ORDER,
   READ_PAINT_PLAN,
   assetFilename,
   fieldGridForManifest,
+  propStageMatrix,
   tightStageMatrix,
 } from "../runtime/rig-v2-renderer.mjs";
 
@@ -29,6 +32,16 @@ test("field conversion is derived from the source camera and vector scale", () =
   });
   close(grid.x, 208.33333333333334);
   close(grid.y, 156.25);
+});
+
+test("prop transforms use normalized output placement and width", () => {
+  const matrix = propStageMatrix({
+    position: [0.25, 0.5],
+    width: 0.2,
+    rotation: 0,
+  }, 1000, 500, 200, 100);
+  assert.deepEqual(applyToPoint(matrix, [100, 50]), [250, 250]);
+  assert.deepEqual(applyToPoint(matrix, [0, 0]), [150, 200]);
 });
 
 test("tight assets map model coordinates into the source camera", () => {

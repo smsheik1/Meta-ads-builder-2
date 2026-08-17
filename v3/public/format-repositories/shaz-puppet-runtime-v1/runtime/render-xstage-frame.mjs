@@ -15,6 +15,7 @@ function parseArgs(values) {
     manifest: null,
     frame: null,
     assets: null,
+    propAssets: null,
     recipe: null,
     output: null,
     receipt: null,
@@ -24,13 +25,14 @@ function parseArgs(values) {
     if (value === "--manifest") args.manifest = values[++index];
     else if (value === "--frame") args.frame = Number(values[++index]);
     else if (value === "--assets") args.assets = values[++index];
+    else if (value === "--prop-assets") args.propAssets = values[++index];
     else if (value === "--recipe") args.recipe = values[++index];
     else if (value === "--output") args.output = values[++index];
     else if (value === "--receipt") args.receipt = values[++index];
     else throw new Error(`unknown argument ${value}`);
   }
   if (!args.manifest || !Number.isInteger(args.frame) || !args.assets || !args.output) {
-    throw new Error("usage: render-xstage-frame.mjs --manifest runtime.json --frame N --assets rig-v2 [--recipe pose.json] --output frame.png [--receipt receipt.json]");
+    throw new Error("usage: render-xstage-frame.mjs --manifest runtime.json --frame N --assets rig-v2 [--prop-assets props] [--recipe pose.json] --output frame.png [--receipt receipt.json]");
   }
   return args;
 }
@@ -45,6 +47,7 @@ async function main() {
     manifest,
     frame: args.frame,
     assetRoot: path.resolve(args.assets),
+    propRoot: args.propAssets ? path.resolve(args.propAssets) : null,
     poseRuntime,
   });
   await fs.mkdir(path.dirname(path.resolve(args.output)), { recursive: true });

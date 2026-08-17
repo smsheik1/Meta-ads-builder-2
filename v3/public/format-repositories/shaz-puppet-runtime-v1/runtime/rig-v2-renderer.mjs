@@ -88,14 +88,33 @@ function translation(x, y) {
   return [1, 0, 0, 1, x, y];
 }
 
-function svgTransform(image, width, height, matrix, imageWidth, imageHeight) {
+function svgTransform(
+  image,
+  width,
+  height,
+  matrix,
+  imageWidth,
+  imageHeight,
+  opacity = 1,
+) {
   const [a, b, c, d, e, f] = matrix;
   const href = `data:image/png;base64,${image.toString("base64")}`;
   return Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`
-      + `<image href="${href}" width="${imageWidth}" height="${imageHeight}" transform="matrix(${a} ${b} ${c} ${d} ${e} ${f})"/>`
+      + `<image href="${href}" width="${imageWidth}" height="${imageHeight}" opacity="${opacity}" transform="matrix(${a} ${b} ${c} ${d} ${e} ${f})"/>`
       + "</svg>",
   );
+}
+
+function rotationMatrix(degrees) {
+  const radians = degrees * Math.PI / 180;
+  const cosine = Math.cos(radians);
+  const sine = Math.sin(radians);
+  return [cosine, sine, -sine, cosine, 0, 0];
+}
+
+function scaleMatrix(x, y) {
+  return [x, 0, 0, y, 0, 0];
 }
 
 function assetFilename(drawing, variant = "main") {
@@ -180,15 +199,46 @@ async function readTightAsset(assetRoot, filename, registration, cache) {
   return { buffer: await cache.get(source), ...record };
 }
 
+async function readPropAsset(propRoot, prop, cache) {
+  if (!propRoot) throw new Error(`pose ${prop.id} requires --prop-assets`);
+  const source = path.join(propRoot, prop.asset);
+  if (!cache.has(source)) {
+    cache.set(source, fs.readFile(source).then(async (buffer) => {
+      const checksum = crypto.createHash("sha256").update(buffer).digest("hex");
+      if (checksum !== prop.sha256) throw new Error(`prop checksum mismatch for ${prop.asset}`);
+      const normalized = await sharp(buffer).png().toBuffer();
+      const metadata = await sharp(normalized).metadata();
+      if (!metadata.width || !metadata.height) throw new Error(`prop has no dimensions: ${prop.asset}`);
+      return { buffer: normalized, width: metadata.width, height: metadata.height };
+    }));
+  }
+  return cache.get(source);
+}
+
+function propStageMatrix(prop, outputWidth, outputHeight, imageWidth, imageHeight) {
+  const pixelWidth = prop.width * outputWidth;
+  const scale = pixelWidth / imageWidth;
+  const centerX = prop.position[0] * outputWidth;
+  const centerY = prop.position[1] * outputHeight;
+  return [
+    translation(centerX, centerY),
+    rotationMatrix(prop.rotation),
+    scaleMatrix(scale, scale),
+    translation(-imageWidth / 2, -imageHeight / 2),
+  ].reduce(multiply, identity());
+}
+
 async function renderRigFrame({
   manifest,
   frame,
   assetRoot,
+  propRoot = null,
   poseRuntime = null,
   outputWidth = 1280,
   outputHeight = 720,
   background = { r: 255, g: 255, b: 255, alpha: 1 },
   assetCache = new Map(),
+  propCache = new Map(),
   includeLayerBuffers = false,
 }) {
   if (manifest.schemaVersion !== "harmony-xstage-runtime-v1") {
@@ -204,6 +254,29 @@ async function renderRigFrame({
     ...(poseRuntime ? { sampleNodeAtFrame: poseRuntime.sampleNodeAtFrame } : {}),
   });
   const layers = [];
+  const props = [];
+
+  for (const prop of poseRuntime?.propsAtFrame(frame) ?? []) {
+    if (prop.opacity <= 0) continue;
+    const asset = await readPropAsset(propRoot, prop, propCache);
+    const matrix = propStageMatrix(
+      prop,
+      outputWidth,
+      outputHeight,
+      asset.width,
+      asset.height,
+    );
+    const transformed = await sharp(svgTransform(
+      asset.buffer,
+      outputWidth,
+      outputHeight,
+      matrix,
+      asset.width,
+      asset.height,
+      prop.opacity / 100,
+    )).png().toBuffer();
+    props.push({ input: transformed, ...prop });
+  }
 
   for (const { nodePath, variant } of READ_PAINT_PLAN) {
     const node = nodes.get(nodePath);
@@ -245,11 +318,16 @@ async function renderRigFrame({
 
   const output = await sharp({
     create: { width: outputWidth, height: outputHeight, channels: 4, background },
-  }).composite(layers.map(({ input }) => ({ input }))).png().toBuffer();
+  }).composite([
+    ...props.filter(({ layer }) => layer === "behind").map(({ input }) => ({ input })),
+    ...layers.map(({ input }) => ({ input })),
+    ...props.filter(({ layer }) => layer === "front").map(({ input }) => ({ input })),
+  ]).png().toBuffer();
 
   return {
     buffer: output,
     ...(includeLayerBuffers ? { analysisLayers: layers } : {}),
+    ...(includeLayerBuffers ? { analysisProps: props } : {}),
     receipt: {
       schemaVersion: "shaz-rig-v2-frame-receipt-v1",
       sourceXstageSha256: manifest.source.sha256,
@@ -262,6 +340,7 @@ async function renderRigFrame({
         poseRecipeSha256: poseRuntime.recipeSha256,
       } : {}),
       artistRenderedFramesUsed: false,
+      props: props.map(({ input, ...prop }) => prop),
       layers: layers.map(({ nodePath, drawing, variant, filename }) => ({
         nodePath,
         element: drawing.element,
@@ -285,6 +364,7 @@ export {
   fieldGridForManifest,
   loadAssetRegistration,
   loadManifest,
+  propStageMatrix,
   renderRigFrame,
   tightStageMatrix,
 };
