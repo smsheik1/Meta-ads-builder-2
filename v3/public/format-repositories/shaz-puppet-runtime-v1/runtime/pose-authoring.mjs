@@ -75,6 +75,8 @@ function generatedRecipe(manifest, {
   controls,
   drawings = {},
   learnedFrom = [],
+  deformationFrames,
+  quality,
 }) {
   return {
     schemaVersion: "shaz-pose-recipe-v1",
@@ -91,6 +93,8 @@ function generatedRecipe(manifest, {
     },
     controls,
     drawings,
+    ...(deformationFrames ? { deformationFrames } : {}),
+    ...(quality ? { quality } : {}),
   };
 }
 

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "shaz-action-human-approval-v1",
+  "actionId": "think",
+  "status": "approved",
+  "reviewer": "user",
+  "approvedAt": "2026-08-18",
+  "reviewedArtifact": "shaz-think-closeup-review-v4.mp4",
+  "reviewedOutputSha256": "d3eca168749f24f5df840375649b012a2e28d458c8e6b2e16f3db2cfd1c29d59",
+  "notes": "Approved after the full semantic eye envelopes prevented the front-bang fill and outline from entering the partial-eye drawings."
+}

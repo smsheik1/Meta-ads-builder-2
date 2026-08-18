@@ -59,6 +59,10 @@ Use the rig's authored drawings when the silhouette or expression changes. Do no
 
 Check hand orientation, transitional drawings, pupils, eyelids, mouth/teeth, fingers, visibility, and the exact frame on which each substitution changes.
 
+Treat color ownership as content, not merely alpha coverage. A drawing can remain connected and opaque while a tooth, eye white, tongue, or skin region is painted with the wrong palette color. For any authored substitution with a required semantic color region, inspect that region directly and promote a stable color-presence check into the test suite.
+
+Treat visible alpha and semantic ownership as separate evidence. A partial squint, eyelid, hand, or facial substitution can paint only the visible fragment while still owning the complete region that must exclude hair or other occluders. Recover the intended envelope from the registered drawing family, clip the occluder behind that envelope, then paint the visible substitution. Confirm the result in a synchronized tight crop. Do not begin with coordinate nudges, color-specific erasure, or contour-only cleanup; those can hide one symptom while leaving the occluding fill intact.
+
 ### 4. Timing grammar
 
 Recover the action's phases before editing curves:
@@ -86,7 +90,8 @@ For a new expression, begin from the nearest certified motion grammar only when 
 | White shoulder-to-torso split | Deformation-radius mapping | Apply animated transverse radius |
 | Body stretches into a stem | Bone inverse-map endpoint behavior | Extrapolate rather than clamp |
 | Hairline has a dark wedge or stray crescent | Component masking and shade ownership | Filter the stray component; restore the artist shade mask |
-| Missing finger, teeth, eye, or mouth color | Drawing substitution and fill extraction | Use the intended drawing and verify its color/line layers |
+| Hair or another occluder appears inside a squint or partial eye | Raw visible alpha was mistaken for the full region the substitution owns | Reconstruct the full semantic eye envelope and clip the occluder behind it; verify zero opaque overlap per frame |
+| Missing finger, teeth, eye, or mouth color | Drawing substitution, TVG paint-side recovery, and fill extraction | Use the intended drawing; recover an unambiguous enclosed region when the recorded paint side resolves to nothing; verify required palette colors directly |
 | Pose reads correctly but feels choppy | Phase timing and secondary controls | Recover accents, overlaps, living hold, afterbeat, and release |
 | Long frozen hold | Omitted secondary source controls | Preserve the complete control choreography; add a temporal gate |
 | Motion is smooth but generic | Uniform interpolation | Use explicit asymmetric accents, overshoot, settle, and rebound |
@@ -100,6 +105,8 @@ For a new expression, begin from the nearest certified motion grammar only when 
 - Do not animate multiple uncertified actions in one iteration.
 - Do not diagnose timing while the silhouette is structurally broken.
 - Do not accept passing code, a successful render, or three screenshots as evidence that the animation works.
+- Do not treat connectivity or alpha coverage as proof that internal color regions are correct.
+- Do not repair a semantic overlap with model-space offsets or contour-only pixel erasure before establishing which drawing owns the complete region.
 - Do not weaken inspection thresholds to accommodate an observed defect.
 - Do not add pose-specific renderer branches when a recipe or existing substitution can express the action.
 
@@ -123,6 +130,8 @@ For every promoted lesson, record:
 5. the file or gate that now prevents recurrence.
 
 If the same lesson recurs, escalate it instead of repeating prose: strengthen the instruction on the second occurrence and automate a mechanical gate whenever the failure can be detected reliably.
+
+Keep the two checksum domains distinct when registering an accepted recipe: `poses/index.json` stores the SHA-256 of the exact recipe file bytes, while render and inspection receipts store the canonical semantic recipe SHA-256. Compute and record both; never place the semantic hash in the file registry. `npm run check` must reject a mismatch.
 
 ## Proven baseline from Shrug
 

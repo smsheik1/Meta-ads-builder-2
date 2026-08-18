@@ -56,6 +56,8 @@ function fixture() {
       drawings: ["1", "2"],
     }],
     scenes: [{
+      startFrame: 1,
+      stopFrame: 10,
       nodes: [
         peg,
         read,
@@ -161,6 +163,34 @@ test("pose recipes reject prop path traversal", () => {
   const invalid = recipe();
   invalid.props[0].asset = "../screen.svg";
   assert.throws(() => createPoseRuntime(fixture(), invalid), /without path traversal/);
+});
+
+test("pose recipes map each local frame to an explicit Xstage deformation frame", () => {
+  const mapped = recipe();
+  mapped.deformationFrames = [2, 3, 4, 5, 6];
+  const runtime = createPoseRuntime(fixture(), mapped);
+  assert.deepEqual(
+    Array.from({ length: mapped.durationFrames }, (_, index) => (
+      runtime.deformationSourceFrameAtFrame(index + 1)
+    )),
+    mapped.deformationFrames,
+  );
+});
+
+test("pose recipes reject incomplete or out-of-range deformation timing", () => {
+  const incomplete = recipe();
+  incomplete.deformationFrames = [1, 2];
+  assert.throws(
+    () => createPoseRuntime(fixture(), incomplete),
+    /exactly 5 valid Xstage frames/,
+  );
+
+  const outsideScene = recipe();
+  outsideScene.deformationFrames = [1, 2, 3, 4, 11];
+  assert.throws(
+    () => createPoseRuntime(fixture(), outsideScene),
+    /exactly 5 valid Xstage frames/,
+  );
 });
 
 test("control simplification keeps overshoots but removes exact linear in-betweens", () => {

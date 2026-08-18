@@ -6,8 +6,9 @@
     "pose recipe registry checksum",
     "per-frame joint continuity",
     "per-frame clipping",
-    "per-frame recovered layer order",
+    "per-frame finished layer order with hidden construction-arm and stray back-bang rejection",
     "per-frame facial pop limits",
+    "pose-specific consecutive-identical-frame limit",
     "exact prop presence",
     "1280x720 H.264 yuv420p at 24 fps",
     "exact timeline duration"

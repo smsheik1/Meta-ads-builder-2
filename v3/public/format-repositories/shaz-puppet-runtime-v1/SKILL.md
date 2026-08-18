@@ -53,6 +53,8 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Reproduce timing grammar rather than applying generic smoothing: anticipation, accent, overshoot, settle, readable living hold, afterbeat, and release.
 - Preserve the whole control choreography. Major arm and head keys alone are rarely sufficient.
 - Treat drawing substitutions, visibility, AutoPatch-style masking, and paint order as animation controls.
+- Distinguish visible alpha from semantic ownership. A partial eye, hand, or facial drawing may own a larger matte than its painted pixels; reconstruct that envelope and clip occluders behind it instead of shifting artwork or erasing only an outline.
+- Treat internal palette ownership as content: shape, opacity, and connectivity can all pass while teeth, eye whites, tongues, or skin are painted incorrectly. Add direct color-presence gates for stable semantic regions.
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
 

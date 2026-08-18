@@ -195,10 +195,26 @@ function chooseBoundarySideRegion(seed) {
   return { label: ranked[0][0], votes: ranked[0][1].count, distance: ranked[0][1].distanceTotal / ranked[0][1].count };
 }
 
+function chooseSeedRegion(seed) {
+  const requested = chooseBoundarySideRegion(seed);
+  if (requested) return { ...requested, sideFallback: false };
+
+  // Some Harmony TVGs contain a valid paint seed whose recorded side points
+  // away from the only enclosed region on that boundary. Treat the opposite
+  // side as a recovery path only when the requested side resolves to nothing.
+  // This preserves every unambiguous seed while recovering otherwise-empty
+  // authored color regions such as Shaz Mouth-2's white teeth.
+  const opposite = chooseBoundarySideRegion({
+    ...seed,
+    side: seed.side === 0 ? 1 : 0,
+  });
+  return opposite ? { ...opposite, sideFallback: true } : null;
+}
+
 const regionVotes = new Map();
 const paintResults = [];
 for (const seed of spec.seeds) {
-  const picked = chooseBoundarySideRegion(seed);
+  const picked = chooseSeedRegion(seed);
   if (!picked) {
     paintResults.push({ ...seed, pixels: 0, region: null });
     continue;
@@ -217,6 +233,7 @@ for (const seed of spec.seeds) {
     touchesBorder: regions[picked.label].touchesBorder,
     distance: picked.distance,
     votes: picked.votes,
+    sideFallback: picked.sideFallback,
   });
 }
 

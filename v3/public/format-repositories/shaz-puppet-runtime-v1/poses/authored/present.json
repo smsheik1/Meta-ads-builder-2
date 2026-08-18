@@ -11,6 +11,9 @@
     "endFrame": 55,
     "generatedFrom": "xstage-control-channels-and-drawing-exposures"
   },
+  "quality": {
+    "maximumIdenticalFrames": 1
+  },
   "controls": {
     "Shaz_Master-P": [
       {

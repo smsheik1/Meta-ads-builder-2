@@ -174,6 +174,10 @@ async function main() {
     },
     controls,
     drawings,
+    deformationFrames: Array.from(
+      { length: durationFrames },
+      (_, index) => args.start + index,
+    ),
   };
   const output = path.resolve(args.output);
   await fs.mkdir(path.dirname(output), { recursive: true });

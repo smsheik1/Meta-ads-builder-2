@@ -6063,11 +6063,7 @@
       },
       {
         "frame": 7,
-        "drawing": "2"
-      },
-      {
-        "frame": 10,
-        "drawing": "4"
+        "drawing": "5"
       }
     ]
   },
@@ -6080,15 +6076,6 @@
       "keys": [
         {
           "frame": 1,
-          "position": [
-            0.18,
-            0.53
-          ],
-          "width": 0.22,
-          "opacity": 0
-        },
-        {
-          "frame": 6,
           "position": [
             0.18,
             0.53

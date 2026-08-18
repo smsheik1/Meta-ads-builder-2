@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "poses": [
-    { "id": "present", "kind": "authored-replay", "path": "authored/present.json", "sha256": "b2b0b79628e35c599fbac4f614990e25446c2ceba8e6030b9a90da2d1805c4e1" },
-    { "id": "shrug", "kind": "heldout-authored-replay", "path": "authored/shrug.json", "sha256": "faa0472ee054696b25aff56b371a226347b885ef5ffcdbcbcc4e0f18433ed870" },
+    { "id": "present", "kind": "authored-replay", "path": "authored/present.json", "sha256": "b2f8e2066d30b7aadac1c11f1149940ac438ee08835e88caea4a380c5af81d2f" },
+    { "id": "shrug", "kind": "heldout-authored-replay", "path": "authored/shrug.json", "sha256": "9cba89c6393a43580c25eb6059132a39ef30490958936d7f375071faf2f451b1" },
     { "id": "think", "kind": "authored-replay", "path": "authored/think.json", "sha256": "6fc21c25dd49a6bf18eae49886c6ebb95a41367461a792655d450377ddb16d12" },
     { "id": "idea", "kind": "authored-replay", "path": "authored/idea.json", "sha256": "17ae47d1221b00ff8092026d50a97e29856ea533e15da525801f63011788882b" },
     { "id": "point", "kind": "authored-replay", "path": "authored/point.json", "sha256": "fbd7205572a56684710ec62737beec0b18b51efcc4666f20c48ad6f3f933a784" },
     { "id": "confident", "kind": "authored-replay", "path": "authored/confident.json", "sha256": "4f78c3402b768240b4669f9ba629719ca2396f55739123d589072a078b58f051" },
-    { "id": "excited-celebration", "kind": "generated", "path": "generated/excited-celebration.json", "sha256": "e027fac373a920e15a935bc54dd2f8ed15c0472f06ef6554195bf29327dbe14d" },
-    { "id": "point-at-screen", "kind": "generated", "path": "generated/point-at-screen.json", "sha256": "6e4b675acbb4fee771e7cd655ca9cec36e274c3fb442dc5e980d753f15854fea" },
-    { "id": "look-at-phone", "kind": "generated", "path": "generated/look-at-phone.json", "sha256": "7a8b8d57fccfa6ae9a8469be7b34af6f7b0ea3df25103710bf35e36a07822ec2" },
+    { "id": "excited-celebration", "kind": "generated", "path": "generated/excited-celebration.json", "sha256": "106c8c909280a33360a1fd20d2c9e3f250d7d7cc164b46c53cc99db7069d5c64" },
+    { "id": "point-at-screen", "kind": "generated", "path": "generated/point-at-screen.json", "sha256": "1a14a8666807ba121eb821cc6ae1061f2b97f229e049c05fcd5b9d18a7966949" },
+    { "id": "look-at-phone", "kind": "generated", "path": "generated/look-at-phone.json", "sha256": "c2161ab1d26142091e0074e10d63639e387572f9aaba15fc062848ac14c7b43d" },
     { "id": "facepalm-frustrated", "kind": "generated", "path": "generated/facepalm-frustrated.json", "sha256": "ce9ffbe5055b3e3b64b53c3a1d8c7d318fbbd4ad6a011d4cec4eec2172f94cde" },
-    { "id": "arms-crossed-skeptical", "kind": "generated", "path": "generated/arms-crossed-skeptical.json", "sha256": "a5a56f6d36742c4a0a43fd0003d05a6c0b634c94d3e4948ebc8fe59fbda00103" }
+    { "id": "arms-crossed-skeptical", "kind": "generated", "path": "generated/arms-crossed-skeptical.json", "sha256": "6a3b441ea9dea57254901818c528348fd625e93057f0962c74ed43fbde00dda0" }
   ]
 }

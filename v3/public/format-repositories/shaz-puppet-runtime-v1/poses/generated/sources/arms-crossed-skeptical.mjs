@@ -73,17 +73,16 @@ async function buildArmsCrossedSkeptical(manifest) {
       controlKey(confident.durationFrames + OFFSET, sideEye),
     ];
   }
-  for (const nodeName of [
-    "Left_Arm",
-    "Left_Forearm",
-    "Left_Hand",
-    "Right_Arm",
-    "Right_Forearm",
-    "Right_Hand",
-  ]) {
-    const hidden = adjustedState(sourceControlState(manifest, nodeName, 1), { opacity: 0 });
+  // Keep the real rig arms visible through the anticipation. Swap to the
+  // minimal crossed-arm substitutions only at contact; animating those redraws
+  // independently from frame one made them read as random detached objects.
+  for (const nodeName of ["Left_Forearm", "Left_Hand", "Right_Forearm", "Right_Hand"]) {
+    const visible = sourceControlState(manifest, nodeName, 1);
+    const hidden = adjustedState(visible, { opacity: 0 });
     controls[nodeName] = [
-      controlKey(1, hidden),
+      controlKey(1, visible),
+      controlKey(8, visible, "hold"),
+      controlKey(9, hidden, "hold"),
       controlKey(confident.durationFrames + OFFSET, hidden),
     ];
   }
@@ -113,7 +112,7 @@ async function buildArmsCrossedSkeptical(manifest) {
       learnedFrom: [
         "authored/confident: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
         "authored/think: skeptical brow, mouth, eye-direction, and head-drag vocabulary",
-        "minimal substitution redraw: crossed forearms required by the source rig's fixed paint topology",
+        "minimal contact-only substitution redraw: crossed forearms required by the source rig's fixed paint topology",
       ],
       controls,
       drawings,
@@ -125,12 +124,12 @@ async function buildArmsCrossedSkeptical(manifest) {
         sha256: SUBSTITUTION_ARM_SHA256,
         layer: "front",
         keys: [
-          { frame: 1, position: [0.418, 0.638], width: 0.056, rotation: 0, opacity: 100 },
-          { frame: 4, position: [0.363, 0.636], width: 0.056, rotation: 5, opacity: 100 },
-          { frame: 7, position: [0.376, 0.656], width: 0.056, rotation: -20, opacity: 100 },
-          { frame: 11, position: [0.458, 0.526], width: 0.056, rotation: -76, opacity: 100 },
-          { frame: 14, position: [0.461, 0.548], width: 0.056, rotation: -68, opacity: 100 },
-          { frame: confident.durationFrames + OFFSET, position: [0.461, 0.548], width: 0.056, rotation: -68, opacity: 100 },
+          { frame: 1, position: [0.405, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
+          { frame: 8, position: [0.405, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
+          { frame: 9, position: [0.43, 0.555], width: 0.064, rotation: -50, opacity: 100 },
+          { frame: 12, position: [0.465, 0.542], width: 0.062, rotation: -74, opacity: 100 },
+          { frame: 15, position: [0.461, 0.548], width: 0.062, rotation: -68, opacity: 100 },
+          { frame: confident.durationFrames + OFFSET, position: [0.461, 0.548], width: 0.062, rotation: -68, opacity: 100 },
         ],
       },
       {
@@ -139,12 +138,12 @@ async function buildArmsCrossedSkeptical(manifest) {
         sha256: SUBSTITUTION_ARM_SHA256,
         layer: "front",
         keys: [
-          { frame: 1, position: [0.543, 0.638], width: 0.056, rotation: 0, opacity: 100 },
-          { frame: 4, position: [0.516, 0.636], width: 0.056, rotation: -5, opacity: 100 },
-          { frame: 7, position: [0.46, 0.656], width: 0.056, rotation: 20, opacity: 100 },
-          { frame: 11, position: [0.456, 0.526], width: 0.056, rotation: 76, opacity: 100 },
-          { frame: 14, position: [0.445, 0.548], width: 0.056, rotation: 68, opacity: 100 },
-          { frame: confident.durationFrames + OFFSET, position: [0.445, 0.548], width: 0.056, rotation: 68, opacity: 100 },
+          { frame: 1, position: [0.555, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
+          { frame: 8, position: [0.555, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
+          { frame: 9, position: [0.48, 0.555], width: 0.064, rotation: 50, opacity: 100 },
+          { frame: 12, position: [0.441, 0.542], width: 0.062, rotation: 74, opacity: 100 },
+          { frame: 15, position: [0.445, 0.548], width: 0.062, rotation: 68, opacity: 100 },
+          { frame: confident.durationFrames + OFFSET, position: [0.445, 0.548], width: 0.062, rotation: 68, opacity: 100 },
         ],
       },
     ],

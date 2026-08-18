@@ -60,6 +60,13 @@ async function buildPointAtScreen(manifest) {
       ...keys.map((key) => ({ ...key, frame: key.frame + POINT_OFFSET })),
     ],
   ]));
+  // The authored point ends on a clenched-tooth drawing. That expression is
+  // correct in its original quick beat but reads as broken teeth when held for
+  // this longer explanatory pose, so keep the clean open smile here.
+  drawings.Mouth = [
+    { frame: 1, drawing: sourceDrawing(manifest, "Mouth", 1) },
+    { frame: 7, drawing: sourceDrawing(manifest, "Mouth", 39) },
+  ];
 
   return {
     ...generatedRecipe(manifest, {
@@ -78,8 +85,7 @@ async function buildPointAtScreen(manifest) {
       sha256: SCREEN_SHA256,
       layer: "behind",
       keys: [
-        { frame: 1, position: [0.18, 0.53], width: 0.22, opacity: 0 },
-        { frame: 6, position: [0.18, 0.53], width: 0.3, opacity: 100 },
+        { frame: 1, position: [0.18, 0.53], width: 0.3, opacity: 100 },
         { frame: point.durationFrames + POINT_OFFSET, position: [0.18, 0.53], width: 0.3, opacity: 100 },
       ],
     }],

@@ -55,6 +55,7 @@ async function inspectRun({ root, runDirectory }) {
       status: report.status,
       poseRecipeSha256: report.poseRecipeSha256,
       framesInspected: report.frames.length,
+      maximumIdenticalFrames: report.maximumIdenticalFrames,
       failures: report.failures,
     });
     if (report.status !== "pass") failures.push(`pose inspection failed for ${poseId}`);

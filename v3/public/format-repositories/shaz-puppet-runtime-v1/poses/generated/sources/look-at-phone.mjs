@@ -82,10 +82,13 @@ async function buildLookAtPhone(manifest) {
       sha256: PHONE_SHA256,
       layer: "front",
       keys: [
-        { frame: 1, position: [0.43, 0.7], width: 0.06, rotation: -10, opacity: 0 },
-        { frame: 6, position: [0.43, 0.63], width: 0.075, rotation: -10, opacity: 0 },
-        { frame: 7, position: [0.43, 0.63], width: 0.075, rotation: -10, opacity: 100 },
-        { frame: think.durationFrames + THINK_OFFSET, position: [0.43, 0.63], width: 0.075, rotation: -10, opacity: 100 },
+        // Begin beside the lowered left hand, then travel with that hand into
+        // the viewing pose. Starting over the chest made the phone read as a
+        // random floating object even though it was technically established.
+        { frame: 1, position: [0.355, 0.8], width: 0.06, rotation: 8, opacity: 100, interpolation: "hold" },
+        { frame: 7, position: [0.445, 0.625], width: 0.075, rotation: -8, opacity: 100 },
+        { frame: 13, position: [0.455, 0.605], width: 0.075, rotation: -6, opacity: 100 },
+        { frame: think.durationFrames + THINK_OFFSET, position: [0.455, 0.605], width: 0.075, rotation: -6, opacity: 100 },
       ],
     }],
   };

@@ -11758,41 +11758,42 @@
         {
           "frame": 1,
           "position": [
-            0.43,
-            0.7
+            0.355,
+            0.8
           ],
           "width": 0.06,
-          "rotation": -10,
-          "opacity": 0
-        },
-        {
-          "frame": 6,
-          "position": [
-            0.43,
-            0.63
-          ],
-          "width": 0.075,
-          "rotation": -10,
-          "opacity": 0
+          "rotation": 8,
+          "opacity": 100,
+          "interpolation": "hold"
         },
         {
           "frame": 7,
           "position": [
-            0.43,
-            0.63
+            0.445,
+            0.625
           ],
           "width": 0.075,
-          "rotation": -10,
+          "rotation": -8,
+          "opacity": 100
+        },
+        {
+          "frame": 13,
+          "position": [
+            0.455,
+            0.605
+          ],
+          "width": 0.075,
+          "rotation": -6,
           "opacity": 100
         },
         {
           "frame": 55,
           "position": [
-            0.43,
-            0.63
+            0.455,
+            0.605
           ],
           "width": 0.075,
-          "rotation": -10,
+          "rotation": -6,
           "opacity": 100
         }
       ]

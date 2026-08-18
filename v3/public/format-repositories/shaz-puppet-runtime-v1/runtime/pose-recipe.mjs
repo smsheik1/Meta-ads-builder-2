@@ -19,6 +19,12 @@ const CONTROL_FIELDS = new Set([
 ]);
 const INTERPOLATIONS = new Set(["linear", "hold"]);
 const PROP_LAYERS = new Set(["behind", "front"]);
+const DEFORMATION_NODE_TYPES = new Set([
+  "BendyBoneModule",
+  "CurveModule",
+  "DeformationCompositeModule",
+  "OffsetModule",
+]);
 
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -250,6 +256,12 @@ function createPoseRuntime(manifest, recipe) {
   if (recipe.artistRenderedFramesUsed !== false) {
     throw new Error("pose recipe does not prove artist-frame exclusion");
   }
+  if (recipe.quality?.maximumIdenticalFrames !== undefined
+    && (!Number.isInteger(recipe.quality.maximumIdenticalFrames)
+      || recipe.quality.maximumIdenticalFrames < 1
+      || recipe.quality.maximumIdenticalFrames > recipe.durationFrames)) {
+    throw new Error("quality.maximumIdenticalFrames must be a positive frame count within the pose duration");
+  }
 
   const scene = manifest.scenes[0];
   if (!scene) throw new Error("manifest contains no scene");
@@ -259,6 +271,18 @@ function createPoseRuntime(manifest, recipe) {
     node.path,
     sampleNode(node, columns, recipe.baseFrame),
   ]));
+  const deformationFrames = recipe.deformationFrames === undefined
+    ? Array.from({ length: recipe.durationFrames }, () => recipe.baseFrame)
+    : recipe.deformationFrames;
+  if (!Array.isArray(deformationFrames)
+    || deformationFrames.length !== recipe.durationFrames
+    || deformationFrames.some((sourceFrame) => (
+      !Number.isInteger(sourceFrame)
+      || sourceFrame < scene.startFrame
+      || sourceFrame > scene.stopFrame
+    ))) {
+    throw new Error(`deformationFrames must contain exactly ${recipe.durationFrames} valid Xstage frames`);
+  }
   const controlKeys = new Map();
   const drawingKeys = new Map();
   const props = [];
@@ -319,6 +343,9 @@ function createPoseRuntime(manifest, recipe) {
 
   function sampleNodeAtFrame(node, ignoredColumns, frame) {
     assertLocalFrame(frame);
+    if (DEFORMATION_NODE_TYPES.has(node.type)) {
+      return sampleNode(node, columns, deformationFrames[frame - 1]);
+    }
     const baseSample = baseSamples.get(node.path);
     const keys = controlKeys.get(node.path);
     return keys ? applyControlState(baseSample, sampleControlKeys(keys, frame)) : baseSample;
@@ -349,12 +376,18 @@ function createPoseRuntime(manifest, recipe) {
     }));
   }
 
+  function deformationSourceFrameAtFrame(frame) {
+    assertLocalFrame(frame);
+    return deformationFrames[frame - 1];
+  }
+
   return {
     recipe,
     recipeSha256: poseRecipeSha256(recipe),
     sampleNodeAtFrame,
     resolveDrawing,
     propsAtFrame,
+    deformationSourceFrameAtFrame,
   };
 }
 

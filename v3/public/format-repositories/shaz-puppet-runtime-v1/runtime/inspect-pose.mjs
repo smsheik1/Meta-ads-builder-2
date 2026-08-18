@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -84,6 +85,10 @@ async function alphaStats(buffer, analysisWidth = 640) {
     let head = 0;
     let tail = 0;
     let size = 0;
+    let componentMinX = info.width;
+    let componentMinY = info.height;
+    let componentMaxX = -1;
+    let componentMaxY = -1;
     queue[tail++] = start;
     visited[start] = 1;
     while (head < tail) {
@@ -91,6 +96,10 @@ async function alphaStats(buffer, analysisWidth = 640) {
       size += 1;
       const x = pixel % info.width;
       const y = Math.floor(pixel / info.width);
+      componentMinX = Math.min(componentMinX, x);
+      componentMinY = Math.min(componentMinY, y);
+      componentMaxX = Math.max(componentMaxX, x);
+      componentMaxY = Math.max(componentMaxY, y);
       for (let dy = -1; dy <= 1; dy += 1) {
         for (let dx = -1; dx <= 1; dx += 1) {
           if (dx === 0 && dy === 0) continue;
@@ -104,9 +113,19 @@ async function alphaStats(buffer, analysisWidth = 640) {
         }
       }
     }
-    if (size >= MIN_COMPONENT_PIXELS) components.push(size);
+    if (size >= MIN_COMPONENT_PIXELS) {
+      components.push({
+        pixels: size,
+        bbox: {
+          minX: componentMinX,
+          minY: componentMinY,
+          maxX: componentMaxX,
+          maxY: componentMaxY,
+        },
+      });
+    }
   }
-  components.sort((left, right) => right - left);
+  components.sort((left, right) => right.pixels - left.pixels);
   return {
     empty: false,
     width: info.width,
@@ -114,8 +133,24 @@ async function alphaStats(buffer, analysisWidth = 640) {
     bbox: { minX, minY, maxX, maxY },
     centroid: { x: weightedX / alphaSum, y: weightedY / alphaSum },
     opaquePixels,
-    componentPixels: components,
+    componentPixels: components.map(({ pixels }) => pixels),
+    components,
   };
+}
+
+async function nearWhitePixelCount(buffer) {
+  const { data, info } = await sharp(buffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  let count = 0;
+  for (let index = 0; index < data.length; index += info.channels) {
+    if (data[index] >= 245
+      && data[index + 1] >= 245
+      && data[index + 2] >= 245
+      && data[index + 3] >= 245) count += 1;
+  }
+  return count;
 }
 
 function paintPlanKey(entry) {
@@ -133,8 +168,93 @@ function paintOrderValid(layers) {
   return true;
 }
 
+function armCompositeValid(layers) {
+  for (const side of ["Left", "Right"]) {
+    if (layers.some((layer) => layer.nodePath.endsWith(`/${side}_Arm`))) return false;
+    const forearm = layers.findIndex((layer) => (
+      layer.nodePath.endsWith(`/${side}_Forearm`)
+      && layer.variant === "main"
+      && layer.compositeRole === "finished-sleeve-union"
+    ));
+    if (forearm < 0) return false;
+    const allowedHands = side === "Left"
+      ? [`/${side}_Hand`, "/OL_Hand"]
+      : [`/${side}_Hand`];
+    const hand = layers.findIndex((layer, index) => (
+      index > forearm
+      && layer.variant === "main"
+      && allowedHands.some((suffix) => layer.nodePath.endsWith(suffix))
+    ));
+    if (hand < 0) return false;
+  }
+  return true;
+}
+
+function hairCompositeValid(layers) {
+  const rearHair = layers.find((layer) => (
+    layer.nodePath.endsWith("/Hair") && layer.variant === "main"
+  ));
+  const backBang = layers.find((layer) => (
+    layer.nodePath.endsWith("/Bangs_back") && layer.variant === "main"
+  ));
+  const headBase = layers.find((layer) => (
+    layer.nodePath.endsWith("/Head_Base") && layer.variant === "main"
+  ));
+  if (!rearHair || !backBang || !headBase
+    || rearHair.compositeRole !== "rear-hair-with-artist-forehead-shade"
+    || rearHair.foreheadShadePixelCount <= 0
+    || rearHair.replacedForeheadShadowPixelCount <= 0) return false;
+  const requiresPatchMask = ["1", "3"].includes(String(backBang.drawing));
+  if (!requiresPatchMask) return backBang.compositeRole === "finished-artwork";
+  return Boolean(backBang.compositeRole === "finished-back-bang-with-upper-patch-hidden"
+    && backBang.sourceFillComponentCount >= 1
+    && backBang.hiddenFillComponentCount > 0
+    && backBang.hiddenFillComponentCount < backBang.sourceFillComponentCount);
+}
+
+function eyeEnvelopeCompositeValid(layers) {
+  const frontBang = layers.find((layer) => (
+    layer.nodePath.endsWith("/Bangs_front") && layer.variant === "main"
+  ));
+  const eyes = layers.filter((layer) => (
+    (layer.nodePath.endsWith("/Left_Eye") || layer.nodePath.endsWith("/Right_Eye"))
+    && layer.variant === "main"
+  ));
+  return Boolean(frontBang
+    && eyes.length === 2
+    && Number.isInteger(frontBang.eyeEnvelopeClearancePixelCount)
+    && frontBang.eyeEnvelopeClearancePixelCount >= 0
+    && eyes.every((eye) => Number.isInteger(eye.eyeEnvelopePixelCount)
+      && eye.eyeEnvelopePixelCount > 0));
+}
+
+async function opaqueMaskOverlapPixelCount(artwork, masks) {
+  const [artworkRaw, ...maskRaws] = await Promise.all([
+    sharp(artwork).ensureAlpha().raw().toBuffer(),
+    ...masks.map((mask) => sharp(mask).ensureAlpha().raw().toBuffer()),
+  ]);
+  let overlap = 0;
+  for (let offset = 0; offset < artworkRaw.length; offset += 4) {
+    if (artworkRaw[offset + 3] <= ALPHA_THRESHOLD) continue;
+    if (maskRaws.some((mask) => mask[offset + 3] >= 240)) overlap += 1;
+  }
+  return overlap;
+}
+
 function distance(left, right) {
   return Math.hypot(left.x - right.x, left.y - right.y);
+}
+
+function maximumConsecutiveEqual(values) {
+  let maximum = 0;
+  let current = 0;
+  let previous;
+  for (const value of values) {
+    current = value === previous ? current + 1 : 1;
+    maximum = Math.max(maximum, current);
+    previous = value;
+  }
+  return maximum;
 }
 
 function expectedEdgesForFrame(recipe, frame) {
@@ -159,6 +279,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
   const previousFace = new Map();
   const assetCache = new Map();
   const propCache = new Map();
+  const renderedFrameHashes = [];
 
   for (let frame = 1; frame <= recipe.durationFrames; frame += 1) {
     const rendered = await renderRigFrame({
@@ -172,12 +293,99 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       background: { r: 0, g: 0, b: 0, alpha: 0 },
       includeLayerBuffers: true,
     });
+    renderedFrameHashes.push(crypto.createHash("sha256").update(rendered.buffer).digest("hex"));
     if (rendered.receipt.artistRenderedFramesUsed !== false
       || rendered.receipt.poseRecipeSha256 !== poseRuntime.recipeSha256) {
       failures.push({ frame, gate: "provenance", detail: "frame receipt lost recipe provenance" });
     }
     if (!paintOrderValid(rendered.receipt.layers)) {
       failures.push({ frame, gate: "layer-order", detail: "frame layers do not follow READ_PAINT_PLAN" });
+    }
+    if (!armCompositeValid(rendered.receipt.layers)) {
+      failures.push({
+        frame,
+        gate: "arm-composite",
+        detail: "finished sleeves and hands must render in order without visible upper-arm construction artwork",
+      });
+    }
+    if (!hairCompositeValid(rendered.receipt.layers)) {
+      failures.push({
+        frame,
+        gate: "hair-composite",
+        detail: "the rear-hair forehead wedge must use the artist shade and the back bang must expose only its intended component",
+      });
+    }
+    const frontBangLayer = rendered.analysisLayers.find((layer) => (
+      layer.nodePath.endsWith("/Bangs_front") && layer.variant === "main"
+    ));
+    const eyeLayers = rendered.analysisLayers.filter((layer) => (
+      (layer.nodePath.endsWith("/Left_Eye") || layer.nodePath.endsWith("/Right_Eye"))
+      && layer.variant === "main"
+    ));
+    let eyeEnvelopeOverlapPixels = null;
+    if (!eyeEnvelopeCompositeValid(rendered.receipt.layers)
+      || !frontBangLayer
+      || eyeLayers.length !== 2
+      || eyeLayers.some((layer) => !layer.eyeClearanceMask)) {
+      failures.push({
+        frame,
+        gate: "eye-occlusion",
+        detail: "both eyes and the front bang must preserve the semantic eye-envelope composite",
+      });
+    } else {
+      eyeEnvelopeOverlapPixels = await opaqueMaskOverlapPixelCount(
+        frontBangLayer.input,
+        eyeLayers.map(({ eyeClearanceMask }) => eyeClearanceMask),
+      );
+      if (eyeEnvelopeOverlapPixels > 0) {
+        failures.push({
+          frame,
+          gate: "eye-occlusion",
+          detail: `${eyeEnvelopeOverlapPixels} opaque front-bang pixels remain inside the eye envelopes`,
+        });
+      }
+    }
+    const backBangLayer = rendered.analysisLayers.find((layer) => (
+      layer.nodePath.endsWith("/Bangs_back") && layer.variant === "main"
+    ));
+    const backBang = backBangLayer ? await alphaStats(backBangLayer.input) : { empty: true };
+    const backBangNeedsMask = backBangLayer
+      && ["1", "3"].includes(String(backBangLayer.drawing.drawing));
+    if (backBangNeedsMask && (backBang.empty || backBang.componentPixels.length !== 1)) {
+      failures.push({
+        frame,
+        gate: "hair-composite",
+        detail: `back bang rendered ${backBang.empty ? 0 : backBang.componentPixels.length} visible components instead of one`,
+      });
+    }
+    const collarLayer = rendered.analysisLayers.find((layer) => (
+      layer.nodePath.endsWith("/Collar") && layer.variant === "main"
+    ));
+    const collar = collarLayer ? await alphaStats(collarLayer.input) : { empty: true };
+    const collarArea = collar.empty
+      ? 0
+      : (collar.bbox.maxX - collar.bbox.minX + 1) * (collar.bbox.maxY - collar.bbox.minY + 1);
+    if (collar.empty || collar.opaquePixels / collarArea < 0.45) {
+      failures.push({
+        frame,
+        gate: "collar-fill",
+        detail: "the closed collar/scarf shape is not substantially skin-filled",
+      });
+    }
+
+    const mouthLayer = rendered.analysisLayers.find((layer) => (
+      layer.nodePath.endsWith("/Mouth") && layer.variant === "main"
+    ));
+    if (mouthLayer && ["2", "4", "5", "7", "8", "9", "10"]
+      .includes(String(mouthLayer.drawing.drawing))) {
+      const whitePixels = await nearWhitePixelCount(mouthLayer.input);
+      if (whitePixels < 16) {
+        failures.push({
+          frame,
+          gate: "mouth-color-ownership",
+          detail: `mouth drawing ${mouthLayer.drawing.drawing} lost its authored white tooth region`,
+        });
+      }
     }
 
     const characterBuffer = await sharp({
@@ -275,8 +483,20 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       frame,
       alphaBounds: character.empty ? null : character.bbox,
       significantComponents: character.componentPixels?.length ?? 0,
+      componentGeometry: character.empty ? [] : character.components,
       layerCount: rendered.receipt.layers.length,
       propCount: rendered.receipt.props.length,
+      eyeEnvelopeOverlapPixels,
+    });
+  }
+
+  const maximumIdenticalFrames = maximumConsecutiveEqual(renderedFrameHashes);
+  if (recipe.quality?.maximumIdenticalFrames !== undefined
+    && maximumIdenticalFrames > recipe.quality.maximumIdenticalFrames) {
+    failures.push({
+      frame: null,
+      gate: "temporal-motion",
+      detail: `${maximumIdenticalFrames} identical rendered frames exceed the ${recipe.quality.maximumIdenticalFrames}-frame limit`,
     });
   }
 
@@ -290,13 +510,21 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     gates: [
       "provenance",
       "layer-order",
+      "arm-composite",
+      "hair-composite",
+      "eye-occlusion",
+      "construction-seam",
+      "collar-fill",
+      "mouth-color-ownership",
       "clipping",
       "joint-continuity",
       "facial-pop",
       "prop-presence",
+      "temporal-motion",
     ],
     failures,
     approvedEdgeContacts,
+    maximumIdenticalFrames,
     frames: frameReports,
   };
 }
@@ -327,7 +555,13 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
 
 export {
   alphaStats,
+  armCompositeValid,
   expectedEdgesForFrame,
+  eyeEnvelopeCompositeValid,
+  hairCompositeValid,
   inspectPose,
+  maximumConsecutiveEqual,
+  nearWhitePixelCount,
+  opaqueMaskOverlapPixelCount,
   paintOrderValid,
 };

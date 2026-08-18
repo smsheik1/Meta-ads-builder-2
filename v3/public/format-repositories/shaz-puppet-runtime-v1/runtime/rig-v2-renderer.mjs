@@ -14,6 +14,7 @@ import {
   resolveReadDrawing,
   sampleNode,
 } from "./vendor/runtime_channels.mjs";
+import { deformRegisteredAsset } from "./vendor/deformation_chains.mjs";
 
 const ELEMENT_ASSET_IDS = Object.freeze({
   Back_Hair: "back-hair",
@@ -42,10 +43,13 @@ const ELEMENT_ASSET_IDS = Object.freeze({
   Strings: "strings",
 });
 
-// Highest Composite input ports paint last in this scene. AutoPatch receives
-// the forearm and extracts its Colour Art above the upper arm; Overlay then
-// restores any authored Overlay Art. This plan is recovered once from the
-// Xstage graph and applies to every pose.
+const SHAZ_SKIN_COLOR = Object.freeze({ r: 255, g: 187, b: 152, alpha: 255 });
+const SHAZ_HOODIE_COLOR = Object.freeze({ r: 237, g: 113, b: 111, alpha: 255 });
+const OUTLINE_ALPHA_THRESHOLD = 24;
+
+// Rebuild the visible result of each source arm composite. Harmony's Auto-Patch
+// hides the construction overlap: only a clipped upper-arm colour bridge joins
+// torso to sleeve, sleeve art covers it, and the hand remains visible on top.
 const READ_PAINT_ORDER = Object.freeze([
   "Top/Shaz_Rig/Body_Group/Left_Hand",
   "Top/Shaz_Rig/Body_Group/Left_Forearm",
@@ -73,14 +77,17 @@ const READ_PAINT_ORDER = Object.freeze([
 ]);
 
 const READ_PAINT_PLAN = Object.freeze([
-  { nodePath: READ_PAINT_ORDER[0], variant: "main" },
-  { nodePath: READ_PAINT_ORDER[1], variant: "main" },
   { nodePath: READ_PAINT_ORDER[2], variant: "main" },
+  { nodePath: READ_PAINT_ORDER[9], variant: "main" },
+  { nodePath: READ_PAINT_ORDER[1], variant: "main" },
   { nodePath: READ_PAINT_ORDER[1], variant: "color" },
   { nodePath: READ_PAINT_ORDER[1], variant: "overlay" },
-  ...READ_PAINT_ORDER.slice(3, 10).map((nodePath) => ({ nodePath, variant: "main" })),
+  { nodePath: READ_PAINT_ORDER[0], variant: "main" },
+  ...READ_PAINT_ORDER.slice(3, 7).map((nodePath) => ({ nodePath, variant: "main" })),
+  { nodePath: READ_PAINT_ORDER[8], variant: "main" },
   { nodePath: READ_PAINT_ORDER[8], variant: "color" },
   { nodePath: READ_PAINT_ORDER[8], variant: "overlay" },
+  { nodePath: READ_PAINT_ORDER[7], variant: "main" },
   ...READ_PAINT_ORDER.slice(10).map((nodePath) => ({ nodePath, variant: "main" })),
 ]);
 
@@ -142,7 +149,14 @@ function fieldGridForManifest(manifest) {
   };
 }
 
-function tightStageMatrix(worldMatrix, manifest, outputWidth, outputHeight, modelOrigin) {
+function tightStageMatrix(
+  worldMatrix,
+  manifest,
+  outputWidth,
+  outputHeight,
+  modelOrigin,
+  modelUnitsPerPixel = 1,
+) {
   const [sourceWidth, sourceHeight] = manifest.stage.resolution.size;
   const pixelsPerModelUnit = manifest.stage.pixelPerModelUnitForVectorLayers;
   const stage = [
@@ -155,7 +169,10 @@ function tightStageMatrix(worldMatrix, manifest, outputWidth, outputHeight, mode
   ];
   return multiply(stage, multiply(
     worldMatrix,
-    translation(modelOrigin.x, modelOrigin.y),
+    multiply(
+      translation(modelOrigin.x, modelOrigin.y),
+      scaleMatrix(modelUnitsPerPixel, modelUnitsPerPixel),
+    ),
   ));
 }
 
@@ -197,6 +214,415 @@ async function readTightAsset(assetRoot, filename, registration, cache) {
     }));
   }
   return { buffer: await cache.get(source), ...record };
+}
+
+async function fillEnclosedOutline(image, width, height, color, preserveOutline = true) {
+  const { data, info } = await sharp(image)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  if (info.width !== width || info.height !== height) {
+    throw new Error("outline-fill dimensions do not match the registered asset");
+  }
+  const pixels = width * height;
+  let barrier = new Uint8Array(pixels);
+  for (let pixel = 0; pixel < pixels; pixel += 1) {
+    if (data[pixel * 4 + 3] > OUTLINE_ALPHA_THRESHOLD) barrier[pixel] = 1;
+  }
+  // TVG strokes are exported as independent antialiased segments. Close their
+  // sub-pixel joins before flood filling so a visually closed collar remains a
+  // closed shape in the raster mask.
+  for (let pass = 0; pass < 2; pass += 1) {
+    const expanded = barrier.slice();
+    for (let pixel = 0; pixel < pixels; pixel += 1) {
+      if (!barrier[pixel]) continue;
+      const x = pixel % width;
+      const y = Math.floor(pixel / width);
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          const nextX = x + dx;
+          const nextY = y + dy;
+          if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height) {
+            expanded[nextY * width + nextX] = 1;
+          }
+        }
+      }
+    }
+    barrier = expanded;
+  }
+  const exterior = new Uint8Array(pixels);
+  const queue = new Int32Array(pixels);
+  let head = 0;
+  let tail = 0;
+  const enqueue = (pixel) => {
+    if (exterior[pixel] || barrier[pixel]) return;
+    exterior[pixel] = 1;
+    queue[tail++] = pixel;
+  };
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x);
+    enqueue((height - 1) * width + x);
+  }
+  for (let y = 0; y < height; y += 1) {
+    enqueue(y * width);
+    enqueue(y * width + width - 1);
+  }
+  while (head < tail) {
+    const pixel = queue[head++];
+    const x = pixel % width;
+    const y = Math.floor(pixel / width);
+    if (x > 0) enqueue(pixel - 1);
+    if (x + 1 < width) enqueue(pixel + 1);
+    if (y > 0) enqueue(pixel - width);
+    if (y + 1 < height) enqueue(pixel + width);
+  }
+  const fill = Buffer.alloc(pixels * 4);
+  for (let pixel = 0; pixel < pixels; pixel += 1) {
+    if (exterior[pixel]
+      || (preserveOutline && data[pixel * 4 + 3] > OUTLINE_ALPHA_THRESHOLD)) continue;
+    const offset = pixel * 4;
+    fill[offset] = color.r;
+    fill[offset + 1] = color.g;
+    fill[offset + 2] = color.b;
+    fill[offset + 3] = color.alpha;
+  }
+  const filled = sharp(fill, { raw: { width, height, channels: 4 } });
+  return preserveOutline
+    ? filled.composite([{ input: image }]).png().toBuffer()
+    : filled.png().toBuffer();
+}
+
+async function hideUpperBackBangPatch(image) {
+  const { data, info } = await sharp(image)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const pixels = info.width * info.height;
+  const filled = new Uint8Array(pixels);
+  for (let pixel = 0; pixel < pixels; pixel += 1) {
+    const offset = pixel * info.channels;
+    if (data[offset + 3] > OUTLINE_ALPHA_THRESHOLD
+      && Math.max(data[offset], data[offset + 1], data[offset + 2]) > 80) filled[pixel] = 1;
+  }
+  const visited = new Uint8Array(pixels);
+  const labels = new Uint32Array(pixels);
+  const queue = new Int32Array(pixels);
+  const components = [];
+  for (let start = 0; start < pixels; start += 1) {
+    if (!filled[start] || visited[start]) continue;
+    const label = components.length + 1;
+    let head = 0;
+    let tail = 0;
+    let size = 0;
+    let maxY = -1;
+    queue[tail++] = start;
+    visited[start] = 1;
+    labels[start] = label;
+    while (head < tail) {
+      const pixel = queue[head++];
+      const x = pixel % info.width;
+      const y = Math.floor(pixel / info.width);
+      size += 1;
+      maxY = Math.max(maxY, y);
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          if (dx === 0 && dy === 0) continue;
+          const nextX = x + dx;
+          const nextY = y + dy;
+          if (nextX < 0 || nextX >= info.width || nextY < 0 || nextY >= info.height) continue;
+          const next = nextY * info.width + nextX;
+          if (!filled[next] || visited[next]) continue;
+          visited[next] = 1;
+          labels[next] = label;
+          queue[tail++] = next;
+        }
+      }
+    }
+    components.push({ size, label, maxY });
+  }
+  const keptLabels = new Set(components
+    .filter(({ maxY }) => maxY >= info.height / 2)
+    .map(({ label }) => label));
+  if (keptLabels.size === components.length) {
+    return {
+      buffer: image,
+      sourceFillComponentCount: components.length,
+      hiddenFillComponentCount: 0,
+    };
+  }
+  if (keptLabels.size === 0) throw new Error("back-bang masking found no lower visible artwork");
+  const output = Buffer.alloc(data.length);
+  for (let pixel = 0; pixel < pixels; pixel += 1) {
+    const offset = pixel * info.channels;
+    let keep = keptLabels.has(labels[pixel]);
+    if (!filled[pixel] && data[offset + 3] > 0) {
+      const x = pixel % info.width;
+      const y = Math.floor(pixel / info.width);
+      for (let dy = -8; dy <= 8 && !keep; dy += 1) {
+        for (let dx = -8; dx <= 8; dx += 1) {
+          const nextX = x + dx;
+          const nextY = y + dy;
+          if (nextX < 0 || nextX >= info.width || nextY < 0 || nextY >= info.height) continue;
+          if (keptLabels.has(labels[nextY * info.width + nextX])) {
+            keep = true;
+            break;
+          }
+        }
+      }
+    }
+    if (keep) data.copy(output, offset, offset, offset + info.channels);
+  }
+  return {
+    buffer: await sharp(output, {
+      raw: { width: info.width, height: info.height, channels: info.channels },
+    }).png().toBuffer(),
+    sourceFillComponentCount: components.length,
+    hiddenFillComponentCount: components.length - keptLabels.size,
+  };
+}
+
+async function extractHeadBaseForeheadShade(image) {
+  const { data, info } = await sharp(image)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const output = Buffer.alloc(data.length);
+  let shadePixelCount = 0;
+  const shadeColorTotal = [0, 0, 0];
+  for (let offset = 0; offset < data.length; offset += info.channels) {
+    const isArtistShade = data[offset + 3] > 0
+      && data[offset] >= 180 && data[offset] <= 250
+      && data[offset + 1] >= 80 && data[offset + 1] <= 170
+      && data[offset + 2] >= 40 && data[offset + 2] <= 130;
+    if (!isArtistShade) continue;
+    data.copy(output, offset, offset, offset + info.channels);
+    for (let channel = 0; channel < 3; channel += 1) {
+      shadeColorTotal[channel] += data[offset + channel];
+    }
+    shadePixelCount += 1;
+  }
+  if (shadePixelCount === 0) throw new Error("head-base drawing contains no forehead shade pixels");
+  return {
+    buffer: await sharp(output, {
+      raw: { width: info.width, height: info.height, channels: info.channels },
+    }).png().toBuffer(),
+    shadePixelCount,
+    shadeColor: shadeColorTotal.map((total) => Math.round(total / shadePixelCount)),
+  };
+}
+
+async function expandFlatShade(image, color, radius) {
+  const alpha = await sharp(image).ensureAlpha().extractChannel(3).erode(radius).raw().toBuffer();
+  const metadata = await sharp(image).metadata();
+  const output = Buffer.alloc(metadata.width * metadata.height * 4);
+  for (let pixel = 0; pixel < alpha.length; pixel += 1) {
+    const offset = pixel * 4;
+    output[offset] = color[0];
+    output[offset + 1] = color[1];
+    output[offset + 2] = color[2];
+    output[offset + 3] = alpha[pixel];
+  }
+  return sharp(output, {
+    raw: { width: metadata.width, height: metadata.height, channels: 4 },
+  }).png().toBuffer();
+}
+
+async function clipToRearHairShadow(image, artwork, width, height) {
+  const [imageRaw, artworkRaw] = await Promise.all([
+    sharp(image).ensureAlpha().raw().toBuffer(),
+    sharp(artwork).ensureAlpha().raw().toBuffer(),
+  ]);
+  const clipped = Buffer.from(imageRaw);
+  let replacedPixelCount = 0;
+  for (let pixel = 0; pixel < width * height; pixel += 1) {
+    const offset = pixel * 4;
+    const isRearHairShadow = artworkRaw[offset + 3] > OUTLINE_ALPHA_THRESHOLD
+      && artworkRaw[offset] >= 60 && artworkRaw[offset] <= 130
+      && artworkRaw[offset + 1] >= 15 && artworkRaw[offset + 1] <= 75
+      && artworkRaw[offset + 2] >= 10 && artworkRaw[offset + 2] <= 70;
+    if (!isRearHairShadow) {
+      clipped[offset + 3] = 0;
+    } else if (clipped[offset + 3] > OUTLINE_ALPHA_THRESHOLD) {
+      replacedPixelCount += 1;
+    }
+  }
+  return {
+    buffer: await sharp(clipped, { raw: { width, height, channels: 4 } }).png().toBuffer(),
+    replacedPixelCount,
+  };
+}
+
+async function clipHandBehindSleeve(hand, sleeve, width, height) {
+  const [handRaw, sleeveRaw] = await Promise.all([
+    sharp(hand).ensureAlpha().raw().toBuffer(),
+    sharp(sleeve).ensureAlpha().raw().toBuffer(),
+  ]);
+  const clipped = Buffer.from(handRaw);
+  for (let pixel = 0; pixel < width * height; pixel += 1) {
+    const offset = pixel * 4;
+    clipped[offset + 3] = Math.round(
+      clipped[offset + 3] * (255 - sleeveRaw[offset + 3]) / 255,
+    );
+  }
+  return sharp(clipped, { raw: { width, height, channels: 4 } }).png().toBuffer();
+}
+
+async function createRoundEyeEnvelope(image) {
+  const { data, info } = await sharp(image)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  let minX = info.width;
+  let minY = info.height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < info.height; y += 1) {
+    for (let x = 0; x < info.width; x += 1) {
+      if (data[(y * info.width + x) * 4 + 3] <= OUTLINE_ALPHA_THRESHOLD) continue;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  if (maxX < minX || maxY < minY) throw new Error("eye drawing has no visible envelope seed");
+  const diameter = maxX - minX + 1;
+  const centerX = (minX + maxX) / 2;
+  const centerY = maxY - (diameter - 1) / 2;
+  const radius = diameter / 2;
+  const output = Buffer.alloc(info.width * info.height * 4);
+  let envelopePixelCount = 0;
+  for (let y = 0; y < info.height; y += 1) {
+    for (let x = 0; x < info.width; x += 1) {
+      const normalizedX = (x + 0.5 - centerX) / radius;
+      const normalizedY = (y + 0.5 - centerY) / radius;
+      if (normalizedX ** 2 + normalizedY ** 2 > 1) continue;
+      const offset = (y * info.width + x) * 4;
+      output[offset] = 255;
+      output[offset + 1] = 255;
+      output[offset + 2] = 255;
+      output[offset + 3] = 255;
+      envelopePixelCount += 1;
+    }
+  }
+  return {
+    buffer: await sharp(output, {
+      raw: { width: info.width, height: info.height, channels: 4 },
+    }).png().toBuffer(),
+    envelopePixelCount,
+  };
+}
+
+async function clipArtworkBehindMasks(artwork, masks, width, height) {
+  const [artworkRaw, ...maskRaws] = await Promise.all([
+    sharp(artwork).ensureAlpha().raw().toBuffer(),
+    ...masks.map((mask) => sharp(mask).ensureAlpha().raw().toBuffer()),
+  ]);
+  const clipped = Buffer.from(artworkRaw);
+  let clearedPixelCount = 0;
+  for (let pixel = 0; pixel < width * height; pixel += 1) {
+    const offset = pixel * 4;
+    const maskAlpha = Math.max(...maskRaws.map((mask) => mask[offset + 3]));
+    if (maskAlpha <= OUTLINE_ALPHA_THRESHOLD || clipped[offset + 3] === 0) continue;
+    clipped[offset + 3] = Math.round(clipped[offset + 3] * (255 - maskAlpha) / 255);
+    clearedPixelCount += 1;
+  }
+  return {
+    buffer: await sharp(clipped, { raw: { width, height, channels: 4 } }).png().toBuffer(),
+    clearedPixelCount,
+  };
+}
+
+async function createFinishedSleeve(fillParts, overlay, width, height, outlineRadius = 3) {
+  const parts = await Promise.all(fillParts.map((part) => (
+    sharp(part).ensureAlpha().raw().toBuffer()
+  )));
+  const pixels = width * height;
+  const unionAlpha = new Uint8Array(pixels);
+  for (const part of parts) {
+    for (let pixel = 0; pixel < pixels; pixel += 1) {
+      unionAlpha[pixel] = Math.max(unionAlpha[pixel], part[pixel * 4 + 3]);
+    }
+  }
+  const stride = width + 1;
+  const integral = new Uint32Array((width + 1) * (height + 1));
+  for (let y = 0; y < height; y += 1) {
+    let row = 0;
+    for (let x = 0; x < width; x += 1) {
+      if (unionAlpha[y * width + x] > OUTLINE_ALPHA_THRESHOLD) row += 1;
+      integral[(y + 1) * stride + x + 1] = integral[y * stride + x + 1] + row;
+    }
+  }
+  const output = Buffer.alloc(pixels * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const pixel = y * width + x;
+      const alpha = unionAlpha[pixel];
+      if (alpha <= OUTLINE_ALPHA_THRESHOLD) continue;
+      const minX = Math.max(0, x - outlineRadius);
+      const minY = Math.max(0, y - outlineRadius);
+      const maxX = Math.min(width - 1, x + outlineRadius);
+      const maxY = Math.min(height - 1, y + outlineRadius);
+      const count = integral[(maxY + 1) * stride + maxX + 1]
+        - integral[minY * stride + maxX + 1]
+        - integral[(maxY + 1) * stride + minX]
+        + integral[minY * stride + minX];
+      const area = (maxX - minX + 1) * (maxY - minY + 1);
+      const boundary = count < area;
+      const offset = pixel * 4;
+      output[offset] = boundary ? 0 : SHAZ_HOODIE_COLOR.r;
+      output[offset + 1] = boundary ? 0 : SHAZ_HOODIE_COLOR.g;
+      output[offset + 2] = boundary ? 0 : SHAZ_HOODIE_COLOR.b;
+      output[offset + 3] = alpha;
+    }
+  }
+  const finished = sharp(output, { raw: { width, height, channels: 4 } });
+  return overlay
+    ? finished.composite([{ input: overlay }]).png().toBuffer()
+    : finished.png().toBuffer();
+}
+
+async function significantAlphaComponentCount(image, analysisWidth = 640) {
+  const { data, info } = await sharp(image)
+    .resize({ width: analysisWidth })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const mask = new Uint8Array(info.width * info.height);
+  for (let pixel = 0; pixel < mask.length; pixel += 1) {
+    if (data[pixel * info.channels + 3] > OUTLINE_ALPHA_THRESHOLD) mask[pixel] = 1;
+  }
+  const visited = new Uint8Array(mask.length);
+  const queue = new Int32Array(mask.length);
+  let components = 0;
+  for (let start = 0; start < mask.length; start += 1) {
+    if (!mask[start] || visited[start]) continue;
+    let head = 0;
+    let tail = 0;
+    let size = 0;
+    visited[start] = 1;
+    queue[tail++] = start;
+    while (head < tail) {
+      const pixel = queue[head++];
+      size += 1;
+      const x = pixel % info.width;
+      const y = Math.floor(pixel / info.width);
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          if (dx === 0 && dy === 0) continue;
+          const nextX = x + dx;
+          const nextY = y + dy;
+          if (nextX < 0 || nextX >= info.width || nextY < 0 || nextY >= info.height) continue;
+          const next = nextY * info.width + nextX;
+          if (!mask[next] || visited[next]) continue;
+          visited[next] = 1;
+          queue[tail++] = next;
+        }
+      }
+    }
+    if (size >= 12) components += 1;
+  }
+  return components;
 }
 
 async function readPropAsset(propRoot, prop, cache) {
@@ -298,35 +724,277 @@ async function renderRigFrame({
     );
     if (!asset && variant !== "main") continue;
     if (!asset) throw new Error(`compiled asset is missing ${filename}`);
+    let renderBuffer = asset.buffer;
+    const isBackBang = nodePath.endsWith("/Bangs_back") && variant === "main";
+    const hidesUpperBackBangPatch = isBackBang
+      && ["1", "3"].includes(String(drawing.drawing));
+    let backBangComposite = null;
+    if (hidesUpperBackBangPatch) {
+      const derivedKey = `derived:${path.join(assetRoot, filename)}:hidden-upper-fill`;
+      if (!assetCache.has(derivedKey)) {
+        assetCache.set(derivedKey, hideUpperBackBangPatch(asset.buffer));
+      }
+      backBangComposite = await assetCache.get(derivedKey);
+      renderBuffer = backBangComposite.buffer;
+    }
+    const isHeadBase = nodePath.endsWith("/Head_Base") && variant === "main";
+    const restoresForeheadShade = isHeadBase && ["1", "3"].includes(String(drawing.drawing));
+    if (nodePath.endsWith("/Collar") && variant === "main") {
+      const derivedKey = `derived:${path.join(assetRoot, filename)}:skin-fill`;
+      if (!assetCache.has(derivedKey)) {
+        assetCache.set(derivedKey, fillEnclosedOutline(
+          asset.buffer,
+          asset.canvas.width,
+          asset.canvas.height,
+          SHAZ_SKIN_COLOR,
+        ));
+      }
+      renderBuffer = await assetCache.get(derivedKey);
+    }
+    if ((nodePath.endsWith("/Left_Hand") || nodePath.endsWith("/Right_Hand"))
+      && variant === "main") {
+      const derivedKey = `derived:${path.join(assetRoot, filename)}:skin-fill`;
+      if (!assetCache.has(derivedKey)) {
+        assetCache.set(derivedKey, fillEnclosedOutline(
+          asset.buffer,
+          asset.canvas.width,
+          asset.canvas.height,
+          SHAZ_SKIN_COLOR,
+        ));
+      }
+      renderBuffer = await assetCache.get(derivedKey);
+    }
+    const isConstructionFill = (nodePath.endsWith("/Left_Arm")
+      || nodePath.endsWith("/Right_Arm")) && variant === "main";
+    if (isConstructionFill) {
+      const derivedKey = `derived:${path.join(assetRoot, filename)}:outline-free-construction-fill`;
+      if (!assetCache.has(derivedKey)) {
+        assetCache.set(derivedKey, fillEnclosedOutline(
+          asset.buffer,
+          asset.canvas.width,
+          asset.canvas.height,
+          SHAZ_HOODIE_COLOR,
+          false,
+        ));
+      }
+      renderBuffer = await assetCache.get(derivedKey);
+    }
+    let renderAsset = {
+      buffer: renderBuffer,
+      canvas: asset.canvas,
+      modelOrigin: asset.modelOrigin,
+      modelUnitsPerPixel: 1,
+    };
+    let deformation = null;
+    if (variant === "main") {
+      const deformationSourceFrame = poseRuntime?.deformationSourceFrameAtFrame(frame) ?? frame;
+      const derivedKey = `deformed:${path.join(assetRoot, filename)}:${deformationSourceFrame}`;
+      if (!assetCache.has(derivedKey)) {
+        assetCache.set(derivedKey, deformRegisteredAsset({
+          buffer: renderBuffer,
+          asset,
+          nodePath,
+          nodes,
+          columns,
+          frame,
+          grid: fieldGridForManifest(manifest),
+          sampleNodeAtFrame: poseRuntime?.sampleNodeAtFrame,
+        }));
+      }
+      deformation = await assetCache.get(derivedKey);
+      if (deformation) renderAsset = deformation;
+    }
     const matrix = tightStageMatrix(
       matrices.get(nodePath) ?? identity(),
       manifest,
       outputWidth,
       outputHeight,
-      asset.modelOrigin,
+      renderAsset.modelOrigin,
+      renderAsset.modelUnitsPerPixel,
     );
-    const transformed = await sharp(svgTransform(
-      asset.buffer,
+    let transformed = await sharp(svgTransform(
+      renderAsset.buffer,
       outputWidth,
       outputHeight,
       matrix,
-      asset.canvas.width,
-      asset.canvas.height,
+      renderAsset.canvas.width,
+      renderAsset.canvas.height,
     )).png().toBuffer();
-    layers.push({ input: transformed, nodePath, drawing, variant, filename });
+    let eyeClearanceMask = null;
+    let eyeEnvelopePixelCount;
+    const isEye = (nodePath.endsWith("/Left_Eye") || nodePath.endsWith("/Right_Eye"))
+      && variant === "main";
+    if (isEye) {
+      const envelopeKey = `derived:${path.join(assetRoot, filename)}:round-eye-envelope:${
+        deformation ? frame : "static"
+      }`;
+      if (!assetCache.has(envelopeKey)) {
+        assetCache.set(envelopeKey, createRoundEyeEnvelope(renderAsset.buffer));
+      }
+      const envelope = await assetCache.get(envelopeKey);
+      eyeEnvelopePixelCount = envelope.envelopePixelCount;
+      eyeClearanceMask = await sharp(svgTransform(
+        envelope.buffer,
+        outputWidth,
+        outputHeight,
+        matrix,
+        renderAsset.canvas.width,
+        renderAsset.canvas.height,
+      )).png().toBuffer();
+    }
+    let foreheadShadePixelCount;
+    if (restoresForeheadShade) {
+      const shadeFilename = "head-base-02.png";
+      const shadeAsset = await readTightAsset(
+        assetRoot,
+        shadeFilename,
+        registration,
+        assetCache,
+      );
+      if (!shadeAsset) throw new Error(`compiled asset is missing ${shadeFilename}`);
+      const shadeKey = `derived:${path.join(assetRoot, shadeFilename)}:forehead-shade`;
+      if (!assetCache.has(shadeKey)) {
+        assetCache.set(shadeKey, extractHeadBaseForeheadShade(shadeAsset.buffer));
+      }
+      const shade = await assetCache.get(shadeKey);
+      foreheadShadePixelCount = shade.shadePixelCount;
+      const shadeMatrix = tightStageMatrix(
+        matrices.get(nodePath) ?? identity(),
+        manifest,
+        outputWidth,
+        outputHeight,
+        shadeAsset.modelOrigin,
+        1,
+      );
+      const transformedShade = await sharp(svgTransform(
+        shade.buffer,
+        outputWidth,
+        outputHeight,
+        shadeMatrix,
+        shadeAsset.canvas.width,
+        shadeAsset.canvas.height,
+      )).png().toBuffer();
+      const expandedShade = await expandFlatShade(transformedShade, shade.shadeColor, 18);
+      const rearHair = layers.find((layer) => (
+        layer.nodePath.endsWith("/Hair") && layer.variant === "main"
+      ));
+      if (!rearHair) throw new Error("head-base shade requires the preceding rear hair layer");
+      const containedShade = await clipToRearHairShadow(
+        expandedShade,
+        rearHair.input,
+        outputWidth,
+        outputHeight,
+      );
+      rearHair.input = await sharp(rearHair.input)
+        .composite([{ input: containedShade.buffer }])
+        .png()
+        .toBuffer();
+      rearHair.compositeRole = "rear-hair-with-artist-forehead-shade";
+      rearHair.foreheadShadePixelCount = foreheadShadePixelCount;
+      rearHair.replacedForeheadShadowPixelCount = containedShade.replacedPixelCount;
+    }
+    layers.push({
+      input: transformed,
+      nodePath,
+      drawing,
+      variant,
+      filename,
+      compositeRole: isConstructionFill
+        ? "hidden-construction-fill"
+        : (hidesUpperBackBangPatch
+          ? "finished-back-bang-with-upper-patch-hidden"
+          : "finished-artwork"),
+      ...(backBangComposite ? {
+        sourceFillComponentCount: backBangComposite.sourceFillComponentCount,
+        hiddenFillComponentCount: backBangComposite.hiddenFillComponentCount,
+      } : {}),
+      ...(deformation ? {
+        deformation: {
+          sourceFrame: poseRuntime?.deformationSourceFrameAtFrame(frame) ?? frame,
+          maximumDisplacement: deformation.maximumDisplacement,
+        },
+      } : {}),
+      ...(eyeClearanceMask ? { eyeClearanceMask, eyeEnvelopePixelCount } : {}),
+    });
   }
+
+  for (const side of ["Left", "Right"]) {
+    const constructionFill = layers.find((layer) => (
+      layer.nodePath.endsWith(`/${side}_Arm`)
+      && layer.compositeRole === "hidden-construction-fill"
+    ));
+    const sleeve = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "main");
+    const sleeveColor = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "color");
+    const sleeveOverlay = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "overlay");
+    const hand = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Hand`) && layer.variant === "main");
+    if (constructionFill && sleeve) {
+      sleeve.input = await createFinishedSleeve(
+        [constructionFill.input, sleeve.input, ...(sleeveColor ? [sleeveColor.input] : [])],
+        sleeveOverlay?.input ?? null,
+        outputWidth,
+        outputHeight,
+      );
+      sleeve.compositeRole = "finished-sleeve-union";
+      sleeve.sourceLayers = [
+        constructionFill.nodePath,
+        sleeve.nodePath,
+        ...(sleeveColor ? [`${sleeveColor.nodePath}:color`] : []),
+        ...(sleeveOverlay ? [`${sleeveOverlay.nodePath}:overlay`] : []),
+      ];
+      constructionFill.consumed = true;
+      if (sleeveColor) sleeveColor.consumed = true;
+      if (sleeveOverlay) sleeveOverlay.consumed = true;
+    }
+    if (hand && sleeve && String(hand.drawing.drawing) !== "2") {
+      hand.input = await clipHandBehindSleeve(
+        hand.input,
+        sleeve.input,
+        outputWidth,
+        outputHeight,
+      );
+    }
+  }
+
+  const frontBang = layers.find((layer) => (
+    layer.nodePath.endsWith("/Bangs_front") && layer.variant === "main"
+  ));
+  const eyeLayers = layers.filter((layer) => (
+    (layer.nodePath.endsWith("/Left_Eye") || layer.nodePath.endsWith("/Right_Eye"))
+    && layer.variant === "main"
+  ));
+  if (frontBang && eyeLayers.length > 0) {
+    const cleared = await clipArtworkBehindMasks(
+      frontBang.input,
+      eyeLayers.map(({ eyeClearanceMask, input }) => eyeClearanceMask ?? input),
+      outputWidth,
+      outputHeight,
+    );
+    frontBang.input = cleared.buffer;
+    frontBang.eyeEnvelopeClearancePixelCount = cleared.clearedPixelCount;
+  }
+
+  const activeLayers = layers.filter(({ consumed }) => !consumed);
+  const baseCharacter = await sharp({
+    create: {
+      width: outputWidth,
+      height: outputHeight,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  }).composite(activeLayers.map(({ input }) => ({ input }))).png().toBuffer();
+  const baseComponentCount = await significantAlphaComponentCount(baseCharacter);
 
   const output = await sharp({
     create: { width: outputWidth, height: outputHeight, channels: 4, background },
   }).composite([
     ...props.filter(({ layer }) => layer === "behind").map(({ input }) => ({ input })),
-    ...layers.map(({ input }) => ({ input })),
+    ...activeLayers.map(({ input }) => ({ input })),
     ...props.filter(({ layer }) => layer === "front").map(({ input }) => ({ input })),
   ]).png().toBuffer();
 
   return {
     buffer: output,
-    ...(includeLayerBuffers ? { analysisLayers: layers } : {}),
+    ...(includeLayerBuffers ? { analysisLayers: activeLayers } : {}),
     ...(includeLayerBuffers ? { analysisProps: props } : {}),
     receipt: {
       schemaVersion: "shaz-rig-v2-frame-receipt-v1",
@@ -340,13 +1008,41 @@ async function renderRigFrame({
         poseRecipeSha256: poseRuntime.recipeSha256,
       } : {}),
       artistRenderedFramesUsed: false,
+      baseComponentCount,
       props: props.map(({ input, ...prop }) => prop),
-      layers: layers.map(({ nodePath, drawing, variant, filename }) => ({
+      layers: activeLayers.map(({
+        nodePath,
+        drawing,
+        variant,
+        filename,
+        deformation,
+        compositeRole,
+        sourceLayers,
+        sourceFillComponentCount,
+        hiddenFillComponentCount,
+        foreheadShadePixelCount,
+        replacedForeheadShadowPixelCount,
+        eyeEnvelopePixelCount,
+        eyeEnvelopeClearancePixelCount,
+      }) => ({
         nodePath,
         element: drawing.element,
         drawing: drawing.drawing,
         variant,
         filename,
+        compositeRole,
+        ...(sourceLayers ? { sourceLayers } : {}),
+        ...(sourceFillComponentCount !== undefined ? { sourceFillComponentCount } : {}),
+        ...(hiddenFillComponentCount !== undefined ? { hiddenFillComponentCount } : {}),
+        ...(foreheadShadePixelCount !== undefined ? { foreheadShadePixelCount } : {}),
+        ...(replacedForeheadShadowPixelCount !== undefined
+          ? { replacedForeheadShadowPixelCount }
+          : {}),
+        ...(eyeEnvelopePixelCount !== undefined ? { eyeEnvelopePixelCount } : {}),
+        ...(eyeEnvelopeClearancePixelCount !== undefined
+          ? { eyeEnvelopeClearancePixelCount }
+          : {}),
+        ...(deformation ? { deformation } : {}),
       })),
     },
   };
@@ -361,10 +1057,20 @@ export {
   READ_PAINT_ORDER,
   READ_PAINT_PLAN,
   assetFilename,
+  clipHandBehindSleeve,
+  clipArtworkBehindMasks,
+  createFinishedSleeve,
+  createRoundEyeEnvelope,
+  clipToRearHairShadow,
+  expandFlatShade,
+  fillEnclosedOutline,
   fieldGridForManifest,
+  hideUpperBackBangPatch,
+  extractHeadBaseForeheadShade,
   loadAssetRegistration,
   loadManifest,
   propStageMatrix,
   renderRigFrame,
+  significantAlphaComponentCount,
   tightStageMatrix,
 };

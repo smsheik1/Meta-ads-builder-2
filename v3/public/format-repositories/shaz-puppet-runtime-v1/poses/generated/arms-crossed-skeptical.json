@@ -11,7 +11,7 @@
     "learnedFrom": [
       "authored/confident: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
       "authored/think: skeptical brow, mouth, eye-direction, and head-drag vocabulary",
-      "minimal substitution redraw: crossed forearms required by the source rig's fixed paint topology"
+      "minimal contact-only substitution redraw: crossed forearms required by the source rig's fixed paint topology"
     ],
     "artistRenderedFramesUsed": false
   },
@@ -1687,42 +1687,6 @@
         "flipVertical": false
       }
     ],
-    "Left_Arm": [
-      {
-        "frame": 1,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 0,
-        "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 19,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 0,
-        "flipHorizontal": false,
-        "flipVertical": false
-      }
-    ],
     "Left_Forearm": [
       {
         "frame": 1,
@@ -1737,9 +1701,45 @@
           1
         ],
         "skew": 0,
-        "opacity": 0,
+        "opacity": 100,
         "flipHorizontal": false,
         "flipVertical": false
+      },
+      {
+        "frame": 8,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 0,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 19,
@@ -1773,12 +1773,30 @@
           1
         ],
         "skew": 0,
-        "opacity": 0,
+        "opacity": 100,
         "flipHorizontal": false,
         "flipVertical": false
       },
       {
-        "frame": 19,
+        "frame": 8,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
         "position": [
           -0.01345852235343146,
           -0.05383408941372369,
@@ -1792,32 +1810,14 @@
         "skew": 0,
         "opacity": 0,
         "flipHorizontal": false,
-        "flipVertical": false
-      }
-    ],
-    "Right_Arm": [
-      {
-        "frame": 1,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 0,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 19,
         "position": [
-          0,
-          0,
+          -0.01345852235343146,
+          -0.05383408941372369,
           0
         ],
         "rotation": 0,
@@ -1845,9 +1845,45 @@
           1
         ],
         "skew": 0,
-        "opacity": 0,
+        "opacity": 100,
         "flipHorizontal": false,
         "flipVertical": false
+      },
+      {
+        "frame": 8,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 0,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 19,
@@ -1881,9 +1917,45 @@
           1
         ],
         "skew": 0,
-        "opacity": 0,
+        "opacity": 100,
         "flipHorizontal": false,
         "flipVertical": false
+      },
+      {
+        "frame": 8,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 0,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 19,
@@ -1970,50 +2042,52 @@
         {
           "frame": 1,
           "position": [
-            0.418,
-            0.638
+            0.405,
+            0.58
           ],
-          "width": 0.056,
+          "width": 0.055,
           "rotation": 0,
-          "opacity": 100
+          "opacity": 0,
+          "interpolation": "hold"
         },
         {
-          "frame": 4,
+          "frame": 8,
           "position": [
-            0.363,
-            0.636
+            0.405,
+            0.58
           ],
-          "width": 0.056,
-          "rotation": 5,
-          "opacity": 100
+          "width": 0.055,
+          "rotation": 0,
+          "opacity": 0,
+          "interpolation": "hold"
         },
         {
-          "frame": 7,
+          "frame": 9,
           "position": [
-            0.376,
-            0.656
+            0.43,
+            0.555
           ],
-          "width": 0.056,
-          "rotation": -20,
+          "width": 0.064,
+          "rotation": -50,
           "opacity": 100
         },
         {
-          "frame": 11,
+          "frame": 12,
           "position": [
-            0.458,
-            0.526
+            0.465,
+            0.542
           ],
-          "width": 0.056,
-          "rotation": -76,
+          "width": 0.062,
+          "rotation": -74,
           "opacity": 100
         },
         {
-          "frame": 14,
+          "frame": 15,
           "position": [
             0.461,
             0.548
           ],
-          "width": 0.056,
+          "width": 0.062,
           "rotation": -68,
           "opacity": 100
         },
@@ -2023,7 +2097,7 @@
             0.461,
             0.548
           ],
-          "width": 0.056,
+          "width": 0.062,
           "rotation": -68,
           "opacity": 100
         }
@@ -2038,50 +2112,52 @@
         {
           "frame": 1,
           "position": [
-            0.543,
-            0.638
+            0.555,
+            0.58
           ],
-          "width": 0.056,
+          "width": 0.055,
           "rotation": 0,
-          "opacity": 100
+          "opacity": 0,
+          "interpolation": "hold"
         },
         {
-          "frame": 4,
+          "frame": 8,
           "position": [
-            0.516,
-            0.636
+            0.555,
+            0.58
           ],
-          "width": 0.056,
-          "rotation": -5,
-          "opacity": 100
+          "width": 0.055,
+          "rotation": 0,
+          "opacity": 0,
+          "interpolation": "hold"
         },
         {
-          "frame": 7,
+          "frame": 9,
           "position": [
-            0.46,
-            0.656
+            0.48,
+            0.555
           ],
-          "width": 0.056,
-          "rotation": 20,
+          "width": 0.064,
+          "rotation": 50,
           "opacity": 100
         },
         {
-          "frame": 11,
+          "frame": 12,
           "position": [
-            0.456,
-            0.526
+            0.441,
+            0.542
           ],
-          "width": 0.056,
-          "rotation": 76,
+          "width": 0.062,
+          "rotation": 74,
           "opacity": 100
         },
         {
-          "frame": 14,
+          "frame": 15,
           "position": [
             0.445,
             0.548
           ],
-          "width": 0.056,
+          "width": 0.062,
           "rotation": 68,
           "opacity": 100
         },
@@ -2091,7 +2167,7 @@
             0.445,
             0.548
           ],
-          "width": 0.056,
+          "width": 0.062,
           "rotation": 68,
           "opacity": 100
         }
