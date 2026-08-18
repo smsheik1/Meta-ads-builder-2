@@ -2,6 +2,8 @@
 
 A pose recipe is the only authoring surface above the recovered rig. It does not contain rendered artist frames, baked sprites, or a private renderer. It names real PEG/READ controls, adds sparse keyframes, switches existing drawings when needed, and renders through `renderRigFrame`.
 
+Before authoring or certifying an action, follow the author-and-learn loop in `../SKILL.md` and read `../references/rig-animation-playbook.md` completely. Work on one uncertified action at a time.
+
 ## Minimal recipe
 
 ```json

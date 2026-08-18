@@ -4,6 +4,8 @@ A self-contained Wiggly video Format kit for animating the supplied Shaz 2D pupp
 
 This is not a sprite-sheet player. Runtime frames are rendered from recovered rig controls and compiled drawing assets. Finished artist-rendered frames are excluded from runtime and generation inputs.
 
+See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body language first, then transitions, dialogue/audio, lip-sync, script-directed performance, backgrounds, and finally plain-English pose generation.
+
 ## What is included
 
 - Six lossless authored-action calibrations from the supplied rig.

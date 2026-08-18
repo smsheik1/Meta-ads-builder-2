@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { validateInput } from "../runtime/run-common.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const pose = (id, durationFrames = 24) => ({ id, recipe: { durationFrames } });
 const registry = { byId: new Map([
@@ -44,4 +49,19 @@ test("sequence validation rejects unsupported fields", () => {
     title: "Hidden fallback",
     sequence: [{ poseId: "think", gapFrames: 0, renderer: "fallback" }],
   }, registry), /unsupported key/);
+});
+
+test("packaged skill protects the one-action learning loop", async () => {
+  const [skill, playbook] = await Promise.all([
+    fs.readFile(path.join(root, "SKILL.md"), "utf8"),
+    fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
+  ]);
+  const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
+  assert.match(skill, /Skill version: \*\*1\*\*/);
+  assert.match(skill, /Do not work on several uncertified actions at once/);
+  assert.ok(skill.includes(learningQuestion));
+  assert.match(skill, /references\/rig-animation-playbook\.md/);
+  assert.ok(playbook.includes(learningQuestion));
+  assert.match(playbook, /Mechanical invariant/);
+  assert.match(playbook, /animate multiple uncertified actions/);
 });
