@@ -8,6 +8,6 @@ The original archive is not bundled. `rig-v2/runtime.json` contains the recovere
 
 Finished artist-rendered video frames were used only for human comparison evidence during development. They are not bundled, are not runtime assets, and were not used as generation inputs for the five new actions. Every recipe and render receipt asserts `artistRenderedFramesUsed: false`; the validator rejects recipes that do not.
 
-The screen and phone are simple purpose-built props. `assets/props/substitution-arm.svg` is the one minimal character substitution drawing: it repairs an arm-depth silhouette that the recovered fixed paint topology cannot express. Its use is confined to the registered `arms-crossed-skeptical` recipe and is documented in that action's evidence.
+The screen and phone are simple purpose-built props. Every character substitution used by a registered action is checksum-locked to an existing compiled rig drawing; the mirrored celebration fist is a deterministic pixel mirror of its registered source. `assets/props/substitution-arm.svg` remains only as an explicitly identified legacy prototype and is not used by any registered action.
 
 This kit packages the supplied character assets for the owner's authorized Wiggly workflow. It does not grant third parties rights to redistribute or commercially exploit the character or source art.

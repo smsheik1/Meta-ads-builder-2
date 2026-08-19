@@ -9,6 +9,7 @@ import { buildFacepalmFrustrated } from "../poses/generated/sources/facepalm-fru
 import { buildExcitedCelebration } from "../poses/generated/sources/excited-celebration.mjs";
 import { buildLookAtPhone } from "../poses/generated/sources/look-at-phone.mjs";
 import { buildPointAtScreen } from "../poses/generated/sources/point-at-screen.mjs";
+import { buildPhoneUseSequence } from "../poses/generated/sources/phone-use-sequence.mjs";
 
 const load = async (name) => JSON.parse(await fs.readFile(
   new URL(`../poses/generated/${name}.json`, import.meta.url),
@@ -54,6 +55,48 @@ test("look-at-phone generator exactly reproduces the registered recipe", async (
     load("look-at-phone"),
   ]);
   assert.deepEqual(await buildLookAtPhone(manifest), checkedIn);
+});
+
+test("phone-use sequence replaces both forearms only during the two-handed contact window", async () => {
+  const pose = await load("phone-use-sequence");
+  assert.equal(pose.durationFrames, 80);
+  assert.equal(pose.quality.armCompositeMode, "registered-phone-sequence");
+  assert.deepEqual(pose.props.map(({ id }) => id), [
+    "phone-sequence-right-sleeve",
+    "phone-sequence-right-hand",
+    "phone-sequence-left-sleeve",
+    "phone-sequence-left-hand",
+    "phone",
+    "phone-tap-hand",
+  ]);
+  for (const nodeName of [
+    "Left_Arm",
+    "Left_Forearm",
+    "Left_Hand",
+    "Right_Arm",
+    "Right_Forearm",
+    "Right_Hand",
+  ]) {
+    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 8).opacity, 100);
+    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 9).opacity, 0);
+    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 23).opacity, 0);
+    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 25).opacity, 100);
+  }
+  const phone = pose.props.find(({ id }) => id === "phone");
+  assert.equal(phone.keys[0].opacity, 100);
+  assert.equal(phone.keys[0].interpolation, "hold");
+  assert.ok(phone.keys.find(({ frame }) => frame === 8).position[1]
+    > phone.keys.find(({ frame }) => frame === 12).position[1]);
+  assert.ok(phone.keys.find(({ frame }) => frame === 25).position[1]
+    > phone.keys.find(({ frame }) => frame === 19).position[1]);
+});
+
+test("phone-use sequence generator exactly reproduces the registered recipe", async () => {
+  const [manifest, checkedIn] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    load("phone-use-sequence"),
+  ]);
+  assert.deepEqual(await buildPhoneUseSequence(manifest), checkedIn);
 });
 
 test("point-at-screen follows the supplied off-canvas pointing storyboard", async () => {

@@ -261,6 +261,40 @@ function registeredPhoneInteractionCompositeValid(layers, props, recipe) {
   ]);
 }
 
+function registeredPhoneSequenceCompositeValid(layers, props, recipe) {
+  if (recipe.quality?.armCompositeMode !== "registered-phone-sequence") return false;
+  const contactExpected = [
+    ["phone", "phone.svg", "front"],
+    ["phone-sequence-left-hand", "crossed-left-hand.png", "front"],
+    ["phone-sequence-left-sleeve", "crossed-left-sleeve.png", "front"],
+    ["phone-sequence-right-hand", "crossed-right-hand.png", "front"],
+    ["phone-sequence-right-sleeve", "crossed-right-sleeve.png", "front"],
+  ];
+  const tapExpected = [
+    ["phone", "phone.svg", "front"],
+    ["phone-tap-hand", "phone-tap-hand.png", "front"],
+  ];
+  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
+    .sort(([left], [right]) => left.localeCompare(right));
+
+  const armLayers = layers.filter((layer) => (
+    /\/(Left|Right)_(Arm|Forearm|Hand)$/.test(layer.nodePath)
+  ));
+  if (JSON.stringify(actual) === JSON.stringify(contactExpected)) {
+    return armLayers.length === 0;
+  }
+  if (JSON.stringify(actual) !== JSON.stringify(tapExpected)) return false;
+
+  return armCompositeValid([
+    ...layers,
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/OL_Hand",
+      variant: "main",
+      compositeRole: "registered-phone-tap-substitution",
+    },
+  ]);
+}
+
 function hairCompositeValid(layers) {
   const rearHair = layers.find((layer) => (
     layer.nodePath.endsWith("/Hair") && layer.variant === "main"
@@ -384,6 +418,11 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
         recipe,
       )
       && !registeredPhoneInteractionCompositeValid(
+        rendered.receipt.layers,
+        rendered.receipt.props,
+        recipe,
+      )
+      && !registeredPhoneSequenceCompositeValid(
         rendered.receipt.layers,
         rendered.receipt.props,
         recipe,
@@ -644,6 +683,7 @@ export {
   armCompositeValid,
   registeredCrossedArmCompositeValid,
   registeredPhoneInteractionCompositeValid,
+  registeredPhoneSequenceCompositeValid,
   registeredVictoryFistCompositeValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,

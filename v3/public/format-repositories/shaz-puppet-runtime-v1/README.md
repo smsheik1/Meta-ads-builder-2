@@ -9,7 +9,7 @@ See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body langu
 ## What is included
 
 - Six lossless authored-action calibrations from the supplied rig.
-- Five newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, and arms crossed/skeptical.
+- Six newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, arms crossed/skeptical, and a complete two-handed-to-one-handed phone-use sequence.
 - One held-out authored shrug used to prove the control model generalized before new actions were attempted.
 - A strict sequence contract, one official renderer, per-frame mechanical inspection, human review, and checksum-bound finalization.
 - Two meaningfully different proof inputs plus a free local smoke fixture.
@@ -69,6 +69,7 @@ The finalized video and evidence remain in `agent-runs/my-sequence/`. No network
 | `look-at-phone` | new rig action | looks down at a phone prop |
 | `facepalm-frustrated` | new rig action | frustrated head-in-hand reaction |
 | `arms-crossed-skeptical` | new rig action | skeptical crossed-arm hold |
+| `phone-use-sequence` | new rig sequence | establishes the phone, lifts it with both hands, hands off to one hand, then taps the screen |
 
 ## Why it is repeatable
 

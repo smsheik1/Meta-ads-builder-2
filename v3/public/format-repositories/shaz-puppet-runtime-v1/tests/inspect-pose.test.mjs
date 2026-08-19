@@ -13,6 +13,7 @@ import {
   paintOrderValid,
   registeredCrossedArmCompositeValid,
   registeredPhoneInteractionCompositeValid,
+  registeredPhoneSequenceCompositeValid,
   registeredVictoryFistCompositeValid,
 } from "../runtime/inspect-pose.mjs";
 import { READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
@@ -153,6 +154,37 @@ test("phone interaction accepts only the registered device and tap-hand substitu
   assert.equal(registeredPhoneInteractionCompositeValid(layers, props, recipe), true);
   assert.equal(registeredPhoneInteractionCompositeValid(layers, props.slice(1), recipe), false);
   assert.equal(registeredPhoneInteractionCompositeValid(layers, props, { quality: {} }), false);
+});
+
+test("phone sequence permits bilateral contact replacement and the registered tap hand only", () => {
+  const recipe = { quality: { armCompositeMode: "registered-phone-sequence" } };
+  const props = [
+    ["phone", "phone.svg"],
+    ["phone-sequence-left-hand", "crossed-left-hand.png"],
+    ["phone-sequence-left-sleeve", "crossed-left-sleeve.png"],
+    ["phone-sequence-right-hand", "crossed-right-hand.png"],
+    ["phone-sequence-right-sleeve", "crossed-right-sleeve.png"],
+  ].map(([id, asset]) => ({ id, asset, layer: "front" }));
+  const contactLayers = [];
+  assert.equal(registeredPhoneSequenceCompositeValid(contactLayers, props, recipe), true);
+  assert.equal(registeredPhoneSequenceCompositeValid(contactLayers, props.slice(1), recipe), false);
+
+  const sleeve = (side) => ({
+    nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
+    variant: "main",
+    compositeRole: "finished-sleeve-union",
+  });
+  const tapLayers = [
+    sleeve("Left"),
+    sleeve("Right"),
+    { nodePath: "Top/Shaz_Rig/Body_Group/Right_Hand", variant: "main" },
+  ];
+  const tapProps = [
+    { id: "phone", asset: "phone.svg", layer: "front" },
+    { id: "phone-tap-hand", asset: "phone-tap-hand.png", layer: "front" },
+  ];
+  assert.equal(registeredPhoneSequenceCompositeValid(tapLayers, tapProps, recipe), true);
+  assert.equal(registeredPhoneSequenceCompositeValid(tapLayers, props, { quality: {} }), false);
 });
 
 test("hair-composite inspection requires the masked visible back-bang component", () => {

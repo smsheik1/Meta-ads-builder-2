@@ -74,6 +74,8 @@ Treat limb depth crossovers as semantic-ownership transfers when the recovered p
 
 Treat physical prop interaction as a contact-ownership chain. A moving prop is not attached merely because its path resembles a hand path. Preserve the real shoulder, sleeve, and forearm chain whenever that topology is already sound; if the contact silhouette is wrong, hide and replace only the smallest registered contact drawing at the pickup or touch frame. Keep the prop spatially registered to that hand through the hold. Replace a whole forearm only when the recovered topology itself prevents the required overlap, and reject any replacement that creates a detached sleeve even if the prop meaning becomes clearer.
 
+For a short bilateral prop contact that cannot preserve the ordinary limb topology, treat the registered replacement as one atomic contact silhouette. Establish the prop before the reach so it never appears from nowhere; hide every native arm-chain drawing whose construction fill or seam would remain visible; show only checksum-locked finished sleeve and hand artwork during contact; then restore the canonical arm chain on the same boundary that removes the replacements. Test the pre-contact, contact, and restored phases separately. Never leave a one-frame armless gap or overlap native and replacement limbs through an unverified crossfade.
+
 ### 4. Timing grammar
 
 Recover the action's phases before editing curves:
@@ -123,6 +125,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | A “celebration” still reads as a happy shrug | Filename and facial expression were treated as semantics while the open-palm arm vocabulary stayed unchanged | Establish victory-specific hand silhouettes and a true overhead accent while preserving the proven timing grammar |
 | A hand reaches the right place but disappears behind the face | The ordinary body hand owns the wrong paint layer for a face-covering gesture | Reuse the existing hand drawing through the registered `OL_Hand` front layer and lock its provenance |
 | A phone or other prop floats, or a repair leaves a detached sleeve | Prop motion was authored independently from limb ownership, or too much of the real chain was replaced | Keep the attached real limb; substitute only the contact drawing at the interaction frame and test prop-to-hand registration |
+| Bilateral prop contact exposes red shoulder capsules, duplicate hands, or an armless transition frame | Only part of the native arm chain was hidden, or replacement/native visibility changed on different frames | Treat the contact silhouette atomically: establish the prop first, hide the complete conflicting chain, and restore native limbs exactly when replacements disappear |
 
 ## Things to avoid
 

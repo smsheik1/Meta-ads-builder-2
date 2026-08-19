@@ -57,7 +57,7 @@ test("packaged skill protects the one-action learning loop", async () => {
     fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
   ]);
   const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
-  assert.match(skill, /Skill version: \*\*1\*\*/);
+  assert.match(skill, /Skill version: \*\*1\.1\*\*/);
   assert.match(skill, /Do not work on several uncertified actions at once/);
   assert.ok(skill.includes(learningQuestion));
   assert.match(skill, /references\/rig-animation-playbook\.md/);
@@ -68,6 +68,8 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(playbook, /animate multiple uncertified actions/);
   assert.match(playbook, /slow motion is diagnostic only/);
   assert.match(playbook, /exposure-change frames/);
+  assert.match(playbook, /atomic contact silhouette/);
+  assert.match(playbook, /one-frame armless gap/);
 });
 
 test("full Point cancels demo-shot motion at the master and preserves artist exposure cadence", async () => {

@@ -5,7 +5,7 @@ description: Render, author, diagnose, and certify repeatable 2D Shaz puppet ani
 
 # Shaz Puppet Runtime
 
-Skill version: **1**.
+Skill version: **1.1**.
 
 Use this kit when the user wants a video assembled from the registered Shaz actions in `poses/index.json` or wants to author and certify one action through the recovered rig. The kit is fully local, makes no provider calls, and costs $0.
 
@@ -56,6 +56,7 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Treat drawing substitutions, visibility, AutoPatch-style masking, and paint order as animation controls.
 - Distinguish visible alpha from semantic ownership. A partial eye, hand, or facial drawing may own a larger matte than its painted pixels; reconstruct that envelope and clip occluders behind it instead of shifting artwork or erasing only an outline.
 - Treat internal palette ownership as content: shape, opacity, and connectivity can all pass while teeth, eye whites, tongues, or skin are painted incorrectly. Add direct color-presence gates for stable semantic regions.
+- Establish handheld props before contact, substitute an exact registered arm chain only for the contact window when partial replacement exposes construction art, and restore the canonical limbs before the next action phase.
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
 

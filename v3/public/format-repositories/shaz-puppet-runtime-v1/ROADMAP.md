@@ -7,7 +7,7 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 - The recovered Shaz rig renders locally without Toon Boom Harmony.
 - Inputs can sequence registered actions with explicit holds and gaps.
 - All six artist-authored actions are certified against the frame-by-frame visual standard: `shrug`, `present`, `think`, `aha`, `point`, and `confident`.
-- All five storyboard-directed actions are also certified to the same standard: `point-at-screen`, `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `look-at-phone`.
+- Five storyboard-directed actions and the complete phone-use sequence are certified to the same standard: `point-at-screen`, `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, `look-at-phone`, and `phone-use-sequence`.
 - Audio, lip-sync, script-directed performance, selectable backgrounds, polished action transitions, and plain-English pose generation are not supported yet.
 
 ## Build order
@@ -17,7 +17,7 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 Bring every remaining registered action to the Shrug standard, one at a time:
 
 1. **Complete:** artist-authored `present`, `think`, `aha`, `point`, and `confident`.
-2. **Complete:** `point-at-screen`, `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `look-at-phone` each have exact-hash visual review, per-frame inspection, focused regressions, and a post-action retro.
+2. **Complete:** `point-at-screen`, `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, `look-at-phone`, and `phone-use-sequence` each have exact-hash visual review, per-frame inspection, focused regressions, and a post-action retro. The first four supplied follow-up sheets resolve to already-certified actions; the phone sheet added the genuinely missing two-handed pickup and handoff phase without duplicating the registry.
 
 The next active capability is polished action transitions. Do not reopen body-language reliability unless a new action or a concrete regression is in scope.
 
