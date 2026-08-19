@@ -3318,6 +3318,54 @@
       }
     },
     {
+      "filename": "ol-hand-02--color.png",
+      "variant": "color",
+      "elementId": 131,
+      "element": "OL_Hand",
+      "drawing": "2",
+      "source": "elements/Right_Hand/Right_Hand-11.tvg",
+      "sourceSha256": "fcc97a331db1cc9f7aee33dcd1002fa43aaa04dc55743f93e4df8afa43ef406f",
+      "outputSha256": "7333938d3abfa1c6a73a1287b324f2cb7e124b86679fc17bf4b5c15458adec6a",
+      "canvas": {
+        "width": 1096,
+        "height": 1043
+      },
+      "modelOrigin": {
+        "x": 97.125,
+        "y": 953.7344
+      },
+      "drawingBounds": {
+        "minX": 147.125,
+        "minY": 1003.7344,
+        "maxX": 1142.6875,
+        "maxY": 1946.5156
+      }
+    },
+    {
+      "filename": "ol-hand-02.png",
+      "variant": "main",
+      "elementId": 131,
+      "element": "OL_Hand",
+      "drawing": "2",
+      "source": "elements/Right_Hand/Right_Hand-11.tvg",
+      "sourceSha256": "fcc97a331db1cc9f7aee33dcd1002fa43aaa04dc55743f93e4df8afa43ef406f",
+      "outputSha256": "06510926e9ee6728881c56b24fffa84f6a0eff9844ef257952927430c987cdb5",
+      "canvas": {
+        "width": 1135,
+        "height": 1043
+      },
+      "modelOrigin": {
+        "x": 58.15625,
+        "y": 953.7344
+      },
+      "drawingBounds": {
+        "minX": 108.15625,
+        "minY": 1003.7344,
+        "maxX": 1142.6875,
+        "maxY": 1946.5156
+      }
+    },
+    {
       "filename": "pouch-01--color.png",
       "variant": "color",
       "elementId": 26,

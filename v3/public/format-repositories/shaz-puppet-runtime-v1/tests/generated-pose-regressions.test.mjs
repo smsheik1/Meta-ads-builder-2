@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import test from "node:test";
 
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
+import { buildFacepalmFrustrated } from "../poses/generated/sources/facepalm-frustrated.mjs";
 import { buildPointAtScreen } from "../poses/generated/sources/point-at-screen.mjs";
 
 const load = async (name) => JSON.parse(await fs.readFile(
@@ -36,6 +37,54 @@ test("point-at-screen generator exactly reproduces the registered recipe", async
     load("point-at-screen"),
   ]);
   assert.deepEqual(await buildPointAtScreen(manifest), checkedIn);
+});
+
+test("facepalm uses the front hand channel for complete face coverage", async () => {
+  const pose = await load("facepalm-frustrated");
+  assert.equal(pose.durationFrames, 36);
+  assert.deepEqual(pose.props ?? [], [], "face coverage must come from a rig hand, not a prop");
+  assert.deepEqual(pose.drawings.Mouth, [
+    { frame: 1, drawing: "3" },
+    { frame: 7, drawing: "6" },
+  ]);
+  assert.deepEqual(pose.drawings.Left_Hand.at(-1), { frame: 13, drawing: null });
+  assert.deepEqual(pose.drawings.OL_Hand, [
+    { frame: 1, drawing: null },
+    { frame: 13, drawing: "1" },
+    { frame: 16, drawing: "2" },
+  ]);
+  for (const key of pose.controls["OL_Hand-P"].filter(({ frame }) => frame >= 16)) {
+    assert.ok(key.scale[0] <= 0.421 && key.scale[1] <= 0.421);
+    assert.ok(key.rotation >= 98 && key.rotation <= 108);
+  }
+});
+
+test("front facepalm palm is a provenance-locked alias of an existing rig drawing", async () => {
+  const [manifest, receipt] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    fs.readFile(new URL("../rig-v2/assets/receipt.json", import.meta.url), "utf8").then(JSON.parse),
+  ]);
+  const overlayElement = manifest.elements.find(({ name }) => name === "OL_Hand");
+  assert.deepEqual(overlayElement.drawings, ["1", "2"]);
+
+  const byName = new Map(receipt.assets.map((asset) => [asset.filename, asset]));
+  for (const suffix of ["", "--color"]) {
+    const alias = byName.get(`ol-hand-02${suffix}.png`);
+    const source = byName.get(`right-hand-11${suffix}.png`);
+    assert.equal(alias.source, "elements/Right_Hand/Right_Hand-11.tvg");
+    assert.equal(alias.sourceSha256, source.sourceSha256);
+    assert.equal(alias.outputSha256, source.outputSha256);
+    assert.deepEqual(alias.canvas, source.canvas);
+    assert.deepEqual(alias.modelOrigin, source.modelOrigin);
+  }
+});
+
+test("facepalm generator exactly reproduces the registered recipe", async () => {
+  const [manifest, checkedIn] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    load("facepalm-frustrated"),
+  ]);
+  assert.deepEqual(await buildFacepalmFrustrated(manifest), checkedIn);
 });
 
 test("crossed-arm redraws stay hidden until the real rig arms reach the contact swap", async () => {

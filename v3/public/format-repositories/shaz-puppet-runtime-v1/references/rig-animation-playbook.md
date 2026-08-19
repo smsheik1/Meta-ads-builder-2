@@ -12,7 +12,7 @@ An action is certified only when:
 - deformation, substitutions, expression, timing, and framing read correctly;
 - automatic pose inspection and focused regression tests pass;
 - synchronized reference comparison passes when an artist reference exists;
-- human approval names the exact output checksum; and
+- human approval names the exact output checksum, or an explicit user delegation authorizes the agent to perform and document that exact-hash visual acceptance without attributing the watch to the user; and
 - the post-pose learning question has been answered.
 
 ## Analyze before authoring
@@ -64,6 +64,8 @@ Treat color ownership as content, not merely alpha coverage. A drawing can remai
 
 Treat visible alpha and semantic ownership as separate evidence. A partial squint, eyelid, hand, or facial substitution can paint only the visible fragment while still owning the complete region that must exclude hair or other occluders. Recover the intended envelope from the registered drawing family, clip the occluder behind that envelope, then paint the visible substitution. Confirm the result in a synchronized tight crop. Do not begin with coordinate nudges, color-specific erasure, or contour-only cleanup; those can hide one symptom while leaving the occluding fill intact.
 
+Treat front-of-face hand gestures as a layer-ownership problem before treating them as a transform problem. If a valid hand drawing disappears behind the head, reuse that registered rig drawing through the dedicated `OL_Hand` substitution channel, preserve its original asset registration and provenance, and calibrate only the overlay control. Do not reorder the ordinary hand globally or add a pose-specific renderer branch; either can fix one pose while breaking every ordinary hand pose.
+
 ### 4. Timing grammar
 
 Recover the action's phases before editing curves:
@@ -109,6 +111,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | Several defects move between poses | Work scope is too broad | Stop and perfect one action end to end |
 | A generated action changes when rebuilt without a source edit | Mutable authored-recipe dependency | Checksum-lock the source recipe and phase; require exact generator reproducibility |
 | A whole-body mirror stays unmirrored or moves off cadence | Flip was applied only to READ drawings or root angle/position was not reflected | Flip the common PEG and mirror its root position, rotation, and skew together |
+| A hand reaches the right place but disappears behind the face | The ordinary body hand owns the wrong paint layer for a face-covering gesture | Reuse the existing hand drawing through the registered `OL_Hand` front layer and lock its provenance |
 
 ## Things to avoid
 

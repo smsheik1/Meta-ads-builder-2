@@ -943,7 +943,8 @@
     },
     {
       "drawings": [
-        "1"
+        "1",
+        "2"
       ],
       "fieldChart": 12,
       "folder": "OL_Hand",
