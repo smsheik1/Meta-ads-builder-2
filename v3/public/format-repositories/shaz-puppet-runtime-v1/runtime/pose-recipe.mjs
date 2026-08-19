@@ -168,6 +168,7 @@ function normalizePropKeys(keys, durationFrames, context) {
   let previous = {
     position: [0.5, 0.5],
     width: 0.25,
+    scale: [1, 1],
     rotation: 0,
     opacity: 100,
   };
@@ -176,6 +177,10 @@ function normalizePropKeys(keys, durationFrames, context) {
     if (key.position !== undefined) state.position = finiteVector(key.position, 2, `${context}[${index}].position`);
     if (key.width !== undefined) state.width = finiteNumber(key.width, `${context}[${index}].width`);
     if (state.width <= 0) throw new Error(`${context}[${index}].width must be positive`);
+    if (key.scale !== undefined) state.scale = finiteVector(key.scale, 2, `${context}[${index}].scale`);
+    if (state.scale.some((component) => component <= 0)) {
+      throw new Error(`${context}[${index}].scale components must be positive`);
+    }
     if (key.rotation !== undefined) state.rotation = finiteNumber(key.rotation, `${context}[${index}].rotation`);
     if (key.opacity !== undefined) state.opacity = finiteNumber(key.opacity, `${context}[${index}].opacity`);
     if (state.opacity < 0 || state.opacity > 100) {
@@ -206,6 +211,9 @@ function samplePropKeys(keys, frame) {
         mix(value, right.state.position[component], progress)
       )),
       width: mix(left.state.width, right.state.width, progress),
+      scale: left.state.scale.map((value, component) => (
+        mix(value, right.state.scale[component], progress)
+      )),
       rotation: mix(left.state.rotation, right.state.rotation, progress),
       opacity: mix(left.state.opacity, right.state.opacity, progress),
     };

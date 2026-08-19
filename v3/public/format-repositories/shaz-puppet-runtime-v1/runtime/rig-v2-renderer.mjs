@@ -644,12 +644,13 @@ async function readPropAsset(propRoot, prop, cache) {
 function propStageMatrix(prop, outputWidth, outputHeight, imageWidth, imageHeight) {
   const pixelWidth = prop.width * outputWidth;
   const scale = pixelWidth / imageWidth;
+  const [scaleX, scaleY] = prop.scale ?? [1, 1];
   const centerX = prop.position[0] * outputWidth;
   const centerY = prop.position[1] * outputHeight;
   return [
     translation(centerX, centerY),
     rotationMatrix(prop.rotation),
-    scaleMatrix(scale, scale),
+    scaleMatrix(scale * scaleX, scale * scaleY),
     translation(-imageWidth / 2, -imageHeight / 2),
   ].reduce(multiply, identity());
 }

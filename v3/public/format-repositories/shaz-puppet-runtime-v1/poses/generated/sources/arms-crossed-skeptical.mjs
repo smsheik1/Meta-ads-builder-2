@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -16,8 +17,14 @@ import {
 import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 
 const CONFIDENT_RECIPE_PATH = fileURLToPath(new URL("../../authored/confident.json", import.meta.url));
+const CONFIDENT_RECIPE_SHA256 = "53496ec22e505fa44673260935ccaa4edc9ea87796b99a1c79031b825c804c1c";
 const OFFSET = 6;
-const SUBSTITUTION_ARM_SHA256 = "c23081378f579d84b9a686729a3a657de8052e46f7d7e94cebaf5c8f8a75271f";
+const CROSS_ARM_ASSETS = Object.freeze({
+  leftSleeve: ["crossed-left-sleeve.png", "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef"],
+  rightSleeve: ["crossed-right-sleeve.png", "6825bd9502845dfee7f44700488d25469fd15a3fddafc8aa5c007ae8ef3d29ba"],
+  leftHand: ["crossed-left-hand.png", "e393634f96b9d607f96af9ce01c288d5e3bf8a43ca3cd05e5d67cebe89cab5c2"],
+  rightHand: ["crossed-right-hand.png", "1ca56cff2c194949889c10e6b5f1d07e9d64ca4837a76db086966f79baaa429d"],
+});
 const FACE_DRAWINGS = new Set([
   "Eyebrows",
   "Left_Eye",
@@ -46,8 +53,31 @@ function adjustedKey(nodeName, key) {
   return key;
 }
 
+async function loadLockedConfident() {
+  const bytes = await fs.readFile(CONFIDENT_RECIPE_PATH);
+  const actual = crypto.createHash("sha256").update(bytes).digest("hex");
+  if (actual !== CONFIDENT_RECIPE_SHA256) {
+    throw new Error(`locked source recipe changed: confident.json ${actual}`);
+  }
+  return JSON.parse(bytes.toString("utf8"));
+}
+
+function substitutionProp(id, [asset, sha256], keys) {
+  return { id, asset, sha256, layer: "front", keys };
+}
+
+const hiddenKey = (frame, position, width, scale = [1, 1]) => ({
+  frame,
+  position,
+  width,
+  scale,
+  rotation: 0,
+  opacity: 0,
+  interpolation: "hold",
+});
+
 async function buildArmsCrossedSkeptical(manifest) {
-  const confident = JSON.parse(await fs.readFile(CONFIDENT_RECIPE_PATH, "utf8"));
+  const confident = await loadLockedConfident();
   const controls = {};
   for (const [nodeName, keys] of Object.entries(confident.controls)) {
     if (isRigArmNode(nodeName)) continue;
@@ -98,7 +128,10 @@ async function buildArmsCrossedSkeptical(manifest) {
     { frame: 11, drawing: sourceDrawing(manifest, "Eyebrows", 123) },
   ];
   for (const nodeName of ["Left_Eye", "Right_Eye", "Left_Pupil", "Right_Pupil"]) {
-    drawings[nodeName] = [{ frame: 1, drawing: sourceDrawing(manifest, nodeName, 1) }];
+    drawings[nodeName] = [
+      { frame: 1, drawing: sourceDrawing(manifest, nodeName, 1) },
+      { frame: 11, drawing: nodeName.endsWith("Eye") ? "2" : "1" },
+    ];
   }
   drawings.Mouth = [
     { frame: 1, drawing: sourceDrawing(manifest, "Mouth", 1) },
@@ -110,42 +143,50 @@ async function buildArmsCrossedSkeptical(manifest) {
       id: "arms-crossed-skeptical",
       durationFrames: confident.durationFrames + OFFSET,
       learnedFrom: [
-        "authored/confident: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
+        "authored/confident@53496ec2: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
         "authored/think: skeptical brow, mouth, eye-direction, and head-drag vocabulary",
-        "minimal contact-only substitution redraw: crossed forearms required by the source rig's fixed paint topology",
+        "registered rig forearm and hand drawings promoted as contact-only front substitutions for the fixed crossover depth topology",
       ],
       controls,
       drawings,
+      quality: {
+        maximumIdenticalFrames: 2,
+        armCompositeMode: "registered-crossed-rig-substitution",
+      },
     }),
     props: [
-      {
-        id: "left-arm-substitution",
-        asset: "substitution-arm.svg",
-        sha256: SUBSTITUTION_ARM_SHA256,
-        layer: "front",
-        keys: [
-          { frame: 1, position: [0.405, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 8, position: [0.405, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 9, position: [0.43, 0.555], width: 0.064, rotation: -50, opacity: 100 },
-          { frame: 12, position: [0.465, 0.542], width: 0.062, rotation: -74, opacity: 100 },
-          { frame: 15, position: [0.461, 0.548], width: 0.062, rotation: -68, opacity: 100 },
-          { frame: confident.durationFrames + OFFSET, position: [0.461, 0.548], width: 0.062, rotation: -68, opacity: 100 },
-        ],
-      },
-      {
-        id: "right-arm-substitution",
-        asset: "substitution-arm.svg",
-        sha256: SUBSTITUTION_ARM_SHA256,
-        layer: "front",
-        keys: [
-          { frame: 1, position: [0.555, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 8, position: [0.555, 0.58], width: 0.055, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 9, position: [0.48, 0.555], width: 0.064, rotation: 50, opacity: 100 },
-          { frame: 12, position: [0.441, 0.542], width: 0.062, rotation: 74, opacity: 100 },
-          { frame: 15, position: [0.445, 0.548], width: 0.062, rotation: 68, opacity: 100 },
-          { frame: confident.durationFrames + OFFSET, position: [0.445, 0.548], width: 0.062, rotation: 68, opacity: 100 },
-        ],
-      },
+      substitutionProp("crossed-right-sleeve", CROSS_ARM_ASSETS.rightSleeve, [
+        hiddenKey(1, [0.52, 0.63], 0.1, [0.68, 1.25]),
+        hiddenKey(8, [0.52, 0.63], 0.1, [0.68, 1.25]),
+        { frame: 9, position: [0.52, 0.63], width: 0.1, scale: [0.68, 1.25], rotation: 0, opacity: 100 },
+        { frame: 12, position: [0.49, 0.63], width: 0.098, scale: [0.68, 1.25], rotation: 46, opacity: 100 },
+        { frame: 16, position: [0.465, 0.635], width: 0.096, scale: [0.66, 1.28], rotation: 82, opacity: 100 },
+        { frame: confident.durationFrames + OFFSET, position: [0.46, 0.64], width: 0.094, scale: [0.64, 1.26], rotation: 86, opacity: 100 },
+      ]),
+      substitutionProp("crossed-right-hand", CROSS_ARM_ASSETS.rightHand, [
+        hiddenKey(1, [0.53, 0.68], 0.05),
+        hiddenKey(8, [0.53, 0.68], 0.05),
+        { frame: 9, position: [0.53, 0.68], width: 0.05, rotation: 0, opacity: 100 },
+        { frame: 12, position: [0.49, 0.62], width: 0.052, rotation: 0, opacity: 100 },
+        { frame: 16, position: [0.42, 0.585], width: 0.052, rotation: 0, opacity: 100 },
+        { frame: confident.durationFrames + OFFSET, position: [0.405, 0.59], width: 0.05, rotation: 0, opacity: 100 },
+      ]),
+      substitutionProp("crossed-left-sleeve", CROSS_ARM_ASSETS.leftSleeve, [
+        hiddenKey(1, [0.48, 0.655], 0.1, [0.68, 1.48]),
+        hiddenKey(8, [0.48, 0.655], 0.1, [0.68, 1.48]),
+        { frame: 9, position: [0.48, 0.655], width: 0.1, scale: [0.68, 1.48], rotation: 0, opacity: 100 },
+        { frame: 12, position: [0.475, 0.655], width: 0.098, scale: [0.68, 1.28], rotation: -50, opacity: 100 },
+        { frame: 16, position: [0.46, 0.65], width: 0.096, scale: [0.66, 1.3], rotation: -88, opacity: 100 },
+        { frame: confident.durationFrames + OFFSET, position: [0.46, 0.65], width: 0.094, scale: [0.64, 1.28], rotation: -94, opacity: 100 },
+      ]),
+      substitutionProp("crossed-left-hand", CROSS_ARM_ASSETS.leftHand, [
+        hiddenKey(1, [0.47, 0.69], 0.05),
+        hiddenKey(8, [0.47, 0.69], 0.05),
+        { frame: 9, position: [0.47, 0.69], width: 0.05, rotation: 0, opacity: 100 },
+        { frame: 12, position: [0.47, 0.62], width: 0.052, rotation: 0, opacity: 100 },
+        { frame: 16, position: [0.51, 0.585], width: 0.052, rotation: 0, opacity: 100 },
+        { frame: confident.durationFrames + OFFSET, position: [0.525, 0.59], width: 0.05, rotation: 0, opacity: 100 },
+      ]),
     ],
   };
 }

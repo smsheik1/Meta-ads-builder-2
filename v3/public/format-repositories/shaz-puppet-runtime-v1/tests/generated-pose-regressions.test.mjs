@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import test from "node:test";
 
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
+import { buildArmsCrossedSkeptical } from "../poses/generated/sources/arms-crossed-skeptical.mjs";
 import { buildFacepalmFrustrated } from "../poses/generated/sources/facepalm-frustrated.mjs";
 import { buildPointAtScreen } from "../poses/generated/sources/point-at-screen.mjs";
 
@@ -89,6 +90,13 @@ test("facepalm generator exactly reproduces the registered recipe", async () => 
 
 test("crossed-arm redraws stay hidden until the real rig arms reach the contact swap", async () => {
   const pose = await load("arms-crossed-skeptical");
+  assert.equal(pose.quality.armCompositeMode, "registered-crossed-rig-substitution");
+  assert.deepEqual(pose.props.map(({ id }) => id), [
+    "crossed-right-sleeve",
+    "crossed-right-hand",
+    "crossed-left-sleeve",
+    "crossed-left-hand",
+  ]);
   for (const prop of pose.props) {
     assert.equal(prop.keys[0].opacity, 0);
     assert.equal(prop.keys.find(({ frame }) => frame === 8).opacity, 0);
@@ -98,6 +106,28 @@ test("crossed-arm redraws stay hidden until the real rig arms reach the contact 
     assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 8).opacity, 100);
     assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 9).opacity, 0);
   }
+  assert.equal(pose.drawings.Left_Eye.at(-1).drawing, "2");
+  assert.equal(pose.drawings.Right_Eye.at(-1).drawing, "2");
+});
+
+test("crossed-arm props are byte-identical to their registered rig drawings", async () => {
+  const assets = JSON.parse(await fs.readFile(new URL("../assets.json", import.meta.url), "utf8"));
+  const receipt = JSON.parse(await fs.readFile(
+    new URL("../rig-v2/assets/receipt.json", import.meta.url),
+    "utf8",
+  ));
+  const receiptByName = new Map(receipt.assets.map((asset) => [asset.filename, asset]));
+  for (const prop of assets.props.filter(({ id }) => id.startsWith("crossed-"))) {
+    assert.equal(prop.sha256, receiptByName.get(prop.sourceRigAsset).outputSha256);
+  }
+});
+
+test("arms-crossed generator exactly reproduces the registered recipe", async () => {
+  const [manifest, checkedIn] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    load("arms-crossed-skeptical"),
+  ]);
+  assert.deepEqual(await buildArmsCrossedSkeptical(manifest), checkedIn);
 });
 
 test("excited celebration preserves the full human-authored timing grammar once", async () => {

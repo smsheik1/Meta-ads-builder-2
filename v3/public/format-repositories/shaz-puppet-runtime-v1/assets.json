@@ -5,7 +5,11 @@
   "props": [
     { "id": "screen", "path": "assets/props/screen.svg", "sha256": "cf15a5e725edcb3ef49f51cb299001d1d112b4951b6ea7e8a749bfe81159e9e1", "usage": "point-at-screen" },
     { "id": "phone", "path": "assets/props/phone.svg", "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975", "usage": "look-at-phone" },
-    { "id": "substitution-arm", "path": "assets/props/substitution-arm.svg", "sha256": "c23081378f579d84b9a686729a3a657de8052e46f7d7e94cebaf5c8f8a75271f", "usage": "arms-crossed-skeptical; minimal depth-topology repair" }
+    { "id": "substitution-arm", "path": "assets/props/substitution-arm.svg", "sha256": "c23081378f579d84b9a686729a3a657de8052e46f7d7e94cebaf5c8f8a75271f", "usage": "legacy arms-crossed prototype; not used by a registered action" },
+    { "id": "crossed-left-sleeve", "path": "assets/props/crossed-left-sleeve.png", "sha256": "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef", "usage": "arms-crossed-skeptical; rig-derived front substitution", "sourceRigAsset": "left-forearm-01.png" },
+    { "id": "crossed-right-sleeve", "path": "assets/props/crossed-right-sleeve.png", "sha256": "6825bd9502845dfee7f44700488d25469fd15a3fddafc8aa5c007ae8ef3d29ba", "usage": "arms-crossed-skeptical; rig-derived front substitution", "sourceRigAsset": "right-forearm-01.png" },
+    { "id": "crossed-left-hand", "path": "assets/props/crossed-left-hand.png", "sha256": "e393634f96b9d607f96af9ce01c288d5e3bf8a43ca3cd05e5d67cebe89cab5c2", "usage": "arms-crossed-skeptical; rig-derived front substitution", "sourceRigAsset": "left-hand-05.png" },
+    { "id": "crossed-right-hand", "path": "assets/props/crossed-right-hand.png", "sha256": "1ca56cff2c194949889c10e6b5f1d07e9d64ca4837a76db086966f79baaa429d", "usage": "arms-crossed-skeptical; rig-derived front substitution", "sourceRigAsset": "right-hand-07.png" }
   ],
   "provenance": {
     "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",

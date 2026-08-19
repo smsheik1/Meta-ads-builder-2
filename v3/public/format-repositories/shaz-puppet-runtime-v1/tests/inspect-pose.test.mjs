@@ -11,6 +11,7 @@ import {
   nearWhitePixelCount,
   opaqueMaskOverlapPixelCount,
   paintOrderValid,
+  registeredCrossedArmCompositeValid,
 } from "../runtime/inspect-pose.mjs";
 import { READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
 
@@ -82,6 +83,28 @@ test("arm-composite inspection requires finished sleeve unions and rejects const
     compositeRole: "finished-artwork",
   });
   assert.equal(armCompositeValid([...thinkingLeft, ...arm("Right")]), true);
+});
+
+test("crossed-arm substitutions require the exact four registered rig-derived pieces", () => {
+  const recipe = { quality: { armCompositeMode: "registered-crossed-rig-substitution" } };
+  const layers = ["Left", "Right"].map((side) => ({
+    nodePath: `Top/Shaz_Rig/Body_Group/${side}_Arm`,
+    variant: "main",
+    compositeRole: "hidden-construction-fill",
+  }));
+  const props = [
+    ["crossed-left-hand", "crossed-left-hand.png"],
+    ["crossed-left-sleeve", "crossed-left-sleeve.png"],
+    ["crossed-right-hand", "crossed-right-hand.png"],
+    ["crossed-right-sleeve", "crossed-right-sleeve.png"],
+  ].map(([id, asset]) => ({ id, asset, layer: "front" }));
+  assert.equal(registeredCrossedArmCompositeValid(layers, props, recipe), true);
+  assert.equal(registeredCrossedArmCompositeValid(layers, props.slice(1), recipe), false);
+  assert.equal(registeredCrossedArmCompositeValid([
+    ...layers,
+    { nodePath: "Top/Shaz_Rig/Body_Group/Left_Hand", variant: "main" },
+  ], props, recipe), false);
+  assert.equal(registeredCrossedArmCompositeValid(layers, props, { quality: {} }), false);
 });
 
 test("hair-composite inspection requires the masked visible back-bang component", () => {

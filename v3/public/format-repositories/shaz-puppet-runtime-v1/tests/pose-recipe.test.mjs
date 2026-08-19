@@ -143,10 +143,19 @@ test("pose recipes interpolate named controls and hold drawing substitutions", (
     layer: "behind",
     position: [0.225, 0.5],
     width: 0.325,
+    scale: [1, 1],
     rotation: 0,
     opacity: 50,
   });
   assert.ok(Math.abs(prop.width - 0.325) < 1e-12);
+});
+
+test("prop transforms support explicit local aspect scaling", () => {
+  const input = recipe();
+  input.props[0].keys[0].scale = [0.7, 1.6];
+  input.props[0].keys[1].scale = [0.7, 1.6];
+  const runtime = createPoseRuntime(fixture(), input);
+  assert.deepEqual(runtime.propsAtFrame(3)[0].scale, [0.7, 1.6]);
 });
 
 test("pose recipe hashing ignores object key order", () => {

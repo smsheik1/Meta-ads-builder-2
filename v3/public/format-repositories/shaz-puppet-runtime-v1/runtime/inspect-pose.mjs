@@ -190,6 +190,32 @@ function armCompositeValid(layers) {
   return true;
 }
 
+function registeredCrossedArmCompositeValid(layers, props, recipe) {
+  if (recipe.quality?.armCompositeMode !== "registered-crossed-rig-substitution") return false;
+  const expected = [
+    ["crossed-left-hand", "crossed-left-hand.png"],
+    ["crossed-left-sleeve", "crossed-left-sleeve.png"],
+    ["crossed-right-hand", "crossed-right-hand.png"],
+    ["crossed-right-sleeve", "crossed-right-sleeve.png"],
+  ];
+  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
+    .sort(([left], [right]) => left.localeCompare(right));
+  if (JSON.stringify(actual) !== JSON.stringify(expected.map(([id, asset]) => [id, asset, "front"]))) {
+    return false;
+  }
+
+  const armLayers = layers.filter((layer) => (
+    /\/(Left|Right)_(Arm|Forearm|Hand)$/.test(layer.nodePath)
+  ));
+  return armLayers.length === 2 && ["Left", "Right"].every((side) => (
+    armLayers.some((layer) => (
+      layer.nodePath.endsWith(`/${side}_Arm`)
+      && layer.variant === "main"
+      && layer.compositeRole === "hidden-construction-fill"
+    ))
+  ));
+}
+
 function hairCompositeValid(layers) {
   const rearHair = layers.find((layer) => (
     layer.nodePath.endsWith("/Hair") && layer.variant === "main"
@@ -301,7 +327,12 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     if (!paintOrderValid(rendered.receipt.layers)) {
       failures.push({ frame, gate: "layer-order", detail: "frame layers do not follow READ_PAINT_PLAN" });
     }
-    if (!armCompositeValid(rendered.receipt.layers)) {
+    if (!armCompositeValid(rendered.receipt.layers)
+      && !registeredCrossedArmCompositeValid(
+        rendered.receipt.layers,
+        rendered.receipt.props,
+        recipe,
+      )) {
       failures.push({
         frame,
         gate: "arm-composite",
@@ -556,6 +587,7 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
 export {
   alphaStats,
   armCompositeValid,
+  registeredCrossedArmCompositeValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,
   hairCompositeValid,

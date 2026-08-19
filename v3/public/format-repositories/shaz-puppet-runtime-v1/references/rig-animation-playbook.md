@@ -66,6 +66,8 @@ Treat visible alpha and semantic ownership as separate evidence. A partial squin
 
 Treat front-of-face hand gestures as a layer-ownership problem before treating them as a transform problem. If a valid hand drawing disappears behind the head, reuse that registered rig drawing through the dedicated `OL_Hand` substitution channel, preserve its original asset registration and provenance, and calibrate only the overlay control. Do not reorder the ordinary hand globally or add a pose-specific renderer branch; either can fix one pose while breaking every ordinary hand pose.
 
+Treat limb depth crossovers as semantic-ownership transfers when the recovered paint topology cannot exchange front/back order. Keep the ordinary attached rig visible through anticipation, then at the exact contact frame replace only the occluded crossover pieces with checksum-locked existing rig drawings. Preserve their source provenance and palette; use ordinary local aspect deformation when needed to fit the new silhouette. Never solve the crossover with a generic capsule redraw, a global paint-order change, or a pose-specific renderer branch.
+
 ### 4. Timing grammar
 
 Recover the action's phases before editing curves:
@@ -111,6 +113,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | Several defects move between poses | Work scope is too broad | Stop and perfect one action end to end |
 | A generated action changes when rebuilt without a source edit | Mutable authored-recipe dependency | Checksum-lock the source recipe and phase; require exact generator reproducibility |
 | A whole-body mirror stays unmirrored or moves off cadence | Flip was applied only to READ drawings or root angle/position was not reflected | Flip the common PEG and mirror its root position, rotation, and skew together |
+| Crossed arms look like detached capsules or a heart-shaped sleeve lump | Fixed paint topology was replaced with generic art, or both replacement limbs kept their neutral aspect | Swap only at contact to registered sleeve/hand drawings; flatten the front forearm, tuck the rear forearm, and validate exact source provenance plus the final silhouette |
 | A hand reaches the right place but disappears behind the face | The ordinary body hand owns the wrong paint layer for a face-covering gesture | Reuse the existing hand drawing through the registered `OL_Hand` front layer and lock its provenance |
 
 ## Things to avoid

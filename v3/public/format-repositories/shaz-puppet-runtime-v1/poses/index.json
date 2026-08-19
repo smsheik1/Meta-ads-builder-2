@@ -11,6 +11,6 @@
     { "id": "point-at-screen", "kind": "generated", "path": "generated/point-at-screen.json", "sha256": "cf762f655b0bb78ea990599dc824addb47402754d14f026ff1f24c8543ca8079" },
     { "id": "look-at-phone", "kind": "generated", "path": "generated/look-at-phone.json", "sha256": "c2161ab1d26142091e0074e10d63639e387572f9aaba15fc062848ac14c7b43d" },
     { "id": "facepalm-frustrated", "kind": "generated", "path": "generated/facepalm-frustrated.json", "sha256": "d3652f649191cc22e7e467302cbd7a1e7e22a6bab2cd7d5365da8853a8a2c9c1" },
-    { "id": "arms-crossed-skeptical", "kind": "generated", "path": "generated/arms-crossed-skeptical.json", "sha256": "6a3b441ea9dea57254901818c528348fd625e93057f0962c74ed43fbde00dda0" }
+    { "id": "arms-crossed-skeptical", "kind": "generated", "path": "generated/arms-crossed-skeptical.json", "sha256": "0cd953fa72b44430495757b339787e0cd1755fdff917d771b85c698d980b726b" }
   ]
 }
