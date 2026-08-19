@@ -81,8 +81,8 @@ function localMatrix(sampledNode, convention = {}) {
   ];
   let scaleX = attrs.scale?.x ?? attrs.scale?.xy ?? 1;
   let scaleY = attrs.scale?.y ?? attrs.scale?.xy ?? 1;
-  if (isRead && attrs.flipHor) scaleX *= -1;
-  if (isRead && attrs.flipVert) scaleY *= -1;
+  if (attrs.flipHor) scaleX *= -1;
+  if (attrs.flipVert) scaleY *= -1;
   const angleDirection = invertAngle ? -1 : 1;
   const angle = angleDirection * (attrs.rotation?.anglez ?? attrs.angle ?? 0);
   const skew = angleDirection * (attrs.skew ?? 0);

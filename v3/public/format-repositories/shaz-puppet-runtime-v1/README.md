@@ -65,7 +65,7 @@ The finalized video and evidence remain in `agent-runs/my-sequence/`. No network
 | `point` | authored calibration | full side-point → Ah-ha accent → side-point return |
 | `confident` | authored calibration | confident stance |
 | `excited-celebration` | new rig action | excited celebration |
-| `point-at-screen` | new rig action | points toward a screen prop |
+| `point-at-screen` | new rig action | presents, then points toward an off-canvas upper-right target |
 | `look-at-phone` | new rig action | looks down at a phone prop |
 | `facepalm-frustrated` | new rig action | frustrated head-in-hand reaction |
 | `arms-crossed-skeptical` | new rig action | skeptical crossed-arm hold |

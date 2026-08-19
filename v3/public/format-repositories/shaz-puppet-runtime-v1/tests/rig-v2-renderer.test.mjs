@@ -4,7 +4,10 @@ import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
-import { applyToPoint } from "../runtime/vendor/scene_transforms.mjs";
+import {
+  applyToPoint,
+  localMatrix,
+} from "../runtime/vendor/scene_transforms.mjs";
 
 import {
   READ_PAINT_ORDER,
@@ -59,6 +62,21 @@ test("prop transforms use normalized output placement and width", () => {
   }, 1000, 500, 200, 100);
   assert.deepEqual(applyToPoint(matrix, [100, 50]), [250, 250]);
   assert.deepEqual(applyToPoint(matrix, [0, 0]), [150, 200]);
+});
+
+test("PEG-level flips mirror the complete descendant rig", () => {
+  const matrix = localMatrix({
+    type: "PEG",
+    attrs: {
+      position: { attr3dpath: [0, 0, 0] },
+      pivot: { x: 0, y: 0 },
+      scale: { x: 1, y: 1 },
+      rotation: { anglez: 0 },
+      flipHor: true,
+      flipVert: false,
+    },
+  }, { invertY: false, invertAngle: false, fieldGrid: { x: 1, y: 1 } });
+  closePoint(applyToPoint(matrix, [2, 3]), [-2, 3]);
 });
 
 test("tight assets map model coordinates into the source camera", () => {

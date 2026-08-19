@@ -87,6 +87,10 @@ When drift is suspected, track at least one stable torso feature and multiple in
 
 For a new expression, begin from the nearest certified motion grammar only when it genuinely matches the desired mechanics. Preserve its complete secondary choreography, then change the fewest controls and substitutions necessary to alter meaning. Do not merely relabel an existing action.
 
+When a generated action derives controls or substitutions from a certified recipe, bind that dependency to its exact file checksum and explicit phase/frame boundary. Add a regression that rebuilds the generated action and compares it with the registered recipe. A mutable recipe import can silently change duration, semantics, or cadence even when the generator source itself did not change.
+
+For a whole-character mirror, reflect the common PEG ancestor rather than independently flipping drawings. The transform runtime must honor PEG flip flags, and the mirrored root position, angle, and skew must be reflected together; changing scale sign alone can alter screen-space registration when the root is rotated.
+
 ## Failure signatures
 
 | Visible failure | Diagnose first | Common correction |
@@ -103,6 +107,8 @@ For a new expression, begin from the nearest certified motion grammar only when 
 | Looks stable in slow motion but crawls or slides at normal speed | Invented in-betweens during stepped exposures or authored holds | Measure exposure-change frames; encode exact holds across controls and deformations; certify at normal speed |
 | A polished clip reads as only half an action | The proposed source cut omitted its setup or release context | Audit adjacent frames; extend the full action or register the segment as an honestly named microgesture |
 | Several defects move between poses | Work scope is too broad | Stop and perfect one action end to end |
+| A generated action changes when rebuilt without a source edit | Mutable authored-recipe dependency | Checksum-lock the source recipe and phase; require exact generator reproducibility |
+| A whole-body mirror stays unmirrored or moves off cadence | Flip was applied only to READ drawings or root angle/position was not reflected | Flip the common PEG and mirror its root position, rotation, and skew together |
 
 ## Things to avoid
 

@@ -2,17 +2,16 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import test from "node:test";
 
+import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
+import { buildPointAtScreen } from "../poses/generated/sources/point-at-screen.mjs";
+
 const load = async (name) => JSON.parse(await fs.readFile(
   new URL(`../poses/generated/${name}.json`, import.meta.url),
   "utf8",
 ));
 
-test("environment and handheld props are established instead of appearing randomly", async () => {
-  const [screenPose, phonePose] = await Promise.all([
-    load("point-at-screen"),
-    load("look-at-phone"),
-  ]);
-  assert.equal(screenPose.props.find(({ id }) => id === "screen").keys[0].opacity, 100);
+test("handheld props are established instead of appearing randomly", async () => {
+  const phonePose = await load("look-at-phone");
   const phone = phonePose.props.find(({ id }) => id === "phone");
   assert.equal(phone.keys[0].opacity, 100);
   assert.equal(phone.keys[0].interpolation, "hold", "phone must remain with the lowered hand until the pickup beat");
@@ -20,11 +19,23 @@ test("environment and handheld props are established instead of appearing random
   assert.ok(phone.keys[0].position[1] > phone.keys[1].position[1], "phone must rise with the hand");
 });
 
-test("point-at-screen does not hold the clenched-tooth drawings", async () => {
+test("point-at-screen follows the supplied off-canvas pointing storyboard", async () => {
   const pose = await load("point-at-screen");
-  const mouthDrawings = pose.drawings.Mouth.map(({ drawing }) => drawing);
-  assert.equal(mouthDrawings.includes("4"), false);
-  assert.equal(mouthDrawings.includes("8"), false);
+  assert.equal(pose.durationFrames, 36);
+  assert.deepEqual(pose.props ?? [], [], "the off-canvas target must not become a random screen prop");
+  assert.equal(pose.controls["Shaz_Master-P"][0].flipHorizontal, true);
+  assert.equal(pose.drawings.Left_Hand.at(-1).drawing, "8");
+  assert.equal(pose.drawings.Mouth.at(-1).drawing, "4");
+  assert.equal(pose.controls["Left_Arm_MOVE-P"].at(-1).frame, 36);
+  assert.equal(pose.controls["Head_Movement-P"].at(-1).frame, 36);
+});
+
+test("point-at-screen generator exactly reproduces the registered recipe", async () => {
+  const [manifest, checkedIn] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    load("point-at-screen"),
+  ]);
+  assert.deepEqual(await buildPointAtScreen(manifest), checkedIn);
 });
 
 test("crossed-arm redraws stay hidden until the real rig arms reach the contact swap", async () => {
