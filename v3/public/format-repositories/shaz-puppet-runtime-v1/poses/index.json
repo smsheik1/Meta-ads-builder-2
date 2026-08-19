@@ -7,7 +7,7 @@
     { "id": "aha", "kind": "authored-replay", "path": "authored/aha.json", "sha256": "e3ebc83fa6409be5ac66ce77189ff445bf38352f16ccaf5423756ae95174d654" },
     { "id": "point", "kind": "authored-replay", "path": "authored/point.json", "sha256": "fcc7f489498683514104d7612dc4fbf5be22243b1f867b6190db74c8e9225a39" },
     { "id": "confident", "kind": "authored-replay", "path": "authored/confident.json", "sha256": "53496ec22e505fa44673260935ccaa4edc9ea87796b99a1c79031b825c804c1c" },
-    { "id": "excited-celebration", "kind": "generated", "path": "generated/excited-celebration.json", "sha256": "eb46b1affc270a63908c84232e2546e7a8fc445cec5bb2d435c7bef746127bdb" },
+    { "id": "excited-celebration", "kind": "generated", "path": "generated/excited-celebration.json", "sha256": "63c8cd76cbb0c47d6c6d1cb6cd5f6275077ef5d8bd70fc33a4de0705de847363" },
     { "id": "point-at-screen", "kind": "generated", "path": "generated/point-at-screen.json", "sha256": "cf762f655b0bb78ea990599dc824addb47402754d14f026ff1f24c8543ca8079" },
     { "id": "look-at-phone", "kind": "generated", "path": "generated/look-at-phone.json", "sha256": "c2161ab1d26142091e0074e10d63639e387572f9aaba15fc062848ac14c7b43d" },
     { "id": "facepalm-frustrated", "kind": "generated", "path": "generated/facepalm-frustrated.json", "sha256": "d3652f649191cc22e7e467302cbd7a1e7e22a6bab2cd7d5365da8853a8a2c9c1" },

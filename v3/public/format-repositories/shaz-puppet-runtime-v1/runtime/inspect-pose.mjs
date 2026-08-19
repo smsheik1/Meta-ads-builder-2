@@ -216,6 +216,31 @@ function registeredCrossedArmCompositeValid(layers, props, recipe) {
   ));
 }
 
+function registeredVictoryFistCompositeValid(layers, props, recipe) {
+  if (recipe.quality?.armCompositeMode !== "registered-victory-fists") return false;
+  const expected = [
+    ["excited-left-fist", "excited-left-fist.png", "front"],
+    ["excited-right-fist", "excited-right-fist.png", "front"],
+  ];
+  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
+    .sort(([left], [right]) => left.localeCompare(right));
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) return false;
+
+  return armCompositeValid([
+    ...layers,
+    {
+      nodePath: "Top/Shaz_Rig/Body_Group/Left_Hand",
+      variant: "main",
+      compositeRole: "registered-victory-fist-substitution",
+    },
+    {
+      nodePath: "Top/Shaz_Rig/Body_Group/Right_Hand",
+      variant: "main",
+      compositeRole: "registered-victory-fist-substitution",
+    },
+  ]);
+}
+
 function hairCompositeValid(layers) {
   const rearHair = layers.find((layer) => (
     layer.nodePath.endsWith("/Hair") && layer.variant === "main"
@@ -329,6 +354,11 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     }
     if (!armCompositeValid(rendered.receipt.layers)
       && !registeredCrossedArmCompositeValid(
+        rendered.receipt.layers,
+        rendered.receipt.props,
+        recipe,
+      )
+      && !registeredVictoryFistCompositeValid(
         rendered.receipt.layers,
         rendered.receipt.props,
         recipe,
@@ -588,6 +618,7 @@ export {
   alphaStats,
   armCompositeValid,
   registeredCrossedArmCompositeValid,
+  registeredVictoryFistCompositeValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,
   hairCompositeValid,

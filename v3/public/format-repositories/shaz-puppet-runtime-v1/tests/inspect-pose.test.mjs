@@ -12,6 +12,7 @@ import {
   opaqueMaskOverlapPixelCount,
   paintOrderValid,
   registeredCrossedArmCompositeValid,
+  registeredVictoryFistCompositeValid,
 } from "../runtime/inspect-pose.mjs";
 import { READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
 
@@ -105,6 +106,27 @@ test("crossed-arm substitutions require the exact four registered rig-derived pi
     { nodePath: "Top/Shaz_Rig/Body_Group/Left_Hand", variant: "main" },
   ], props, recipe), false);
   assert.equal(registeredCrossedArmCompositeValid(layers, props, { quality: {} }), false);
+});
+
+test("victory-fist substitutions replace only the two hidden hand drawings", () => {
+  const recipe = { quality: { armCompositeMode: "registered-victory-fists" } };
+  const sleeve = (side) => ({
+    nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
+    variant: "main",
+    compositeRole: "finished-sleeve-union",
+  });
+  const layers = [sleeve("Left"), sleeve("Right")];
+  const props = [
+    { id: "excited-left-fist", asset: "excited-left-fist.png", layer: "front" },
+    { id: "excited-right-fist", asset: "excited-right-fist.png", layer: "front" },
+  ];
+  assert.equal(registeredVictoryFistCompositeValid(layers, props, recipe), true);
+  assert.equal(registeredVictoryFistCompositeValid(layers, props.slice(1), recipe), false);
+  assert.equal(registeredVictoryFistCompositeValid([
+    ...layers,
+    { nodePath: "Top/Shaz_Rig/Body_Group/Left_Arm", variant: "main" },
+  ], props, recipe), false);
+  assert.equal(registeredVictoryFistCompositeValid(layers, props, { quality: {} }), false);
 });
 
 test("hair-composite inspection requires the masked visible back-bang component", () => {

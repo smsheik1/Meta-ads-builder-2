@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import test from "node:test";
+import sharp from "sharp";
 
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 import { buildArmsCrossedSkeptical } from "../poses/generated/sources/arms-crossed-skeptical.mjs";
 import { buildFacepalmFrustrated } from "../poses/generated/sources/facepalm-frustrated.mjs";
+import { buildExcitedCelebration } from "../poses/generated/sources/excited-celebration.mjs";
 import { buildPointAtScreen } from "../poses/generated/sources/point-at-screen.mjs";
 
 const load = async (name) => JSON.parse(await fs.readFile(
@@ -140,6 +142,8 @@ test("excited celebration preserves the full human-authored timing grammar once"
   ]);
   assert.equal(pose.durationFrames, 31);
   assert.equal(pose.quality.maximumIdenticalFrames, 3);
+  assert.equal(pose.quality.armCompositeMode, "registered-victory-fists");
+  assert.deepEqual(pose.props.map(({ id }) => id), ["excited-left-fist", "excited-right-fist"]);
   assert.deepEqual(
     pose.deformationFrames,
     Array.from({ length: 31 }, (_, index) => 67 + index),
@@ -156,9 +160,43 @@ test("excited celebration preserves the full human-authored timing grammar once"
   const masterFrames = pose.controls["Shaz_Master-P"].map(({ frame }) => frame);
   assert.deepEqual(masterFrames, Array.from({ length: 31 }, (_, index) => index + 1));
   assert.equal(masterFrames.filter((frame) => frame === 4).length, 1);
-  assert.deepEqual(
-    Object.keys(pose.controls).sort(),
-    Object.keys(authoredShrug.controls).sort(),
-    "the semantic variant must retain every secondary source control that keeps the hold alive",
-  );
+  const retainedControls = Object.keys(pose.controls)
+    .filter((name) => name !== "Left_Hand" && name !== "Right_Hand")
+    .sort();
+  assert.deepEqual(retainedControls, Object.keys(authoredShrug.controls).sort(),
+    "the semantic variant must retain every secondary source control that keeps the hold alive");
+  for (const name of ["Left_Hand", "Right_Hand"]) {
+    assert.equal(pose.controls[name].find(({ frame }) => frame === 3).opacity, 0);
+    assert.equal(pose.controls[name].find(({ frame }) => frame === 30).opacity, 100);
+  }
+});
+
+test("celebration fists preserve registered source provenance and deterministic mirroring", async () => {
+  const assets = JSON.parse(await fs.readFile(new URL("../assets.json", import.meta.url), "utf8"));
+  const receipt = JSON.parse(await fs.readFile(
+    new URL("../rig-v2/assets/receipt.json", import.meta.url),
+    "utf8",
+  ));
+  const source = receipt.assets.find(({ filename }) => filename === "left-hand-10.png");
+  const left = assets.props.find(({ id }) => id === "excited-left-fist");
+  const right = assets.props.find(({ id }) => id === "excited-right-fist");
+  assert.equal(left.sha256, source.outputSha256);
+  assert.equal(left.sourceRigAsset, "left-hand-10.png");
+  assert.equal(right.sourceRigAsset, "left-hand-10.png");
+  assert.equal(right.derivedTransform, "horizontal-mirror");
+  const [sourceBytes, leftBytes, rightBytes] = await Promise.all([
+    fs.readFile(new URL("../rig-v2/assets/left-hand-10.png", import.meta.url)),
+    fs.readFile(new URL("../assets/props/excited-left-fist.png", import.meta.url)),
+    fs.readFile(new URL("../assets/props/excited-right-fist.png", import.meta.url)),
+  ]);
+  assert.deepEqual(leftBytes, sourceBytes);
+  assert.deepEqual(rightBytes, await sharp(sourceBytes).flop().png().toBuffer());
+});
+
+test("excited-celebration generator exactly reproduces the registered recipe", async () => {
+  const [manifest, checkedIn] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    load("excited-celebration"),
+  ]);
+  assert.deepEqual(buildExcitedCelebration(manifest), checkedIn);
 });

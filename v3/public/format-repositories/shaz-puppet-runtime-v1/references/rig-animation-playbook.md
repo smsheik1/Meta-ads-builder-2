@@ -58,6 +58,10 @@ Useful techniques:
 
 Use the rig's authored drawings when the silhouette or expression changes. Do not force a single hand, eye, or mouth drawing to imitate a different view through rotation and scale.
 
+Require action-specific silhouette vocabulary before accepting a semantic relabel. Timing and a smiling mouth cannot turn open-palm shrug mechanics into a victory celebration; the hands, arm height, and body line must communicate the intended action without relying on its filename.
+
+When a bilateral gesture needs a semantic drawing that exists for only one side, a deterministic mirror of that exact registered drawing is allowed only if the anatomy is genuinely symmetric. Disclose the source drawing and mirror transform, preserve the source side byte-for-byte, test the derived pixels against the exact mirror operation, and keep the substitution scoped to the missing counterpart. Do not use this exception to mirror asymmetrical accessories, lighting, text, or arbitrary new art.
+
 Check hand orientation, transitional drawings, pupils, eyelids, mouth/teeth, fingers, visibility, and the exact frame on which each substitution changes.
 
 Treat color ownership as content, not merely alpha coverage. A drawing can remain connected and opaque while a tooth, eye white, tongue, or skin region is painted with the wrong palette color. For any authored substitution with a required semantic color region, inspect that region directly and promote a stable color-presence check into the test suite.
@@ -114,6 +118,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | A generated action changes when rebuilt without a source edit | Mutable authored-recipe dependency | Checksum-lock the source recipe and phase; require exact generator reproducibility |
 | A whole-body mirror stays unmirrored or moves off cadence | Flip was applied only to READ drawings or root angle/position was not reflected | Flip the common PEG and mirror its root position, rotation, and skew together |
 | Crossed arms look like detached capsules or a heart-shaped sleeve lump | Fixed paint topology was replaced with generic art, or both replacement limbs kept their neutral aspect | Swap only at contact to registered sleeve/hand drawings; flatten the front forearm, tuck the rear forearm, and validate exact source provenance plus the final silhouette |
+| A “celebration” still reads as a happy shrug | Filename and facial expression were treated as semantics while the open-palm arm vocabulary stayed unchanged | Establish victory-specific hand silhouettes and a true overhead accent while preserving the proven timing grammar |
 | A hand reaches the right place but disappears behind the face | The ordinary body hand owns the wrong paint layer for a face-covering gesture | Reuse the existing hand drawing through the registered `OL_Hand` front layer and lock its provenance |
 
 ## Things to avoid
