@@ -25,6 +25,7 @@ function parseArgs(values) {
     start: null,
     end: null,
     baseFrame: 1,
+    exposureChangeFrames: null,
     output: null,
   };
   for (let index = 0; index < values.length; index += 1) {
@@ -34,6 +35,9 @@ function parseArgs(values) {
     else if (value === "--start") args.start = Number(values[++index]);
     else if (value === "--end") args.end = Number(values[++index]);
     else if (value === "--base-frame") args.baseFrame = Number(values[++index]);
+    else if (value === "--exposure-change-frames") {
+      args.exposureChangeFrames = values[++index].split(",").map(Number);
+    }
     else if (value === "--output") args.output = values[++index];
     else throw new Error(`unknown argument ${value}`);
   }
@@ -41,7 +45,7 @@ function parseArgs(values) {
     || !Number.isInteger(args.start) || !Number.isInteger(args.end)
     || args.start < 1 || args.end < args.start
     || !Number.isInteger(args.baseFrame) || args.baseFrame < 1) {
-    throw new Error("usage: extract-pose-recipe.mjs --manifest runtime.json --id pose-id --start N --end N --base-frame N --output recipe.json");
+    throw new Error("usage: extract-pose-recipe.mjs --manifest runtime.json --id pose-id --start N --end N --base-frame N [--exposure-change-frames 1,3,...] --output recipe.json");
   }
   return args;
 }
@@ -116,6 +120,29 @@ function keyFromState(frame, state) {
   };
 }
 
+function validateExposureChangeFrames(frames, durationFrames) {
+  if (frames === null) return null;
+  if (!Array.isArray(frames) || frames.length === 0
+    || frames[0] !== 1 || frames.at(-1) !== durationFrames
+    || frames.some((frame) => !Number.isInteger(frame) || frame < 1 || frame > durationFrames)
+    || frames.some((frame, index) => index > 0 && frame <= frames[index - 1])) {
+    throw new Error(`exposure change frames must be strictly increasing from 1 through ${durationFrames}`);
+  }
+  return frames;
+}
+
+function deformationFramesForExposureChanges(startFrame, durationFrames, changeFrames) {
+  if (!changeFrames) {
+    return Array.from({ length: durationFrames }, (_, index) => startFrame + index);
+  }
+  let current = changeFrames[0];
+  return Array.from({ length: durationFrames }, (_, index) => {
+    const localFrame = index + 1;
+    if (changeFrames.includes(localFrame)) current = localFrame;
+    return startFrame + current - 1;
+  });
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const manifest = await loadManifest(path.resolve(args.manifest));
@@ -124,6 +151,14 @@ async function main() {
   if (args.end > scene.stopFrame) throw new Error(`source range exceeds frame ${scene.stopFrame}`);
   const columns = indexColumns(scene);
   const durationFrames = args.end - args.start + 1;
+  const exposureChangeFrames = validateExposureChangeFrames(
+    args.exposureChangeFrames,
+    durationFrames,
+  );
+  const sampledLocalFrames = exposureChangeFrames ?? Array.from(
+    { length: durationFrames },
+    (_, index) => index + 1,
+  );
   const controls = {};
   const drawings = {};
 
@@ -132,25 +167,32 @@ async function main() {
   ))) {
     const baseState = controlStateForNode(sampleNode(node, columns, args.baseFrame));
     const sampledFrames = [];
-    for (let sourceFrame = args.start; sourceFrame <= args.end; sourceFrame += 1) {
+    for (const localFrame of sampledLocalFrames) {
+      const sourceFrame = args.start + localFrame - 1;
       sampledFrames.push({
-        frame: sourceFrame - args.start + 1,
+        frame: localFrame,
         state: controlStateForNode(sampleNode(node, columns, sourceFrame)),
       });
     }
     if (sampledFrames.some(({ state }) => !statesEqual(state, baseState))) {
-      controls[node.name] = simplifyControlFrames(sampledFrames)
-        .map(({ frame, state }) => keyFromState(frame, state));
+      const selectedFrames = exposureChangeFrames
+        ? sampledFrames
+        : simplifyControlFrames(sampledFrames);
+      controls[node.name] = selectedFrames.map(({ frame, state }) => ({
+        ...keyFromState(frame, state),
+        ...(exposureChangeFrames ? { interpolation: "hold" } : {}),
+      }));
     }
 
     if (node.type !== "READ") continue;
     const baseDrawing = resolveReadDrawing(manifest, scene, node, args.baseFrame)?.drawing ?? null;
     const drawingKeys = [];
     let previous = Symbol("unset");
-    for (let sourceFrame = args.start; sourceFrame <= args.end; sourceFrame += 1) {
+    for (const localFrame of sampledLocalFrames) {
+      const sourceFrame = args.start + localFrame - 1;
       const drawing = resolveReadDrawing(manifest, scene, node, sourceFrame)?.drawing ?? null;
       if (drawing !== previous) {
-        drawingKeys.push({ frame: sourceFrame - args.start + 1, drawing });
+        drawingKeys.push({ frame: localFrame, drawing });
         previous = drawing;
       }
     }
@@ -174,10 +216,28 @@ async function main() {
     },
     controls,
     drawings,
-    deformationFrames: Array.from(
-      { length: durationFrames },
-      (_, index) => args.start + index,
+    deformationFrames: deformationFramesForExposureChanges(
+      args.start,
+      durationFrames,
+      exposureChangeFrames,
     ),
+    ...(exposureChangeFrames ? {
+      quality: {
+        maximumIdenticalFrames: Math.max(
+          ...exposureChangeFrames.slice(1).map((frame, index) => (
+            frame - exposureChangeFrames[index]
+          )),
+          durationFrames - exposureChangeFrames.at(-1) + 1,
+        ),
+        sourceExposureChangeFrames: exposureChangeFrames,
+      },
+      authoringCorrections: [{
+        control: "all-runtime-controls-and-deformations",
+        field: "exposure-cadence",
+        operation: "artist-authored-step-exposures",
+        reason: "Preserve measured artist presentation cadence instead of inventing linear in-betweens",
+      }],
+    } : {}),
   };
   const output = path.resolve(args.output);
   await fs.mkdir(path.dirname(output), { recursive: true });
@@ -192,4 +252,9 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   });
 }
 
-export { simplifyControlFrames, statesEqual };
+export {
+  deformationFramesForExposureChanges,
+  simplifyControlFrames,
+  statesEqual,
+  validateExposureChangeFrames,
+};

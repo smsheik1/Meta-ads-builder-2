@@ -47,4 +47,19 @@ The command rejects the wrong rig SHA, unknown control names, unknown drawings, 
 
 The dense recipes in `authored/` are lossless calibration goldens extracted from the supplied Xstage animation. New poses should be sparse and semantic; they should contain only controls and substitutions that actually change.
 
+When a synchronized artist reference proves stepped presentation timing, pass local change frames to the extractor rather than smoothing the Xstage channels:
+
+```sh
+node runtime/extract-pose-recipe.mjs \
+  --manifest rig-v2/runtime.json \
+  --id confident \
+  --start 287 \
+  --end 299 \
+  --base-frame 1 \
+  --exposure-change-frames 1,3,5,7,9,11,13 \
+  --output poses/authored/confident.json
+```
+
+This writes hold-interpolated control keys, repeats matching deformation exposures, and records the measured cadence. Use only change frames proven from the reference; do not guess them from the control curves.
+
 After authoring, run `runtime/inspect-pose.mjs` with the same manifest, asset, prop, and recipe paths. Do not add the recipe to `poses/index.json` until that inspection passes and the registry stores the exact file SHA-256. Once registered, all user-facing sequence renders must go through `runner.mjs`.

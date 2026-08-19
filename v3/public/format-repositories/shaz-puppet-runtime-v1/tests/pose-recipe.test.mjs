@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { simplifyControlFrames } from "../runtime/extract-pose-recipe.mjs";
+import {
+  deformationFramesForExposureChanges,
+  simplifyControlFrames,
+  validateExposureChangeFrames,
+} from "../runtime/extract-pose-recipe.mjs";
 import {
   createPoseRuntime,
   poseRecipeSha256,
@@ -204,5 +208,17 @@ test("control simplification keeps overshoots but removes exact linear in-betwee
   assert.deepEqual(
     simplifyControlFrames(frames).map(({ frame }) => frame),
     [1, 3, 4, 5],
+  );
+});
+
+test("authored exposure cadence repeats deformation sources without invented in-betweens", () => {
+  const changes = validateExposureChangeFrames([1, 3, 5, 7], 7);
+  assert.deepEqual(
+    deformationFramesForExposureChanges(287, 7, changes),
+    [287, 287, 289, 289, 291, 291, 293],
+  );
+  assert.throws(
+    () => validateExposureChangeFrames([1, 3, 5], 7),
+    /from 1 through 7/,
   );
 });
