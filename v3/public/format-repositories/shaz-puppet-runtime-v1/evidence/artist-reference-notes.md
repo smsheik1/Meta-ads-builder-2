@@ -15,8 +15,8 @@ The artist uses five primary actions plus a confident bonus pose, separated by b
 - **[00:03] Neutral reset:** both arms drop and the body returns upright.
 - **[00:04–00:05] Think:** one hand reaches the face, the other braces at the hip, and the eyelids settle after the arm arrives.
 - **[00:06] Neutral reset.**
-- **[00:07] Idea:** index finger lifts above the head with a wide mouth and offset body/head angles.
-- **[00:08–00:09] Point:** the pointing arm extends, then rebounds slightly while the grin and opposite hip-hand hold.
+- **[00:07] Ah-ha microgesture:** the first half of the full pointing performance reads independently as an index-finger realization with a wide mouth and offset body/head angles.
+- **[00:07–00:09] Full Point:** the complete action begins from the sideways point, lifts into the Ah-ha accent, then extends back into the pointing pose with a rebound while the grin and opposite hip-hand hold.
 - **[00:10] Neutral reset.**
 - **[00:11] Confident:** both hands settle at the hips with an asymmetric torso/head lean.
 

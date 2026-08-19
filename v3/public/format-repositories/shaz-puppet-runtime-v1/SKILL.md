@@ -36,12 +36,12 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 
 ## Author-and-learn loop
 
-1. Select exactly one action and define the reference segment, intended meaning, duration, and visible acceptance criteria.
-2. Audit the complete reference playback and dense decoded frames. When source controls exist, inspect their timing, hierarchy, drawing substitutions, deformation channels, and asymmetry. Do not infer motion from a single destination frame.
+1. Select exactly one action and define the reference segment, intended meaning, duration, and visible acceptance criteria. Audit contextual frames before and after the proposed cut: include setup through release, or explicitly certify a narrower microgesture under an honest semantic name. Never let a preexisting filename define the action boundary.
+2. Audit the complete reference at normal speed, then inspect dense decoded frames and consecutive-frame differences. When source controls exist, inspect their timing, hierarchy, drawing substitutions, deformation channels, and asymmetry. Detect intentional stepped exposures and holds before choosing interpolation; do not infer motion from a single destination frame.
 3. Render the authored calibration through the official runtime before changing its semantics. Fix renderer-wide silhouette, deformation, masking, fill, or paint-order defects before adjusting timing.
 4. Author through real rig controls and existing drawing substitutions. Preserve secondary controls and living holds; apply the smallest semantic delta that produces the intended action.
 5. Run focused tests and independent per-frame pose inspection. Compare synchronized full-frame and close-up playback against the reference where one exists.
-6. Watch the exact candidate completely. A successful command, contact sheet, or sparse frame sample is not visual approval.
+6. Watch the exact candidate completely at normal speed; slow motion is diagnostic evidence, never the sole approval view. A successful command, contact sheet, or sparse frame sample is not visual approval.
 7. Permit at most three candidate attempts. Fix only observed causes. Stop and report the blocker instead of weakening a gate.
 8. After the action is genuinely approved, ask exactly: **“What did this teach us, and does the skill, runtime, or test suite need updating?”**
 9. Record the behavior, root cause, smallest reusable correction, and evidence. Promote the lesson according to the rules in `references/rig-animation-playbook.md`; update the recipe checksum only after the accepted file is final.
@@ -51,6 +51,7 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 
 - Protect the finished silhouette and character assembly before polishing motion. Visible seams, detached joints, missing fills, or construction artwork invalidate timing judgments.
 - Reproduce timing grammar rather than applying generic smoothing: anticipation, accent, overshoot, settle, readable living hold, afterbeat, and release.
+- Preserve authored presentation cadence. If the reference intentionally animates on twos or holds an exposure, encode those steps instead of inventing smooth in-betweens.
 - Preserve the whole control choreography. Major arm and head keys alone are rarely sufficient.
 - Treat drawing substitutions, visibility, AutoPatch-style masking, and paint order as animation controls.
 - Distinguish visible alpha from semantic ownership. A partial eye, hand, or facial drawing may own a larger matte than its painted pixels; reconstruct that envelope and clip occluders behind it instead of shifting artwork or erasing only an outline.
@@ -61,7 +62,7 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 ## Important boundaries
 
 - `runtime/rig-v2-renderer.mjs#renderRigFrame` is the only renderer for smoke, proof, and final output.
-- Never use finished artist-rendered frames as sprites, motion references, or pose-generation inputs.
+- Artist-rendered frames may define phase, presentation cadence, and acceptance criteria, but never copy, resample, or embed their pixels as sprites, deformation data, or generated pose artwork.
 - Never bypass `poses/index.json` with arbitrary recipe paths.
 - Do not weaken per-frame clipping, joint continuity, layer order, prop, facial-pop, or provenance gates to make a run pass.
 - Up to three render attempts are allowed per run. Fix the input or recipe between attempts; do not create shadow runs to evade the limit.

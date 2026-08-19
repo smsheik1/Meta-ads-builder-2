@@ -78,7 +78,7 @@ function buildExcitedCelebration(manifest) {
     durationFrames: 31,
     learnedFrom: [
       "authored/shrug: complete 31-frame cadence, bilateral arm mechanics, overlap, and release",
-      "authored/idea: open-mouth facial substitution",
+      "authored/aha: open-mouth facial substitution",
       "human shrug audit: one-frame accent, six-frame settle, long hold, and facial afterbeat",
     ],
     controls,

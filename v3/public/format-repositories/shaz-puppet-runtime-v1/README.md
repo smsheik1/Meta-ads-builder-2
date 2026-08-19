@@ -2,7 +2,7 @@
 
 A self-contained Wiggly video Format kit for animating the supplied Shaz 2D puppet without Toon Boom Harmony. It reconstructs the original Xstage hierarchy, pivots, transforms, drawing substitutions, AutoPatch composites, and paint order into one local renderer, then sequences checksum-locked pose recipes into a 1280×720 H.264 video.
 
-This is not a sprite-sheet player. Runtime frames are rendered from recovered rig controls and compiled drawing assets. Finished artist-rendered frames are excluded from runtime and generation inputs.
+This is not a sprite-sheet player. Runtime frames are rendered from recovered rig controls and compiled drawing assets. Artist renders may supply phase, cadence, and acceptance evidence, but their pixels are excluded from runtime and generation inputs.
 
 See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body language first, then transitions, dialogue/audio, lip-sync, script-directed performance, backgrounds, and finally plain-English pose generation.
 
@@ -30,7 +30,7 @@ Create an input using IDs from `poses/index.json`:
   "title": "My Shaz sequence",
   "sequence": [
     { "poseId": "think", "holdFrames": 8, "gapFrames": 3 },
-    { "poseId": "idea", "holdFrames": 12, "gapFrames": 0 }
+    { "poseId": "aha", "holdFrames": 12, "gapFrames": 0 }
   ]
 }
 ```
@@ -59,8 +59,8 @@ The finalized video and evidence remain in `agent-runs/my-sequence/`. No network
 | `present` | authored calibration | friendly presenting gesture |
 | `shrug` | held-out authored calibration | uncertain shrug |
 | `think` | authored calibration | thinking |
-| `idea` | authored calibration | realization |
-| `point` | authored calibration | pointing gesture |
+| `aha` | authored calibration | raised-finger “Ah-ha!” realization |
+| `point` | authored calibration | full side-point → Ah-ha accent → side-point return |
 | `confident` | authored calibration | confident stance |
 | `excited-celebration` | new rig action | excited celebration |
 | `point-at-screen` | new rig action | points toward a screen prop |

@@ -48,4 +48,4 @@ The first inspection attempt incorrectly rejected frames 7–49 because it requi
 
 **What did this teach us, and does the skill, runtime, or test suite need updating?** Yes, but only one durable rule emerged. The visible alpha of a partial substitution is not necessarily the complete region it owns. In Think, the half-eye drawing left its upper region transparent, allowing the front-bang fill to appear inside the eye even though paint order and geometry were otherwise correct. The renderer now infers the full round eye envelope and clips the front bang behind it; the concise skill and detailed playbook now require semantic ownership mattes instead of coordinate nudges or contour-only cleanup; unit regressions protect envelope construction and clipping; and the independent per-frame inspector rejects missing envelope receipts or any opaque bang overlap. The exact `-4/-3` offset, contour radius, Think frame number, and unchanged Think timing were rejected as pose-specific or failed tactics and were not promoted.
 
-Think is now certified and the loop may advance to Idea.
+Think is now certified and the loop may advance to the raised-finger Ah-ha gesture.

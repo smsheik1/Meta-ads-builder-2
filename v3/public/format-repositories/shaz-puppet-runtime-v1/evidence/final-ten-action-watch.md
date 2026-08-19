@@ -17,7 +17,7 @@ The video is intentionally unlabeled and alternates five recovered authored acti
 4. generated point at screen
 5. authored think
 6. generated look at phone
-7. authored idea
+7. authored Ah-ha gesture (formerly misnamed `idea`)
 8. generated facepalm / frustrated
 9. authored point
 10. generated arms crossed / skeptical

@@ -16,7 +16,7 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 
 Bring every remaining registered action to the Shrug standard, one at a time:
 
-1. Artist-authored: `present`, `think`, `idea`, `point`, and `confident`.
+1. Artist-authored: `present`, `think`, `aha`, `point`, and `confident`.
 2. Experimental: `excited-celebration`, `point-at-screen`, `look-at-phone`, `facepalm-frustrated`, and `arms-crossed-skeptical`.
 
 Each action requires complete playback, synchronized full-frame and close-up comparison where relevant, automatic inspection, and checksum-bound human approval. A passing render alone is not certification.

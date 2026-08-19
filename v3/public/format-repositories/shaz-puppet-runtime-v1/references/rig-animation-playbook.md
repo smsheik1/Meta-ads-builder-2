@@ -19,15 +19,16 @@ An action is certified only when:
 
 Use the smallest combination that answers the current uncertainty:
 
-1. Watch the complete reference and candidate at normal speed to judge rhythm, weight, and readability.
+1. Watch the complete reference and candidate at normal speed to judge rhythm, weight, and readability. Normal speed is the certification view; slow motion is diagnostic only because it can conceal a low-speed crawl.
 2. Decode every frame or create a dense chronological sheet to find one-frame accents, holds, pops, and substitution changes.
-3. Align reference and candidate by action phase, not merely by equal timestamps.
-4. Inspect close crops of shoulders, elbows, hands, face, mouth, hairline, collar, and any changing silhouette.
-5. Measure frame differences and longest identical-frame runs to distinguish a living hold from a freeze.
-6. Inspect alpha bounds and connected components for detached fragments, missing fill, or clipping.
-7. Inspect the Xstage hierarchy, PEG controls, deformation channels, drawings, and source substitutions when visual evidence does not identify the cause.
+3. Inspect contextual frames before and after every proposed action boundary. A complete action normally includes setup, accent, settle, and release; if only one readable subgesture is intended, register it under that narrower meaning instead of borrowing the full action's label.
+4. Align reference and candidate by action phase, not merely by equal timestamps.
+5. Inspect close crops of shoulders, elbows, hands, face, mouth, hairline, collar, and any changing silhouette.
+6. Measure consecutive-frame differences, exposure-change frames, and longest identical-frame runs to distinguish deliberate stepped timing or a living hold from an accidental freeze.
+7. Inspect alpha bounds and connected components for detached fragments, missing fill, or clipping.
+8. Inspect the Xstage hierarchy, PEG controls, deformation channels, drawings, and source substitutions when visual evidence does not identify the cause.
 
-Rendered artist frames are evaluation evidence only. Never use them as runtime sprites, pose-generation inputs, or copied motion data.
+Rendered artist frames may be used to identify phases, presentation cadence, and acceptance criteria. Never copy, resample, or embed their pixels as runtime sprites, deformation data, or generated pose artwork.
 
 ## Author in the right order
 
@@ -78,6 +79,10 @@ Recover the action's phases before editing curves:
 
 Preserve asymmetry and overlap. Head, torso, arm master, individual arm pivots, forearms, hands, eyes, pupils, mouth, and hair should not all change on one shared key. A hold may contain secondary drift, eye changes, or a smaller counter-settle.
 
+Do not assume the source should move on every runtime frame. Compare consecutive artist exposures before changing curves. If the presentation is intentionally animated on twos or contains an exact hold, encode those change frames with hold interpolation and repeat the corresponding deformation exposure. Smooth control-channel sampling can be mechanically faithful to an Xstage curve yet visually wrong when the approved artist render uses stepped presentation timing.
+
+When drift is suspected, track at least one stable torso feature and multiple independently parented features such as hair and both hands. If every branch shares the same error, correct stage registration at their common ancestor. If the torso is stable but branches move relative to it, diagnose hierarchy or cadence rather than clamping one child control.
+
 ### 5. Semantic change
 
 For a new expression, begin from the nearest certified motion grammar only when it genuinely matches the desired mechanics. Preserve its complete secondary choreography, then change the fewest controls and substitutions necessary to alter meaning. Do not merely relabel an existing action.
@@ -95,14 +100,18 @@ For a new expression, begin from the nearest certified motion grammar only when 
 | Pose reads correctly but feels choppy | Phase timing and secondary controls | Recover accents, overlaps, living hold, afterbeat, and release |
 | Long frozen hold | Omitted secondary source controls | Preserve the complete control choreography; add a temporal gate |
 | Motion is smooth but generic | Uniform interpolation | Use explicit asymmetric accents, overshoot, settle, and rebound |
+| Looks stable in slow motion but crawls or slides at normal speed | Invented in-betweens during stepped exposures or authored holds | Measure exposure-change frames; encode exact holds across controls and deformations; certify at normal speed |
+| A polished clip reads as only half an action | The proposed source cut omitted its setup or release context | Audit adjacent frames; extend the full action or register the segment as an honestly named microgesture |
 | Several defects move between poses | Work scope is too broad | Stop and perfect one action end to end |
 
 ## Things to avoid
 
 - Do not start with a polished destination pose and fill the gap with generic interpolation.
 - Do not sample a few source frames and assume linear in-betweens preserve the artist's cadence.
+- Do not approve from slow motion alone or replace intentional stepped timing with generic smoothing.
 - Do not copy only the largest PEG controls.
 - Do not animate multiple uncertified actions in one iteration.
+- Do not trust a pre-sliced filename or registry label as proof that an action boundary is complete.
 - Do not diagnose timing while the silhouette is structurally broken.
 - Do not accept passing code, a successful render, or three screenshots as evidence that the animation works.
 - Do not treat connectivity or alpha coverage as proof that internal color regions are correct.

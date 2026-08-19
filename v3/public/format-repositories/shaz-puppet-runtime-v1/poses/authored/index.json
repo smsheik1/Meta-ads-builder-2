@@ -7,8 +7,8 @@
     { "id": "present", "recipe": "present.json", "sourceFrames": [37, 55] },
     { "id": "shrug", "recipe": "shrug.json", "sourceFrames": [67, 97] },
     { "id": "think", "recipe": "think.json", "sourceFrames": [117, 165] },
-    { "id": "idea", "recipe": "idea.json", "sourceFrames": [189, 201] },
-    { "id": "point", "recipe": "point.json", "sourceFrames": [225, 264] },
+    { "id": "aha", "recipe": "aha.json", "sourceFrames": [189, 201] },
+    { "id": "point", "recipe": "point.json", "sourceFrames": [189, 264] },
     { "id": "confident", "recipe": "confident.json", "sourceFrames": [287, 299] }
   ],
   "excludedPostRoll": {
