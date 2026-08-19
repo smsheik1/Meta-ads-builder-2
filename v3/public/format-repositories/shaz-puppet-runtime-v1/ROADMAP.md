@@ -6,8 +6,8 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 
 - The recovered Shaz rig renders locally without Toon Boom Harmony.
 - Inputs can sequence registered actions with explicit holds and gaps.
-- `shrug` is the first action certified against the new frame-by-frame visual standard.
-- The other ten registered actions are renderable but are not yet certified to the Shrug standard.
+- All six artist-authored actions are certified against the frame-by-frame visual standard: `shrug`, `present`, `think`, `aha`, `point`, and `confident`.
+- The five experimental actions are renderable but are not yet certified to the Shrug standard.
 - Audio, lip-sync, script-directed performance, selectable backgrounds, polished action transitions, and plain-English pose generation are not supported yet.
 
 ## Build order
@@ -16,8 +16,8 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 
 Bring every remaining registered action to the Shrug standard, one at a time:
 
-1. Artist-authored: `present`, `think`, `aha`, `point`, and `confident`.
-2. Experimental: `excited-celebration`, `point-at-screen`, `look-at-phone`, `facepalm-frustrated`, and `arms-crossed-skeptical`.
+1. **Complete:** artist-authored `present`, `think`, `aha`, `point`, and `confident`.
+2. **Remaining:** experimental `excited-celebration`, `point-at-screen`, `look-at-phone`, `facepalm-frustrated`, and `arms-crossed-skeptical`.
 
 Each action requires complete playback, synchronized full-frame and close-up comparison where relevant, automatic inspection, and checksum-bound human approval. A passing render alone is not certification.
 

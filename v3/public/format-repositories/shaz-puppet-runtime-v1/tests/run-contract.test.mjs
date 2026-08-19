@@ -103,3 +103,40 @@ test("full Point cancels demo-shot motion at the master and preserves artist exp
   });
   assert.deepEqual(point.deformationFrames, expectedDeformationFrames);
 });
+
+test("Confident preserves its source-proven on-twos exposure cadence", async () => {
+  const confident = JSON.parse(await fs.readFile(
+    path.join(root, "poses", "authored", "confident.json"),
+    "utf8",
+  ));
+  const changeFrames = [1, 3, 5, 7, 9, 11, 13];
+  assert.deepEqual(confident.quality.sourceExposureChangeFrames, changeFrames);
+  assert.equal(confident.quality.maximumIdenticalFrames, 2);
+  assert.equal(
+    confident.authoringCorrections[0].operation,
+    "artist-authored-step-exposures",
+  );
+
+  for (const [control, keys] of Object.entries(confident.controls)) {
+    assert.deepEqual(
+      keys.map(({ frame }) => frame),
+      changeFrames,
+      `${control} must use only the certified exposure changes`,
+    );
+    assert.ok(
+      keys.every(({ interpolation }) => interpolation === "hold"),
+      `${control} must not invent in-betweens`,
+    );
+  }
+
+  let currentChange = 1;
+  const expectedDeformationFrames = Array.from(
+    { length: confident.durationFrames },
+    (_, index) => {
+      const frame = index + 1;
+      if (changeFrames.includes(frame)) currentChange = frame;
+      return 286 + currentChange;
+    },
+  );
+  assert.deepEqual(confident.deformationFrames, expectedDeformationFrames);
+});

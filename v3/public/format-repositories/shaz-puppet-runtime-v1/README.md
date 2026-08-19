@@ -35,6 +35,8 @@ Create an input using IDs from `poses/index.json`:
 }
 ```
 
+For the exact five-action batch certified in the skill-building loop, start from `fixtures/five-recreated-authored-input.json`. It sequences Present, Think, Ah-ha, Point, and Confident through the same official runtime.
+
 Run the official workflow:
 
 ```sh

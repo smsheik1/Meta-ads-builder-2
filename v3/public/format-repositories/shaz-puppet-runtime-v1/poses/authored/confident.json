@@ -28,24 +28,8 @@
         "skew": -0.02085887658443219,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          8.618106228652778e-15,
-          -0.0034986326741190954,
-          0
-        ],
-        "rotation": 3.308779196176048,
-        "scale": [
-          0.9999754543906787,
-          1.0000253483028747
-        ],
-        "skew": -0.02085887658443219,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -62,24 +46,8 @@
         "skew": -0.02085887658443775,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          7.993605777301127e-15,
-          -0.0034986326741144325,
-          0
-        ],
-        "rotation": -2.254362059162676,
-        "scale": [
-          0.9999754543906788,
-          1.000025348302875
-        ],
-        "skew": -0.02085887658443775,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -96,24 +64,8 @@
         "skew": -0.02085887658442707,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          7.868705687030797e-15,
-          -0.0034986326741144325,
-          0
-        ],
-        "rotation": -7.015915041254556,
-        "scale": [
-          0.9999754543906791,
-          1.000025348302872
-        ],
-        "skew": -0.02085887658442707,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -130,24 +82,8 @@
         "skew": -0.020858876584434197,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          8.267810693939102e-15,
-          -0.0034986326741163467,
-          0
-        ],
-        "rotation": -7.862189509103526,
-        "scale": [
-          0.9999754543906779,
-          1.0000253483028736
-        ],
-        "skew": -0.020858876584434197,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -164,24 +100,8 @@
         "skew": -0.02085887658442741,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          6.543363479128038e-15,
-          -0.0034986326741155965,
-          0
-        ],
-        "rotation": -7.314753060320953,
-        "scale": [
-          0.999975454390679,
-          1.0000253483028725
-        ],
-        "skew": -0.02085887658442741,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -198,24 +118,8 @@
         "skew": -0.020858876584428324,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 12,
-        "position": [
-          6.140520171056549e-15,
-          -0.0034986326741139146,
-          0
-        ],
-        "rotation": -6.786156774690562,
-        "scale": [
-          0.9999754543906793,
-          1.0000253483028725
-        ],
-        "skew": -0.020858876584428324,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -232,7 +136,8 @@
         "skew": -0.020858876584428653,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Shaz_Rig-P": [
@@ -251,7 +156,98 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -1.2262793125570943,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -1.2478619942374496,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -1.2694446759178049,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -1.2910273575981597,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -1.312610039278515,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -268,7 +264,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Arms_Master-P": [
@@ -287,7 +284,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -304,7 +302,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -321,7 +320,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -338,7 +338,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -355,7 +356,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -372,7 +374,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -389,7 +392,8 @@
         "skew": -0.00006121689319522627,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Collar-P": [
@@ -408,24 +412,8 @@
         "skew": -0.09975549036214693,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.10577342066493946,
-          -0.08259424428630865,
-          0
-        ],
-        "rotation": 3.4247522175900795,
-        "scale": [
-          0.9956876701135071,
-          0.9998114258697997
-        ],
-        "skew": -0.09975549036214693,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -442,24 +430,8 @@
         "skew": -0.3966121946357287,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.16764439293488997,
-          -0.006798511094327563,
-          0
-        ],
-        "rotation": -3.3259685628919096,
-        "scale": [
-          0.9826435974919149,
-          0.9993529531675778
-        ],
-        "skew": -0.3966121946357287,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -476,24 +448,8 @@
         "skew": -0.47082074893392867,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          0.18331092016447967,
-          0.015446014507450034,
-          0
-        ],
-        "rotation": -7.2011810036680854,
-        "scale": [
-          0.9793687668484905,
-          0.9992523715552564
-        ],
-        "skew": -0.47082074893392867,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -510,24 +466,8 @@
         "skew": -0.49555693369999526,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          0.1876131107050441,
-          0.020762300857987106,
-          0
-        ],
-        "rotation": -8.492918483926811,
-        "scale": [
-          0.9782771566340157,
-          0.9992188443511492
-        ],
-        "skew": -0.49555693369999526,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -544,24 +484,8 @@
         "skew": -0.49550715816657687,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          0.18807801708713062,
-          0.0203314180886221,
-          0
-        ],
-        "rotation": -8.040139678767012,
-        "scale": [
-          0.9782799613396915,
-          0.999215972099343
-        ],
-        "skew": -0.49550715816657687,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -578,7 +502,8 @@
         "skew": -0.4954981080695936,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -595,7 +520,8 @@
         "skew": -0.4954981080695936,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Left_Arm_MOVE-P": [
@@ -614,24 +540,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          -0.07169592245013703,
-          -0.004820688889660502,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -648,24 +558,8 @@
         "skew": -0.0004216055282296085,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          -0.07521857500750821,
-          0.03689659230696127,
-          0
-        ],
-        "rotation": -6.468171500471267,
-        "scale": [
-          0.9999590366726768,
-          1.000040966737739
-        ],
-        "skew": -0.0004216055282296085,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -682,7 +576,26 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.07206286542481474,
+          -0.00047513876558526397,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -699,7 +612,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -716,7 +630,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -733,7 +648,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Left_Arm_Pivot-P": [
@@ -752,24 +668,8 @@
         "skew": -0.0096426050671496,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          -0.13901352791213922,
-          0.5081217150065513,
-          0
-        ],
-        "rotation": -10.599956447268433,
-        "scale": [
-          0.999885242582914,
-          1.00011491409922
-        ],
-        "skew": -0.0096426050671496,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -786,24 +686,8 @@
         "skew": -0.02195630191660574,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          -0.2502243502430128,
-          0.9146190870160396,
-          0
-        ],
-        "rotation": -38.89208987096754,
-        "scale": [
-          0.9997645692268307,
-          1.0002356890197392
-        ],
-        "skew": -0.02195630191660574,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -820,24 +704,8 @@
         "skew": -0.02606086753309112,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          -0.27802705582573073,
-          1.0162434300184116,
-          0
-        ],
-        "rotation": -48.32280101220057,
-        "scale": [
-          0.9997243447748029,
-          1.000275947326579
-        ],
-        "skew": -0.02606086753309112,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -854,24 +722,8 @@
         "skew": -0.026405518723332074,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          -0.27802705582573006,
-          1.0162434300184118,
-          0
-        ],
-        "rotation": -48.7919654941957,
-        "scale": [
-          0.9997243377143763,
-          1.000275957167187
-        ],
-        "skew": -0.026405518723332074,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -888,24 +740,8 @@
         "skew": -0.026750169913573027,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          -0.2780270558257293,
-          1.0162434300184113,
-          0
-        ],
-        "rotation": -49.26112997619083,
-        "scale": [
-          0.9997243306539498,
-          1.000275967007795
-        ],
-        "skew": -0.026750169913573027,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -922,7 +758,8 @@
         "skew": -0.026812833766331187,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -939,7 +776,8 @@
         "skew": -0.026812833766331187,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Left_Forearm-P": [
@@ -958,7 +796,98 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -975,7 +904,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Left_Forearm_Pivot-P": [
@@ -994,24 +924,8 @@
         "skew": 0.011509928148624133,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          1.5487611193520934e-14,
-          -1.865174681370263e-14,
-          0
-        ],
-        "rotation": 15.902749888691147,
-        "scale": [
-          1.000086498892188,
-          0.9999142650201734
-        ],
-        "skew": 0.011509928148624133,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -1028,24 +942,8 @@
         "skew": 0.02133792113207874,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          1.9484414082171497e-14,
-          -4.063416270128073e-14,
-          0
-        ],
-        "rotation": 35.01336737811493,
-        "scale": [
-          1.0001447460726332,
-          0.9998561306646876
-        ],
-        "skew": 0.02133792113207874,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -1062,24 +960,8 @@
         "skew": -0.037308992896059386,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          1.1770870387406427e-14,
-          -3.0056436266347965e-14,
-          0
-        ],
-        "rotation": 92.49127019105065,
-        "scale": [
-          0.9999634949232598,
-          1.0000373947349097
-        ],
-        "skew": -0.037308992896059386,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -1096,24 +978,8 @@
         "skew": -0.029831189913940584,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          8.38423479645218e-15,
-          -1.854849409501562e-14,
-          0
-        ],
-        "rotation": 104.55752650147616,
-        "scale": [
-          0.9998824781404889,
-          1.0001183476785833
-        ],
-        "skew": -0.029831189913940584,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -1130,24 +996,8 @@
         "skew": -0.030429240589056265,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          6.10577126959084e-15,
-          -1.64696780492216e-14,
-          0
-        ],
-        "rotation": 103.78111324340469,
-        "scale": [
-          0.999886748321841,
-          1.0001140819383156
-        ],
-        "skew": -0.030429240589056265,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -1164,7 +1014,8 @@
         "skew": -0.030537977075418513,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -1181,7 +1032,8 @@
         "skew": -0.030537977075418513,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Left_Hand-P": [
@@ -1200,24 +1052,8 @@
         "skew": 0.0005521762333815459,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.34164477560661277,
-          0.21405791805039842,
-          3.46944695197175e-19
-        ],
-        "rotation": 3.217412645687263,
-        "scale": [
-          1.0000133062147496,
-          0.9999866949026461
-        ],
-        "skew": 0.0005521762333815459,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -1234,24 +1070,8 @@
         "skew": 0.017779070317571175,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.01196904868767068,
-          0.9049805233323898,
-          0
-        ],
-        "rotation": -23.179776778109836,
-        "scale": [
-          1.0002004985656323,
-          0.9997995987750178
-        ],
-        "skew": 0.017779070317571175,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -1268,7 +1088,62 @@
         "skew": 0.0027608811669654256,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.8241893172930469,
+          1.7273065131959495,
+          0
+        ],
+        "rotation": 16.087063228772497,
+        "scale": [
+          1.000066531073749,
+          0.9999334745132292
+        ],
+        "skew": 0.0027608811669654256,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.8241893172930469,
+          1.7273065131959495,
+          0
+        ],
+        "rotation": 16.087063228772497,
+        "scale": [
+          1.000066531073749,
+          0.9999334745132292
+        ],
+        "skew": 0.0027608811669654256,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.8241893172930469,
+          1.7273065131959495,
+          0
+        ],
+        "rotation": 16.087063228772497,
+        "scale": [
+          1.000066531073749,
+          0.9999334745132292
+        ],
+        "skew": 0.0027608811669654256,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -1285,7 +1160,8 @@
         "skew": 0.0027608811669654256,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Pouch-P": [
@@ -1304,24 +1180,8 @@
         "skew": -0.0001764652946035462,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          -0.028267375447932907,
-          0.0620193342989564,
-          0
-        ],
-        "rotation": 1.0603544104770188,
-        "scale": [
-          1.0000066145331505,
-          0.9999933857093163
-        ],
-        "skew": -0.0001764652946035462,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -1338,24 +1198,8 @@
         "skew": -0.0007058611784280136,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          -0.049829046866651114,
-          0.09697058143105758,
-          0
-        ],
-        "rotation": 4.241417641991171,
-        "scale": [
-          1.0000264581326026,
-          0.9999735428372648
-        ],
-        "skew": -0.0007058611784280136,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -1372,24 +1216,8 @@
         "skew": -0.0008382101493841303,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          -0.05478993294820836,
-          0.09309184341777134,
-          0
-        ],
-        "rotation": 5.036683449869709,
-        "scale": [
-          1.0000314190324655,
-          0.9999685821192519
-        ],
-        "skew": -0.0008382101493841303,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -1406,7 +1234,8 @@
         "skew": -0.0008823264730361693,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -1423,7 +1252,8 @@
         "skew": -0.0008823264730361693,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -1440,7 +1270,8 @@
         "skew": -0.0008823264730361693,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -1457,7 +1288,8 @@
         "skew": -0.0008823264730361693,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Right_Arm_MOVE-P": [
@@ -1476,24 +1308,8 @@
         "skew": -0.003586999416728436,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.30125733175913055,
-          -0.07053087731104252,
-          0
-        ],
-        "rotation": 5.242241505441572,
-        "scale": [
-          1.0000163688648473,
-          0.9999836470261855
-        ],
-        "skew": -0.003586999416728436,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -1510,24 +1326,8 @@
         "skew": -0.01805222751301598,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.4397220744750713,
-          0.10091358238148931,
-          0
-        ],
-        "rotation": 34.81627039212502,
-        "scale": [
-          1.000137707975942,
-          0.9998623713222365
-        ],
-        "skew": -0.01805222751301598,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -1544,24 +1344,8 @@
         "skew": -0.01867073419983358,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          0.4743382601540569,
-          0.14377469730462206,
-          0
-        ],
-        "rotation": 38.10599874852589,
-        "scale": [
-          1.0001578266417186,
-          0.9998422513494799
-        ],
-        "skew": -0.01867073419983358,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -1578,24 +1362,8 @@
         "skew": -0.017739703957303767,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          0.47433826015405817,
-          0.1437746973046225,
-          0
-        ],
-        "rotation": 36.824142130579524,
-        "scale": [
-          1.0001565714812863,
-          0.9998435011109705
-        ],
-        "skew": -0.017739703957303767,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -1612,24 +1380,8 @@
         "skew": -0.01680867371477395,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          0.4743382601540583,
-          0.14377469730462245,
-          0
-        ],
-        "rotation": 35.54228551263316,
-        "scale": [
-          1.0001553163208539,
-          0.9998447508724613
-        ],
-        "skew": -0.01680867371477395,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -1646,7 +1398,8 @@
         "skew": -0.016639395488894343,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -1663,7 +1416,8 @@
         "skew": -0.016639395488894343,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Right_Arm_Pivot-P": [
@@ -1682,24 +1436,8 @@
         "skew": -0.00015411540851016867,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.005781647007985703,
-          0.013729988841941293,
-          0
-        ],
-        "rotation": 2.124531724822541,
-        "scale": [
-          1.000005231503953,
-          0.9999947685295828
-        ],
-        "skew": -0.00015411540851016867,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -1716,24 +1454,8 @@
         "skew": -0.00498374576874998,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.010406964614417265,
-          0.02471397991560778,
-          0
-        ],
-        "rotation": 14.724020567517519,
-        "scale": [
-          1.0000821008542808,
-          0.9999179096695358
-        ],
-        "skew": -0.00498374576874998,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -1750,7 +1472,62 @@
         "skew": -0.00008685856333186179,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.011563294016029652,
+          0.027459977684026363,
+          0
+        ],
+        "rotation": 1.9824978639713298,
+        "scale": [
+          1.0000038428518738,
+          0.999996157164044
+        ],
+        "skew": -0.00008685856333186179,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.011563294016029652,
+          0.027459977684026363,
+          0
+        ],
+        "rotation": 1.9824978639713298,
+        "scale": [
+          1.0000038428518738,
+          0.999996157164044
+        ],
+        "skew": -0.00008685856333186179,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.011563294016029652,
+          0.027459977684026363,
+          0
+        ],
+        "rotation": 1.9824978639713298,
+        "scale": [
+          1.0000038428518738,
+          0.999996157164044
+        ],
+        "skew": -0.00008685856333186179,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -1767,7 +1544,8 @@
         "skew": -0.00008685856333186179,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Right_Forearm_Pivot-P": [
@@ -1786,24 +1564,8 @@
         "skew": -0.007198610015974217,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          1.061650767297806e-14,
-          -3.064215547965432e-14,
-          0
-        ],
-        "rotation": -17.246299511377348,
-        "scale": [
-          1.0000429657992784,
-          0.9999570863328809
-        ],
-        "skew": -0.007198610015974217,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -1820,24 +1582,8 @@
         "skew": -0.003774650625818171,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          3.447242491461111e-14,
-          -4.8627768478581856e-14,
-          0
-        ],
-        "rotation": -39.96456226218689,
-        "scale": [
-          0.9999829643456508,
-          1.0000170935450194
-        ],
-        "skew": -0.003774650625818171,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -1854,24 +1600,8 @@
         "skew": -0.04143197745390214,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          5.89167940611361e-14,
-          -4.6118118081414896e-14,
-          0
-        ],
-        "rotation": -88.10377003556755,
-        "scale": [
-          0.9999473364167708,
-          1.0000529278251333
-        ],
-        "skew": -0.04143197745390214,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -1888,24 +1618,8 @@
         "skew": -0.04197484937456117,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          5.653679951855102e-14,
-          -4.598567664548593e-14,
-          0
-        ],
-        "rotation": -97.68053901211594,
-        "scale": [
-          1.0000082252546831,
-          0.9999920433036078
-        ],
-        "skew": -0.04197484937456117,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -1922,24 +1636,8 @@
         "skew": -0.04207223481432064,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          5.582344752338875e-14,
-          -4.4831591061389876e-14,
-          0
-        ],
-        "rotation": -95.97604177207054,
-        "scale": [
-          0.9999973346935085,
-          1.0000029349555675
-        ],
-        "skew": -0.04207223481432064,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -1956,7 +1654,8 @@
         "skew": -0.042089941257909616,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -1973,7 +1672,8 @@
         "skew": -0.042089941257909616,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Right_Hand-P": [
@@ -1992,24 +1692,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.08351881164094552,
-          0.5040729763584373,
-          1.734723475976807e-18
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -2026,24 +1710,8 @@
         "skew": 0.007392945975755539,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.08351881164094552,
-          0.5040729763584373,
-          1.734723475976807e-18
-        ],
-        "rotation": 20.331431521358226,
-        "scale": [
-          1.000111190813022,
-          0.9998888339566409
-        ],
-        "skew": 0.007392945975755539,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -2060,7 +1728,62 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.17502480985195792,
+          0.5384151179448394,
+          3.469446951953614e-18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.17502480985195792,
+          0.5384151179448394,
+          3.469446951953614e-18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.17502480985195792,
+          0.5384151179448394,
+          3.469446951953614e-18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -2077,7 +1800,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Strings-P": [
@@ -2096,24 +1820,8 @@
         "skew": -0.0030691824616428114,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.10216408425855404,
-          -0.08228586324131713,
-          0
-        ],
-        "rotation": 12.101053542742802,
-        "scale": [
-          1.000072410286552,
-          0.9999275965939486
-        ],
-        "skew": -0.0030691824616428114,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -2130,24 +1838,8 @@
         "skew": -0.0009072651397589223,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.17200768644706904,
-          -0.009124740464991093,
-          0
-        ],
-        "rotation": 1.3833064980733976,
-        "scale": [
-          1.0000074707785795,
-          0.999992531937008
-        ],
-        "skew": -0.0009072651397589223,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -2164,24 +1856,8 @@
         "skew": -0.00041562464750435815,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          0.192137980750671,
-          0.011704452485269398,
-          0
-        ],
-        "rotation": -8.91119774788649,
-        "scale": [
-          0.9999427254145602,
-          1.0000572788688349
-        ],
-        "skew": -0.00041562464750435815,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -2198,24 +1874,8 @@
         "skew": -0.003939991488650841,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          0.19717859962885603,
-          0.016897919924843352,
-          0
-        ],
-        "rotation": -22.15911400063415,
-        "scale": [
-          0.9998657507259159,
-          1.0001342696740416
-        ],
-        "skew": -0.003939991488650841,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -2232,24 +1892,8 @@
         "skew": -0.002563580171123931,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          0.19717859962885603,
-          0.016897919924843352,
-          0
-        ],
-        "rotation": -16.296317023385832,
-        "scale": [
-          0.99990075507221,
-          1.0000992588145086
-        ],
-        "skew": -0.002563580171123931,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -2266,24 +1910,8 @@
         "skew": -0.0011871688535970218,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 12,
-        "position": [
-          0.19717859962885803,
-          0.01689791992484363,
-          0
-        ],
-        "rotation": -10.43352004613751,
-        "scale": [
-          0.9999357594185041,
-          1.0000642479549753
-        ],
-        "skew": -0.0011871688535970218,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -2300,7 +1928,8 @@
         "skew": 0.00018924246414532306,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Back_Hair-P": [
@@ -2319,24 +1948,8 @@
         "skew": 0.000036686745813709735,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          -0.00504482344312096,
-          0.016163395508081324,
-          0
-        ],
-        "rotation": -7.001689857282513,
-        "scale": [
-          0.9999541755153427,
-          1.0000458265905496
-        ],
-        "skew": 0.000036686745813709735,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -2353,24 +1966,8 @@
         "skew": -0.001040981502244557,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          -0.009228335567014079,
-          0.02956718690608623,
-          0
-        ],
-        "rotation": 6.002300906406921,
-        "scale": [
-          1.0000399703371727,
-          0.9999600314342566
-        ],
-        "skew": -0.001040981502244557,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -2387,24 +1984,8 @@
         "skew": -0.008468987268857722,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          -0.011074002680540596,
-          0.03548062428791307,
-          0
-        ],
-        "rotation": 22.846795047869676,
-        "scale": [
-          1.0001283025427545,
-          0.9998717248439042
-        ],
-        "skew": -0.008468987268857722,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -2421,24 +2002,8 @@
         "skew": -0.0001068645054325114,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          -0.011812269526032537,
-          0.03784599924085327,
-          0
-        ],
-        "rotation": 0.9549136839457657,
-        "scale": [
-          1.0000060528753583,
-          0.9999939471629985
-        ],
-        "skew": -0.0001068645054325114,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -2455,24 +2020,8 @@
         "skew": -0.001531067127402417,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          -0.011812269526072505,
-          0.03784599924083512,
-          0
-        ],
-        "rotation": -15.558278544649944,
-        "scale": [
-          0.9999022776151004,
-          1.0000977322925595
-        ],
-        "skew": -0.001531067127402417,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -2489,24 +2038,8 @@
         "skew": -0.00038296351663532865,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 12,
-        "position": [
-          -0.011812269526067063,
-          0.037845999240831846,
-          0
-        ],
-        "rotation": -8.357435349322602,
-        "scale": [
-          0.9999465518355138,
-          1.0000534520617796
-        ],
-        "skew": -0.00038296351663532865,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -2523,7 +2056,8 @@
         "skew": -0.0005624736885262616,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Eyebrows": [
@@ -2542,7 +2076,98 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -2559,7 +2184,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Eyebrows-P": [
@@ -2578,7 +2204,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -2595,7 +2222,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -2612,7 +2240,62 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -2629,7 +2312,8 @@
         "skew": 0,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ],
     "Head_Movement-P": [
@@ -2648,24 +2332,8 @@
         "skew": -0.0010047482973114836,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 2,
-        "position": [
-          0.06000786626345039,
-          0.02478623546755951,
-          0
-        ],
-        "rotation": 3.568664265034255,
-        "scale": [
-          1.0000230952729965,
-          0.999976907040007
-        ],
-        "skew": -0.0010047482973114836,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 3,
@@ -2682,24 +2350,8 @@
         "skew": -0.0014344418885721274,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 4,
-        "position": [
-          0.38979335904977813,
-          -0.18603757348749791,
-          0
-        ],
-        "rotation": -3.08695310868691,
-        "scale": [
-          0.9999825380066247,
-          1.0000174677727784
-        ],
-        "skew": -0.0014344418885721274,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 5,
@@ -2716,24 +2368,8 @@
         "skew": -0.0010531707934420408,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          0.5461074807826998,
-          -0.46812845267959846,
-          0
-        ],
-        "rotation": -9.514512447492525,
-        "scale": [
-          0.9999408753470745,
-          1.0000591310377418
-        ],
-        "skew": -0.0010531707934420408,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 7,
@@ -2750,24 +2386,8 @@
         "skew": -0.0025084319383865184,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 8,
-        "position": [
-          0.5006201186768159,
-          -0.5530712603319037,
-          0
-        ],
-        "rotation": -18.580860346236612,
-        "scale": [
-          0.9998849911248703,
-          1.000115023062163
-        ],
-        "skew": -0.0025084319383865184,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 9,
@@ -2784,24 +2404,8 @@
         "skew": -0.0019781341935694676,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 10,
-        "position": [
-          0.482631133885885,
-          -0.5135961173191927,
-          0
-        ],
-        "rotation": -16.97932023698552,
-        "scale": [
-          0.9998941539224215,
-          1.0001058579542987
-        ],
-        "skew": -0.0019781341935694676,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 11,
@@ -2818,24 +2422,8 @@
         "skew": -0.001699727877561206,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 12,
-        "position": [
-          0.47327322913610326,
-          -0.49967214870638704,
-          0
-        ],
-        "rotation": -16.138511679691184,
-        "scale": [
-          0.9998989643911357,
-          1.0001010462726703
-        ],
-        "skew": -0.001699727877561206,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       },
       {
         "frame": 13,
@@ -2852,7 +2440,8 @@
         "skew": -0.0016599555466978873,
         "opacity": 100,
         "flipHorizontal": false,
-        "flipVertical": false
+        "flipVertical": false,
+        "interpolation": "hold"
       }
     ]
   },
@@ -2949,5 +2538,40 @@
         "drawing": "1"
       }
     ]
-  }
+  },
+  "deformationFrames": [
+    287,
+    287,
+    289,
+    289,
+    291,
+    291,
+    293,
+    293,
+    295,
+    295,
+    297,
+    297,
+    299
+  ],
+  "quality": {
+    "maximumIdenticalFrames": 2,
+    "sourceExposureChangeFrames": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      13
+    ]
+  },
+  "authoringCorrections": [
+    {
+      "control": "all-runtime-controls-and-deformations",
+      "field": "exposure-cadence",
+      "operation": "artist-authored-step-exposures",
+      "reason": "Preserve measured artist presentation cadence instead of inventing linear in-betweens"
+    }
+  ]
 }

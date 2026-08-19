@@ -9,7 +9,7 @@ Status: **certified; user-approved**.
 - Registered artist-reference frames: 83–131, using the established 34-frame export offset
 - Duration: 49 frames / 2.041667 seconds at 24 fps
 - Registry file SHA-256: `6fc21c25dd49a6bf18eae49886c6ebb95a41367461a792655d450377ddb16d12`
-- Runtime semantic recipe SHA-256: `8f260f187de082b1cf0ce4f0b8cb78dcb808e9f04662ba0630298e503e800f`
+- Runtime semantic recipe SHA-256: `8f260f187de082b1cf0ce4f0b0b8cb78dcb808e9f04662ba0630298e503e800f`
 - Runtime MP4 SHA-256: `60a25276e88ec11c3f082026c93424319e1d39f5dc643c0bd553a222cd596767`
 - Human-versus-runtime comparison SHA-256: `88bf5f80bfa508e3695728e882f21e08ab1bd764076357c783a3b5160aa18582`
 - Close-up real-time-plus-slow review SHA-256: `d3eca168749f24f5df840375649b012a2e28d458c8e6b2e16f3db2cfd1c29d59`
