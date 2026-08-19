@@ -7,6 +7,7 @@ import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 import { buildArmsCrossedSkeptical } from "../poses/generated/sources/arms-crossed-skeptical.mjs";
 import { buildFacepalmFrustrated } from "../poses/generated/sources/facepalm-frustrated.mjs";
 import { buildExcitedCelebration } from "../poses/generated/sources/excited-celebration.mjs";
+import { buildLookAtPhone } from "../poses/generated/sources/look-at-phone.mjs";
 import { buildPointAtScreen } from "../poses/generated/sources/point-at-screen.mjs";
 
 const load = async (name) => JSON.parse(await fs.readFile(
@@ -17,10 +18,42 @@ const load = async (name) => JSON.parse(await fs.readFile(
 test("handheld props are established instead of appearing randomly", async () => {
   const phonePose = await load("look-at-phone");
   const phone = phonePose.props.find(({ id }) => id === "phone");
+  const tapHand = phonePose.props.find(({ id }) => id === "phone-tap-hand");
   assert.equal(phone.keys[0].opacity, 100);
   assert.equal(phone.keys[0].interpolation, "hold", "phone must remain with the lowered hand until the pickup beat");
-  assert.ok(phone.keys[0].position[0] < phone.keys[1].position[0], "phone must begin beside the lowered hand");
   assert.ok(phone.keys[0].position[1] > phone.keys[1].position[1], "phone must rise with the hand");
+  assert.equal(tapHand.keys.find(({ frame }) => frame === 6).opacity, 0);
+  assert.equal(tapHand.keys.find(({ frame }) => frame === 7).opacity, 100);
+  assert.equal(phonePose.controls.OL_Hand.find(({ frame }) => frame === 6).opacity, 100);
+  assert.equal(phonePose.controls.OL_Hand.find(({ frame }) => frame === 7).opacity, 0);
+  const settledPhone = phone.keys.at(-1).position;
+  const settledTap = tapHand.keys.at(-1).position;
+  assert.ok(Math.abs(settledPhone[0] - settledTap[0]) < 0.03, "tap fingertip must stay horizontally registered to the device");
+  assert.ok(settledPhone[1] > settledTap[1], "device must remain directly beneath the tapping hand");
+  assert.equal(phonePose.quality.armCompositeMode, "registered-phone-interaction");
+});
+
+test("phone tap hand is byte-identical to its registered rig drawing", async () => {
+  const [assets, receipt] = await Promise.all([
+    fs.readFile(new URL("../assets.json", import.meta.url), "utf8").then(JSON.parse),
+    fs.readFile(new URL("../rig-v2/assets/receipt.json", import.meta.url), "utf8").then(JSON.parse),
+  ]);
+  const prop = assets.props.find(({ id }) => id === "phone-tap-hand");
+  const source = receipt.assets.find(({ filename }) => filename === prop.sourceRigAsset);
+  assert.equal(prop.sha256, source.outputSha256);
+  const [propBytes, sourceBytes] = await Promise.all([
+    fs.readFile(new URL("../assets/props/phone-tap-hand.png", import.meta.url)),
+    fs.readFile(new URL("../rig-v2/assets/left-hand-08.png", import.meta.url)),
+  ]);
+  assert.deepEqual(propBytes, sourceBytes);
+});
+
+test("look-at-phone generator exactly reproduces the registered recipe", async () => {
+  const [manifest, checkedIn] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    load("look-at-phone"),
+  ]);
+  assert.deepEqual(await buildLookAtPhone(manifest), checkedIn);
 });
 
 test("point-at-screen follows the supplied off-canvas pointing storyboard", async () => {

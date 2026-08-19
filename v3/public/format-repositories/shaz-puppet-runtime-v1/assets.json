@@ -5,6 +5,7 @@
   "props": [
     { "id": "screen", "path": "assets/props/screen.svg", "sha256": "cf15a5e725edcb3ef49f51cb299001d1d112b4951b6ea7e8a749bfe81159e9e1", "usage": "point-at-screen" },
     { "id": "phone", "path": "assets/props/phone.svg", "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975", "usage": "look-at-phone" },
+    { "id": "phone-tap-hand", "path": "assets/props/phone-tap-hand.png", "sha256": "907148751d2ab6f23f9ce4707185cd5eb1059d306243200840dca24c8d184ddb", "usage": "look-at-phone; rig-derived contact substitution", "sourceRigAsset": "left-hand-08.png" },
     { "id": "substitution-arm", "path": "assets/props/substitution-arm.svg", "sha256": "c23081378f579d84b9a686729a3a657de8052e46f7d7e94cebaf5c8f8a75271f", "usage": "legacy arms-crossed prototype; not used by a registered action" },
     { "id": "crossed-left-sleeve", "path": "assets/props/crossed-left-sleeve.png", "sha256": "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef", "usage": "arms-crossed-skeptical; rig-derived front substitution", "sourceRigAsset": "left-forearm-01.png" },
     { "id": "crossed-right-sleeve", "path": "assets/props/crossed-right-sleeve.png", "sha256": "6825bd9502845dfee7f44700488d25469fd15a3fddafc8aa5c007ae8ef3d29ba", "usage": "arms-crossed-skeptical; rig-derived front substitution", "sourceRigAsset": "right-forearm-01.png" },

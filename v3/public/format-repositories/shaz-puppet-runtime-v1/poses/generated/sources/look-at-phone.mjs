@@ -18,7 +18,28 @@ import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 const THINK_RECIPE_PATH = fileURLToPath(new URL("../../authored/think.json", import.meta.url));
 const THINK_OFFSET = 6;
 const PHONE_SHA256 = "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975";
+const PHONE_INTERACTION_ASSETS = Object.freeze({
+  tapHand: ["phone-tap-hand.png", "907148751d2ab6f23f9ce4707185cd5eb1059d306243200840dca24c8d184ddb"],
+});
 const FACE_DRAWINGS = new Set(["Left_Eye", "Right_Eye", "Left_Pupil", "Right_Pupil", "Mouth"]);
+
+const hiddenPropKey = (frame, position, width, scale = [1, 1]) => ({
+  frame,
+  position,
+  width,
+  scale,
+  rotation: 0,
+  opacity: 0,
+  interpolation: "hold",
+});
+
+const interactionProp = (id, [asset, sha256], keys) => ({
+  id,
+  asset,
+  sha256,
+  layer: "front",
+  keys,
+});
 
 function framedState(state) {
   return adjustedState(state, {
@@ -52,6 +73,20 @@ async function buildLookAtPhone(manifest) {
     ];
   }
 
+  // Preserve the real sleeve topology and hide only the raised contact hand.
+  // Replacing whole forearms made a detached sleeve; this exact registered
+  // pointing drawing can meet the phone without breaking the shoulder chain.
+  for (const nodeName of ["OL_Hand"]) {
+    const visible = sourceControlState(manifest, nodeName, 1);
+    const hidden = adjustedState(visible, { opacity: 0 });
+    controls[nodeName] = [
+      controlKey(1, visible),
+      controlKey(6, visible, "hold"),
+      controlKey(7, hidden, "hold"),
+      controlKey(think.durationFrames + THINK_OFFSET, hidden),
+    ];
+  }
+
   const drawings = Object.fromEntries(Object.entries(think.drawings)
     .filter(([nodeName]) => !FACE_DRAWINGS.has(nodeName))
     .map(([nodeName, keys]) => [
@@ -72,25 +107,38 @@ async function buildLookAtPhone(manifest) {
       learnedFrom: [
         "authored/think: hand-to-face, head drag, secondary hair, and settle mechanics",
         "authored library: neutral-to-pose anticipation and focused eye direction",
+        "registered left-hand-08 drawing: contact-only phone tap substitution on the intact real sleeve",
       ],
       controls,
       drawings,
+      quality: {
+        maximumIdenticalFrames: 3,
+        armCompositeMode: "registered-phone-interaction",
+      },
     }),
-    props: [{
-      id: "phone",
-      asset: "phone.svg",
-      sha256: PHONE_SHA256,
-      layer: "front",
-      keys: [
-        // Begin beside the lowered left hand, then travel with that hand into
-        // the viewing pose. Starting over the chest made the phone read as a
-        // random floating object even though it was technically established.
-        { frame: 1, position: [0.355, 0.8], width: 0.06, rotation: 8, opacity: 100, interpolation: "hold" },
-        { frame: 7, position: [0.445, 0.625], width: 0.075, rotation: -8, opacity: 100 },
-        { frame: 13, position: [0.455, 0.605], width: 0.075, rotation: -6, opacity: 100 },
-        { frame: think.durationFrames + THINK_OFFSET, position: [0.455, 0.605], width: 0.075, rotation: -6, opacity: 100 },
-      ],
-    }],
+    props: [
+      {
+        id: "phone",
+        asset: "phone.svg",
+        sha256: PHONE_SHA256,
+        layer: "front",
+        keys: [
+          // Start beside the lowered hand, then settle directly beneath the
+          // registered tapping hand. The device stays outside the face.
+          { frame: 1, position: [0.355, 0.8], width: 0.055, rotation: 8, opacity: 100, interpolation: "hold" },
+          { frame: 7, position: [0.355, 0.535], width: 0.048, rotation: -2, opacity: 100 },
+          { frame: 13, position: [0.35, 0.525], width: 0.048, rotation: 1, opacity: 100 },
+          { frame: think.durationFrames + THINK_OFFSET, position: [0.35, 0.525], width: 0.048, rotation: 1, opacity: 100 },
+        ],
+      },
+      interactionProp("phone-tap-hand", PHONE_INTERACTION_ASSETS.tapHand, [
+        hiddenPropKey(1, [0.37, 0.415], 0.052),
+        hiddenPropKey(6, [0.37, 0.415], 0.052),
+        { frame: 7, position: [0.37, 0.405], width: 0.052, rotation: 0, opacity: 100 },
+        { frame: 13, position: [0.365, 0.4], width: 0.052, rotation: 2, opacity: 100 },
+        { frame: think.durationFrames + THINK_OFFSET, position: [0.365, 0.4], width: 0.052, rotation: 2, opacity: 100 },
+      ]),
+    ],
   };
 }
 

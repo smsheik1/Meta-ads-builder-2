@@ -72,6 +72,8 @@ Treat front-of-face hand gestures as a layer-ownership problem before treating t
 
 Treat limb depth crossovers as semantic-ownership transfers when the recovered paint topology cannot exchange front/back order. Keep the ordinary attached rig visible through anticipation, then at the exact contact frame replace only the occluded crossover pieces with checksum-locked existing rig drawings. Preserve their source provenance and palette; use ordinary local aspect deformation when needed to fit the new silhouette. Never solve the crossover with a generic capsule redraw, a global paint-order change, or a pose-specific renderer branch.
 
+Treat physical prop interaction as a contact-ownership chain. A moving prop is not attached merely because its path resembles a hand path. Preserve the real shoulder, sleeve, and forearm chain whenever that topology is already sound; if the contact silhouette is wrong, hide and replace only the smallest registered contact drawing at the pickup or touch frame. Keep the prop spatially registered to that hand through the hold. Replace a whole forearm only when the recovered topology itself prevents the required overlap, and reject any replacement that creates a detached sleeve even if the prop meaning becomes clearer.
+
 ### 4. Timing grammar
 
 Recover the action's phases before editing curves:
@@ -120,6 +122,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | Crossed arms look like detached capsules or a heart-shaped sleeve lump | Fixed paint topology was replaced with generic art, or both replacement limbs kept their neutral aspect | Swap only at contact to registered sleeve/hand drawings; flatten the front forearm, tuck the rear forearm, and validate exact source provenance plus the final silhouette |
 | A “celebration” still reads as a happy shrug | Filename and facial expression were treated as semantics while the open-palm arm vocabulary stayed unchanged | Establish victory-specific hand silhouettes and a true overhead accent while preserving the proven timing grammar |
 | A hand reaches the right place but disappears behind the face | The ordinary body hand owns the wrong paint layer for a face-covering gesture | Reuse the existing hand drawing through the registered `OL_Hand` front layer and lock its provenance |
+| A phone or other prop floats, or a repair leaves a detached sleeve | Prop motion was authored independently from limb ownership, or too much of the real chain was replaced | Keep the attached real limb; substitute only the contact drawing at the interaction frame and test prop-to-hand registration |
 
 ## Things to avoid
 

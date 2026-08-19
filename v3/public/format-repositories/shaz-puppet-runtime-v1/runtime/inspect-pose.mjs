@@ -241,6 +241,26 @@ function registeredVictoryFistCompositeValid(layers, props, recipe) {
   ]);
 }
 
+function registeredPhoneInteractionCompositeValid(layers, props, recipe) {
+  if (recipe.quality?.armCompositeMode !== "registered-phone-interaction") return false;
+  const expected = [
+    ["phone", "phone.svg", "front"],
+    ["phone-tap-hand", "phone-tap-hand.png", "front"],
+  ];
+  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
+    .sort(([left], [right]) => left.localeCompare(right));
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) return false;
+
+  return armCompositeValid([
+    ...layers,
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/OL_Hand",
+      variant: "main",
+      compositeRole: "registered-phone-tap-substitution",
+    },
+  ]);
+}
+
 function hairCompositeValid(layers) {
   const rearHair = layers.find((layer) => (
     layer.nodePath.endsWith("/Hair") && layer.variant === "main"
@@ -359,6 +379,11 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
         recipe,
       )
       && !registeredVictoryFistCompositeValid(
+        rendered.receipt.layers,
+        rendered.receipt.props,
+        recipe,
+      )
+      && !registeredPhoneInteractionCompositeValid(
         rendered.receipt.layers,
         rendered.receipt.props,
         recipe,
@@ -618,6 +643,7 @@ export {
   alphaStats,
   armCompositeValid,
   registeredCrossedArmCompositeValid,
+  registeredPhoneInteractionCompositeValid,
   registeredVictoryFistCompositeValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,

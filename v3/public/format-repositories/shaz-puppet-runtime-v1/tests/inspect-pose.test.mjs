@@ -12,6 +12,7 @@ import {
   opaqueMaskOverlapPixelCount,
   paintOrderValid,
   registeredCrossedArmCompositeValid,
+  registeredPhoneInteractionCompositeValid,
   registeredVictoryFistCompositeValid,
 } from "../runtime/inspect-pose.mjs";
 import { READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
@@ -127,6 +128,31 @@ test("victory-fist substitutions replace only the two hidden hand drawings", () 
     { nodePath: "Top/Shaz_Rig/Body_Group/Left_Arm", variant: "main" },
   ], props, recipe), false);
   assert.equal(registeredVictoryFistCompositeValid(layers, props, { quality: {} }), false);
+});
+
+test("phone interaction accepts only the registered device and tap-hand substitution", () => {
+  const recipe = { quality: { armCompositeMode: "registered-phone-interaction" } };
+  const sleeve = (side) => ({
+    nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
+    variant: "main",
+    compositeRole: "finished-sleeve-union",
+  });
+  const layers = [
+    sleeve("Left"),
+    sleeve("Right"),
+    {
+      nodePath: "Top/Shaz_Rig/Body_Group/Right_Hand",
+      variant: "main",
+      compositeRole: "finished-artwork",
+    },
+  ];
+  const props = [
+    { id: "phone", asset: "phone.svg", layer: "front" },
+    { id: "phone-tap-hand", asset: "phone-tap-hand.png", layer: "front" },
+  ];
+  assert.equal(registeredPhoneInteractionCompositeValid(layers, props, recipe), true);
+  assert.equal(registeredPhoneInteractionCompositeValid(layers, props.slice(1), recipe), false);
+  assert.equal(registeredPhoneInteractionCompositeValid(layers, props, { quality: {} }), false);
 });
 
 test("hair-composite inspection requires the masked visible back-bang component", () => {
