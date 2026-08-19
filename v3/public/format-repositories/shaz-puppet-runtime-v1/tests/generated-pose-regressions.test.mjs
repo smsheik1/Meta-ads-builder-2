@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import test from "node:test";
-import sharp from "sharp";
 
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 import { buildArmsCrossedSkeptical } from "../poses/generated/sources/arms-crossed-skeptical.mjs";
@@ -57,38 +57,15 @@ test("look-at-phone generator exactly reproduces the registered recipe", async (
   assert.deepEqual(await buildLookAtPhone(manifest), checkedIn);
 });
 
-test("phone-use sequence replaces both forearms only during the two-handed contact window", async () => {
+test("phone-use sequence reuses the intact registered phone interaction", async () => {
   const pose = await load("phone-use-sequence");
-  assert.equal(pose.durationFrames, 80);
-  assert.equal(pose.quality.armCompositeMode, "registered-phone-sequence");
-  assert.deepEqual(pose.props.map(({ id }) => id), [
-    "phone-sequence-right-sleeve",
-    "phone-sequence-right-hand",
-    "phone-sequence-left-sleeve",
-    "phone-sequence-left-hand",
-    "phone",
-    "phone-tap-hand",
-  ]);
-  for (const nodeName of [
-    "Left_Arm",
-    "Left_Forearm",
-    "Left_Hand",
-    "Right_Arm",
-    "Right_Forearm",
-    "Right_Hand",
-  ]) {
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 8).opacity, 100);
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 9).opacity, 0);
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 23).opacity, 0);
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 25).opacity, 100);
-  }
-  const phone = pose.props.find(({ id }) => id === "phone");
-  assert.equal(phone.keys[0].opacity, 100);
-  assert.equal(phone.keys[0].interpolation, "hold");
-  assert.ok(phone.keys.find(({ frame }) => frame === 8).position[1]
-    > phone.keys.find(({ frame }) => frame === 12).position[1]);
-  assert.ok(phone.keys.find(({ frame }) => frame === 25).position[1]
-    > phone.keys.find(({ frame }) => frame === 19).position[1]);
+  const base = await load("look-at-phone");
+  assert.equal(pose.durationFrames, base.durationFrames);
+  assert.equal(pose.quality.armCompositeMode, "registered-phone-interaction");
+  assert.deepEqual(pose.props.map(({ id }) => id), ["phone", "phone-tap-hand"]);
+  assert.equal(pose.props.some(({ id }) => /phone-sequence|sleeve/.test(id)), false);
+  assert.deepEqual(pose.controls, base.controls);
+  assert.deepEqual(pose.drawings, base.drawings);
 });
 
 test("phone-use sequence generator exactly reproduces the registered recipe", async () => {
@@ -166,38 +143,39 @@ test("facepalm generator exactly reproduces the registered recipe", async () => 
   assert.deepEqual(await buildFacepalmFrustrated(manifest), checkedIn);
 });
 
-test("crossed-arm redraws stay hidden until the real rig arms reach the contact swap", async () => {
+test("crossed arms use native anticipation then one fixed crossover assembly", async () => {
   const pose = await load("arms-crossed-skeptical");
-  assert.equal(pose.quality.armCompositeMode, "registered-crossed-rig-substitution");
-  assert.deepEqual(pose.props.map(({ id }) => id), [
-    "crossed-right-sleeve",
-    "crossed-right-hand",
-    "crossed-left-sleeve",
-    "crossed-left-hand",
-  ]);
-  for (const prop of pose.props) {
-    assert.equal(prop.keys[0].opacity, 0);
-    assert.equal(prop.keys.find(({ frame }) => frame === 8).opacity, 0);
-    assert.equal(prop.keys.find(({ frame }) => frame === 9).opacity, 100);
-  }
+  assert.equal(pose.quality.armCompositeMode, "registered-crossed-rig-assembly");
+  assert.deepEqual(pose.props.map(({ id }) => id), ["crossed-arms-assembly"]);
+  const [assembly] = pose.props;
+  assert.equal(assembly.keys[0].opacity, 0);
+  assert.equal(assembly.keys.find(({ frame }) => frame === 13).opacity, 0);
+  assert.equal(assembly.keys.find(({ frame }) => frame === 14).opacity, 100);
   for (const nodeName of ["Left_Forearm", "Left_Hand", "Right_Forearm", "Right_Hand"]) {
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 8).opacity, 100);
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 9).opacity, 0);
+    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 13).opacity, 100);
+    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 14).opacity, 0);
   }
   assert.equal(pose.drawings.Left_Eye.at(-1).drawing, "2");
   assert.equal(pose.drawings.Right_Eye.at(-1).drawing, "2");
 });
 
-test("crossed-arm props are byte-identical to their registered rig drawings", async () => {
-  const assets = JSON.parse(await fs.readFile(new URL("../assets.json", import.meta.url), "utf8"));
-  const receipt = JSON.parse(await fs.readFile(
-    new URL("../rig-v2/assets/receipt.json", import.meta.url),
-    "utf8",
-  ));
-  const receiptByName = new Map(receipt.assets.map((asset) => [asset.filename, asset]));
-  for (const prop of assets.props.filter(({ id }) => id.startsWith("crossed-"))) {
-    assert.equal(prop.sha256, receiptByName.get(prop.sourceRigAsset).outputSha256);
-  }
+test("crossed-arm assembly is checksum-locked to rig-derived source parts", async () => {
+  const [assets, receipt, bytes] = await Promise.all([
+    fs.readFile(new URL("../assets.json", import.meta.url), "utf8").then(JSON.parse),
+    fs.readFile(new URL(
+      "../assets/props/crossed-arms-assembly.receipt.json",
+      import.meta.url,
+    ), "utf8").then(JSON.parse),
+    fs.readFile(new URL("../assets/props/crossed-arms-assembly.png", import.meta.url)),
+  ]);
+  const prop = assets.props.find(({ id }) => id === "crossed-arms-assembly");
+  assert.equal(receipt.artistRenderedFramesUsed, false);
+  assert.equal(receipt.sourceParts.length, 4);
+  assert.equal(prop.sha256, receipt.outputSha256);
+  assert.equal(
+    crypto.createHash("sha256").update(bytes).digest("hex"),
+    receipt.outputSha256,
+  );
 });
 
 test("arms-crossed generator exactly reproduces the registered recipe", async () => {
@@ -218,8 +196,8 @@ test("excited celebration preserves the full human-authored timing grammar once"
   ]);
   assert.equal(pose.durationFrames, 31);
   assert.equal(pose.quality.maximumIdenticalFrames, 3);
-  assert.equal(pose.quality.armCompositeMode, "registered-victory-fists");
-  assert.deepEqual(pose.props.map(({ id }) => id), ["excited-left-fist", "excited-right-fist"]);
+  assert.equal(pose.quality.armCompositeMode, "native-rig");
+  assert.deepEqual(pose.props ?? [], []);
   assert.deepEqual(
     pose.deformationFrames,
     Array.from({ length: 31 }, (_, index) => 67 + index),
@@ -241,32 +219,8 @@ test("excited celebration preserves the full human-authored timing grammar once"
     .sort();
   assert.deepEqual(retainedControls, Object.keys(authoredShrug.controls).sort(),
     "the semantic variant must retain every secondary source control that keeps the hold alive");
-  for (const name of ["Left_Hand", "Right_Hand"]) {
-    assert.equal(pose.controls[name].find(({ frame }) => frame === 3).opacity, 0);
-    assert.equal(pose.controls[name].find(({ frame }) => frame === 30).opacity, 100);
-  }
-});
-
-test("celebration fists preserve registered source provenance and deterministic mirroring", async () => {
-  const assets = JSON.parse(await fs.readFile(new URL("../assets.json", import.meta.url), "utf8"));
-  const receipt = JSON.parse(await fs.readFile(
-    new URL("../rig-v2/assets/receipt.json", import.meta.url),
-    "utf8",
-  ));
-  const source = receipt.assets.find(({ filename }) => filename === "left-hand-10.png");
-  const left = assets.props.find(({ id }) => id === "excited-left-fist");
-  const right = assets.props.find(({ id }) => id === "excited-right-fist");
-  assert.equal(left.sha256, source.outputSha256);
-  assert.equal(left.sourceRigAsset, "left-hand-10.png");
-  assert.equal(right.sourceRigAsset, "left-hand-10.png");
-  assert.equal(right.derivedTransform, "horizontal-mirror");
-  const [sourceBytes, leftBytes, rightBytes] = await Promise.all([
-    fs.readFile(new URL("../rig-v2/assets/left-hand-10.png", import.meta.url)),
-    fs.readFile(new URL("../assets/props/excited-left-fist.png", import.meta.url)),
-    fs.readFile(new URL("../assets/props/excited-right-fist.png", import.meta.url)),
-  ]);
-  assert.deepEqual(leftBytes, sourceBytes);
-  assert.deepEqual(rightBytes, await sharp(sourceBytes).flop().png().toBuffer());
+  assert.equal(pose.drawings.Left_Hand.find(({ frame }) => frame === 3).drawing, "10");
+  assert.equal(pose.drawings.Right_Hand.find(({ frame }) => frame === 3).drawing, "10");
 });
 
 test("excited-celebration generator exactly reproduces the registered recipe", async () => {

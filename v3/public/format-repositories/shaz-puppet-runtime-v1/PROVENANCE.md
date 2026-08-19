@@ -8,6 +8,6 @@ The original archive is not bundled. `rig-v2/runtime.json` contains the recovere
 
 Finished artist-rendered video frames were used only for human comparison evidence during development. They are not bundled, are not runtime assets, and were not used as generation inputs for the five new actions. Every recipe and render receipt asserts `artistRenderedFramesUsed: false`; the validator rejects recipes that do not.
 
-The screen and phone are simple purpose-built props. Every character substitution used by a registered action is checksum-locked to an existing compiled rig drawing; the mirrored celebration fist is a deterministic pixel mirror of its registered source. `assets/props/substitution-arm.svg` remains only as an explicitly identified legacy prototype and is not used by any registered action.
+The screen and phone are simple purpose-built props. Every character substitution used by a registered action is checksum-locked to existing compiled rig drawings. Crossed Arms uses one derived torso-local assembly with its source-part hashes recorded in `assets/props/crossed-arms-assembly.receipt.json`; Celebration uses only native rig hands.
 
 This kit packages the supplied character assets for the owner's authorized Wiggly workflow. It does not grant third parties rights to redistribute or commercially exploit the character or source art.

@@ -20,6 +20,7 @@ import {
 
 const ALPHA_THRESHOLD = 24;
 const MIN_COMPONENT_PIXELS = 12;
+const LIMB_PROP_PATTERN = /(?:arm|forearm|sleeve|hand|fist)/i;
 
 function parseArgs(values) {
   const args = {
@@ -191,18 +192,13 @@ function armCompositeValid(layers) {
 }
 
 function registeredCrossedArmCompositeValid(layers, props, recipe) {
-  if (recipe.quality?.armCompositeMode !== "registered-crossed-rig-substitution") return false;
-  const expected = [
-    ["crossed-left-hand", "crossed-left-hand.png"],
-    ["crossed-left-sleeve", "crossed-left-sleeve.png"],
-    ["crossed-right-hand", "crossed-right-hand.png"],
-    ["crossed-right-sleeve", "crossed-right-sleeve.png"],
-  ];
-  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
-    .sort(([left], [right]) => left.localeCompare(right));
-  if (JSON.stringify(actual) !== JSON.stringify(expected.map(([id, asset]) => [id, asset, "front"]))) {
-    return false;
-  }
+  if (recipe.quality?.armCompositeMode !== "registered-crossed-rig-assembly") return false;
+  const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
+  if (limbProps.length !== 1) return false;
+  const [assembly] = limbProps;
+  if (assembly.id !== "crossed-arms-assembly"
+    || assembly.asset !== "crossed-arms-assembly.png"
+    || assembly.layer !== "front") return false;
 
   const armLayers = layers.filter((layer) => (
     /\/(Left|Right)_(Arm|Forearm|Hand)$/.test(layer.nodePath)
@@ -216,40 +212,14 @@ function registeredCrossedArmCompositeValid(layers, props, recipe) {
   ));
 }
 
-function registeredVictoryFistCompositeValid(layers, props, recipe) {
-  if (recipe.quality?.armCompositeMode !== "registered-victory-fists") return false;
-  const expected = [
-    ["excited-left-fist", "excited-left-fist.png", "front"],
-    ["excited-right-fist", "excited-right-fist.png", "front"],
-  ];
-  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
-    .sort(([left], [right]) => left.localeCompare(right));
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) return false;
-
-  return armCompositeValid([
-    ...layers,
-    {
-      nodePath: "Top/Shaz_Rig/Body_Group/Left_Hand",
-      variant: "main",
-      compositeRole: "registered-victory-fist-substitution",
-    },
-    {
-      nodePath: "Top/Shaz_Rig/Body_Group/Right_Hand",
-      variant: "main",
-      compositeRole: "registered-victory-fist-substitution",
-    },
-  ]);
-}
-
 function registeredPhoneInteractionCompositeValid(layers, props, recipe) {
   if (recipe.quality?.armCompositeMode !== "registered-phone-interaction") return false;
-  const expected = [
-    ["phone", "phone.svg", "front"],
-    ["phone-tap-hand", "phone-tap-hand.png", "front"],
-  ];
-  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
-    .sort(([left], [right]) => left.localeCompare(right));
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) return false;
+  const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
+  if (limbProps.length !== 1) return false;
+  const [contactHand] = limbProps;
+  if (contactHand.id !== "phone-tap-hand"
+    || contactHand.asset !== "phone-tap-hand.png"
+    || contactHand.layer !== "front") return false;
 
   return armCompositeValid([
     ...layers,
@@ -261,38 +231,12 @@ function registeredPhoneInteractionCompositeValid(layers, props, recipe) {
   ]);
 }
 
-function registeredPhoneSequenceCompositeValid(layers, props, recipe) {
-  if (recipe.quality?.armCompositeMode !== "registered-phone-sequence") return false;
-  const contactExpected = [
-    ["phone", "phone.svg", "front"],
-    ["phone-sequence-left-hand", "crossed-left-hand.png", "front"],
-    ["phone-sequence-left-sleeve", "crossed-left-sleeve.png", "front"],
-    ["phone-sequence-right-hand", "crossed-right-hand.png", "front"],
-    ["phone-sequence-right-sleeve", "crossed-right-sleeve.png", "front"],
-  ];
-  const tapExpected = [
-    ["phone", "phone.svg", "front"],
-    ["phone-tap-hand", "phone-tap-hand.png", "front"],
-  ];
-  const actual = props.map(({ id, asset, layer }) => [id, asset, layer])
-    .sort(([left], [right]) => left.localeCompare(right));
-
-  const armLayers = layers.filter((layer) => (
-    /\/(Left|Right)_(Arm|Forearm|Hand)$/.test(layer.nodePath)
-  ));
-  if (JSON.stringify(actual) === JSON.stringify(contactExpected)) {
-    return armLayers.length === 0;
-  }
-  if (JSON.stringify(actual) !== JSON.stringify(tapExpected)) return false;
-
-  return armCompositeValid([
-    ...layers,
-    {
-      nodePath: "Top/Shaz_Rig/Head_Group/OL_Hand",
-      variant: "main",
-      compositeRole: "registered-phone-tap-substitution",
-    },
-  ]);
+function armTopologyValid(layers, props, recipe) {
+  const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
+  if (limbProps.length === 0) return armCompositeValid(layers);
+  if (limbProps.length > 1) return false;
+  return registeredCrossedArmCompositeValid(layers, props, recipe)
+    || registeredPhoneInteractionCompositeValid(layers, props, recipe);
 }
 
 function hairCompositeValid(layers) {
@@ -382,6 +326,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
   const approvedEdgeContacts = [];
   const frameReports = [];
   const previousFace = new Map();
+  const previousLimbProps = new Map();
   const assetCache = new Map();
   const propCache = new Map();
   const renderedFrameHashes = [];
@@ -406,31 +351,11 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     if (!paintOrderValid(rendered.receipt.layers)) {
       failures.push({ frame, gate: "layer-order", detail: "frame layers do not follow READ_PAINT_PLAN" });
     }
-    if (!armCompositeValid(rendered.receipt.layers)
-      && !registeredCrossedArmCompositeValid(
-        rendered.receipt.layers,
-        rendered.receipt.props,
-        recipe,
-      )
-      && !registeredVictoryFistCompositeValid(
-        rendered.receipt.layers,
-        rendered.receipt.props,
-        recipe,
-      )
-      && !registeredPhoneInteractionCompositeValid(
-        rendered.receipt.layers,
-        rendered.receipt.props,
-        recipe,
-      )
-      && !registeredPhoneSequenceCompositeValid(
-        rendered.receipt.layers,
-        rendered.receipt.props,
-        recipe,
-      )) {
+    if (!armTopologyValid(rendered.receipt.layers, rendered.receipt.props, recipe)) {
       failures.push({
         frame,
         gate: "arm-composite",
-        detail: "finished sleeves and hands must render in order without visible upper-arm construction artwork",
+        detail: "use the connected native arm chain or exactly one registered contact assembly; independent sleeve, hand, forearm, or fist props are forbidden",
       });
     }
     if (!hairCompositeValid(rendered.receipt.layers)) {
@@ -520,7 +445,10 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
         channels: 4,
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       },
-    }).composite(rendered.analysisLayers.map(({ input }) => ({ input }))).png().toBuffer();
+    }).composite([
+      ...rendered.analysisLayers.map(({ input }) => ({ input })),
+      ...rendered.analysisProps.map(({ input }) => ({ input })),
+    ]).png().toBuffer();
     const character = await alphaStats(characterBuffer);
     const sceneStats = await alphaStats(rendered.buffer);
     if (character.empty) {
@@ -557,6 +485,40 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     const renderedPropIds = rendered.receipt.props.map(({ id }) => id).sort();
     if (JSON.stringify(expectedPropIds) !== JSON.stringify(renderedPropIds)) {
       failures.push({ frame, gate: "prop-presence", detail: "visible recipe props were not rendered exactly once" });
+    }
+
+    const limbPropStats = await Promise.all(rendered.analysisProps
+      .filter(({ id }) => LIMB_PROP_PATTERN.test(id))
+      .map(async (prop) => ({
+        id: prop.id,
+        stats: await alphaStats(prop.input),
+      })));
+    for (const { id, stats } of limbPropStats) {
+      if (stats.empty) continue;
+      const previous = previousLimbProps.get(id);
+      if (previous?.frame === frame - 1) {
+        const areaRatio = stats.opaquePixels / previous.opaquePixels;
+        if (areaRatio > 1.35 || areaRatio < 0.74) {
+          failures.push({
+            frame,
+            gate: "limb-scale-stability",
+            detail: `${id} alpha area changed by ${areaRatio.toFixed(2)}x in one frame`,
+          });
+        }
+        const travel = distance(stats.centroid, previous.centroid);
+        if (travel > 80) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${id} jumped ${travel.toFixed(1)}px in one frame`,
+          });
+        }
+      }
+      previousLimbProps.set(id, {
+        frame,
+        opaquePixels: stats.opaquePixels,
+        centroid: stats.centroid,
+      });
     }
 
     const faceLayers = rendered.analysisLayers.filter((layer) => (
@@ -611,6 +573,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       componentGeometry: character.empty ? [] : character.components,
       layerCount: rendered.receipt.layers.length,
       propCount: rendered.receipt.props.length,
+      limbSubstitutionProps: limbPropStats.map(({ id }) => id),
       eyeEnvelopeOverlapPixels,
     });
   }
@@ -636,6 +599,8 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       "provenance",
       "layer-order",
       "arm-composite",
+      "limb-scale-stability",
+      "limb-attachment",
       "hair-composite",
       "eye-occlusion",
       "construction-seam",
@@ -681,10 +646,9 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
 export {
   alphaStats,
   armCompositeValid,
+  armTopologyValid,
   registeredCrossedArmCompositeValid,
   registeredPhoneInteractionCompositeValid,
-  registeredPhoneSequenceCompositeValid,
-  registeredVictoryFistCompositeValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,
   hairCompositeValid,

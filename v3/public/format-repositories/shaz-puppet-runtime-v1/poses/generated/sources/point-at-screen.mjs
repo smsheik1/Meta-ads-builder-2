@@ -23,7 +23,7 @@ const POINT_RECIPE_PATH = fileURLToPath(new URL("../../authored/point.json", imp
 const PRESENT_RECIPE_SHA256 = "b2f8e2066d30b7aadac1c11f1149940ac438ee08835e88caea4a380c5af81d2f";
 const POINT_RECIPE_SHA256 = "fcc7f489498683514104d7612dc4fbf5be22243b1f867b6190db74c8e9225a39";
 const PRESENT_END = 19;
-const POINT_TARGET_FRAME = 49;
+const POINT_TARGET_FRAME = 40;
 const DURATION_FRAMES = 36;
 
 const ARM_CONTROLS = new Set([
@@ -64,8 +64,7 @@ function mixedState(from, to, weight) {
 }
 
 function targetAdjustment(nodeName, state) {
-  if (nodeName === "Left_Arm_MOVE-P") return adjustedState(state, { rotationDelta: -28 });
-  if (nodeName === "Left_Hand-P") return adjustedState(state, { rotationDelta: -12 });
+  if (nodeName === "Left_Arm_MOVE-P") return adjustedState(state, { rotationDelta: -55 });
   if (nodeName === "Head_Movement-P") return adjustedState(state, { rotationDelta: -2 });
   return state;
 }

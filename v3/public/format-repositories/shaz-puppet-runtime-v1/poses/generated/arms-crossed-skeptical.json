@@ -11,7 +11,7 @@
     "learnedFrom": [
       "authored/confident@53496ec2: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
       "authored/think: skeptical brow, mouth, eye-direction, and head-drag vocabulary",
-      "registered rig forearm and hand drawings promoted as contact-only front substitutions for the fixed crossover depth topology"
+      "native rig arm chains carry the anticipation; one checksum-locked torso-local crossover assembly resolves the contact depth without independently floating limb pieces"
     ],
     "artistRenderedFramesUsed": false
   },
@@ -306,6 +306,132 @@
         "interpolation": "hold"
       }
     ],
+    "Arms_Master-P": [
+      {
+        "frame": 1,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.17253288737635503,
+          -0.010025877532168468,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.09363945634745663,
+          -0.03969364785104857,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.06518210480582337,
+          -0.0501190207035856,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          -0.04619070403250053,
+          -0.05697208180292412,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
     "Collar-P": [
       {
         "frame": 1,
@@ -451,6 +577,636 @@
         "interpolation": "hold"
       }
     ],
+    "Left_Arm_MOVE-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.06729260675346888,
+          -0.056967290384894315,
+          0
+        ],
+        "rotation": -1.1143595585885682,
+        "scale": [
+          1,
+          1.0000000000000002
+        ],
+        "skew": 9.276617819181853e-16,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.06905393303210847,
+          -0.03610864978712812,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.0743379118681656,
+          0.02646727200780711,
+          0
+        ],
+        "rotation": -6.468171500471267,
+        "scale": [
+          0.9999590366726768,
+          1.000040966737739
+        ],
+        "skew": -0.0004216055282296085,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.07609923814685082,
+          0.04732591260611542,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          -0.07206286542481474,
+          -0.00047513876558526397,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          -0.06729260675346888,
+          -0.056967290384894315,
+          0
+        ],
+        "rotation": -1.1143595585885682,
+        "scale": [
+          1,
+          1.0000000000000002
+        ],
+        "skew": 9.276617819181853e-16,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          -0.06729260675346888,
+          -0.056967290384894315,
+          0
+        ],
+        "rotation": -1.1143595585885682,
+        "scale": [
+          1,
+          1.0000000000000002
+        ],
+        "skew": 9.276617819181853e-16,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Left_Arm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          5.76057514692887e-16,
+          -1.5138052796520672e-16,
+          0
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.05560541116398386,
+          0.2032486859994348,
+          0
+        ],
+        "rotation": -10.599956447268433,
+        "scale": [
+          0.999885242582914,
+          1.00011491409922
+        ],
+        "skew": -0.0096426050671496,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.22242164466029457,
+          0.8129947440136679,
+          0
+        ],
+        "rotation": -38.89208987096754,
+        "scale": [
+          0.9997645692268307,
+          1.0002356890197392
+        ],
+        "skew": -0.02195630191660574,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.278027055825731,
+          1.0162434300184113,
+          0
+        ],
+        "rotation": -48.32280101220057,
+        "scale": [
+          0.9997243447748029,
+          1.000275947326579
+        ],
+        "skew": -0.02606086753309112,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          -0.27802705582573045,
+          1.0162434300184118,
+          0
+        ],
+        "rotation": -48.7919654941957,
+        "scale": [
+          0.9997243377143763,
+          1.000275957167187
+        ],
+        "skew": -0.026405518723332074,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          5.76057514692887e-16,
+          -1.5138052796520672e-16,
+          0
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          5.76057514692887e-16,
+          -1.5138052796520672e-16,
+          0
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Left_Forearm-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0.34898099525923154,
+        "scale": [
+          1.0000103237878792,
+          0.9999896920769603
+        ],
+        "skew": 0.002825156015484235,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0.34898099525923154,
+        "scale": [
+          1.0000103237878792,
+          0.9999896920769603
+        ],
+        "skew": 0.002825156015484235,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          -0.01345852235343146,
+          -0.05383408941372369,
+          0
+        ],
+        "rotation": 0.34898099525923154,
+        "scale": [
+          1.0000103237878792,
+          0.9999896920769603
+        ],
+        "skew": 0.002825156015484235,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Left_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -1.3239872633232789e-15,
+          5.108529234924451e-16,
+          0
+        ],
+        "rotation": 0.7860054678568427,
+        "scale": [
+          1.0001737708745169,
+          0.9998269668909483
+        ],
+        "skew": 0.01436107537196515,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          5.495603971894525e-15,
+          3.6637359812630166e-15,
+          0
+        ],
+        "rotation": 15.902749888691147,
+        "scale": [
+          1.000086498892188,
+          0.9999142650201734
+        ],
+        "skew": 0.011509928148624133,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          2.5479618415147343e-14,
+          -4.0967229608668276e-14,
+          0
+        ],
+        "rotation": 47.346700711448264,
+        "scale": [
+          1.0001447460726332,
+          0.9998561306646876
+        ],
+        "skew": 0.02133792113207874,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          1.3489209749195652e-14,
+          -4.030109579389318e-14,
+          0
+        ],
+        "rotation": 117.15793685771732,
+        "scale": [
+          0.9999634949232598,
+          1.0000373947349097
+        ],
+        "skew": -0.037308992896059386,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          1.0052531025617202e-14,
+          -1.9811776738802747e-14,
+          0
+        ],
+        "rotation": 141.55752650147616,
+        "scale": [
+          0.9998824781404889,
+          1.0001183476785833
+        ],
+        "skew": -0.029831189913940584,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          -1.3239872633232789e-15,
+          5.108529234924451e-16,
+          0
+        ],
+        "rotation": 0.7860054678568427,
+        "scale": [
+          1.0001737708745169,
+          0.9998269668909483
+        ],
+        "skew": 0.01436107537196515,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          -1.3239872633232789e-15,
+          5.108529234924451e-16,
+          0
+        ],
+        "rotation": 0.7860054678568427,
+        "scale": [
+          1.0001737708745169,
+          0.9998269668909483
+        ],
+        "skew": 0.01436107537196515,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Left_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.014809394202234847,
+          0.07237587027137798,
+          -0.1256356890137486
+        ],
+        "rotation": -0.5429544504431321,
+        "scale": [
+          0.9999964341909584,
+          1.0000036452185146
+        ],
+        "skew": 0.0065850040716822125,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.16483786345516274,
+          0.34546130263196667,
+          6.9388939039435e-19
+        ],
+        "rotation": 3.217412645687263,
+        "scale": [
+          1.0000133062147496,
+          0.9999866949026461
+        ],
+        "skew": 0.0005521762333815459,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.8481274146683881,
+          0.08265453346883016,
+          0
+        ],
+        "rotation": -23.179776778109836,
+        "scale": [
+          1.0002004985656323,
+          0.9997995987750178
+        ],
+        "skew": 0.017779070317571175,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.8241893172930469,
+          1.7273065131959495,
+          0
+        ],
+        "rotation": 16.087063228772497,
+        "scale": [
+          1.000066531073749,
+          0.9999334745132292
+        ],
+        "skew": 0.0027608811669654256,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          -0.8241893172930469,
+          1.7273065131959495,
+          0
+        ],
+        "rotation": 16.087063228772497,
+        "scale": [
+          1.000066531073749,
+          0.9999334745132292
+        ],
+        "skew": 0.0027608811669654256,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          0.014809394202234847,
+          0.07237587027137798,
+          -0.1256356890137486
+        ],
+        "rotation": -0.5429544504431321,
+        "scale": [
+          0.9999964341909584,
+          1.0000036452185146
+        ],
+        "skew": 0.0065850040716822125,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          0.014809394202234847,
+          0.07237587027137798,
+          -0.1256356890137486
+        ],
+        "rotation": -0.5429544504431321,
+        "scale": [
+          0.9999964341909584,
+          1.0000036452185146
+        ],
+        "skew": 0.0065850040716822125,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
     "Pouch-P": [
       {
         "frame": 1,
@@ -594,6 +1350,510 @@
         "flipHorizontal": false,
         "flipVertical": false,
         "interpolation": "hold"
+      }
+    ],
+    "Right_Arm_MOVE-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.11277627197941434,
+          -0.2616293290310134,
+          0
+        ],
+        "rotation": 2.184621709891048,
+        "scale": [
+          0.9999999999999999,
+          1
+        ],
+        "skew": 1.0601848936207853e-15,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.19740877472217425,
+          -0.1991142220804421,
+          0
+        ],
+        "rotation": 5.242241505441572,
+        "scale": [
+          1.0000163688648473,
+          0.9999836470261855
+        ],
+        "skew": -0.003586999416728436,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.40510588879608683,
+          0.058052467458357064,
+          0
+        ],
+        "rotation": 34.81627039212502,
+        "scale": [
+          1.000137707975942,
+          0.9998623713222365
+        ],
+        "skew": -0.01805222751301598,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.47433826015405567,
+          0.14377469730462156,
+          0
+        ],
+        "rotation": 38.10599874852589,
+        "scale": [
+          1.0001578266417186,
+          0.9998422513494799
+        ],
+        "skew": -0.01867073419983358,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          0.47433826015405806,
+          0.14377469730462253,
+          0
+        ],
+        "rotation": 36.824142130579524,
+        "scale": [
+          1.0001565714812863,
+          0.9998435011109705
+        ],
+        "skew": -0.017739703957303767,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          0.11277627197941434,
+          -0.2616293290310134,
+          0
+        ],
+        "rotation": 2.184621709891048,
+        "scale": [
+          0.9999999999999999,
+          1
+        ],
+        "skew": 1.0601848936207853e-15,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          0.11277627197941434,
+          -0.2616293290310134,
+          0
+        ],
+        "rotation": 2.184621709891048,
+        "scale": [
+          0.9999999999999999,
+          1
+        ],
+        "skew": 1.0601848936207853e-15,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Arm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -2.99341662660277e-16,
+          -2.1342944077738203e-17,
+          0
+        ],
+        "rotation": 1.3717924744817798,
+        "scale": [
+          1,
+          0.9999999999999998
+        ],
+        "skew": -3.1805546808623598e-15,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.0023126588031665285,
+          0.005491995536693384,
+          0
+        ],
+        "rotation": 2.124531724822541,
+        "scale": [
+          1.000005231503953,
+          0.9999947685295828
+        ],
+        "skew": -0.00015411540851016867,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.009250635212804878,
+          0.021967982147189202,
+          0
+        ],
+        "rotation": 14.724020567517519,
+        "scale": [
+          1.0000821008542808,
+          0.9999179096695358
+        ],
+        "skew": -0.00498374576874998,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.011563294016029652,
+          0.027459977684026363,
+          0
+        ],
+        "rotation": 1.9824978639713298,
+        "scale": [
+          1.0000038428518738,
+          0.999996157164044
+        ],
+        "skew": -0.00008685856333186179,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          0.011563294016029652,
+          0.027459977684026363,
+          0
+        ],
+        "rotation": 1.9824978639713298,
+        "scale": [
+          1.0000038428518738,
+          0.999996157164044
+        ],
+        "skew": -0.00008685856333186179,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          -2.99341662660277e-16,
+          -2.1342944077738203e-17,
+          0
+        ],
+        "rotation": 1.3717924744817798,
+        "scale": [
+          1,
+          0.9999999999999998
+        ],
+        "skew": -3.1805546808623598e-15,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          -2.99341662660277e-16,
+          -2.1342944077738203e-17,
+          0
+        ],
+        "rotation": 1.3717924744817798,
+        "scale": [
+          1,
+          0.9999999999999998
+        ],
+        "skew": -3.1805546808623598e-15,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          4.679460713176872e-16,
+          3.1741882015887922e-15,
+          0
+        ],
+        "rotation": -4.156626198459138,
+        "scale": [
+          1,
+          0.9999999999999998
+        ],
+        "skew": 3.551619393629643e-14,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          1.3239409568654992e-14,
+          -9.658940314238862e-15,
+          0
+        ],
+        "rotation": -17.246299511377348,
+        "scale": [
+          1.0000429657992784,
+          0.9999570863328809
+        ],
+        "skew": -0.007198610015974217,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          7.993605777301127e-15,
+          -5.162537064506978e-14,
+          0
+        ],
+        "rotation": -52.29789559552022,
+        "scale": [
+          0.9999829643456508,
+          1.0000170935450194
+        ],
+        "skew": -0.003774650625818171,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          6.09512440519211e-14,
+          -4.5630166312093934e-14,
+          0
+        ],
+        "rotation": -112.7704367022342,
+        "scale": [
+          0.9999473364167708,
+          1.0000529278251333
+        ],
+        "skew": -0.04143197745390214,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          5.688234407035111e-14,
+          -4.660606985073586e-14,
+          0
+        ],
+        "rotation": -134.68053901211596,
+        "scale": [
+          1.0000082252546831,
+          0.9999920433036078
+        ],
+        "skew": -0.04197484937456117,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          4.679460713176872e-16,
+          3.1741882015887922e-15,
+          0
+        ],
+        "rotation": -4.156626198459138,
+        "scale": [
+          1,
+          0.9999999999999998
+        ],
+        "skew": 3.551619393629643e-14,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          4.679460713176872e-16,
+          3.1741882015887922e-15,
+          0
+        ],
+        "rotation": -4.156626198459138,
+        "scale": [
+          1,
+          0.9999999999999998
+        ],
+        "skew": 3.551619393629643e-14,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          -7.193070323312824e-16,
+          -2.8210260027926417e-16,
+          0
+        ],
+        "rotation": 1.1962779264455636,
+        "scale": [
+          0.9999999999999998,
+          1.0000000000000002
+        ],
+        "skew": 1.2589695611746806e-14,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.17502480985195792,
+          0.5384151179448394,
+          3.469446951953614e-18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.007987186570066888,
+          0.46973083477203503,
+          0
+        ],
+        "rotation": 20.331431521358226,
+        "scale": [
+          1.000111190813022,
+          0.9998888339566409
+        ],
+        "skew": 0.007392945975755539,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.17502480985195792,
+          0.5384151179448394,
+          3.469446951953614e-18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 13,
+        "position": [
+          0.17502480985195792,
+          0.5384151179448394,
+          3.469446951953614e-18
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 14,
+        "position": [
+          -7.193070323312824e-16,
+          -2.8210260027926417e-16,
+          0
+        ],
+        "rotation": 1.1962779264455636,
+        "scale": [
+          0.9999999999999998,
+          1.0000000000000002
+        ],
+        "skew": 1.2589695611746806e-14,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 19,
+        "position": [
+          -7.193070323312824e-16,
+          -2.8210260027926417e-16,
+          0
+        ],
+        "rotation": 1.1962779264455636,
+        "scale": [
+          0.9999999999999998,
+          1.0000000000000002
+        ],
+        "skew": 1.2589695611746806e-14,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
       }
     ],
     "Strings-P": [
@@ -1446,7 +2706,7 @@
         "flipVertical": false
       },
       {
-        "frame": 8,
+        "frame": 13,
         "position": [
           0,
           0,
@@ -1464,7 +2724,7 @@
         "interpolation": "hold"
       },
       {
-        "frame": 9,
+        "frame": 14,
         "position": [
           0,
           0,
@@ -1518,7 +2778,7 @@
         "flipVertical": false
       },
       {
-        "frame": 8,
+        "frame": 13,
         "position": [
           -0.01345852235343146,
           -0.05383408941372369,
@@ -1536,7 +2796,7 @@
         "interpolation": "hold"
       },
       {
-        "frame": 9,
+        "frame": 14,
         "position": [
           -0.01345852235343146,
           -0.05383408941372369,
@@ -1590,7 +2850,7 @@
         "flipVertical": false
       },
       {
-        "frame": 8,
+        "frame": 13,
         "position": [
           0,
           0,
@@ -1608,7 +2868,7 @@
         "interpolation": "hold"
       },
       {
-        "frame": 9,
+        "frame": 14,
         "position": [
           0,
           0,
@@ -1662,7 +2922,7 @@
         "flipVertical": false
       },
       {
-        "frame": 8,
+        "frame": 13,
         "position": [
           0,
           0,
@@ -1680,7 +2940,7 @@
         "interpolation": "hold"
       },
       {
-        "frame": 9,
+        "frame": 14,
         "position": [
           0,
           0,
@@ -1725,6 +2985,34 @@
       {
         "frame": 7,
         "drawing": null
+      }
+    ],
+    "Left_Hand": [
+      {
+        "frame": 1,
+        "drawing": "1"
+      },
+      {
+        "frame": 7,
+        "drawing": "1"
+      },
+      {
+        "frame": 11,
+        "drawing": "9"
+      }
+    ],
+    "Right_Hand": [
+      {
+        "frame": 1,
+        "drawing": "1"
+      },
+      {
+        "frame": 7,
+        "drawing": "1"
+      },
+      {
+        "frame": 11,
+        "drawing": "9"
       }
     ],
     "Eyebrows": [
@@ -1790,348 +3078,55 @@
   },
   "quality": {
     "maximumIdenticalFrames": 2,
-    "armCompositeMode": "registered-crossed-rig-substitution"
+    "armCompositeMode": "registered-crossed-rig-assembly"
   },
   "props": [
     {
-      "id": "crossed-right-sleeve",
-      "asset": "crossed-right-sleeve.png",
-      "sha256": "6825bd9502845dfee7f44700488d25469fd15a3fddafc8aa5c007ae8ef3d29ba",
+      "id": "crossed-arms-assembly",
+      "asset": "crossed-arms-assembly.png",
+      "sha256": "ccee1620caa3c42ab5028913665e6be9f61001236df10b0ae9eb9044aa95947c",
       "layer": "front",
       "keys": [
         {
           "frame": 1,
           "position": [
-            0.52,
-            0.63
+            0.5,
+            0.5
           ],
-          "width": 0.1,
-          "scale": [
-            0.68,
-            1.25
-          ],
+          "width": 1,
           "rotation": 0,
           "opacity": 0,
           "interpolation": "hold"
         },
         {
-          "frame": 8,
+          "frame": 13,
           "position": [
-            0.52,
-            0.63
+            0.5,
+            0.5
           ],
-          "width": 0.1,
-          "scale": [
-            0.68,
-            1.25
-          ],
+          "width": 1,
           "rotation": 0,
           "opacity": 0,
           "interpolation": "hold"
         },
         {
-          "frame": 9,
+          "frame": 14,
           "position": [
-            0.52,
-            0.63
+            0.5,
+            0.5
           ],
-          "width": 0.1,
-          "scale": [
-            0.68,
-            1.25
-          ],
+          "width": 1,
           "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 12,
-          "position": [
-            0.49,
-            0.63
-          ],
-          "width": 0.098,
-          "scale": [
-            0.68,
-            1.25
-          ],
-          "rotation": 46,
-          "opacity": 100
-        },
-        {
-          "frame": 16,
-          "position": [
-            0.465,
-            0.635
-          ],
-          "width": 0.096,
-          "scale": [
-            0.66,
-            1.28
-          ],
-          "rotation": 82,
-          "opacity": 100
+          "opacity": 100,
+          "interpolation": "hold"
         },
         {
           "frame": 19,
           "position": [
-            0.46,
-            0.64
+            0.5,
+            0.5
           ],
-          "width": 0.094,
-          "scale": [
-            0.64,
-            1.26
-          ],
-          "rotation": 86,
-          "opacity": 100
-        }
-      ]
-    },
-    {
-      "id": "crossed-right-hand",
-      "asset": "crossed-right-hand.png",
-      "sha256": "1ca56cff2c194949889c10e6b5f1d07e9d64ca4837a76db086966f79baaa429d",
-      "layer": "front",
-      "keys": [
-        {
-          "frame": 1,
-          "position": [
-            0.53,
-            0.68
-          ],
-          "width": 0.05,
-          "scale": [
-            1,
-            1
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 8,
-          "position": [
-            0.53,
-            0.68
-          ],
-          "width": 0.05,
-          "scale": [
-            1,
-            1
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 9,
-          "position": [
-            0.53,
-            0.68
-          ],
-          "width": 0.05,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 12,
-          "position": [
-            0.49,
-            0.62
-          ],
-          "width": 0.052,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 16,
-          "position": [
-            0.42,
-            0.585
-          ],
-          "width": 0.052,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 19,
-          "position": [
-            0.405,
-            0.59
-          ],
-          "width": 0.05,
-          "rotation": 0,
-          "opacity": 100
-        }
-      ]
-    },
-    {
-      "id": "crossed-left-sleeve",
-      "asset": "crossed-left-sleeve.png",
-      "sha256": "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef",
-      "layer": "front",
-      "keys": [
-        {
-          "frame": 1,
-          "position": [
-            0.48,
-            0.655
-          ],
-          "width": 0.1,
-          "scale": [
-            0.68,
-            1.48
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 8,
-          "position": [
-            0.48,
-            0.655
-          ],
-          "width": 0.1,
-          "scale": [
-            0.68,
-            1.48
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 9,
-          "position": [
-            0.48,
-            0.655
-          ],
-          "width": 0.1,
-          "scale": [
-            0.68,
-            1.48
-          ],
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 12,
-          "position": [
-            0.475,
-            0.655
-          ],
-          "width": 0.098,
-          "scale": [
-            0.68,
-            1.28
-          ],
-          "rotation": -50,
-          "opacity": 100
-        },
-        {
-          "frame": 16,
-          "position": [
-            0.46,
-            0.65
-          ],
-          "width": 0.096,
-          "scale": [
-            0.66,
-            1.3
-          ],
-          "rotation": -88,
-          "opacity": 100
-        },
-        {
-          "frame": 19,
-          "position": [
-            0.46,
-            0.65
-          ],
-          "width": 0.094,
-          "scale": [
-            0.64,
-            1.28
-          ],
-          "rotation": -94,
-          "opacity": 100
-        }
-      ]
-    },
-    {
-      "id": "crossed-left-hand",
-      "asset": "crossed-left-hand.png",
-      "sha256": "e393634f96b9d607f96af9ce01c288d5e3bf8a43ca3cd05e5d67cebe89cab5c2",
-      "layer": "front",
-      "keys": [
-        {
-          "frame": 1,
-          "position": [
-            0.47,
-            0.69
-          ],
-          "width": 0.05,
-          "scale": [
-            1,
-            1
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 8,
-          "position": [
-            0.47,
-            0.69
-          ],
-          "width": 0.05,
-          "scale": [
-            1,
-            1
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 9,
-          "position": [
-            0.47,
-            0.69
-          ],
-          "width": 0.05,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 12,
-          "position": [
-            0.47,
-            0.62
-          ],
-          "width": 0.052,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 16,
-          "position": [
-            0.51,
-            0.585
-          ],
-          "width": 0.052,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 19,
-          "position": [
-            0.525,
-            0.59
-          ],
-          "width": 0.05,
+          "width": 1,
           "rotation": 0,
           "opacity": 100
         }

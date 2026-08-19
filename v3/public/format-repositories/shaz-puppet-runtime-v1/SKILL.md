@@ -56,7 +56,9 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Treat drawing substitutions, visibility, AutoPatch-style masking, and paint order as animation controls.
 - Distinguish visible alpha from semantic ownership. A partial eye, hand, or facial drawing may own a larger matte than its painted pixels; reconstruct that envelope and clip occluders behind it instead of shifting artwork or erasing only an outline.
 - Treat internal palette ownership as content: shape, opacity, and connectivity can all pass while teeth, eye whites, tongues, or skin are painted incorrectly. Add direct color-presence gates for stable semantic regions.
-- Establish handheld props before contact, substitute an exact registered arm chain only for the contact window when partial replacement exposes construction art, and restore the canonical limbs before the next action phase.
+- Animate limbs through their common rig ancestor and preserve one continuous shoulder-to-sleeve-to-hand chain. Never key a sleeve, forearm, hand, or fist as independent screen-space pieces.
+- Establish handheld props before contact. Prefer the native arm chain; if a depth crossover genuinely cannot be represented by the recovered hierarchy, use exactly one checksum-locked torso-local contact assembly at a single authored boundary. A contact-only hand substitution is allowed only while its native sleeve remains connected.
+- Reject a candidate when dense transition frames or normal-speed playback show a detached, duplicated, missing, scale-popping, or independently drifting limb. An asset-ID allowlist is not proof of topology.
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
 

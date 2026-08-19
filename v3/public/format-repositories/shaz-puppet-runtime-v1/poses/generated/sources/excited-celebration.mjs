@@ -15,10 +15,6 @@ import {
 import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 
 const SOURCE_FRAMES = Array.from({ length: 31 }, (_, index) => 67 + index);
-const FIST_ASSETS = Object.freeze({
-  left: ["excited-left-fist.png", "14b20ef37d0e7c2f7f8e631ffc6972e7bfb0fd46838b3de938e210c1087d4d76"],
-  right: ["excited-right-fist.png", "a746fd7901476fe5553e84f97f5f68b0bf706b9795efcf7cc28f7844a19df981"],
-});
 
 // Preserve the artist's measured 31-frame grammar: short setup, a one-frame
 // accent at local frame 4, six-frame settle, long readable hold, secondary
@@ -58,7 +54,13 @@ function stateKeys(manifest, nodeName, adjustmentForKey = () => ({})) {
   return SOURCE_FRAMES.map((sourceFrame, index) => controlKey(
     index + 1,
     adjustedState(
-      sourceControlState(manifest, nodeName, sourceFrame),
+      sourceControlState(
+        manifest,
+        nodeName,
+        ["Left_Hand-P", "Right_Hand-P"].includes(nodeName) && index >= 2 && index <= 27
+          ? Math.min(141 + (index - 2), 158)
+          : sourceFrame,
+      ),
       adjustmentForKey({ frame: index + 1, sourceFrame, weight: CELEBRATION_WEIGHT[index] }),
     ),
   ));
@@ -76,41 +78,27 @@ function buildExcitedCelebration(manifest) {
     }),
   ]));
 
-  for (const nodeName of ["Left_Hand", "Right_Hand"]) {
-    const visible = sourceControlState(manifest, nodeName, 67);
-    const hidden = adjustedState(visible, { opacity: 0 });
-    controls[nodeName] = [
-      controlKey(1, visible),
-      controlKey(2, visible, "hold"),
-      controlKey(3, hidden, "hold"),
-      controlKey(29, hidden, "hold"),
-      controlKey(30, visible, "hold"),
-      controlKey(31, visible),
-    ];
-  }
-
   const drawingAt = (nodeName, frame) => sourceDrawing(manifest, nodeName, frame);
-  return {
-    ...generatedRecipe(manifest, {
+  return generatedRecipe(manifest, {
     id: "excited-celebration",
     durationFrames: 31,
     learnedFrom: [
       "authored/shrug: complete 31-frame cadence, bilateral arm mechanics, overlap, and release",
       "authored/aha: open-mouth facial substitution",
-      "registered left-hand-10 drawing and its deterministic horizontal mirror: clenched victory-fist silhouette",
+      "registered left-hand-10 and right-hand-10 drawings: clenched victory fists kept inside their native wrist hierarchies",
       "human shrug audit: one-frame accent, six-frame settle, long hold, and facial afterbeat",
     ],
     controls,
     drawings: {
       Left_Hand: [
         { frame: 1, drawing: drawingAt("Left_Hand", 67) },
-        { frame: 3, drawing: drawingAt("Left_Hand", 69) },
+        { frame: 3, drawing: "10" },
         { frame: 29, drawing: drawingAt("Left_Hand", 95) },
         { frame: 30, drawing: drawingAt("Left_Hand", 96) },
       ],
       Right_Hand: [
         { frame: 1, drawing: drawingAt("Right_Hand", 67) },
-        { frame: 3, drawing: drawingAt("Right_Hand", 69) },
+        { frame: 3, drawing: "10" },
         { frame: 29, drawing: drawingAt("Right_Hand", 95) },
         { frame: 30, drawing: drawingAt("Right_Hand", 96) },
       ],
@@ -151,46 +139,9 @@ function buildExcitedCelebration(manifest) {
     deformationFrames: SOURCE_FRAMES,
     quality: {
       maximumIdenticalFrames: 3,
-      armCompositeMode: "registered-victory-fists",
+      armCompositeMode: "native-rig",
     },
-    }),
-    props: [
-      {
-        id: "excited-left-fist",
-        asset: FIST_ASSETS.left[0],
-        sha256: FIST_ASSETS.left[1],
-        layer: "front",
-        keys: [
-          { frame: 1, position: [0.42, 0.58], width: 0.052, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 2, position: [0.42, 0.58], width: 0.052, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 3, position: [0.31, 0.44], width: 0.075, rotation: -8, opacity: 100 },
-          { frame: 4, position: [0.405, 0.18], width: 0.08, rotation: -8, opacity: 100 },
-          { frame: 7, position: [0.39, 0.33], width: 0.075, rotation: 4, opacity: 100 },
-          { frame: 25, position: [0.385, 0.31], width: 0.076, rotation: 0, opacity: 100 },
-          { frame: 29, position: [0.42, 0.54], width: 0.065, rotation: 0, opacity: 100, interpolation: "hold" },
-          { frame: 30, position: [0.42, 0.58], width: 0.052, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 31, position: [0.42, 0.58], width: 0.052, rotation: 0, opacity: 0 },
-        ],
-      },
-      {
-        id: "excited-right-fist",
-        asset: FIST_ASSETS.right[0],
-        sha256: FIST_ASSETS.right[1],
-        layer: "front",
-        keys: [
-          { frame: 1, position: [0.55, 0.58], width: 0.052, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 2, position: [0.55, 0.58], width: 0.052, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 3, position: [0.66, 0.44], width: 0.075, rotation: 8, opacity: 100 },
-          { frame: 4, position: [0.565, 0.18], width: 0.08, rotation: 8, opacity: 100 },
-          { frame: 7, position: [0.58, 0.33], width: 0.075, rotation: -4, opacity: 100 },
-          { frame: 25, position: [0.585, 0.31], width: 0.076, rotation: 0, opacity: 100 },
-          { frame: 29, position: [0.55, 0.54], width: 0.065, rotation: 0, opacity: 100, interpolation: "hold" },
-          { frame: 30, position: [0.55, 0.58], width: 0.052, rotation: 0, opacity: 0, interpolation: "hold" },
-          { frame: 31, position: [0.55, 0.58], width: 0.052, rotation: 0, opacity: 0 },
-        ],
-      },
-    ],
-  };
+  });
 }
 
 async function main() {

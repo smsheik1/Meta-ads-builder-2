@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   alphaStats,
   armCompositeValid,
+  armTopologyValid,
   eyeEnvelopeCompositeValid,
   expectedEdgesForFrame,
   hairCompositeValid,
@@ -13,8 +14,6 @@ import {
   paintOrderValid,
   registeredCrossedArmCompositeValid,
   registeredPhoneInteractionCompositeValid,
-  registeredPhoneSequenceCompositeValid,
-  registeredVictoryFistCompositeValid,
 } from "../runtime/inspect-pose.mjs";
 import { READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
 
@@ -88,21 +87,26 @@ test("arm-composite inspection requires finished sleeve unions and rejects const
   assert.equal(armCompositeValid([...thinkingLeft, ...arm("Right")]), true);
 });
 
-test("crossed-arm substitutions require the exact four registered rig-derived pieces", () => {
-  const recipe = { quality: { armCompositeMode: "registered-crossed-rig-substitution" } };
+test("crossed arms permit one registered assembly and reject independent limb pieces", () => {
+  const recipe = { quality: { armCompositeMode: "registered-crossed-rig-assembly" } };
   const layers = ["Left", "Right"].map((side) => ({
     nodePath: `Top/Shaz_Rig/Body_Group/${side}_Arm`,
     variant: "main",
     compositeRole: "hidden-construction-fill",
   }));
-  const props = [
-    ["crossed-left-hand", "crossed-left-hand.png"],
-    ["crossed-left-sleeve", "crossed-left-sleeve.png"],
-    ["crossed-right-hand", "crossed-right-hand.png"],
-    ["crossed-right-sleeve", "crossed-right-sleeve.png"],
-  ].map(([id, asset]) => ({ id, asset, layer: "front" }));
+  const props = [{
+    id: "crossed-arms-assembly",
+    asset: "crossed-arms-assembly.png",
+    layer: "front",
+  }];
   assert.equal(registeredCrossedArmCompositeValid(layers, props, recipe), true);
-  assert.equal(registeredCrossedArmCompositeValid(layers, props.slice(1), recipe), false);
+  assert.equal(armTopologyValid(layers, props, recipe), true);
+  assert.equal(registeredCrossedArmCompositeValid(layers, [], recipe), false);
+  const detachedPieces = [
+    { id: "crossed-left-hand", asset: "crossed-left-hand.png", layer: "front" },
+    { id: "crossed-left-sleeve", asset: "crossed-left-sleeve.png", layer: "front" },
+  ];
+  assert.equal(armTopologyValid(layers, detachedPieces, recipe), false);
   assert.equal(registeredCrossedArmCompositeValid([
     ...layers,
     { nodePath: "Top/Shaz_Rig/Body_Group/Left_Hand", variant: "main" },
@@ -110,28 +114,7 @@ test("crossed-arm substitutions require the exact four registered rig-derived pi
   assert.equal(registeredCrossedArmCompositeValid(layers, props, { quality: {} }), false);
 });
 
-test("victory-fist substitutions replace only the two hidden hand drawings", () => {
-  const recipe = { quality: { armCompositeMode: "registered-victory-fists" } };
-  const sleeve = (side) => ({
-    nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
-    variant: "main",
-    compositeRole: "finished-sleeve-union",
-  });
-  const layers = [sleeve("Left"), sleeve("Right")];
-  const props = [
-    { id: "excited-left-fist", asset: "excited-left-fist.png", layer: "front" },
-    { id: "excited-right-fist", asset: "excited-right-fist.png", layer: "front" },
-  ];
-  assert.equal(registeredVictoryFistCompositeValid(layers, props, recipe), true);
-  assert.equal(registeredVictoryFistCompositeValid(layers, props.slice(1), recipe), false);
-  assert.equal(registeredVictoryFistCompositeValid([
-    ...layers,
-    { nodePath: "Top/Shaz_Rig/Body_Group/Left_Arm", variant: "main" },
-  ], props, recipe), false);
-  assert.equal(registeredVictoryFistCompositeValid(layers, props, { quality: {} }), false);
-});
-
-test("phone interaction accepts only the registered device and tap-hand substitution", () => {
+test("phone interaction accepts exactly one registered contact-hand substitution", () => {
   const recipe = { quality: { armCompositeMode: "registered-phone-interaction" } };
   const sleeve = (side) => ({
     nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
@@ -152,39 +135,35 @@ test("phone interaction accepts only the registered device and tap-hand substitu
     { id: "phone-tap-hand", asset: "phone-tap-hand.png", layer: "front" },
   ];
   assert.equal(registeredPhoneInteractionCompositeValid(layers, props, recipe), true);
-  assert.equal(registeredPhoneInteractionCompositeValid(layers, props.slice(1), recipe), false);
+  assert.equal(armTopologyValid(layers, props, recipe), true);
+  assert.equal(registeredPhoneInteractionCompositeValid(layers, props.slice(1), recipe), true);
+  assert.equal(armTopologyValid(layers, [
+    ...props,
+    { id: "floating-second-hand", asset: "other-hand.png", layer: "front" },
+  ], recipe), false);
   assert.equal(registeredPhoneInteractionCompositeValid(layers, props, { quality: {} }), false);
 });
 
-test("phone sequence permits bilateral contact replacement and the registered tap hand only", () => {
-  const recipe = { quality: { armCompositeMode: "registered-phone-sequence" } };
-  const props = [
-    ["phone", "phone.svg"],
-    ["phone-sequence-left-hand", "crossed-left-hand.png"],
-    ["phone-sequence-left-sleeve", "crossed-left-sleeve.png"],
-    ["phone-sequence-right-hand", "crossed-right-hand.png"],
-    ["phone-sequence-right-sleeve", "crossed-right-sleeve.png"],
-  ].map(([id, asset]) => ({ id, asset, layer: "front" }));
-  const contactLayers = [];
-  assert.equal(registeredPhoneSequenceCompositeValid(contactLayers, props, recipe), true);
-  assert.equal(registeredPhoneSequenceCompositeValid(contactLayers, props.slice(1), recipe), false);
-
+test("independent screen-space limb pieces cannot bypass a valid native arm chain", () => {
   const sleeve = (side) => ({
     nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
     variant: "main",
     compositeRole: "finished-sleeve-union",
   });
-  const tapLayers = [
+  const layers = [
     sleeve("Left"),
+    { nodePath: "Top/Shaz_Rig/Body_Group/Left_Hand", variant: "main" },
     sleeve("Right"),
     { nodePath: "Top/Shaz_Rig/Body_Group/Right_Hand", variant: "main" },
   ];
-  const tapProps = [
-    { id: "phone", asset: "phone.svg", layer: "front" },
-    { id: "phone-tap-hand", asset: "phone-tap-hand.png", layer: "front" },
-  ];
-  assert.equal(registeredPhoneSequenceCompositeValid(tapLayers, tapProps, recipe), true);
-  assert.equal(registeredPhoneSequenceCompositeValid(tapLayers, props, { quality: {} }), false);
+  assert.equal(armTopologyValid(layers, [], { quality: { armCompositeMode: "native-rig" } }), true);
+  assert.equal(armTopologyValid(layers, [
+    { id: "floating-left-hand", asset: "left.png", layer: "front" },
+  ], { quality: { armCompositeMode: "native-rig" } }), false);
+  assert.equal(armTopologyValid(layers, [
+    { id: "floating-left-hand", asset: "left.png", layer: "front" },
+    { id: "floating-left-sleeve", asset: "sleeve.png", layer: "front" },
+  ], { quality: { armCompositeMode: "registered-crossed-rig-assembly" } }), false);
 });
 
 test("hair-composite inspection requires the masked visible back-bang component", () => {

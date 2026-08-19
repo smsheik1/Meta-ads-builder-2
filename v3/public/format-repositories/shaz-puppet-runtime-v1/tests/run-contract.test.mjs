@@ -69,7 +69,9 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(playbook, /slow motion is diagnostic only/);
   assert.match(playbook, /exposure-change frames/);
   assert.match(playbook, /atomic contact silhouette/);
-  assert.match(playbook, /one-frame armless gap/);
+  assert.match(playbook, /Never animate the component sleeve, forearm, hand, or fist assets independently/);
+  assert.match(playbook, /at most one registered limb assembly/);
+  assert.match(skill, /An asset-ID allowlist is not proof of topology/);
 });
 
 test("full Point cancels demo-shot motion at the master and preserves artist exposure cadence", async () => {
