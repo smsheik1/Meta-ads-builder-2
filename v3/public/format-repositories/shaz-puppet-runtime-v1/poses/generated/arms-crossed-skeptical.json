@@ -3090,10 +3090,14 @@
         {
           "frame": 1,
           "position": [
-            0.5,
-            0.5
+            0.56,
+            0.376
           ],
           "width": 1,
+          "scale": [
+            1.6,
+            1.6
+          ],
           "rotation": 0,
           "opacity": 0,
           "interpolation": "hold"
@@ -3101,10 +3105,14 @@
         {
           "frame": 13,
           "position": [
-            0.5,
-            0.5
+            0.56,
+            0.376
           ],
           "width": 1,
+          "scale": [
+            1.6,
+            1.6
+          ],
           "rotation": 0,
           "opacity": 0,
           "interpolation": "hold"
@@ -3112,10 +3120,14 @@
         {
           "frame": 14,
           "position": [
-            0.5,
-            0.5
+            0.56,
+            0.376
           ],
           "width": 1,
+          "scale": [
+            1.6,
+            1.6
+          ],
           "rotation": 0,
           "opacity": 100,
           "interpolation": "hold"
@@ -3123,10 +3135,14 @@
         {
           "frame": 19,
           "position": [
-            0.5,
-            0.5
+            0.56,
+            0.376
           ],
           "width": 1,
+          "scale": [
+            1.6,
+            1.6
+          ],
           "rotation": 0,
           "opacity": 100
         }

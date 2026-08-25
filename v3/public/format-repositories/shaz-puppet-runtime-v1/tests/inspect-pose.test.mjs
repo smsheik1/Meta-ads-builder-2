@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  alphaContactPixelCount,
   alphaStats,
   armCompositeValid,
   armTopologyValid,
@@ -13,7 +14,6 @@ import {
   opaqueMaskOverlapPixelCount,
   paintOrderValid,
   registeredCrossedArmCompositeValid,
-  registeredPhoneInteractionCompositeValid,
 } from "../runtime/inspect-pose.mjs";
 import { READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
 
@@ -114,8 +114,8 @@ test("crossed arms permit one registered assembly and reject independent limb pi
   assert.equal(registeredCrossedArmCompositeValid(layers, props, { quality: {} }), false);
 });
 
-test("phone interaction accepts exactly one registered contact-hand substitution", () => {
-  const recipe = { quality: { armCompositeMode: "registered-phone-interaction" } };
+test("screen-space phone hands are rejected even when a phone prop is valid", () => {
+  const recipe = { quality: { armCompositeMode: "native-rig" } };
   const sleeve = (side) => ({
     nodePath: `Top/Shaz_Rig/Body_Group/${side}_Forearm`,
     variant: "main",
@@ -123,6 +123,11 @@ test("phone interaction accepts exactly one registered contact-hand substitution
   });
   const layers = [
     sleeve("Left"),
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/OL_Hand",
+      variant: "main",
+      compositeRole: "finished-artwork",
+    },
     sleeve("Right"),
     {
       nodePath: "Top/Shaz_Rig/Body_Group/Right_Hand",
@@ -130,18 +135,33 @@ test("phone interaction accepts exactly one registered contact-hand substitution
       compositeRole: "finished-artwork",
     },
   ];
-  const props = [
+  assert.equal(armTopologyValid(layers, [
+    { id: "phone", asset: "phone.svg", layer: "front" },
+  ], recipe), true, "non-limb props do not replace the native hand");
+  assert.equal(armTopologyValid(layers, [
     { id: "phone", asset: "phone.svg", layer: "front" },
     { id: "phone-tap-hand", asset: "phone-tap-hand.png", layer: "front" },
-  ];
-  assert.equal(registeredPhoneInteractionCompositeValid(layers, props, recipe), true);
-  assert.equal(armTopologyValid(layers, props, recipe), true);
-  assert.equal(registeredPhoneInteractionCompositeValid(layers, props.slice(1), recipe), true);
-  assert.equal(armTopologyValid(layers, [
-    ...props,
-    { id: "floating-second-hand", asset: "other-hand.png", layer: "front" },
-  ], recipe), false);
-  assert.equal(registeredPhoneInteractionCompositeValid(layers, props, { quality: {} }), false);
+  ], recipe), false, "a detached screen-space hand must never be accepted as native topology");
+});
+
+test("joint contact inspection catches a detached hand even when it touches another body part", async () => {
+  const sleeve = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+      + '<rect x="10" y="40" width="35" height="20" fill="black"/>'
+      + "</svg>",
+  );
+  const attachedHand = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+      + '<circle cx="49" cy="50" r="8" fill="black"/>'
+      + "</svg>",
+  );
+  const detachedHandTouchingFace = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">'
+      + '<circle cx="75" cy="20" r="8" fill="black"/>'
+      + "</svg>",
+  );
+  assert.ok(await alphaContactPixelCount(attachedHand, sleeve, 3, 100) > 0);
+  assert.equal(await alphaContactPixelCount(detachedHandTouchingFace, sleeve, 3, 100), 0);
 });
 
 test("independent screen-space limb pieces cannot bypass a valid native arm chain", () => {

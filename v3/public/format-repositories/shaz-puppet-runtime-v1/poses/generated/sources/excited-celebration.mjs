@@ -72,6 +72,10 @@ function buildExcitedCelebration(manifest) {
     stateKeys(manifest, nodeName, ({ weight }) => {
       if (nodeName === "Left_Arm_Pivot-P") return { rotationDelta: -48 * weight };
       if (nodeName === "Right_Arm_Pivot-P") return { rotationDelta: 48 * weight };
+      if (["Left_Hand-P", "Right_Hand-P"].includes(nodeName)) {
+        const fistScale = 1 + 0.28 * Math.min(1, weight * 2);
+        return { scaleMultiply: [fistScale, fistScale] };
+      }
       if (nodeName === "Arms_Master-P") return { positionDelta: [0, 0.08 * weight, 0] };
       if (nodeName === "Head_Movement-P") return { rotationDelta: -2 * weight };
       return {};

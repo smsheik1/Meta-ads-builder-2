@@ -7,11 +7,11 @@
     { "id": "aha", "kind": "authored-replay", "path": "authored/aha.json", "sha256": "e3ebc83fa6409be5ac66ce77189ff445bf38352f16ccaf5423756ae95174d654" },
     { "id": "point", "kind": "authored-replay", "path": "authored/point.json", "sha256": "fcc7f489498683514104d7612dc4fbf5be22243b1f867b6190db74c8e9225a39" },
     { "id": "confident", "kind": "authored-replay", "path": "authored/confident.json", "sha256": "53496ec22e505fa44673260935ccaa4edc9ea87796b99a1c79031b825c804c1c" },
-    { "id": "excited-celebration", "kind": "generated", "path": "generated/excited-celebration.json", "sha256": "d268807189ee30c81c21afcec1ae16a6aafd8b0593e3c6001b86249c8393d873" },
+    { "id": "excited-celebration", "kind": "generated", "path": "generated/excited-celebration.json", "sha256": "a9554ab8cb90d031af1bbf7695dd3a1a5ff3772ec16bbcc9d0a46946f394c529" },
     { "id": "point-at-screen", "kind": "generated", "path": "generated/point-at-screen.json", "sha256": "67b03e39549e6cf317c63bac80e0c90137f4c7da20676956bd7f256c3d2c2503" },
-    { "id": "look-at-phone", "kind": "generated", "path": "generated/look-at-phone.json", "sha256": "5610a09d190d234e5b6d5f1bccf17e491088608eda0d1d9cdb4864808190cd08" },
-    { "id": "facepalm-frustrated", "kind": "generated", "path": "generated/facepalm-frustrated.json", "sha256": "d3652f649191cc22e7e467302cbd7a1e7e22a6bab2cd7d5365da8853a8a2c9c1" },
-    { "id": "arms-crossed-skeptical", "kind": "generated", "path": "generated/arms-crossed-skeptical.json", "sha256": "ba4b6f9d285c2650d1dedd8f02c8823c93e56787fa1f9214575dde5bdc0f304c" },
-    { "id": "phone-use-sequence", "kind": "generated", "path": "generated/phone-use-sequence.json", "sha256": "29277e7d2d99d01432d939153f1e0f44c8847b1e600cc5699c46504ecd55035d" }
+    { "id": "look-at-phone", "kind": "generated", "path": "generated/look-at-phone.json", "sha256": "88f259a2de0bd64dbfc2f805f60b00c3745ce6783ec570a685ab958b8e39375e" },
+    { "id": "facepalm-frustrated", "kind": "generated", "path": "generated/facepalm-frustrated.json", "sha256": "b095fddda204630ef1c3df4914c36e126bfb631167cf6ca550bd358c01e6399e" },
+    { "id": "arms-crossed-skeptical", "kind": "generated", "path": "generated/arms-crossed-skeptical.json", "sha256": "b638dbbd41f8695f40864b8ddc4486f14fe2020c0a08e98b3ed0a18945d94b88" },
+    { "id": "phone-use-sequence", "kind": "generated", "path": "generated/phone-use-sequence.json", "sha256": "11c27721612de587c1a61d5dd3757c32b34653702e5e12b8b2dd9f6239d08ad9" }
   ]
 }

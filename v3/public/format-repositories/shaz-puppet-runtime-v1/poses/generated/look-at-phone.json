@@ -11,7 +11,7 @@
     "learnedFrom": [
       "authored/think: hand-to-face, head drag, secondary hair, and settle mechanics",
       "authored library: neutral-to-pose anticipation and focused eye direction",
-      "registered left-hand-08 drawing: contact-only phone tap substitution on the intact real sleeve"
+      "authored/think overlay hand: native wrist-registered pointing contact without a screen-space hand substitute"
     ],
     "artistRenderedFramesUsed": false
   },
@@ -11587,78 +11587,6 @@
         "flipHorizontal": false,
         "flipVertical": false
       }
-    ],
-    "OL_Hand": [
-      {
-        "frame": 1,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false
-      },
-      {
-        "frame": 6,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 100,
-        "flipHorizontal": false,
-        "flipVertical": false,
-        "interpolation": "hold"
-      },
-      {
-        "frame": 7,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 0,
-        "flipHorizontal": false,
-        "flipVertical": false,
-        "interpolation": "hold"
-      },
-      {
-        "frame": 55,
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": 0,
-        "scale": [
-          1,
-          1
-        ],
-        "skew": 0,
-        "opacity": 0,
-        "flipHorizontal": false,
-        "flipVertical": false
-      }
     ]
   },
   "drawings": {
@@ -11823,7 +11751,7 @@
   },
   "quality": {
     "maximumIdenticalFrames": 3,
-    "armCompositeMode": "registered-phone-interaction"
+    "armCompositeMode": "native-rig"
   },
   "props": [
     {
@@ -11847,17 +11775,37 @@
           "frame": 7,
           "position": [
             0.355,
-            0.535
+            0.8
           ],
-          "width": 0.048,
-          "rotation": -2,
+          "width": 0.055,
+          "rotation": 6,
+          "opacity": 100
+        },
+        {
+          "frame": 10,
+          "position": [
+            0.39,
+            0.8
+          ],
+          "width": 0.052,
+          "rotation": 3,
+          "opacity": 100
+        },
+        {
+          "frame": 12,
+          "position": [
+            0.45,
+            0.63
+          ],
+          "width": 0.05,
+          "rotation": -1,
           "opacity": 100
         },
         {
           "frame": 13,
           "position": [
-            0.35,
-            0.525
+            0.415,
+            0.53
           ],
           "width": 0.048,
           "rotation": 1,
@@ -11866,79 +11814,11 @@
         {
           "frame": 55,
           "position": [
-            0.35,
-            0.525
+            0.415,
+            0.53
           ],
           "width": 0.048,
           "rotation": 1,
-          "opacity": 100
-        }
-      ]
-    },
-    {
-      "id": "phone-tap-hand",
-      "asset": "phone-tap-hand.png",
-      "sha256": "907148751d2ab6f23f9ce4707185cd5eb1059d306243200840dca24c8d184ddb",
-      "layer": "front",
-      "keys": [
-        {
-          "frame": 1,
-          "position": [
-            0.37,
-            0.415
-          ],
-          "width": 0.052,
-          "scale": [
-            1,
-            1
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 6,
-          "position": [
-            0.37,
-            0.415
-          ],
-          "width": 0.052,
-          "scale": [
-            1,
-            1
-          ],
-          "rotation": 0,
-          "opacity": 0,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 7,
-          "position": [
-            0.37,
-            0.405
-          ],
-          "width": 0.052,
-          "rotation": 0,
-          "opacity": 100
-        },
-        {
-          "frame": 13,
-          "position": [
-            0.365,
-            0.4
-          ],
-          "width": 0.052,
-          "rotation": 2,
-          "opacity": 100
-        },
-        {
-          "frame": 55,
-          "position": [
-            0.365,
-            0.4
-          ],
-          "width": 0.052,
-          "rotation": 2,
           "opacity": 100
         }
       ]

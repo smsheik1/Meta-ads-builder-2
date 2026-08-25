@@ -19,34 +19,19 @@ const load = async (name) => JSON.parse(await fs.readFile(
 test("handheld props are established instead of appearing randomly", async () => {
   const phonePose = await load("look-at-phone");
   const phone = phonePose.props.find(({ id }) => id === "phone");
-  const tapHand = phonePose.props.find(({ id }) => id === "phone-tap-hand");
+  assert.deepEqual(phonePose.props.map(({ id }) => id), ["phone"]);
   assert.equal(phone.keys[0].opacity, 100);
   assert.equal(phone.keys[0].interpolation, "hold", "phone must remain with the lowered hand until the pickup beat");
-  assert.ok(phone.keys[0].position[1] > phone.keys[1].position[1], "phone must rise with the hand");
-  assert.equal(tapHand.keys.find(({ frame }) => frame === 6).opacity, 0);
-  assert.equal(tapHand.keys.find(({ frame }) => frame === 7).opacity, 100);
-  assert.equal(phonePose.controls.OL_Hand.find(({ frame }) => frame === 6).opacity, 100);
-  assert.equal(phonePose.controls.OL_Hand.find(({ frame }) => frame === 7).opacity, 0);
+  assert.deepEqual(phone.keys[0].position, phone.keys.find(({ frame }) => frame === 7).position,
+    "phone must remain with the lowered native hand until the lift begins");
+  assert.ok(phone.keys[0].position[1] > phone.keys.at(-1).position[1], "phone must rise with the hand");
+  assert.deepEqual(phonePose.drawings.OL_Hand.at(-1), { frame: 13, drawing: "1" });
+  assert.equal(phonePose.props.some(({ id }) => /hand|arm|sleeve|fist/i.test(id)), false,
+    "screen-space limb substitutes are forbidden");
   const settledPhone = phone.keys.at(-1).position;
-  const settledTap = tapHand.keys.at(-1).position;
-  assert.ok(Math.abs(settledPhone[0] - settledTap[0]) < 0.03, "tap fingertip must stay horizontally registered to the device");
-  assert.ok(settledPhone[1] > settledTap[1], "device must remain directly beneath the tapping hand");
-  assert.equal(phonePose.quality.armCompositeMode, "registered-phone-interaction");
-});
-
-test("phone tap hand is byte-identical to its registered rig drawing", async () => {
-  const [assets, receipt] = await Promise.all([
-    fs.readFile(new URL("../assets.json", import.meta.url), "utf8").then(JSON.parse),
-    fs.readFile(new URL("../rig-v2/assets/receipt.json", import.meta.url), "utf8").then(JSON.parse),
-  ]);
-  const prop = assets.props.find(({ id }) => id === "phone-tap-hand");
-  const source = receipt.assets.find(({ filename }) => filename === prop.sourceRigAsset);
-  assert.equal(prop.sha256, source.outputSha256);
-  const [propBytes, sourceBytes] = await Promise.all([
-    fs.readFile(new URL("../assets/props/phone-tap-hand.png", import.meta.url)),
-    fs.readFile(new URL("../rig-v2/assets/left-hand-08.png", import.meta.url)),
-  ]);
-  assert.deepEqual(propBytes, sourceBytes);
+  assert.ok(settledPhone[0] >= 0.4 && settledPhone[0] <= 0.43,
+    "settled phone must remain outside the face while touching the native overlay hand");
+  assert.equal(phonePose.quality.armCompositeMode, "native-rig");
 });
 
 test("look-at-phone generator exactly reproduces the registered recipe", async () => {
@@ -61,8 +46,8 @@ test("phone-use sequence reuses the intact registered phone interaction", async 
   const pose = await load("phone-use-sequence");
   const base = await load("look-at-phone");
   assert.equal(pose.durationFrames, base.durationFrames);
-  assert.equal(pose.quality.armCompositeMode, "registered-phone-interaction");
-  assert.deepEqual(pose.props.map(({ id }) => id), ["phone", "phone-tap-hand"]);
+  assert.equal(pose.quality.armCompositeMode, "native-rig");
+  assert.deepEqual(pose.props.map(({ id }) => id), ["phone"]);
   assert.equal(pose.props.some(({ id }) => /phone-sequence|sleeve/.test(id)), false);
   assert.deepEqual(pose.controls, base.controls);
   assert.deepEqual(pose.drawings, base.drawings);
@@ -151,6 +136,9 @@ test("crossed arms use native anticipation then one fixed crossover assembly", a
   assert.equal(assembly.keys[0].opacity, 0);
   assert.equal(assembly.keys.find(({ frame }) => frame === 13).opacity, 0);
   assert.equal(assembly.keys.find(({ frame }) => frame === 14).opacity, 100);
+  assert.ok(assembly.keys.every(({ position }) => position[0] === 0.56 && position[1] === 0.376));
+  assert.ok(assembly.keys.every(({ scale }) => scale[0] === 1.6 && scale[1] === 1.6),
+    "the complete crossed-arm assembly must preserve approved hand and sleeve proportions");
   for (const nodeName of ["Left_Forearm", "Left_Hand", "Right_Forearm", "Right_Hand"]) {
     assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 13).opacity, 100);
     assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 14).opacity, 0);
@@ -221,6 +209,13 @@ test("excited celebration preserves the full human-authored timing grammar once"
     "the semantic variant must retain every secondary source control that keeps the hold alive");
   assert.equal(pose.drawings.Left_Hand.find(({ frame }) => frame === 3).drawing, "10");
   assert.equal(pose.drawings.Right_Hand.find(({ frame }) => frame === 3).drawing, "10");
+  for (const nodeName of ["Left_Hand-P", "Right_Hand-P"]) {
+    const activeFistScales = pose.controls[nodeName]
+      .filter(({ frame }) => frame >= 3 && frame <= 27)
+      .map(({ scale }) => Math.min(...scale));
+    assert.ok(Math.min(...activeFistScales) >= 1.15,
+      `${nodeName} must not shrink the registered victory fist below the sleeve proportion floor`);
+  }
 });
 
 test("excited-celebration generator exactly reproduces the registered recipe", async () => {

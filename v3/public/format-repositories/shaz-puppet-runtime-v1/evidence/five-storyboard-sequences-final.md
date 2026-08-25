@@ -1,8 +1,10 @@
-# Five supplied storyboard sequences: corrected integration
+# Five supplied storyboard sequences: anatomy repair
 
-The earlier `five-storyboard-sequences` approval is rejected and retained only as failure provenance. Its video used independently animated screen-space limb pieces that detached, changed scale, and snapped. The corrected proof is the fresh run `agent-runs/five-storyboard-sequences-fixed`.
+Both earlier runs, `five-storyboard-sequences` and `five-storyboard-sequences-fixed`, are rejected and retained only as failure provenance. The second run still allowed a palm to touch the face while its wrist was detached, rendered the atomic crossed-arm assembly at roughly half size, kept victory fists below the approved hand/sleeve proportion, and used a tiny screen-space phone hand. Its written visual approval was invalid because its own contact sheet exposed those defects.
 
-## Corrected sequence
+The accepted proof is the fresh run `agent-runs/five-storyboard-anatomy-repair`.
+
+## Accepted sequence
 
 1. `point-at-screen`
 2. `facepalm-frustrated`
@@ -11,30 +13,39 @@ The earlier `five-storyboard-sequences` approval is rejected and retained only a
 5. `phone-use-sequence`
 
 - Input SHA-256: `913fa5e7fac68bda238f58c77749a8e5c898e67fd65c3847ca11e386f6a73d12`
-- Exact final video SHA-256: `a8db3482387a5da85dddd9aac51cc1d6f56ddba1257ff3fc282be69f82cd6024`
-- Validation receipt SHA-256: `d47b7583b25ee3d91ce35eb7121a53492206441445bda308bc7de5d7c901755c`
-- Quality report SHA-256: `53fa21a16db7aae1d0fd63116dd599f8d351ebc933939fe0657ba74d771b27f7`
-- Human review SHA-256: `1368f50db21f78d4102b20c33c1e1c46b3195db6947e7825919d8d03bcc18fa6`
-- Delivery receipt SHA-256: `ed27a5ed1d3e5f1381b71191a298df7f290d79c7292a1f18ed5be3ee75df0c31`
-- Official contact sheet SHA-256: `455af00497b89f7e69c427aa8b185486bf7482c09af9c763c4822effe5eb3200`
-- Dense 6-fps review sheet SHA-256: `312523ba9f416e68810d622454f2a436235e6c3b455b034d219b13ca1996acbe`
+- Exact final video SHA-256: `68d3e40bd5fd537c11d1b4ebd584eaac38d6e7234cf458735e77e337b3f83a6c`
+- Validation receipt SHA-256: `c6ffb83f55bebf5715c10a7a86d5815c657ca3d7139344f1c108808cfd048801`
+- Quality report SHA-256: `f2932a33e8350c991b88e283f23f1a3a70f386a2c144e6639cf05e41323c5948`
+- Human review SHA-256: `28378fb6abe7aa1b9a5e653cd3e2df36a8b1b8b5da8fad96928b71bc431f4801`
+- Delivery receipt SHA-256: `1bac8bc4f8c3b161f1e8fb0104d24c7c5d3d6da2b06719f98cc3f818c924577c`
+- Official contact sheet SHA-256: `0c376dd0f05fb45a1ab708e4ea242a6fe9402013fb9eebc80a1a3e5de4b8e494`
+- Four repaired failure-site frames SHA-256: `e27fce77bc6686939170f7b285c1f1b9a267193fc9ec915a8a9e7c2d2820823a`
+- Dense facepalm/crossed-arm transition sheet SHA-256: `76166747e4cab6c8e4999fd3b5d8f4992e5c14db27a36950ffa0c482e77a0dba`
 
 ## Repair
 
-- Point now drives the connected native arm from its common arm-move control; the hand is not separately rotated.
-- Facepalm keeps the already-correct native sleeve plus registered front-hand channel.
-- Crossed Arms keeps native connected anticipation, then performs one contact-frame swap to a checksum-locked torso-local assembly. Its four component limb images never render independently.
-- Celebration uses the rig's native left and right wrist hierarchies plus the registered fist drawings. It has no fist props.
-- Phone directly reuses the intact registered phone interaction. The former four-piece pickup bridge is removed; only the phone and one contact-only tap hand remain.
+- `point-at-screen` needed no anatomy change. Dense review and the new joint gates confirmed its native shoulder/sleeve/hand chains were already intact.
+- `facepalm-frustrated` keeps the front-of-face overlay drawing but re-registers its wrist to the real sleeve through approach, overshoot, settle, and hold. The formerly detached palm now records direct per-frame hand-to-sleeve contact.
+- `arms-crossed-skeptical` keeps one atomic, checksum-locked crossover assembly and scales that whole assembly as a unit to preserve both hand and sleeve proportions. The four source pieces never render independently.
+- `excited-celebration` keeps the registered victory-fist drawings in the native wrist hierarchies and calibrates their scale against the finished sleeves. Every active fist frame has measurable sleeve contact.
+- `phone-use-sequence` deletes the screen-space tap-hand substitution. The authored overlay hand remains native and the phone follows it through pickup and hold.
 
 ## Inspection and watch
 
-The official inspector rendered every action frame and passed all 158 recipe frames with zero failures. The final integration is 229 frames, 1280×720, H.264/yuv420p, 24 fps, and 9.541667 seconds. Its exact MP4 was watched twice from start to `ended=true` at playback rate 1. A separate chronological 6-fps sheet was inspected across the whole video.
+The official inspector re-rendered and passed all 177 recipe frames with zero failures. The final integration is 229 frames, 1280×720, H.264/yuv420p, 24 fps, and 9.541667 seconds. The exact MP4 was played through completely at normal speed in the in-app browser, then the four reported failure sites and the dense facepalm/crossed-arm transitions were inspected separately.
 
-No detached, duplicated, missing, oversized, undersized, independently drifting, or scale-popping limb was observed. All five actions preserve a readable shoulder-to-sleeve-to-hand assembly.
+The accepted video contains no detached wrist, screen-space finger or hand, undersized crossed-arm assembly, undersized victory fist, missing hand fill, or independently drifting limb.
 
 ## Learning-loop closure
 
 **What did this teach us, and does the skill, runtime, or test suite need updating?**
 
-Yes. The repeated failure came from the abstraction, not the coordinates: several screen-space limb pieces cannot be trusted to behave like one rig chain. The skill and playbook now require native ancestor-driven limbs or one atomic torso-local contact assembly. The runtime inspector now includes visible props in whole-figure continuity analysis, permits at most one registered limb substitution, rejects the old multi-piece pattern, and checks substitution scale and one-frame travel. Focused tests prove the formerly accepted Crossed Arms, Celebration, and Phone structures can no longer pass.
+Yes. Whole-character connected-component checks were too coarse: a detached palm touching the face still made one connected alpha blob, and frame-to-frame stability could not reject a hand that was consistently too small. The promoted invariant is outcome-based joint certification:
+
+1. Native frames measure each hand-to-sleeve contact directly.
+2. Native frames enforce a hand/sleeve visible-area ratio.
+3. Screen-space limb substitutions are forbidden.
+4. The single permitted bilateral crossover assembly must meet minimum visible width, height, and area floors.
+5. Normal-speed playback and dense transition inspection remain mandatory because structural allowlists are not visual proof.
+
+`SKILL.md`, the rig-animation playbook, the inspector, and focused regression tests now encode those rules.

@@ -154,6 +154,39 @@ async function nearWhitePixelCount(buffer) {
   return count;
 }
 
+async function alphaContactPixelCount(left, right, radius = 3, analysisWidth = 640) {
+  const [leftRaw, rightRaw] = await Promise.all([
+    sharp(left).resize({ width: analysisWidth }).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+    sharp(right).resize({ width: analysisWidth }).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+  ]);
+  if (leftRaw.info.width !== rightRaw.info.width || leftRaw.info.height !== rightRaw.info.height) {
+    throw new Error("contact masks must have matching dimensions");
+  }
+  let contactPixels = 0;
+  for (let y = 0; y < leftRaw.info.height; y += 1) {
+    for (let x = 0; x < leftRaw.info.width; x += 1) {
+      const leftOffset = (y * leftRaw.info.width + x) * leftRaw.info.channels;
+      if (leftRaw.data[leftOffset + 3] <= ALPHA_THRESHOLD) continue;
+      let touches = false;
+      for (let dy = -radius; dy <= radius && !touches; dy += 1) {
+        for (let dx = -radius; dx <= radius; dx += 1) {
+          const rightX = x + dx;
+          const rightY = y + dy;
+          if (rightX < 0 || rightX >= rightRaw.info.width
+            || rightY < 0 || rightY >= rightRaw.info.height) continue;
+          const rightOffset = (rightY * rightRaw.info.width + rightX) * rightRaw.info.channels;
+          if (rightRaw.data[rightOffset + 3] > ALPHA_THRESHOLD) {
+            touches = true;
+            break;
+          }
+        }
+      }
+      if (touches) contactPixels += 1;
+    }
+  }
+  return contactPixels;
+}
+
 function paintPlanKey(entry) {
   return `${entry.nodePath}:${entry.variant}`;
 }
@@ -212,31 +245,11 @@ function registeredCrossedArmCompositeValid(layers, props, recipe) {
   ));
 }
 
-function registeredPhoneInteractionCompositeValid(layers, props, recipe) {
-  if (recipe.quality?.armCompositeMode !== "registered-phone-interaction") return false;
-  const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
-  if (limbProps.length !== 1) return false;
-  const [contactHand] = limbProps;
-  if (contactHand.id !== "phone-tap-hand"
-    || contactHand.asset !== "phone-tap-hand.png"
-    || contactHand.layer !== "front") return false;
-
-  return armCompositeValid([
-    ...layers,
-    {
-      nodePath: "Top/Shaz_Rig/Head_Group/OL_Hand",
-      variant: "main",
-      compositeRole: "registered-phone-tap-substitution",
-    },
-  ]);
-}
-
 function armTopologyValid(layers, props, recipe) {
   const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
   if (limbProps.length === 0) return armCompositeValid(layers);
   if (limbProps.length > 1) return false;
-  return registeredCrossedArmCompositeValid(layers, props, recipe)
-    || registeredPhoneInteractionCompositeValid(layers, props, recipe);
+  return registeredCrossedArmCompositeValid(layers, props, recipe);
 }
 
 function hairCompositeValid(layers) {
@@ -493,6 +506,68 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
         id: prop.id,
         stats: await alphaStats(prop.input),
       })));
+    const armGeometry = [];
+    if (limbPropStats.length === 0) {
+      for (const side of ["Left", "Right"]) {
+        const forearmLayer = rendered.analysisLayers.find((layer) => (
+          layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "main"
+        ));
+        const handLayer = rendered.analysisLayers.find((layer) => (
+          layer.variant === "main"
+          && (side === "Left"
+            ? layer.nodePath.endsWith("/OL_Hand")
+              || layer.nodePath.endsWith("/Left_Hand")
+            : layer.nodePath.endsWith("/Right_Hand"))
+        ));
+        if (!forearmLayer || !handLayer) continue;
+        const [forearmStats, handStats, contactPixels] = await Promise.all([
+          alphaStats(forearmLayer.input),
+          alphaStats(handLayer.input),
+          alphaContactPixelCount(handLayer.input, forearmLayer.input),
+        ]);
+        if (forearmStats.empty || handStats.empty) continue;
+        const areaRatio = handStats.opaquePixels / forearmStats.opaquePixels;
+        armGeometry.push({
+          side,
+          mode: "native-rig",
+          handNode: handLayer.nodePath,
+          contactPixels,
+          handToSleeveAreaRatio: areaRatio,
+        });
+        if (contactPixels < 8) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} hand has only ${contactPixels} contact pixels with its sleeve`,
+          });
+        }
+        if (areaRatio < 0.09 || areaRatio > 0.75) {
+          failures.push({
+            frame,
+            gate: "limb-proportion",
+            detail: `${side.toLowerCase()} hand/sleeve alpha-area ratio ${areaRatio.toFixed(3)} is outside 0.09–0.75`,
+          });
+        }
+      }
+    } else if (limbPropStats.length === 1
+      && limbPropStats[0].id === "crossed-arms-assembly") {
+      const assembly = limbPropStats[0].stats;
+      const bboxWidth = assembly.empty ? 0 : assembly.bbox.maxX - assembly.bbox.minX + 1;
+      const bboxHeight = assembly.empty ? 0 : assembly.bbox.maxY - assembly.bbox.minY + 1;
+      armGeometry.push({
+        mode: "registered-crossed-rig-assembly",
+        bboxWidth,
+        bboxHeight,
+        opaquePixels: assembly.empty ? 0 : assembly.opaquePixels,
+      });
+      if (assembly.empty || bboxWidth < 150 || bboxHeight < 60 || assembly.opaquePixels < 7000) {
+        failures.push({
+          frame,
+          gate: "limb-proportion",
+          detail: `crossed-arm assembly geometry ${bboxWidth}x${bboxHeight}/${assembly.empty ? 0 : assembly.opaquePixels}px is below the approved 150x60/7000px floor`,
+        });
+      }
+    }
     for (const { id, stats } of limbPropStats) {
       if (stats.empty) continue;
       const previous = previousLimbProps.get(id);
@@ -574,6 +649,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       layerCount: rendered.receipt.layers.length,
       propCount: rendered.receipt.props.length,
       limbSubstitutionProps: limbPropStats.map(({ id }) => id),
+      armGeometry,
       eyeEnvelopeOverlapPixels,
     });
   }
@@ -599,6 +675,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       "provenance",
       "layer-order",
       "arm-composite",
+      "limb-proportion",
       "limb-scale-stability",
       "limb-attachment",
       "hair-composite",
@@ -645,10 +722,10 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
 
 export {
   alphaStats,
+  alphaContactPixelCount,
   armCompositeValid,
   armTopologyValid,
   registeredCrossedArmCompositeValid,
-  registeredPhoneInteractionCompositeValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,
   hairCompositeValid,

@@ -49,10 +49,10 @@ function frontPalmState(state, frame) {
   const overshoot = frame === 18 || frame === 19;
   return adjustedState(state, {
     positionDelta: approach
-      ? [1.7, -7.4, 0]
+      ? [1.42, -7.47, 0]
       : overshoot
-        ? [2.18, -6.96, 0]
-        : [2.125, -7, 0],
+        ? [1.55, -7.36, 0]
+        : [1.5, -7.4, 0],
     rotation: approach ? 98 : overshoot ? 108 : 105,
     scaleMultiply: approach ? [0.36, 0.36] : overshoot ? [0.42, 0.42] : [0.4, 0.4],
   });

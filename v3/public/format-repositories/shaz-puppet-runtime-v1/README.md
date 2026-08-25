@@ -9,7 +9,7 @@ See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body langu
 ## What is included
 
 - Six lossless authored-action calibrations from the supplied rig.
-- Six newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, arms crossed/skeptical, and a complete two-handed-to-one-handed phone-use sequence.
+- Six newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, arms crossed/skeptical, and a phone lift/tap sequence that keeps the hand inside the native rig hierarchy.
 - One held-out authored shrug used to prove the control model generalized before new actions were attempted.
 - A strict sequence contract, one official renderer, per-frame mechanical inspection, human review, and checksum-bound finalization.
 - Two meaningfully different proof inputs plus a free local smoke fixture.
@@ -69,11 +69,11 @@ The finalized video and evidence remain in `agent-runs/my-sequence/`. No network
 | `look-at-phone` | new rig action | looks down at a phone prop |
 | `facepalm-frustrated` | new rig action | frustrated head-in-hand reaction |
 | `arms-crossed-skeptical` | new rig action | skeptical crossed-arm hold |
-| `phone-use-sequence` | new rig sequence | establishes the phone, lifts it with both hands, hands off to one hand, then taps the screen |
+| `phone-use-sequence` | new rig sequence | establishes the phone, lifts it with the native hand, then holds a readable phone interaction |
 
 ## Why it is repeatable
 
-The user input controls only action order and explicit hold/gap timing. Recipe checksums bind every action to the registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks continuity, clipping, layer order, props, facial stability, video format, frame count, and duration. Finalization binds the human review to the exact video checksum.
+The user input controls only action order and explicit hold/gap timing. Recipe checksums bind every action to the registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks continuity, hand-to-sleeve attachment and proportion, atomic-contact geometry, clipping, layer order, props, facial stability, video format, frame count, and duration. Finalization binds the human review to the exact video checksum.
 
 ## Authoring new actions
 

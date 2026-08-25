@@ -10,7 +10,7 @@ import { writePoseRecipe } from "../../../runtime/pose-authoring.mjs";
 import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 
 const PHONE_PATH = fileURLToPath(new URL("../look-at-phone.json", import.meta.url));
-const PHONE_SHA256 = "5610a09d190d234e5b6d5f1bccf17e491088608eda0d1d9cdb4864808190cd08";
+const PHONE_SHA256 = "88f259a2de0bd64dbfc2f805f60b00c3745ce6783ec570a685ab958b8e39375e";
 
 async function loadLockedPhone() {
   const bytes = await fs.readFile(PHONE_PATH);
@@ -33,12 +33,12 @@ async function buildPhoneUseSequence(manifest) {
       ...phone.authorship,
       learnedFrom: [
         ...phone.authorship.learnedFrom,
-        "removed the detached four-part pickup bridge; the registered phone action now begins directly with its intact native sleeve topology",
+        "removed the detached screen-space tap hand; the phone action keeps the authored overlay hand and its native sleeve registration",
       ],
     },
     quality: {
       ...phone.quality,
-      armCompositeMode: "registered-phone-interaction",
+      armCompositeMode: "native-rig",
     },
   };
 }

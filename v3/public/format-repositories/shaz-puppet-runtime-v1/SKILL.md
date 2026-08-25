@@ -5,7 +5,7 @@ description: Render, author, diagnose, and certify repeatable 2D Shaz puppet ani
 
 # Shaz Puppet Runtime
 
-Skill version: **1.1**.
+Skill version: **1.2**.
 
 Use this kit when the user wants a video assembled from the registered Shaz actions in `poses/index.json` or wants to author and certify one action through the recovered rig. The kit is fully local, makes no provider calls, and costs $0.
 
@@ -57,8 +57,8 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Distinguish visible alpha from semantic ownership. A partial eye, hand, or facial drawing may own a larger matte than its painted pixels; reconstruct that envelope and clip occluders behind it instead of shifting artwork or erasing only an outline.
 - Treat internal palette ownership as content: shape, opacity, and connectivity can all pass while teeth, eye whites, tongues, or skin are painted incorrectly. Add direct color-presence gates for stable semantic regions.
 - Animate limbs through their common rig ancestor and preserve one continuous shoulder-to-sleeve-to-hand chain. Never key a sleeve, forearm, hand, or fist as independent screen-space pieces.
-- Establish handheld props before contact. Prefer the native arm chain; if a depth crossover genuinely cannot be represented by the recovered hierarchy, use exactly one checksum-locked torso-local contact assembly at a single authored boundary. A contact-only hand substitution is allowed only while its native sleeve remains connected.
-- Reject a candidate when dense transition frames or normal-speed playback show a detached, duplicated, missing, scale-popping, or independently drifting limb. An asset-ID allowlist is not proof of topology.
+- Establish handheld props before contact and keep the hand inside the native rig hierarchy. Screen-space hand, finger, fist, sleeve, forearm, and arm substitutes are forbidden; matching coordinates do not create a joint. If a bilateral depth crossover genuinely cannot be represented by the recovered hierarchy, use exactly one checksum-locked torso-local assembly at a single authored boundary.
+- Reject a candidate when dense transition frames or normal-speed playback show a detached, duplicated, missing, scale-popping, undersized, oversized, or independently drifting limb. Whole-character connectivity is insufficient. An asset-ID allowlist is not proof of topology. Inspect each hand-to-sleeve joint and its proportion directly.
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
 
