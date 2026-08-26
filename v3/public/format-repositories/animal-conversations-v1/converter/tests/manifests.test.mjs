@@ -4,6 +4,7 @@ import path from "node:path";
 import sharp from "sharp";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { resolveLayers, validateManifest } from "../convert_pose.mjs";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const formatRoot = path.dirname(root);
@@ -85,4 +86,35 @@ test("expression layers use numbered Toon Boom drawing substitutions", async () 
     assert.match(value.layers.find((layer) => layer.id === "eyes").file, /Eyes-2\.tvg$/);
     assert.match(value.layers.find((layer) => layer.id === "mouth").file, /Mouth-1\.tvg$/);
   }
+});
+
+test("shared transforms and paired expression variants resolve together", () => {
+  const sharedTransform = {
+    positionXFields: 8,
+    positionYFields: 5,
+    scaleX: 2,
+    scaleY: 2,
+    rotationDegrees: 0,
+    pivotXFields: -10,
+    pivotYFields: -1,
+  };
+  const value = {
+    id: "paired-expression-fixture",
+    character: "fixture",
+    expectedLayerCount: 2,
+    transforms: { head: sharedTransform },
+    variantGroups: { eyes: ["left-eye", "right-eye"] },
+    layers: [
+      { id: "left-eye", file: "elements/Left_Eye/Left_Eye-1.tvg", transformRef: "head" },
+      { id: "right-eye", file: "elements/Right_Eye/Right_Eye-1.tvg", transformRef: "head" },
+    ],
+  };
+
+  validateManifest(value);
+  const resolved = resolveLayers(value, { eyes: "5" });
+  assert.deepEqual(resolved.map((layer) => layer.file), [
+    "elements/Left_Eye/Left_Eye-5.tvg",
+    "elements/Right_Eye/Right_Eye-5.tvg",
+  ]);
+  assert.deepEqual(resolved.map((layer) => layer.transform), [sharedTransform, sharedTransform]);
 });

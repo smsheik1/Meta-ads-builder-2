@@ -2540,6 +2540,31 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "shaz-puppet-runtime-anatomy-v8",
+    status: "published",
+    showInDiscovery: false,
+    order: 11.72,
+    brand: "Shaz Animated",
+    title: "Four anatomy-critical actions from one recovered 2D rig",
+    curatorNote:
+      "Facepalm, folded arms, celebration, and a phone-free gesture run through the same Harmony-free puppet renderer, with every frame checked for attachment, proportions, continuity, paint order, and provenance.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/final.mp4",
+      poster:
+        "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+      durationLabel: "7 sec",
+      aspectRatio: "16:9",
+    },
+    format: {
+      slug: "shaz-puppet-runtime",
+      name: "Shaz Puppet Runtime",
+      version: "0.1.2",
+      owner: "Shaz",
+    },
+  },
+  {
     id: "davids-cookies-this-is-fine",
     status: "published",
     order: 12,
@@ -2752,6 +2777,13 @@ const discoveryShelfDefinitions = [
     title: "Character Dance-Offs",
     description: "Music, taunts, and reusable choreography built for replayable vertical video.",
     formats: ["bikini-bottom-dance-off"],
+  },
+  {
+    id: "two-d-character-animation",
+    title: "2D Character Animation",
+    description: "Reusable character performance built from recovered 2D rigs and verified semantic actions.",
+    formats: ["shaz-puppet-runtime"],
+    layout: "landscape",
   },
   {
     id: "conversations",

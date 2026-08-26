@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "shaz-action-human-approval-v1",
+  "actionId": "aha",
+  "status": "approved",
+  "reviewer": "user",
+  "approvedAt": "2026-08-18",
+  "reviewedArtifact": "shaz-aha-closeup-review.mp4",
+  "reviewedOutputSha256": "27abd1f593aca51f429d5ad8d2da62a00c54a6cc0f33b03743a2d8d9f6fa193c",
+  "notes": "The user rejected the old Idea classification as only half of the pointing performance and approved the exact motion as a separate Ah-ha body gesture."
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "status": "ready",
+  "finalizedAt": "2026-08-26T04:38:47.700Z",
+  "finalVideo": "final.mp4",
+  "inputSha256": "5735110c7fb278e8c6aef658d5318c2eddee30ae3fab962c732dfa1c4c6a5774",
+  "outputSha256": "bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9",
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "providerCalls": 0,
+  "cost": "$0",
+  "reviewer": "Codex visual review"
+}

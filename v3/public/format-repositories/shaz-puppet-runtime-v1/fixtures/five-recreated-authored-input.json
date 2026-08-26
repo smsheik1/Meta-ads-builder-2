@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Five recreated artist-authored actions",
+  "sequence": [
+    { "poseId": "present", "holdFrames": 12, "gapFrames": 3 },
+    { "poseId": "think", "holdFrames": 12, "gapFrames": 3 },
+    { "poseId": "aha", "holdFrames": 12, "gapFrames": 3 },
+    { "poseId": "point", "holdFrames": 12, "gapFrames": 3 },
+    { "poseId": "confident", "holdFrames": 12, "gapFrames": 0 }
+  ]
+}

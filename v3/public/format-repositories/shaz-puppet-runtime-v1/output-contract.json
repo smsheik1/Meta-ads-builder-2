@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "finalVideo": "final.mp4",
+  "video": { "codec": "h264", "pixelFormat": "yuv420p", "width": 1280, "height": 720, "fps": 24 },
+  "requiredEvidence": [
+    "validation-receipt.json",
+    "render-report.json",
+    "quality-report.json",
+    "contact-sheet.jpg",
+    "human-review.json",
+    "delivery.json"
+  ],
+  "finalization": "Blocked unless validation and inspection pass and human-review.json approves the exact final-video checksum."
+}

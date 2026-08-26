@@ -27,6 +27,12 @@ and paint-region seed data.
 - Complete colored cat and bunny poses pass dimension, alpha coverage,
   transparent-border, required-palette, and source-layer-count checks without
   Toon Boom Harmony.
+- Harmony 22 vector layers may place `tGTB` or `tGTI` pencil metadata after the
+  final counted shape. The decoder now consumes that metadata before validating
+  the fixed layer trailer, with regression coverage for old and new layouts.
+- Manifests may name a shared transform with `transformRef` and may bind one CLI
+  expression selector to paired layers through `variantGroups`. This keeps
+  two-eye substitutions synchronized without duplicating head transforms.
 - The bunny head's detached dark-pink shadow seed is explicitly bound to side 1
   of boundary 11. Required head/body points and packaged-pose tests prevent that
   region from silently becoming transparent again.

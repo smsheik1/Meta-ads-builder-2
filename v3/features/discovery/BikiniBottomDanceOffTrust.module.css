@@ -223,6 +223,18 @@
   object-fit: contain;
 }
 
+.proofGrid[data-aspect="16:9"] {
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+}
+
+.proofGrid[data-aspect="16:9"] .videoFrame {
+  width: 100%;
+}
+
+.proofGrid[data-aspect="16:9"] .videoFrame video {
+  aspect-ratio: 16 / 9;
+}
+
 .timecode {
   position: absolute;
   top: 0.75rem;
@@ -736,6 +748,10 @@
 
   .proofGrid {
     padding: 16px;
+  }
+
+  .proofGrid[data-aspect="16:9"] {
+    grid-template-columns: 1fr;
   }
 
   .gradeSummary {

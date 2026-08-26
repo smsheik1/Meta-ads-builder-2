@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "shaz-action-human-approval-v1",
+  "actionId": "point",
+  "status": "approved",
+  "reviewer": "user",
+  "approvedAt": "2026-08-18",
+  "reviewedArtifact": "shaz-point-v5-cadence-fix-review-candidate.mp4",
+  "reviewedOutputSha256": "37ef0723a61feaeb55ed9eae5baba4739ad7c4422f8453bdb640fedae56e6ce4",
+  "notes": "Approved after shared-master registration and the exact artist-authored stepped exposure cadence removed the normal-speed crawl without changing the internal acting relationships."
+}

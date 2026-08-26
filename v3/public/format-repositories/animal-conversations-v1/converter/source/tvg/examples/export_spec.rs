@@ -34,13 +34,28 @@ struct FillSpec {
     color_id: String,
 }
 
-#[derive(Serialize)]
-struct DrawingSpec {
-    source: String,
+#[derive(Default, Serialize)]
+struct ArtLayerSpec {
     boundaries: Vec<String>,
     seeds: Vec<PaintSeed>,
     fills: Vec<FillSpec>,
     strokes: Vec<StrokeSpec>,
+}
+
+#[derive(Default, Serialize)]
+struct ArtLayersSpec {
+    underlay: ArtLayerSpec,
+    color: ArtLayerSpec,
+    line: ArtLayerSpec,
+    overlay: ArtLayerSpec,
+}
+
+#[derive(Serialize)]
+struct DrawingSpec {
+    source: String,
+    #[serde(flatten)]
+    all: ArtLayerSpec,
+    art_layers: ArtLayersSpec,
 }
 
 struct PaintEntry {
@@ -191,7 +206,7 @@ mod tests {
     }
 }
 
-fn add_color_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: &mut DrawingSpec) {
+fn add_color_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: &mut ArtLayerSpec) {
     let LayerData::Vector(shapes) = layer else { return; };
     for shape in shapes {
         let mut component_paths = Vec::new();
@@ -241,7 +256,7 @@ fn add_color_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: 
     }
 }
 
-fn add_line_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: &mut DrawingSpec) {
+fn add_line_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: &mut ArtLayerSpec) {
     let LayerData::Vector(shapes) = layer else { return; };
     for shape in shapes {
         let mut thickness = None;
@@ -300,15 +315,27 @@ fn main() {
     let palette = palette_map(main);
     let mut drawing = DrawingSpec {
         source,
-        boundaries: Vec::new(),
-        seeds: Vec::new(),
-        fills: Vec::new(),
-        strokes: Vec::new(),
+        all: ArtLayerSpec::default(),
+        art_layers: ArtLayersSpec::default(),
     };
     for item in main {
         match item {
-            FileData::LayerUnderlay(layer) | FileData::LayerColor(layer) => add_color_layer(layer, &palette, &mut drawing),
-            FileData::LayerLine(layer) | FileData::LayerOverlay(layer) => add_line_layer(layer, &palette, &mut drawing),
+            FileData::LayerUnderlay(layer) => {
+                add_color_layer(layer, &palette, &mut drawing.all);
+                add_color_layer(layer, &palette, &mut drawing.art_layers.underlay);
+            }
+            FileData::LayerColor(layer) => {
+                add_color_layer(layer, &palette, &mut drawing.all);
+                add_color_layer(layer, &palette, &mut drawing.art_layers.color);
+            }
+            FileData::LayerLine(layer) => {
+                add_line_layer(layer, &palette, &mut drawing.all);
+                add_line_layer(layer, &palette, &mut drawing.art_layers.line);
+            }
+            FileData::LayerOverlay(layer) => {
+                add_line_layer(layer, &palette, &mut drawing.all);
+                add_line_layer(layer, &palette, &mut drawing.art_layers.overlay);
+            }
             _ => {}
         }
     }

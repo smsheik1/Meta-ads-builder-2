@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "shaz-authored-action-registry-v1",
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistReferenceDurationSeconds": 11.582031,
+  "artistRenderedFramesUsed": false,
+  "actions": [
+    { "id": "present", "recipe": "present.json", "sourceFrames": [37, 55] },
+    { "id": "shrug", "recipe": "shrug.json", "sourceFrames": [67, 97] },
+    { "id": "think", "recipe": "think.json", "sourceFrames": [117, 165] },
+    { "id": "aha", "recipe": "aha.json", "sourceFrames": [189, 201] },
+    { "id": "point", "recipe": "point.json", "sourceFrames": [189, 264] },
+    { "id": "confident", "recipe": "confident.json", "sourceFrames": [287, 299] }
+  ],
+  "excludedPostRoll": {
+    "startFrame": 300,
+    "reason": "unfinished material outside the supplied artist reference"
+  }
+}

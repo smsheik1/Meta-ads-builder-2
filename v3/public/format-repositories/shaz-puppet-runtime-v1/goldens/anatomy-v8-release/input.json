@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Shaz structural anatomy repair review",
+  "sequence": [
+    { "poseId": "facepalm-frustrated", "holdFrames": 8, "gapFrames": 0 },
+    { "poseId": "arms-crossed-skeptical", "holdFrames": 8, "gapFrames": 0 },
+    { "poseId": "excited-celebration", "holdFrames": 8, "gapFrames": 0 },
+    { "poseId": "phone-use-sequence", "holdFrames": 8, "gapFrames": 0 }
+  ]
+}

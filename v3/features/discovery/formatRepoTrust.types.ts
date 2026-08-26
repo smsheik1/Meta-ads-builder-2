@@ -17,6 +17,7 @@ export type FormatRepoTrustData = {
   };
   proof: {
     durationTimeLabel: string;
+    aspectRatio?: "9:16" | "16:9";
   };
   proofCopy: {
     eyebrow: string;

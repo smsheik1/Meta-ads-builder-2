@@ -2,6 +2,8 @@ import type { AnimalConversationsTrustData } from "./animalConversationsTrust.se
 import { getAnimalConversationsTrustData } from "./animalConversationsTrust.server";
 import type { BikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
 import { getBikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
+import type { ShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server";
+import { getShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server";
 
 type RepoPageCopy = {
   runTitle: string;
@@ -23,11 +25,18 @@ export type FormatRepoPagePresentation =
       trust: AnimalConversationsTrustData;
       copy: RepoPageCopy;
       detailedProofId?: undefined;
+    }
+  | {
+      kind: "shaz-puppet-runtime";
+      trust: ShazPuppetRuntimeTrustData;
+      copy: RepoPageCopy;
+      detailedProofId: "shaz-puppet-runtime-anatomy-v8";
     };
 
 export const richFormatRepoSlugs = [
   "bikini-bottom-dance-off",
   "animal-conversations",
+  "shaz-puppet-runtime",
 ] as const;
 
 // These formats predate the rich Repo-page standard. Keep this list frozen so
@@ -113,6 +122,22 @@ export async function getFormatRepoPagePresentation(
         ready: "7–20 minutes",
         examplesTitle: "Finished Conversations.",
       },
+    };
+  }
+
+  if (slug === "shaz-puppet-runtime") {
+    return {
+      kind: slug,
+      trust: await getShazPuppetRuntimeTrustData(),
+      copy: {
+        runTitle: "Animate Shaz.",
+        runDescription:
+          "Choose registered actions and timing. The agent validates, renders, inspects, and waits for your visual approval.",
+        provided: "An action sequence",
+        ready: "2–8 minutes",
+        examplesTitle: "Finished Shaz animations.",
+      },
+      detailedProofId: "shaz-puppet-runtime-anatomy-v8",
     };
   }
 

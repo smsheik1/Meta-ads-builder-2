@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "localTools": [
+    { "name": "node", "minimum": "20", "required": true },
+    { "name": "npm", "required": true },
+    { "name": "ffmpeg", "required": true },
+    { "name": "ffprobe", "required": true },
+    { "name": "zip", "requiredFor": "build:kit" }
+  ],
+  "environmentVariables": [],
+  "providerCalls": [],
+  "networkRequired": false,
+  "estimatedCost": "$0"
+}

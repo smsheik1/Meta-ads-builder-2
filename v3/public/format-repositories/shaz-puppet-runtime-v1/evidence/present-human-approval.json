@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "shaz-action-human-approval-v1",
+  "actionId": "present",
+  "status": "approved",
+  "reviewer": "user",
+  "approvedAt": "2026-08-18",
+  "reviewedArtifact": "shaz-present-review-realtime-and-slow.mp4",
+  "reviewedOutputSha256": "792a3f65a300f5c14eaad0cc55ade3bdca1222615e34386b9c2c72b0ea86d257",
+  "notes": "Approved after the Mouth-2 upper-tooth fill was restored and the corrected real-time plus slow comparison was reviewed."
+}

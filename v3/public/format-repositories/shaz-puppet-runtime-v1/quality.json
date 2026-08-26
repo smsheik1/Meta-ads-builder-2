@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "automaticGates": [
+    "source Xstage provenance",
+    "compiled asset checksums",
+    "pose recipe registry checksum",
+    "native-frame shoulder-to-sleeve-to-hand topology, or exact registered part-replacement tuple, component, exclusivity, and placement contract on replacement frames",
+    "native-frame hand-to-sleeve cuff ownership and contact",
+    "native-frame hand-to-sleeve and hand-to-head proportion limits",
+    "per-frame clipping",
+    "per-frame finished layer order, including recipe-declared native arm crossovers, with hidden construction-arm and stray back-bang rejection",
+    "per-frame facial pop limits",
+    "pose-specific consecutive-identical-frame limit",
+    "exact prop presence",
+    "1280x720 H.264 yuv420p at 24 fps",
+    "exact timeline duration"
+  ],
+  "humanReview": {
+    "required": true,
+    "questions": [
+      "Do action phases, accents, and holds read as intentional animation without choppy pops or accidental pauses?",
+      "Does Shaz remain on-model throughout every action?",
+      "Are props and substitution redraws integrated naturally?",
+      "Do action boundaries play continuously without unintended white separator flashes?",
+      "Would the output be usable in the Shaz animated channel?"
+    ]
+  },
+  "attemptLimit": 3
+}

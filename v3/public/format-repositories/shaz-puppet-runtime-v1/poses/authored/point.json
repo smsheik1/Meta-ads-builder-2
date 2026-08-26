@@ -1,0 +1,7359 @@
+{
+  "schemaVersion": "shaz-pose-recipe-v1",
+  "id": "point",
+  "fps": 24,
+  "durationFrames": 76,
+  "baseFrame": 1,
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "sourceAction": {
+    "startFrame": 189,
+    "endFrame": 264,
+    "generatedFrom": "xstage-control-channels-and-drawing-exposures"
+  },
+  "controls": {
+    "Shaz_Master-P": [
+      {
+        "frame": 1,
+        "position": [
+          2.4424906541753444e-15,
+          -0.0034986326741200387,
+          0
+        ],
+        "rotation": -5.177224967502268,
+        "scale": [
+          0.9999754543906798,
+          1.0000253483028732
+        ],
+        "skew": -0.020858876584434864,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.021582681680357596,
+          -0.0034986326741200387,
+          0
+        ],
+        "rotation": -6.137846930037027,
+        "scale": [
+          0.9999754543906799,
+          1.0000253483028732
+        ],
+        "skew": -0.020858876584434444,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.04316536336071275,
+          -0.0034986326741200387,
+          0
+        ],
+        "rotation": -6.650178643122132,
+        "scale": [
+          0.9999754543906799,
+          1.0000253483028732
+        ],
+        "skew": -0.02085887658443422,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.06474804504106796,
+          -0.0034986326741199393,
+          0
+        ],
+        "rotation": -6.650178643122132,
+        "scale": [
+          0.9999754543906799,
+          1.0000253483028732
+        ],
+        "skew": -0.02085887658443422,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.08633072672142317,
+          -0.0034986326741198396,
+          0
+        ],
+        "rotation": -6.650178643122132,
+        "scale": [
+          0.9999754543906799,
+          1.0000253483028732
+        ],
+        "skew": -0.02085887658443422,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.10791340840177839,
+          -0.0034986326741197403,
+          0
+        ],
+        "rotation": -6.650178643122132,
+        "scale": [
+          0.9999754543906799,
+          1.0000253483028732
+        ],
+        "skew": -0.02085887658443422,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.3884882702463962,
+          -0.003498632674118429,
+          0
+        ],
+        "rotation": -5.604050158224125,
+        "scale": [
+          0.9999754543906797,
+          1.0000253483028736
+        ],
+        "skew": -0.020858876584434784,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0.4100709519267551,
+          -0.0034986326741123755,
+          0
+        ],
+        "rotation": -1.6810683391105299,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028747
+        ],
+        "skew": -0.020858876584436893,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0.42086229276693393,
+          -0.0034986326741104357,
+          0
+        ],
+        "rotation": -0.37340773254770754,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437594,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0.44244497444728886,
+          -0.0034986326741108173,
+          0
+        ],
+        "rotation": -0.7261550828057757,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437545,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          0.464027656127644,
+          -0.003498632674110827,
+          0
+        ],
+        "rotation": -1.784397133424906,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028751
+        ],
+        "skew": -0.02085887658443739,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          0.4856103378079984,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -2.066595013536339,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437348,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0.5935237462097742,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -0.6556056126591409,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437552,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0.6151064278901304,
+          -0.0034986326741104357,
+          0
+        ],
+        "rotation": -0.37340773254770754,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437594,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0.6366891095704845,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -0.7614298178235817,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.02085887658443754,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          0.6582717912508396,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -1.9254960734806226,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028751
+        ],
+        "skew": -0.02085887658443737,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          0.6798544729311948,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -2.066595013536339,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437348,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0.7230198362919051,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -0.6556056126591409,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437552,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0.7446025179722613,
+          -0.0034986326741104357,
+          0
+        ],
+        "rotation": -0.37340773254770754,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437594,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0.7661851996526154,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -0.7614298178235817,
+        "scale": [
+          0.999975454390679,
+          1.0000253483028751
+        ],
+        "skew": -0.02085887658443754,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          0.7877678813329705,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -1.9254960734806226,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028751
+        ],
+        "skew": -0.02085887658443737,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          0.8093505630133258,
+          -0.003498632674111768,
+          0
+        ],
+        "rotation": -2.066595013536339,
+        "scale": [
+          0.9999754543906793,
+          1.0000253483028751
+        ],
+        "skew": -0.020858876584437348,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Shaz_Rig-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.14714522853933665,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -0.1687279102196918,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.19031059190004695,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.2118932735804021,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.23347595526075726,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.2550586369411124,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          -0.5356334987857294,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.5572161804660846,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.5680075213062621,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.5895902029866172,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.6111728846669724,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.6327555663473275,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.7406689747491033,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.7622516564294585,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.7838343381098136,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.8054170197901688,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.8269997014705239,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.8701650648312342,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.8917477465115894,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.9133304281919445,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.9349131098722997,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.9564957915526549,
+          -0.3364520161160909,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1.0586120799079985,
+          1.0586120799079985
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Arms_Master-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.015236988326883636,
+          -0.06320259845425377,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -0.015236988326883635,
+          -0.06320259845425376,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.015236988326883633,
+          -0.06320259845425373,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.015236988326883631,
+          -0.06320259845425372,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.015236988326883628,
+          -0.0632025984542537,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.015236988326883626,
+          -0.06320259845425368,
+          0
+        ],
+        "rotation": 0.5718326669402346,
+        "scale": [
+          1.0000036284014848,
+          0.9999963716122511
+        ],
+        "skew": -0.00006121689319522627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          -0.1554718469703854,
+          -0.14525952189827243,
+          0
+        ],
+        "rotation": 3.081009135612754,
+        "scale": [
+          1.0000181633508207,
+          0.9999818385523451
+        ],
+        "skew": -0.0008029003619974783,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.6815353720068156,
+          -0.452426576386026,
+          0
+        ],
+        "rotation": 12.490420894924174,
+        "scale": [
+          1.000072669410841,
+          0.999927339577687
+        ],
+        "skew": -0.0035842133705348703,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.8573654481878985,
+          -0.5533150989098297,
+          0
+        ],
+        "rotation": 15.62689148182093,
+        "scale": [
+          1.000090838097517,
+          0.9999091732527984
+        ],
+        "skew": -0.004511317706849859,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.7931394083057522,
+          -0.5063601920004844,
+          0
+        ],
+        "rotation": 14.527057125849606,
+        "scale": [
+          1.0000849817956778,
+          0.9999150281859001
+        ],
+        "skew": -0.00406242833789765,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.5962035002745127,
+          -0.375103108735651,
+          0
+        ],
+        "rotation": 11.227554058419143,
+        "scale": [
+          1.000067412890162,
+          0.9999325929852025
+        ],
+        "skew": -0.0027157602312383637,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.5434554768916898,
+          -0.34067083955768723,
+          0
+        ],
+        "rotation": 10.34768657393835,
+        "scale": [
+          1.0000627278486922,
+          0.9999372769316822
+        ],
+        "skew": -0.002356648736197516,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.805379794327362,
+          -0.5170455339766171,
+          0
+        ],
+        "rotation": 14.747023997340138,
+        "scale": [
+          1.0000861530560472,
+          0.9999138571992781
+        ],
+        "skew": -0.004152206211809012,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.8573654481878985,
+          -0.5533150989098297,
+          0
+        ],
+        "rotation": 15.62689148182093,
+        "scale": [
+          1.000090838097517,
+          0.9999091732527984
+        ],
+        "skew": -0.004511317706849859,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.785471695111024,
+          -0.50446629102889,
+          0
+        ],
+        "rotation": 14.41707369027742,
+        "scale": [
+          1.000084396165494,
+          0.9999156136792101
+        ],
+        "skew": -0.004017539401012611,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.5698550727076603,
+          -0.35774950156347435,
+          0
+        ],
+        "rotation": 10.787620316178746,
+        "scale": [
+          1.0000650703694272,
+          0.9999349349584423
+        ],
+        "skew": -0.00253620448371794,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.5434554768916898,
+          -0.34067083955768723,
+          0
+        ],
+        "rotation": 10.34768657393835,
+        "scale": [
+          1.0000627278486922,
+          0.9999372769316822
+        ],
+        "skew": -0.002356648736197516,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.805379794327362,
+          -0.5170455339766171,
+          0
+        ],
+        "rotation": 14.747023997340138,
+        "scale": [
+          1.0000861530560472,
+          0.9999138571992781
+        ],
+        "skew": -0.004152206211809012,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.8573654481878985,
+          -0.5533150989098297,
+          0
+        ],
+        "rotation": 15.62689148182093,
+        "scale": [
+          1.000090838097517,
+          0.9999091732527984
+        ],
+        "skew": -0.004511317706849859,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.785471695111024,
+          -0.50446629102889,
+          0
+        ],
+        "rotation": 14.41707369027742,
+        "scale": [
+          1.000084396165494,
+          0.9999156136792101
+        ],
+        "skew": -0.004017539401012611,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.5698550727076603,
+          -0.35774950156347435,
+          0
+        ],
+        "rotation": 10.787620316178746,
+        "scale": [
+          1.0000650703694272,
+          0.9999349349584423
+        ],
+        "skew": -0.00253620448371794,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.5434554768916898,
+          -0.34067083955768723,
+          0
+        ],
+        "rotation": 10.34768657393835,
+        "scale": [
+          1.0000627278486922,
+          0.9999372769316822
+        ],
+        "skew": -0.002356648736197516,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Collar-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.2086475920351121,
+          -0.08362294881293969,
+          0
+        ],
+        "rotation": 1.3040219619716151,
+        "scale": [
+          1.0000128802868335,
+          1.000017621845654
+        ],
+        "skew": 0.033239011073315804,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.2181112017033443,
+          -0.037717055721471875,
+          0
+        ],
+        "rotation": -1.522848711041664,
+        "scale": [
+          0.9999953322394264,
+          1.000037956064181
+        ],
+        "skew": 0.036521878660693695,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.212904893968314,
+          0.009866709582459606,
+          0
+        ],
+        "rotation": -4.349719384054943,
+        "scale": [
+          0.9999777841920191,
+          1.000058290282708
+        ],
+        "skew": 0.039804746248071586,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.20231758816105486,
+          0.02309970232784025,
+          0
+        ],
+        "rotation": -5.480467653003785,
+        "scale": [
+          0.9999707649730578,
+          1.000066423970117
+        ],
+        "skew": 0.0411178932827249,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.20231758816105488,
+          0.02309970232784025,
+          0
+        ],
+        "rotation": -5.480467653003785,
+        "scale": [
+          0.9999707649730578,
+          1.000066423970117
+        ],
+        "skew": 0.0411178932827249,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.20231758816105494,
+          0.023099702327840248,
+          0
+        ],
+        "rotation": -5.480467653003785,
+        "scale": [
+          0.9999707649730578,
+          1.000066423970117
+        ],
+        "skew": 0.0411178932827249,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.09567426983127676,
+          -0.058699472794002575,
+          0
+        ],
+        "rotation": -2.5488984804675745,
+        "scale": [
+          0.9999896879180653,
+          1.0000538661907
+        ],
+        "skew": 0.04761166906307959,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.30417484922868443,
+          -0.3655939113045339,
+          0
+        ],
+        "rotation": 8.444485918633927,
+        "scale": [
+          1.0000606489618569,
+          1.0000067745178771
+        ],
+        "skew": 0.07196332824404086,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.43728188175824817,
+          -0.4682953924987355,
+          0
+        ],
+        "rotation": 12.10894738553808,
+        "scale": [
+          1.0000843026431243,
+          0.9999910772936005
+        ],
+        "skew": 0.08008054797221745,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.3996783602809805,
+          -0.44223943020504114,
+          0
+        ],
+        "rotation": 11.049107530249278,
+        "scale": [
+          1.0000782493465554,
+          0.9999971388650216
+        ],
+        "skew": 0.08043197951160891,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.28841507276359996,
+          -0.3601202023113416,
+          0
+        ],
+        "rotation": 7.869587964848795,
+        "scale": [
+          1.0000600894568517,
+          1.0000153235792821
+        ],
+        "skew": 0.08148627412962876,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.26156979850546114,
+          -0.33242195161453225,
+          0
+        ],
+        "rotation": 7.021716080903247,
+        "scale": [
+          1.0000552468195982,
+          1.0000201728364173
+        ],
+        "skew": 0.08176741936104726,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.40630194760154187,
+          -0.45152166543544736,
+          0
+        ],
+        "rotation": 11.261075501592533,
+        "scale": [
+          1.000079460005871,
+          0.9999959265507357
+        ],
+        "skew": 0.08036169320363594,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.43728188175824817,
+          -0.4682953924987355,
+          0
+        ],
+        "rotation": 12.10894738553808,
+        "scale": [
+          1.0000843026431243,
+          0.9999910772936005
+        ],
+        "skew": 0.08008054797221745,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.3966022023296153,
+          -0.4379149666699295,
+          0
+        ],
+        "rotation": 10.943123544744436,
+        "scale": [
+          1.0000776440168988,
+          0.9999977450221635
+        ],
+        "skew": 0.08046712266554008,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.2740937649312544,
+          -0.3478082012802154,
+          0
+        ],
+        "rotation": 7.445652022876021,
+        "scale": [
+          1.000057668138225,
+          1.0000177482078496
+        ],
+        "skew": 0.08162684674533802,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.26156979850546114,
+          -0.33242195161453225,
+          0
+        ],
+        "rotation": 7.021716080903247,
+        "scale": [
+          1.0000552468195982,
+          1.0000201728364173
+        ],
+        "skew": 0.08176741936104726,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.40630194760154187,
+          -0.45152166543544736,
+          0
+        ],
+        "rotation": 11.261075501592533,
+        "scale": [
+          1.000079460005871,
+          0.9999959265507357
+        ],
+        "skew": 0.08036169320363594,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.43728188175824817,
+          -0.4682953924987355,
+          0
+        ],
+        "rotation": 12.10894738553808,
+        "scale": [
+          1.0000843026431243,
+          0.9999910772936005
+        ],
+        "skew": 0.08008054797221745,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.3966022023296153,
+          -0.4379149666699295,
+          0
+        ],
+        "rotation": 10.943123544744436,
+        "scale": [
+          1.0000776440168988,
+          0.9999977450221635
+        ],
+        "skew": 0.08046712266554008,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.2740937649312544,
+          -0.3478082012802154,
+          0
+        ],
+        "rotation": 7.445652022876021,
+        "scale": [
+          1.000057668138225,
+          1.0000177482078496
+        ],
+        "skew": 0.08162684674533802,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.26156979850546114,
+          -0.33242195161453225,
+          0
+        ],
+        "rotation": 7.021716080903247,
+        "scale": [
+          1.0000552468195982,
+          1.0000201728364173
+        ],
+        "skew": 0.08176741936104726,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Left_Arm_MOVE-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.37552302831811135,
+          0.674067256252064,
+          0
+        ],
+        "rotation": -48.09082934102117,
+        "scale": [
+          0.9998535417672286,
+          1.0001465722742577
+        ],
+        "skew": -0.01991273762406748,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -0.40744154157073287,
+          0.7560147840815534,
+          0
+        ],
+        "rotation": -61.887416429517565,
+        "scale": [
+          0.9998597471020733,
+          1.0001404276675747
+        ],
+        "skew": -0.02885083936043807,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.4160423150258439,
+          0.8434315835063877,
+          0
+        ],
+        "rotation": -75.68400351801397,
+        "scale": [
+          0.9998659524369179,
+          1.0001342830608915
+        ],
+        "skew": -0.037788941096808665,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.4160423150258439,
+          0.8434315835063877,
+          0
+        ],
+        "rotation": -75.68400351801397,
+        "scale": [
+          0.9998659524369179,
+          1.0001342830608915
+        ],
+        "skew": -0.037788941096808665,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.4160423150258439,
+          0.8434315835063877,
+          0
+        ],
+        "rotation": -75.68400351801397,
+        "scale": [
+          0.9998659524369179,
+          1.0001342830608915
+        ],
+        "skew": -0.037788941096808665,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.41604231502584393,
+          0.8434315835063877,
+          0
+        ],
+        "rotation": -75.68400351801397,
+        "scale": [
+          0.9998659524369179,
+          1.0001342830608915
+        ],
+        "skew": -0.037788941096808665,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          -0.3722241479621797,
+          0.8561404754161424,
+          0
+        ],
+        "rotation": -76.49059912996034,
+        "scale": [
+          0.9998798376561486,
+          1.0001203980523412
+        ],
+        "skew": -0.03751201570540132,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.2079060214422102,
+          0.9037988200867726,
+          0
+        ],
+        "rotation": -54.361728339608995,
+        "scale": [
+          0.9998069166641765,
+          1.0001932187373144
+        ],
+        "skew": -0.024291921640462254,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -48.75060329161341,
+        "scale": [
+          0.9997913809345049,
+          1.0002087281258494
+        ],
+        "skew": -0.020740074414445243,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.1531333125941925,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -45.3405531163098,
+        "scale": [
+          0.9997975665326941,
+          1.0002025292684649
+        ],
+        "skew": -0.018372809741432218,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.15313331259420707,
+          0.9196849349793155,
+          0
+        ],
+        "rotation": -35.11040259189811,
+        "scale": [
+          0.9998161233272592,
+          1.0001839326963142
+        ],
+        "skew": -0.01127101572343383,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.15313331259420862,
+          0.9196849349793137,
+          0
+        ],
+        "rotation": -32.38236245257381,
+        "scale": [
+          0.999821071805809,
+          1.0001789736104085
+        ],
+        "skew": -0.00937720398566109,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.15313331259420862,
+          0.9196849349793137,
+          0
+        ],
+        "rotation": -46.02256315228911,
+        "scale": [
+          0.9997963294130547,
+          1.0002037690399437
+        ],
+        "skew": -0.018846262676672505,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -48.75060329161341,
+        "scale": [
+          0.9997913809345049,
+          1.0002087281258494
+        ],
+        "skew": -0.020740074414445243,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -44.99954809885679,
+        "scale": [
+          0.9997981850925131,
+          1.0002019093827266
+        ],
+        "skew": -0.018136083274184606,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -33.74638252223596,
+        "scale": [
+          0.9998185975665341,
+          1.0001814531533615
+        ],
+        "skew": -0.01032410985454746,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.15313331259420862,
+          0.9196849349793137,
+          0
+        ],
+        "rotation": -32.38236245257381,
+        "scale": [
+          0.999821071805809,
+          1.0001789736104085
+        ],
+        "skew": -0.00937720398566109,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.15313331259420862,
+          0.9196849349793137,
+          0
+        ],
+        "rotation": -46.02256315228911,
+        "scale": [
+          0.9997963294130547,
+          1.0002037690399437
+        ],
+        "skew": -0.018846262676672505,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -48.75060329161341,
+        "scale": [
+          0.9997913809345049,
+          1.0002087281258494
+        ],
+        "skew": -0.020740074414445243,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -44.99954809885679,
+        "scale": [
+          0.9997981850925131,
+          1.0002019093827266
+        ],
+        "skew": -0.018136083274184606,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.15313331259419244,
+          0.9196849349793117,
+          0
+        ],
+        "rotation": -33.74638252223596,
+        "scale": [
+          0.9998185975665341,
+          1.0001814531533615
+        ],
+        "skew": -0.01032410985454746,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.15313331259420862,
+          0.9196849349793137,
+          0
+        ],
+        "rotation": -32.38236245257381,
+        "scale": [
+          0.999821071805809,
+          1.0001789736104085
+        ],
+        "skew": -0.00937720398566109,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Left_Arm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          5.995204332975845e-15,
+          -3.3639757646142243e-14,
+          0
+        ],
+        "rotation": -14.580985221008756,
+        "scale": [
+          0.9998526036039382,
+          1.0001475577646706
+        ],
+        "skew": -0.011743534685541762,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -3.872015375850123e-15,
+          -3.331934500058265e-15,
+          2.0650358656298575e-19
+        ],
+        "rotation": -10.09674201082227,
+        "scale": [
+          0.9998790797969306,
+          1.0001210699696723
+        ],
+        "skew": -0.00979451977201885,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          7.771561172376096e-16,
+          -1.3877787807814457e-16,
+          -1.734723475976807e-18
+        ],
+        "rotation": -1.1692453062817485,
+        "scale": [
+          0.9999254670349408,
+          1.0000746557923814
+        ],
+        "skew": -0.005538039450771441,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Left_Forearm-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.013458522353431444,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -0.013458522353431444,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.013458522353431444,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.013458522353431444,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.013458522353431444,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.013458522353431446,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          -0.013458522353431448,
+          -0.053834089413723606,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.013458522353431448,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.013458522353431448,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.013458522353431448,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.013458522353431448,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.013458522353431448,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.01345852235343145,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.01345852235343145,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.01345852235343145,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.01345852235343145,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.01345852235343145,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.013458522353431451,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.013458522353431451,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.013458522353431451,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.013458522353431451,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.013458522353431451,
+          -0.05383408941372361,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Left_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.029913316011518816,
+          0.0013072605859153937,
+          0
+        ],
+        "rotation": -17.99927798004694,
+        "scale": [
+          1.000246156063147,
+          0.9997547608838723
+        ],
+        "skew": 0.013073205218817958,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          1.149080830487037e-14,
+          -1.5654144647214707e-14,
+          0
+        ],
+        "rotation": -74.53947917783253,
+        "scale": [
+          1.0000750087818902,
+          0.9999259003497093
+        ],
+        "skew": -0.028708356132199787,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          8.664170803002642e-15,
+          -9.790597539323684e-15,
+          -9.705577068314574e-18
+        ],
+        "rotation": -86.7956007360165,
+        "scale": [
+          1.000004355939265,
+          0.9999965421776236
+        ],
+        "skew": -0.03582260704199126,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          8.448061048243789e-15,
+          -9.648520222932849e-15,
+          -1.0109976112827656e-17
+        ],
+        "rotation": -91.70612092346353,
+        "scale": [
+          0.9999971473621084,
+          1.0000037595201146
+        ],
+        "skew": -0.038909376796564706,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          8.733764122082001e-15,
+          -9.948291398805473e-15,
+          -9.555998786540785e-18
+        ],
+        "rotation": -91.70612092346353,
+        "scale": [
+          0.9999971473621084,
+          1.0000037595201146
+        ],
+        "skew": -0.038909376796564706,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          9.019467195920214e-15,
+          -1.0248062574678096e-14,
+          -9.002021460253913e-18
+        ],
+        "rotation": -91.70612092346353,
+        "scale": [
+          0.9999971473621084,
+          1.0000037595201146
+        ],
+        "skew": -0.038909376796564706,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          -0.020257361820226694,
+          -0.010158123302992483,
+          0
+        ],
+        "rotation": -87.92294769333388,
+        "scale": [
+          1.0000235563281679,
+          0.9999773434973007
+        ],
+        "skew": -0.03383596537109306,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.0962224686606023,
+          -0.048251085696408125,
+          0
+        ],
+        "rotation": -60.50834313194989,
+        "scale": [
+          0.999914550625857,
+          1.0000862281591987
+        ],
+        "skew": -0.015666126416286216,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.12154417094442721,
+          -0.060948739829444376,
+          0
+        ],
+        "rotation": -33.272798371739576,
+        "scale": [
+          0.9998999073644577,
+          1.0001007897246779
+        ],
+        "skew": 0.00838779798342824,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.09622246866059693,
+          -0.048251085696433764,
+          7.825786990749868e-19
+        ],
+        "rotation": -41.4079468036355,
+        "scale": [
+          0.9998929384332892,
+          1.0001077817568769
+        ],
+        "skew": 0.0009470068670199257,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.02025736182023617,
+          -0.010158123302986218,
+          2.514929662002829e-19
+        ],
+        "rotation": -65.8133920957469,
+        "scale": [
+          0.9998720316397867,
+          1.0001287578534706
+        ],
+        "skew": -0.021375366478933906,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          7.494005416219807e-15,
+          1.6653345369377348e-15,
+          0
+        ],
+        "rotation": -72.32151083907225,
+        "scale": [
+          0.9998664564948537,
+          1.0001343514792278
+        ],
+        "skew": -0.027327999370056196,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.1012868091241839,
+          -0.050790616526457076,
+          0
+        ],
+        "rotation": -39.78091711506491,
+        "scale": [
+          0.9998943322195247,
+          1.0001063833504351
+        ],
+        "skew": 0.0024351650923059524,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.12154417094442721,
+          -0.060948739829444376,
+          0
+        ],
+        "rotation": -33.272798371739576,
+        "scale": [
+          0.9998999073644577,
+          1.0001007897246779
+        ],
+        "skew": 0.00838779798342824,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.0936902984327877,
+          -0.04698132028342139,
+          0
+        ],
+        "rotation": -42.22146164664057,
+        "scale": [
+          0.9998922415401724,
+          1.0001084809600964
+        ],
+        "skew": 0.00020292775554786244,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.010128680910114107,
+          -0.005079061651492602,
+          0
+        ],
+        "rotation": -69.06745146740957,
+        "scale": [
+          0.9998692440673203,
+          1.0001315546663492
+        ],
+        "skew": -0.02435168292449505,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          7.494005416219807e-15,
+          1.6653345369377348e-15,
+          0
+        ],
+        "rotation": -72.32151083907225,
+        "scale": [
+          0.9998664564948537,
+          1.0001343514792278
+        ],
+        "skew": -0.027327999370056196,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.1012868091241839,
+          -0.050790616526457076,
+          0
+        ],
+        "rotation": -39.78091711506491,
+        "scale": [
+          0.9998943322195247,
+          1.0001063833504351
+        ],
+        "skew": 0.0024351650923059524,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.12154417094442721,
+          -0.060948739829444376,
+          0
+        ],
+        "rotation": -33.272798371739576,
+        "scale": [
+          0.9998999073644577,
+          1.0001007897246779
+        ],
+        "skew": 0.00838779798342824,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.0936902984327877,
+          -0.04698132028342139,
+          0
+        ],
+        "rotation": -42.22146164664057,
+        "scale": [
+          0.9998922415401724,
+          1.0001084809600964
+        ],
+        "skew": 0.00020292775554786244,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.010128680910114107,
+          -0.005079061651492602,
+          0
+        ],
+        "rotation": -69.06745146740957,
+        "scale": [
+          0.9998692440673203,
+          1.0001315546663492
+        ],
+        "skew": -0.02435168292449505,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          7.494005416219807e-15,
+          1.6653345369377348e-15,
+          0
+        ],
+        "rotation": -72.32151083907225,
+        "scale": [
+          0.9998664564948537,
+          1.0001343514792278
+        ],
+        "skew": -0.027327999370056196,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Left_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          -1.546107228254833,
+          -0.3938953925401698,
+          -0.01020599365234375
+        ],
+        "rotation": 55.600705316043395,
+        "scale": [
+          1.0005727211080222,
+          0.9994277214456984
+        ],
+        "skew": -0.008460998735489961,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -1.3233106117101057,
+          -0.6517776105186776,
+          -0.123870849609375
+        ],
+        "rotation": 47.8618918984566,
+        "scale": [
+          1.000419852324129,
+          0.999580415393753
+        ],
+        "skew": 0.0036211712430368735,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.342329612980718,
+          -0.14385766663323862,
+          -0.036184552047259996
+        ],
+        "rotation": 7.918607433502544,
+        "scale": [
+          1.000093431406182,
+          0.999906638177471
+        ],
+        "skew": -0.0005629004412520612,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.1017214956172967,
+          -0.006173068730488444,
+          -0.0074700890663405685
+        ],
+        "rotation": -2.0672136824751215,
+        "scale": [
+          1.0000118261766975,
+          0.9999881938733984
+        ],
+        "skew": -0.0016089183622969706,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          1.0824674490095276e-15,
+          1.3359539169366386e-15,
+          3.791454997181809e-16
+        ],
+        "rotation": -5.907914111139829,
+        "scale": [
+          0.9999804395499772,
+          1.0000195614487506
+        ],
+        "skew": -0.0020112329472558484,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          1.0894063429134349e-15,
+          1.3375802201953668e-15,
+          3.7909128960955663e-16
+        ],
+        "rotation": -5.907914111139829,
+        "scale": [
+          0.9999804395499772,
+          1.0000195614487506
+        ],
+        "skew": -0.0020112329472558484,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.08601667497378762,
+          -0.060938905740733684,
+          0
+        ],
+        "rotation": -19.295817148515646,
+        "scale": [
+          0.999971739234271,
+          1.0000282774878244
+        ],
+        "skew": -0.009221003891786284,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0.4610706232219994,
+          -0.5347354084077938,
+          0
+        ],
+        "rotation": -30.29240139258,
+        "scale": [
+          1.0412299958788913,
+          1.0668114073810027
+        ],
+        "skew": 23.69624992033675,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0.514258056447356,
+          -0.3700091085891767,
+          0
+        ],
+        "rotation": -30.418765547807553,
+        "scale": [
+          0.9999482728792367,
+          1.0000517578659818
+        ],
+        "skew": -0.013575093384705288,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0.33584056881973134,
+          -0.26708023842337764,
+          -3.65595255035276e-17
+        ],
+        "rotation": -23.203076686236876,
+        "scale": [
+          0.9999623743345588,
+          1.0000376500991996
+        ],
+        "skew": -0.010510920153436354,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.19378292970989708,
+          0.05997880450350184,
+          -1.1579584816196687e-17
+        ],
+        "rotation": -1.5560101046970072,
+        "scale": [
+          1.000004678700519,
+          0.99999532679886
+        ],
+        "skew": -0.0013184004609766162,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.33281471479936797,
+          0.15282883154360638,
+          0
+        ],
+        "rotation": 4.2165409826158085,
+        "scale": [
+          1.0000159598647729,
+          0.9999840405854382
+        ],
+        "skew": 0.0011329381232131194,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0.37186386155558426,
+          -0.28671795886607443,
+          0
+        ],
+        "rotation": -24.64621446049474,
+        "scale": [
+          0.9999595540434906,
+          1.00004047165256
+        ],
+        "skew": -0.011123754800515553,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0.514258056447356,
+          -0.3700091085891767,
+          0
+        ],
+        "rotation": -30.418765547807553,
+        "scale": [
+          0.9999482728792367,
+          1.0000517578659818
+        ],
+        "skew": -0.013575093384705288,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0.31974876733014723,
+          -0.25105252643173365,
+          0
+        ],
+        "rotation": -22.481507800243474,
+        "scale": [
+          0.9999637844800907,
+          1.0000362393225217
+        ],
+        "skew": -0.01020450283037896,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.263900881057515,
+          0.1054702151666944,
+          0
+        ],
+        "rotation": 1.3302654389594004,
+        "scale": [
+          1.000010319282646,
+          0.9999896836921491
+        ],
+        "skew": -0.0000927311688817484,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.33281471479936797,
+          0.15282883154360638,
+          0
+        ],
+        "rotation": 4.2165409826158085,
+        "scale": [
+          1.0000159598647729,
+          0.9999840405854382
+        ],
+        "skew": 0.0011329381232131194,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0.37186386155558426,
+          -0.28671795886607443,
+          0
+        ],
+        "rotation": -24.64621446049474,
+        "scale": [
+          0.9999595540434906,
+          1.00004047165256
+        ],
+        "skew": -0.011123754800515553,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0.514258056447356,
+          -0.3700091085891767,
+          0
+        ],
+        "rotation": -30.418765547807553,
+        "scale": [
+          0.9999482728792367,
+          1.0000517578659818
+        ],
+        "skew": -0.013575093384705288,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0.31974876733014723,
+          -0.25105252643173365,
+          0
+        ],
+        "rotation": -22.481507800243474,
+        "scale": [
+          0.9999637844800907,
+          1.0000362393225217
+        ],
+        "skew": -0.01020450283037896,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.263900881057515,
+          0.1054702151666944,
+          0
+        ],
+        "rotation": 1.3302654389594004,
+        "scale": [
+          1.000010319282646,
+          0.9999896836921491
+        ],
+        "skew": -0.0000927311688817484,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.33281471479936797,
+          0.15282883154360638,
+          0
+        ],
+        "rotation": 4.2165409826158085,
+        "scale": [
+          1.0000159598647729,
+          0.9999840405854382
+        ],
+        "skew": 0.0011329381232131194,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Pouch-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.00327963523299394,
+          0.029146423318491037,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          -0.0036042500088300095,
+          0.03216467572963419,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          -0.0037858846467369337,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          -0.0037858846467369337,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          -0.0037858846467369337,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          -0.0037858846467369337,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.003785884646736934,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.0037858846467369346,
+          0.03385924063764325,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Right_Arm_MOVE-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.12008152893161333,
+          -0.2668297688397755,
+          0
+        ],
+        "rotation": 3.500645421607136,
+        "scale": [
+          1.0000220020415502,
+          0.9999779984836081
+        ],
+        "skew": -0.0005046871246729274,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.1244672930350504,
+          -0.2793093489200553,
+          0
+        ],
+        "rotation": 3.570512183977736,
+        "scale": [
+          1.0000224360416867,
+          0.9999775645033695
+        ],
+        "skew": -0.0005174778637562995,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.1281764033660129,
+          -0.28483645192446816,
+          0
+        ],
+        "rotation": 3.6077744572226544,
+        "scale": [
+          1.000022667508426,
+          0.9999773330472423
+        ],
+        "skew": -0.0005242995912638793,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.1281764033660129,
+          -0.28483645192446816,
+          0
+        ],
+        "rotation": 3.6077744572226544,
+        "scale": [
+          1.000022667508426,
+          0.9999773330472423
+        ],
+        "skew": -0.0005242995912638793,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.1281764033660129,
+          -0.28483645192446816,
+          0
+        ],
+        "rotation": 3.6077744572226544,
+        "scale": [
+          1.000022667508426,
+          0.9999773330472423
+        ],
+        "skew": -0.0005242995912638793,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.1281764033660129,
+          -0.2848364519244682,
+          0
+        ],
+        "rotation": 3.6077744572226544,
+        "scale": [
+          1.000022667508426,
+          0.9999773330472423
+        ],
+        "skew": -0.0005242995912638793,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.14900138227914309,
+          -0.3065564264081138,
+          0
+        ],
+        "rotation": 4.370551333006379,
+        "scale": [
+          1.0000272719762422,
+          0.9999727289775998
+        ],
+        "skew": -0.0007121427732700075,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0.22709505321823814,
+          -0.3880063307372801,
+          0
+        ],
+        "rotation": 7.230964617739335,
+        "scale": [
+          1.0000445387305552,
+          0.9999554637164371
+        ],
+        "skew": -0.0014165547059269527,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0.253126276868417,
+          -0.4151562988509802,
+          0
+        ],
+        "rotation": 8.184435712790043,
+        "scale": [
+          1.000050294315327,
+          0.9999497086293819
+        ],
+        "skew": -0.0016513586835136757,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0.2531262768684176,
+          -0.41515629885098193,
+          0
+        ],
+        "rotation": 7.551767905050499,
+        "scale": [
+          1.0000465108543086,
+          0.999953491714786
+        ],
+        "skew": -0.0014837504451447319,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          0.2531262768684176,
+          -0.4151562988509823,
+          0
+        ],
+        "rotation": 5.653764482110002,
+        "scale": [
+          1.0000351604712556,
+          0.9999648409709964
+        ],
+        "skew": -0.0009809257301115842,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          0.2531262768684175,
+          -0.4151562988509825,
+          0
+        ],
+        "rotation": 5.147630236088792,
+        "scale": [
+          1.000032133702442,
+          0.9999678674393185
+        ],
+        "skew": -0.0008468391394615786,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0.2531262768684175,
+          -0.4151562988509818,
+          0
+        ],
+        "rotation": 7.678301466768833,
+        "scale": [
+          1.0000472675465135,
+          0.9999527350977041
+        ],
+        "skew": -0.0015172720928636702,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0.253126276868417,
+          -0.4151562988509802,
+          0
+        ],
+        "rotation": 8.184435712790043,
+        "scale": [
+          1.000050294315327,
+          0.9999497086293819
+        ],
+        "skew": -0.0016513586835136757,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0.253126276868417,
+          -0.4151562988509802,
+          0
+        ],
+        "rotation": 7.488501124290895,
+        "scale": [
+          1.000046132508207,
+          0.9999538700233263
+        ],
+        "skew": -0.001466989621311639,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          0.2531262768684176,
+          -0.4151562988509821,
+          0
+        ],
+        "rotation": 5.400697359099397,
+        "scale": [
+          1.0000336470868487,
+          0.9999663542051574
+        ],
+        "skew": -0.0009138824347865814,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          0.2531262768684175,
+          -0.4151562988509825,
+          0
+        ],
+        "rotation": 5.147630236088792,
+        "scale": [
+          1.000032133702442,
+          0.9999678674393185
+        ],
+        "skew": -0.0008468391394615786,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0.2531262768684175,
+          -0.4151562988509818,
+          0
+        ],
+        "rotation": 7.678301466768833,
+        "scale": [
+          1.0000472675465135,
+          0.9999527350977041
+        ],
+        "skew": -0.0015172720928636702,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0.253126276868417,
+          -0.4151562988509802,
+          0
+        ],
+        "rotation": 8.184435712790043,
+        "scale": [
+          1.000050294315327,
+          0.9999497086293819
+        ],
+        "skew": -0.0016513586835136757,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0.253126276868417,
+          -0.4151562988509802,
+          0
+        ],
+        "rotation": 7.488501124290895,
+        "scale": [
+          1.000046132508207,
+          0.9999538700233263
+        ],
+        "skew": -0.001466989621311639,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          0.2531262768684176,
+          -0.4151562988509821,
+          0
+        ],
+        "rotation": 5.400697359099397,
+        "scale": [
+          1.0000336470868487,
+          0.9999663542051574
+        ],
+        "skew": -0.0009138824347865814,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          0.2531262768684175,
+          -0.4151562988509825,
+          0
+        ],
+        "rotation": 5.147630236088792,
+        "scale": [
+          1.000032133702442,
+          0.9999678674393185
+        ],
+        "skew": -0.0008468391394615786,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Right_Arm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.18821268130819405,
+          0.35382044254468625,
+          0
+        ],
+        "rotation": 27.589739817604602,
+        "scale": [
+          1.0001160485244611,
+          0.9998839974691562
+        ],
+        "skew": -0.012421590302165627,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.2106359889336035,
+          0.38783890651283215,
+          0
+        ],
+        "rotation": 32.194436238568706,
+        "scale": [
+          1.0001370244937546,
+          0.9998630296214195
+        ],
+        "skew": -0.014639294683364576,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.2233314650680079,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.2233314650680079,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.2233314650680079,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.2233314650680079,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.22333146506800794,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0.22333146506800794,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0.22333146506800794,
+          0.4067916790677863,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          0.22333146506800797,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0.223331465068008,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0.223331465068008,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0.223331465068008,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          0.223331465068008,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          0.223331465068008,
+          0.40679167906778624,
+          0
+        ],
+        "rotation": 33.81668064773396,
+        "scale": [
+          1.000144236309218,
+          0.9998558206541234
+        ],
+        "skew": -0.015409783877476999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Right_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          1.0550640504792771e-14,
+          -1.8917054579529915e-14,
+          0
+        ],
+        "rotation": -73.16281357423382,
+        "scale": [
+          0.9999532280164305,
+          1.0000469818500974
+        ],
+        "skew": -0.03266563754957664,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          9.688487571669271e-15,
+          -2.0908866261747878e-14,
+          0
+        ],
+        "rotation": -83.95402415575379,
+        "scale": [
+          0.9999504027469535,
+          1.0000498460351415
+        ],
+        "skew": -0.03898469802690899,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          9.909015065181948e-15,
+          -2.291676948396934e-14,
+          0
+        ],
+        "rotation": -88.67502612489777,
+        "scale": [
+          0.9999508942676476,
+          1.0000493708774765
+        ],
+        "skew": -0.041532181140565304,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          9.887547573472865e-15,
+          -2.272242922803032e-14,
+          0
+        ],
+        "rotation": -88.67502612489777,
+        "scale": [
+          0.9999508942676476,
+          1.0000493708774765
+        ],
+        "skew": -0.041532181140565304,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          9.866080081763783e-15,
+          -2.25280889720913e-14,
+          0
+        ],
+        "rotation": -88.67502612489777,
+        "scale": [
+          0.9999508942676476,
+          1.0000493708774765
+        ],
+        "skew": -0.041532181140565304,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          9.8446125900547e-15,
+          -2.2333748716152282e-14,
+          0
+        ],
+        "rotation": -88.67502612489777,
+        "scale": [
+          0.9999508942676476,
+          1.0000493708774765
+        ],
+        "skew": -0.041532181140565304,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          9.53428005008045e-15,
+          -1.9950321348664528e-14,
+          0
+        ],
+        "rotation": -90.40131483721426,
+        "scale": [
+          0.9999618915013957,
+          1.0000383740924748
+        ],
+        "skew": -0.04159560584990798,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          6.514726891559037e-15,
+          -2.4445128834027877e-14,
+          0
+        ],
+        "rotation": -96.87489750963223,
+        "scale": [
+          1.0000031311279591,
+          0.9999971361487107
+        ],
+        "skew": -0.04183344850998825,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          5.495603971894525e-15,
+          -2.631228568361621e-14,
+          0
+        ],
+        "rotation": -99.03275840075445,
+        "scale": [
+          1.0000168776701488,
+          0.9999833901674539
+        ],
+        "skew": -0.04191272939669329,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          6.5662325547588055e-15,
+          -2.6440263984552543e-14,
+          0
+        ],
+        "rotation": -97.53819803893961,
+        "scale": [
+          1.0000073177332969,
+          0.9999929502966876
+        ],
+        "skew": -0.04191851028577999,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          1.0685110183147561e-14,
+          -2.5672353281343776e-14,
+          0
+        ],
+        "rotation": -93.05451695415216,
+        "scale": [
+          0.9999786379227457,
+          1.0000216306843843
+        ],
+        "skew": -0.04193585295303754,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          1.149080830487037e-14,
+          -2.4646951146678475e-14,
+          0
+        ],
+        "rotation": -91.85886866510289,
+        "scale": [
+          0.9999709899732667,
+          1.0000292787877687
+        ],
+        "skew": -0.04194047766430534,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          6.560533306987122e-15,
+          -2.6757764588275882e-14,
+          0
+        ],
+        "rotation": -97.83711011170517,
+        "scale": [
+          1.00000922972067,
+          0.9999910382708382
+        ],
+        "skew": -0.04191735410796109,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          5.495603971894525e-15,
+          -2.631228568361621e-14,
+          0
+        ],
+        "rotation": -99.03275840075445,
+        "scale": [
+          1.0000168776701488,
+          0.9999833901674539
+        ],
+        "skew": -0.04191272939669329,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          6.616600652976872e-15,
+          -2.6150063894814097e-14,
+          0
+        ],
+        "rotation": -97.38874200279203,
+        "scale": [
+          1.000006361739612,
+          0.9999939063096106
+        ],
+        "skew": -0.04191908837468853,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          1.059525775495968e-14,
+          -2.5663054334404307e-14,
+          0
+        ],
+        "rotation": -92.45669280962753,
+        "scale": [
+          0.9999748139480062,
+          1.0000254547360765
+        ],
+        "skew": -0.041938165308671435,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          1.149080830487037e-14,
+          -2.4646951146678475e-14,
+          0
+        ],
+        "rotation": -91.85886866510289,
+        "scale": [
+          0.9999709899732667,
+          1.0000292787877687
+        ],
+        "skew": -0.04194047766430534,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          6.560533306987122e-15,
+          -2.6757764588275882e-14,
+          0
+        ],
+        "rotation": -97.83711011170517,
+        "scale": [
+          1.00000922972067,
+          0.9999910382708382
+        ],
+        "skew": -0.04191735410796109,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          5.495603971894525e-15,
+          -2.631228568361621e-14,
+          0
+        ],
+        "rotation": -99.03275840075445,
+        "scale": [
+          1.0000168776701488,
+          0.9999833901674539
+        ],
+        "skew": -0.04191272939669329,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          6.616600652976872e-15,
+          -2.6150063894814097e-14,
+          0
+        ],
+        "rotation": -97.38874200279203,
+        "scale": [
+          1.000006361739612,
+          0.9999939063096106
+        ],
+        "skew": -0.04191908837468853,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          1.059525775495968e-14,
+          -2.5663054334404307e-14,
+          0
+        ],
+        "rotation": -92.45669280962753,
+        "scale": [
+          0.9999748139480062,
+          1.0000254547360765
+        ],
+        "skew": -0.041938165308671435,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          1.149080830487037e-14,
+          -2.4646951146678475e-14,
+          0
+        ],
+        "rotation": -91.85886866510289,
+        "scale": [
+          0.9999709899732667,
+          1.0000292787877687
+        ],
+        "skew": -0.04194047766430534,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Right_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.4430048369136654,
+          0.1853633554025645,
+          0
+        ],
+        "rotation": -14.620846315359474,
+        "scale": [
+          0.9999427361821902,
+          1.0000572853258995
+        ],
+        "skew": -0.010844107918352355,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.22006980108083624,
+          0.5036502898726238,
+          0
+        ],
+        "rotation": 2.1359454670088485,
+        "scale": [
+          1.0000153557258182,
+          0.9999846447637364
+        ],
+        "skew": -0.0009166882260989727,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.08973209453099726,
+          0.6337659792787431,
+          1.1555579666323415e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.08973209453099726,
+          0.6337659792787431,
+          1.166408276178185e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.08973209453099726,
+          0.6337659792787431,
+          1.1772585857240286e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.08973209453099726,
+          0.6337659792787431,
+          1.1881088952698722e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.08973209453099723,
+          0.633765979278743,
+          1.3291629193658388e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0.08973209453099723,
+          0.633765979278743,
+          1.3400132289116823e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0.08973209453099723,
+          0.633765979278743,
+          1.3454383836846041e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0.08973209453099723,
+          0.633765979278743,
+          1.3562886932304477e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          0.08973209453099723,
+          0.633765979278743,
+          1.3671390027762914e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          0.08973209453099723,
+          0.633765979278743,
+          1.377989312322135e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0.08973209453099722,
+          0.633765979278743,
+          1.4322408600513528e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0.08973209453099722,
+          0.633765979278743,
+          1.4430911695971964e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0.08973209453099722,
+          0.6337659792787429,
+          1.45394147914304e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          0.08973209453099722,
+          0.6337659792787429,
+          1.4647917886888837e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          0.08973209453099722,
+          0.6337659792787429,
+          1.4756420982347273e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0.0897320945309972,
+          0.6337659792787429,
+          1.4973427173264144e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0.0897320945309972,
+          0.6337659792787429,
+          1.508193026872258e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0.0897320945309972,
+          0.6337659792787429,
+          1.5190433364181015e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          0.0897320945309972,
+          0.6337659792787429,
+          1.5298936459639451e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          0.0897320945309972,
+          0.6337659792787429,
+          1.5407439555097887e-33
+        ],
+        "rotation": 7.926275510356396,
+        "scale": [
+          1.0000498819616679,
+          0.9999501206862504
+        ],
+        "skew": -0.0010244254503467296,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Strings-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.20505307237015294,
+          -0.0837320585984351,
+          0
+        ],
+        "rotation": 17.93961358546207,
+        "scale": [
+          1.0001018083466773,
+          0.9998982079037368
+        ],
+        "skew": -0.00584531681213665,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.21967199550347796,
+          -0.042052867075652506,
+          0
+        ],
+        "rotation": 7.626562678919228,
+        "scale": [
+          1.0000468336966652,
+          0.9999531698329108
+        ],
+        "skew": -0.0017547798788608748,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.22141713148555,
+          0.004144795372779508,
+          0
+        ],
+        "rotation": -20.393255526339974,
+        "scale": [
+          0.999874996184603,
+          1.0001250215113728
+        ],
+        "skew": -0.0033182838748296185,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.21919317502451266,
+          0.011583887828421824,
+          0
+        ],
+        "rotation": -14.174446389436952,
+        "scale": [
+          0.9999125028474989,
+          1.000087507993104
+        ],
+        "skew": -0.0018694830843692654,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.21554472328944213,
+          0.017936232351503177,
+          0
+        ],
+        "rotation": -7.955637252533931,
+        "scale": [
+          0.9999500095103949,
+          1.0000499944748351
+        ],
+        "skew": -0.0004206822939089123,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.21317097351764144,
+          0.01891251040392312,
+          0
+        ],
+        "rotation": -5.468113598336928,
+        "scale": [
+          0.9999650121755499,
+          1.000034989067531
+        ],
+        "skew": 0.0001588380221437855,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.10060189547309618,
+          -0.061520369999902194,
+          0
+        ],
+        "rotation": -2.534427152613377,
+        "scale": [
+          0.999982945709519,
+          1.000017056441463
+        ],
+        "skew": -0.0003719417772487857,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.3214780650575669,
+          -0.36327886196357245,
+          0
+        ],
+        "rotation": 8.46689702094216,
+        "scale": [
+          1.000050196461916,
+          0.9999498090936944
+        ],
+        "skew": -0.002362366025349464,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.46202120703781163,
+          -0.46423487784673717,
+          0
+        ],
+        "rotation": 12.134005079331383,
+        "scale": [
+          1.000072613379385,
+          0.9999273933111016
+        ],
+        "skew": -0.0030258407748135823,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.4223044545979076,
+          -0.43832750874139703,
+          0
+        ],
+        "rotation": 11.074165527326082,
+        "scale": [
+          1.0000665628460428,
+          0.999933442907261
+        ],
+        "skew": -0.002672795960789468,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.304531536370175,
+          -0.3568845394199449,
+          0
+        ],
+        "rotation": 7.894646871776106,
+        "scale": [
+          1.0000484112460197,
+          0.9999515916957368
+        ],
+        "skew": -0.001613661518872329,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.2758471884266319,
+          -0.32920444542913113,
+          0
+        ],
+        "rotation": 7.04677523045736,
+        "scale": [
+          1.0000435708193478,
+          0.9999564313726627
+        ],
+        "skew": -0.0013312256677481386,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.429401414676091,
+          -0.44765683931105105,
+          0
+        ],
+        "rotation": 11.286133438012637,
+        "scale": [
+          1.000067772952713,
+          0.9999322329880275
+        ],
+        "skew": -0.002743404923689392,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.46202120703781163,
+          -0.46423487784673717,
+          0
+        ],
+        "rotation": 12.134005079331383,
+        "scale": [
+          1.000072613379385,
+          0.9999273933111016
+        ],
+        "skew": -0.0030258407748135823,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.41895579082181467,
+          -0.43407640011745036,
+          0
+        ],
+        "rotation": 10.968181572149591,
+        "scale": [
+          1.000065957792709,
+          0.9999340478668768
+        ],
+        "skew": -0.0026374914793950636,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.2893175527149453,
+          -0.34463960549123734,
+          0
+        ],
+        "rotation": 7.470711051116734,
+        "scale": [
+          1.0000459910326838,
+          0.9999540115341997
+        ],
+        "skew": -0.0014724435933102338,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.2758471884266319,
+          -0.32920444542913113,
+          0
+        ],
+        "rotation": 7.04677523045736,
+        "scale": [
+          1.0000435708193478,
+          0.9999564313726627
+        ],
+        "skew": -0.0013312256677481386,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.429401414676091,
+          -0.44765683931105105,
+          0
+        ],
+        "rotation": 11.286133438012637,
+        "scale": [
+          1.000067772952713,
+          0.9999322329880275
+        ],
+        "skew": -0.002743404923689392,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.46202120703781163,
+          -0.46423487784673717,
+          0
+        ],
+        "rotation": 12.134005079331383,
+        "scale": [
+          1.000072613379385,
+          0.9999273933111016
+        ],
+        "skew": -0.0030258407748135823,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.41895579082181467,
+          -0.43407640011745036,
+          0
+        ],
+        "rotation": 10.968181572149591,
+        "scale": [
+          1.000065957792709,
+          0.9999340478668768
+        ],
+        "skew": -0.0026374914793950636,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.2893175527149453,
+          -0.34463960549123734,
+          0
+        ],
+        "rotation": 7.470711051116734,
+        "scale": [
+          1.0000459910326838,
+          0.9999540115341997
+        ],
+        "skew": -0.0014724435933102338,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.2758471884266319,
+          -0.32920444542913113,
+          0
+        ],
+        "rotation": 7.04677523045736,
+        "scale": [
+          1.0000435708193478,
+          0.9999564313726627
+        ],
+        "skew": -0.0013312256677481386,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Back_Hair-P": [
+      {
+        "frame": 1,
+        "position": [
+          -6.59472476627343e-14,
+          -1.6486811915683575e-14,
+          0
+        ],
+        "rotation": 3.9093525194448784,
+        "scale": [
+          1.0000251306717545,
+          0.9999748700123984
+        ],
+        "skew": -0.0005877004363623947,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          6.994405055138486e-14,
+          -4.6629367034256575e-15,
+          0
+        ],
+        "rotation": 0.6653429661625669,
+        "scale": [
+          1.0000043634163873,
+          0.9999956366034438
+        ],
+        "skew": -0.0000721196982517257,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          2.398081733190338e-14,
+          1.5154544286133387e-14,
+          0
+        ],
+        "rotation": -2.317191050747995,
+        "scale": [
+          0.9999849870286525,
+          1.0000150132006609
+        ],
+        "skew": 0.00016049894116674574,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          1.534976556206835e-14,
+          1.2173340214284972e-14,
+          0
+        ],
+        "rotation": -1.5447940337514,
+        "scale": [
+          0.9999899913524355,
+          1.00001000880044
+        ],
+        "skew": 0.00010699929410558133,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          7.559980441059153e-15,
+          6.3513586861067554e-15,
+          0
+        ],
+        "rotation": -0.7723970168757,
+        "scale": [
+          0.9999949956762177,
+          1.00000500440022
+        ],
+        "skew": 0.000053499647052790665,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          0,
+          7.888609052210118e-31,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Eyebrows": [
+      {
+        "frame": 1,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Head_Movement-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.06255747945205387,
+          0.01926825516142172,
+          0
+        ],
+        "rotation": 1.21908025626231,
+        "scale": [
+          1.0000077142765262,
+          0.9999922874353072
+        ],
+        "skew": -0.0006438943239257005,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 3,
+        "position": [
+          0.15706154003105544,
+          -0.04475534922178351,
+          0
+        ],
+        "rotation": -3.570260541786132,
+        "scale": [
+          0.9999772155188242,
+          1.0000227872731833
+        ],
+        "skew": -0.0005105550921938215,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 5,
+        "position": [
+          0.24231782449962938,
+          -0.1290367247370361,
+          0
+        ],
+        "rotation": -8.359601339834574,
+        "scale": [
+          0.9999467167611223,
+          1.0000532871110592
+        ],
+        "skew": -0.00037721586046194245,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 7,
+        "position": [
+          0.26100827575604263,
+          -0.1771697463662048,
+          0
+        ],
+        "rotation": -10.275337658619437,
+        "scale": [
+          0.9999345172580443,
+          1.000065487046207
+        ],
+        "skew": -0.0003238801677812881,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 9,
+        "position": [
+          0.26100827575604263,
+          -0.17716974636620483,
+          0
+        ],
+        "rotation": -10.275337658619437,
+        "scale": [
+          0.9999345172580443,
+          1.000065487046207
+        ],
+        "skew": -0.0003238801677812881,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 11,
+        "position": [
+          0.26100827575604263,
+          -0.17716974636620483,
+          0
+        ],
+        "rotation": -10.275337658619437,
+        "scale": [
+          0.9999345172580443,
+          1.000065487046207
+        ],
+        "skew": -0.0003238801677812881,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.05253979553332126,
+          -0.1425063919419976,
+          0
+        ],
+        "rotation": -6.798894189757996,
+        "scale": [
+          0.999956106596293,
+          1.0000438978254558
+        ],
+        "skew": -0.0006765541082598362,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 39,
+        "position": [
+          -0.7291843590565953,
+          -0.012161765451866677,
+          0
+        ],
+        "rotation": 6.237768820951707,
+        "scale": [
+          1.0000370666147407,
+          0.9999629382476232
+        ],
+        "skew": -0.0019990813853059085,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 40,
+        "position": [
+          -0.9896630957985821,
+          0.03226418124735553,
+          0
+        ],
+        "rotation": 10.583323158491735,
+        "scale": [
+          1.0000640532875607,
+          0.999935951721675
+        ],
+        "skew": -0.0024399238110525334,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 42,
+        "position": [
+          -0.9129099092557177,
+          0.024661814290067783,
+          0
+        ],
+        "rotation": 8.85307402902351,
+        "scale": [
+          1.000053705125248,
+          0.999946298886214
+        ],
+        "skew": -0.001992654395722854,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 44,
+        "position": [
+          -0.6828592298840843,
+          -0.004321044788678979,
+          0
+        ],
+        "rotation": 3.6623266413794875,
+        "scale": [
+          1.000022660638314,
+          0.9999773403798266
+        ],
+        "skew": -0.0006508461499304434,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 46,
+        "position": [
+          -0.6213084469712234,
+          -0.008568211558647884,
+          0
+        ],
+        "rotation": 2.278127338270994,
+        "scale": [
+          1.0000143821084664,
+          0.9999856181114549
+        ],
+        "skew": -0.0002930306177871829,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 56,
+        "position": [
+          -0.9285906929940799,
+          0.022502092031311382,
+          0
+        ],
+        "rotation": 9.199123855383242,
+        "scale": [
+          1.000055774757713,
+          0.9999442294533034
+        ],
+        "skew": -0.002082108278909273,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 58,
+        "position": [
+          -0.9896630957985821,
+          0.03226418124735553,
+          0
+        ],
+        "rotation": 10.583323158491735,
+        "scale": [
+          1.0000640532875607,
+          0.999935951721675
+        ],
+        "skew": -0.0024399238110525334,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 60,
+        "position": [
+          -0.9052665038623839,
+          0.022484978748192035,
+          0
+        ],
+        "rotation": 8.680049116115933,
+        "scale": [
+          1.0000526703090167,
+          0.9999473336026677
+        ],
+        "skew": -0.0019479274542000306,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 62,
+        "position": [
+          -0.6521117174751105,
+          -0.007451759396214448,
+          0
+        ],
+        "rotation": 2.9702269898252407,
+        "scale": [
+          1.00001852137339,
+          0.9999814792456407
+        ],
+        "skew": -0.0004719383838588132,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 64,
+        "position": [
+          -0.6213084469712234,
+          -0.008568211558647884,
+          0
+        ],
+        "rotation": 2.278127338270994,
+        "scale": [
+          1.0000143821084664,
+          0.9999856181114549
+        ],
+        "skew": -0.0002930306177871829,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 68,
+        "position": [
+          -0.9285906929940799,
+          0.022502092031311382,
+          0
+        ],
+        "rotation": 9.199123855383242,
+        "scale": [
+          1.000055774757713,
+          0.9999442294533034
+        ],
+        "skew": -0.002082108278909273,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 70,
+        "position": [
+          -0.9896630957985821,
+          0.03226418124735553,
+          0
+        ],
+        "rotation": 10.583323158491735,
+        "scale": [
+          1.0000640532875607,
+          0.999935951721675
+        ],
+        "skew": -0.0024399238110525334,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 72,
+        "position": [
+          -0.9052665038623839,
+          0.022484978748192035,
+          0
+        ],
+        "rotation": 8.680049116115933,
+        "scale": [
+          1.0000526703090167,
+          0.9999473336026677
+        ],
+        "skew": -0.0019479274542000306,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 74,
+        "position": [
+          -0.6521117174751105,
+          -0.007451759396214448,
+          0
+        ],
+        "rotation": 2.9702269898252407,
+        "scale": [
+          1.00001852137339,
+          0.9999814792456407
+        ],
+        "skew": -0.0004719383838588132,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 76,
+        "position": [
+          -0.6213084469712234,
+          -0.008568211558647884,
+          0
+        ],
+        "rotation": 2.278127338270994,
+        "scale": [
+          1.0000143821084664,
+          0.9999856181114549
+        ],
+        "skew": -0.0002930306177871829,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ]
+  },
+  "drawings": {
+    "Shaz_Model8": [
+      {
+        "frame": 1,
+        "drawing": null
+      }
+    ],
+    "Left_Hand": [
+      {
+        "frame": 1,
+        "drawing": "7"
+      },
+      {
+        "frame": 40,
+        "drawing": "8"
+      }
+    ],
+    "Right_Hand": [
+      {
+        "frame": 1,
+        "drawing": "9"
+      }
+    ],
+    "Mouth": [
+      {
+        "frame": 1,
+        "drawing": "1"
+      },
+      {
+        "frame": 5,
+        "drawing": "2"
+      },
+      {
+        "frame": 40,
+        "drawing": "4"
+      }
+    ]
+  },
+  "deformationFrames": [
+    189,
+    189,
+    191,
+    191,
+    193,
+    193,
+    195,
+    195,
+    197,
+    197,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    199,
+    225,
+    225,
+    227,
+    228,
+    228,
+    230,
+    230,
+    232,
+    232,
+    234,
+    234,
+    234,
+    234,
+    234,
+    234,
+    234,
+    234,
+    234,
+    234,
+    244,
+    244,
+    246,
+    246,
+    248,
+    248,
+    250,
+    250,
+    252,
+    252,
+    252,
+    252,
+    256,
+    256,
+    258,
+    258,
+    260,
+    260,
+    262,
+    262,
+    264
+  ],
+  "quality": {
+    "sourceApprovedEdgeContacts": [
+      {
+        "edge": "top",
+        "frames": [
+          5,
+          8
+        ],
+        "reason": "Raised finger intentionally touches the top edge in the supplied artist reference"
+      }
+    ],
+    "maximumIdenticalFrames": 26,
+    "sourceExposureChangeFrames": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      37,
+      39,
+      40,
+      42,
+      44,
+      46,
+      56,
+      58,
+      60,
+      62,
+      64,
+      68,
+      70,
+      72,
+      74,
+      76
+    ],
+    "sourceApprovedHolds": [
+      {
+        "startFrame": 11,
+        "endFrame": 36,
+        "reason": "Artist-authored Ah-ha presentation hold"
+      },
+      {
+        "startFrame": 46,
+        "endFrame": 55,
+        "reason": "Artist-authored pointing anticipation hold"
+      }
+    ]
+  },
+  "authoringCorrections": [
+    {
+      "control": "Shaz_Master-P",
+      "field": "position.x",
+      "operation": "inverse-linear-stage-registration",
+      "reason": "Counter the Xstage demo-shot reposition at the whole-character master so torso, head, arms, and hands retain their authored relationships"
+    },
+    {
+      "control": "all-runtime-controls-and-deformations",
+      "field": "exposure-cadence",
+      "operation": "artist-authored-step-exposures",
+      "reason": "Preserve the reference animation-on-twos cadence and authored holds instead of inventing linear in-betweens"
+    }
+  ]
+}

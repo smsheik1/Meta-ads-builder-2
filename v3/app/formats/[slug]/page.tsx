@@ -281,7 +281,11 @@ export default async function FormatPage({
                   <DiscoveryProofMedia
                     entry={entry}
                     autoPlay={false}
-                    className="block aspect-[9/16] w-full bg-[#080817] object-cover"
+                    className={
+                      entry.media.aspectRatio === "16:9"
+                        ? "block aspect-video w-full bg-[#080817] object-contain"
+                        : "block aspect-[9/16] w-full bg-[#080817] object-cover"
+                    }
                   />
                   <div className="p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
