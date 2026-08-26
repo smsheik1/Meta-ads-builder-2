@@ -1,6 +1,6 @@
 {
   "id": "shaz-puppet-runtime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "title": "Shaz Puppet Runtime",
   "summary": "Animate the supplied Shaz 2D puppet without Toon Boom Harmony by sequencing verified reusable pose recipes through one recovered rig renderer.",
   "mediaType": "video",

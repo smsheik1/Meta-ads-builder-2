@@ -1,6 +1,8 @@
 # Shaz pose recipes
 
-A pose recipe is the only authoring surface above the recovered rig. It does not contain rendered artist frames, baked sprites, or a private renderer. It names real PEG/READ controls, adds sparse keyframes, switches existing drawings when needed, and renders through `renderRigFrame`.
+A pose recipe is the only authoring surface above the recovered rig. It does not contain finished artist-animation frames, generic full-character sprites, or a private renderer. It names real PEG/READ controls, adds sparse keyframes, switches drawings when needed, and renders through `renderRigFrame`.
+
+Prefer compiled Xstage drawings and complete native limb chains. When bounded native attempts prove that the recovered vocabulary cannot form an essential destination, the skill permits one coherent part-specific registered pose drawing under an exact asset/transform/paint-layer contract. The corresponding native parts must all become invisible on the same frame, unrelated rig regions must remain runtime-rendered, and the replacement must pass independent inspection plus exact-hash normal-speed review. See `SKILL.md` and the playbook for the full exception; independently positioned limb fragments remain forbidden.
 
 Before authoring or certifying an action, follow the author-and-learn loop in `../SKILL.md` and read `../references/rig-animation-playbook.md` completely. Work on one uncertified action at a time.
 

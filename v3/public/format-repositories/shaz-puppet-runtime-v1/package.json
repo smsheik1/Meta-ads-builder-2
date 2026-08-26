@@ -1,6 +1,6 @@
 {
   "name": "wiggly-shaz-puppet-runtime-format-kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,6 +11,7 @@
     "validate": "node runner.mjs validate",
     "render": "node runner.mjs render",
     "inspect": "node runner.mjs inspect",
+    "inspect:registry": "node runtime/inspect-registry.mjs",
     "finalize": "node runner.mjs finalize",
     "build:kit": "node build-kit.mjs"
   },

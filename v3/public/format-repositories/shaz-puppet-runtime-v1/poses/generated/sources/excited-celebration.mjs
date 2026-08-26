@@ -57,9 +57,7 @@ function stateKeys(manifest, nodeName, adjustmentForKey = () => ({})) {
       sourceControlState(
         manifest,
         nodeName,
-        ["Left_Hand-P", "Right_Hand-P"].includes(nodeName) && index >= 2 && index <= 27
-          ? Math.min(141 + (index - 2), 158)
-          : sourceFrame,
+        sourceFrame,
       ),
       adjustmentForKey({ frame: index + 1, sourceFrame, weight: CELEBRATION_WEIGHT[index] }),
     ),
@@ -72,10 +70,6 @@ function buildExcitedCelebration(manifest) {
     stateKeys(manifest, nodeName, ({ weight }) => {
       if (nodeName === "Left_Arm_Pivot-P") return { rotationDelta: -48 * weight };
       if (nodeName === "Right_Arm_Pivot-P") return { rotationDelta: 48 * weight };
-      if (["Left_Hand-P", "Right_Hand-P"].includes(nodeName)) {
-        const fistScale = 1 + 0.28 * Math.min(1, weight * 2);
-        return { scaleMultiply: [fistScale, fistScale] };
-      }
       if (nodeName === "Arms_Master-P") return { positionDelta: [0, 0.08 * weight, 0] };
       if (nodeName === "Head_Movement-P") return { rotationDelta: -2 * weight };
       return {};
@@ -89,7 +83,7 @@ function buildExcitedCelebration(manifest) {
     learnedFrom: [
       "authored/shrug: complete 31-frame cadence, bilateral arm mechanics, overlap, and release",
       "authored/aha: open-mouth facial substitution",
-      "registered left-hand-10 and right-hand-10 drawings: clenched victory fists kept inside their native wrist hierarchies",
+      "registered left-hand-10 and right-hand-10 drawings: clenched victory fists kept on the authored Shrug wrist controls without unrelated-frame substitution or extra scaling",
       "human shrug audit: one-frame accent, six-frame settle, long hold, and facial afterbeat",
     ],
     controls,

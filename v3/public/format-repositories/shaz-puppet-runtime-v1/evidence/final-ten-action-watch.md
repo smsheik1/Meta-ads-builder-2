@@ -1,5 +1,7 @@
 # Final unlabeled ten-action watch
 
+> **Status: LEGACY AND REJECTED AS CURRENT CERTIFICATION.** This video includes an earlier fragmented crossed-arm assembly later rejected for broken finished anatomy. Retain the record as pending-review history only; use `five-storyboard-sequences-final.md` and `anatomy-v8-release` for the current four-action structural certification. The current `point-at-screen` and `look-at-phone` recipes still require renewed exact-hash review.
+
 - Render: pre-packaging ten-action proof (video itself is not bundled in the runtime ZIP)
 - SHA-256: `fde72d3a6a834df350e92642109259a8a706e18e65479aeb0de993900f1a962f`
 - Media: H.264, yuv420p, 1280x720, 24 fps, 21.00 seconds
@@ -22,6 +24,6 @@ The video is intentionally unlabeled and alternates five recovered authored acti
 9. authored point
 10. generated arms crossed / skeptical
 
-## Review result
+## Historical review result
 
-All ten actions are visible at useful scale with complete colored character art. The sequence contains no labels revealing which actions are authored or generated. The final frame review found no clipping, missing parts, translucent prop ghosts, wrong paint order, or detached substitution arms. A deliberate three-frame white separator appears between actions. Final completion remains gated on the user's visual approval.
+The contemporaneous review reported that all ten actions were visible at useful scale with complete colored character art and found no clipping, missing parts, translucent prop ghosts, wrong paint order, or detached substitution arms. The later anatomy audit rejected the crossed-arm substitution despite that observation, so this review cannot certify the current actions. User visual approval also remains pending.

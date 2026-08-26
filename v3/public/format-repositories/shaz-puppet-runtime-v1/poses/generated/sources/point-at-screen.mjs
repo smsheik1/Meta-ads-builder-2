@@ -20,7 +20,7 @@ import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 
 const PRESENT_RECIPE_PATH = fileURLToPath(new URL("../../authored/present.json", import.meta.url));
 const POINT_RECIPE_PATH = fileURLToPath(new URL("../../authored/point.json", import.meta.url));
-const PRESENT_RECIPE_SHA256 = "b2f8e2066d30b7aadac1c11f1149940ac438ee08835e88caea4a380c5af81d2f";
+const PRESENT_RECIPE_SHA256 = "4577345e15985d0fe71159fa6ebca5dae1e991b9e82ee2b1905a80040c826715";
 const POINT_RECIPE_SHA256 = "fcc7f489498683514104d7612dc4fbf5be22243b1f867b6190db74c8e9225a39";
 const PRESENT_END = 19;
 const POINT_TARGET_FRAME = 40;
@@ -180,7 +180,7 @@ async function buildPointAtScreen(manifest) {
     id: "point-at-screen",
     durationFrames: DURATION_FRAMES,
     learnedFrom: [
-      "authored/present@b2f8e206: open-palm setup and full secondary choreography",
+      "authored/present@4577345e: open-palm setup and full secondary choreography",
       "authored/point@fcc7f489: pointing hand, shoulder-to-wrist mechanics, grin, and hip-hand settle",
       "storyboard ebbf669f: off-canvas upper-right point without a literal screen prop",
     ],
@@ -188,6 +188,8 @@ async function buildPointAtScreen(manifest) {
     drawings,
     quality: {
       maximumIdenticalFrames: 2,
+      authoredOpenHandCuffs: structuredClone(present.quality?.authoredOpenHandCuffs ?? []),
+      armGeometryLimits: structuredClone(present.quality?.armGeometryLimits ?? {}),
     },
   });
 }

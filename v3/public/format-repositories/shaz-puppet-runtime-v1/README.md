@@ -9,7 +9,8 @@ See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body langu
 ## What is included
 
 - Six lossless authored-action calibrations from the supplied rig.
-- Six newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, arms crossed/skeptical, and a phone lift/tap sequence that keeps the hand inside the native rig hierarchy.
+- Six newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, arms crossed/skeptical, and a prop-free gesture variant derived from the phone action while preserving its native rig controls.
+- One registered arm-only destination drawing for the folded-arms hold that the recovered native cuff and pivot vocabulary cannot form credibly; it is exact-hash/placement locked and never replaces the original head or body.
 - One held-out authored shrug used to prove the control model generalized before new actions were attempted.
 - A strict sequence contract, one official renderer, per-frame mechanical inspection, human review, and checksum-bound finalization.
 - Two meaningfully different proof inputs plus a free local smoke fixture.
@@ -19,6 +20,7 @@ See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body langu
 ```sh
 npm install
 npm run check
+npm run inspect:registry
 npm run smoke
 ```
 
@@ -29,7 +31,7 @@ Create an input using IDs from `poses/index.json`:
   "schemaVersion": "shaz-sequence-input-v1",
   "title": "My Shaz sequence",
   "sequence": [
-    { "poseId": "think", "holdFrames": 8, "gapFrames": 3 },
+    { "poseId": "think", "holdFrames": 8, "gapFrames": 0 },
     { "poseId": "aha", "holdFrames": 12, "gapFrames": 0 }
   ]
 }
@@ -69,15 +71,15 @@ The finalized video and evidence remain in `agent-runs/my-sequence/`. No network
 | `look-at-phone` | new rig action | looks down at a phone prop |
 | `facepalm-frustrated` | new rig action | frustrated head-in-hand reaction |
 | `arms-crossed-skeptical` | new rig action | skeptical crossed-arm hold |
-| `phone-use-sequence` | new rig sequence | establishes the phone, lifts it with the native hand, then holds a readable phone interaction |
+| `phone-use-sequence` | new rig sequence | prop-free reusable hand-to-face gesture derived from the registered phone action |
 
 ## Why it is repeatable
 
-The user input controls only action order and explicit hold/gap timing. Recipe checksums bind every action to the registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks continuity, hand-to-sleeve attachment and proportion, atomic-contact geometry, clipping, layer order, props, facial stability, video format, frame count, and duration. Finalization binds the human review to the exact video checksum.
+The user input controls only action order and explicit hold/gap timing. Actions are contiguous by default, with no inserted separator frames; this does not claim a polished transition between independently authored actions. Recipe checksums bind every action to the registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks native shoulder/sleeve/hand topology or the one exact registered pose-replacement contract, cuff ownership, hand proportions, clipping, paint order, props, facial stability, video format, frame count, and duration. Finalization binds the human review to the exact video checksum.
 
 ## Authoring new actions
 
-Sequencing registered actions is automatic. Creating a new one is deliberate rig work. Read `poses/README.md`; use sparse named control keys, reuse existing drawing substitutions, and add only a minimal prop or substitution drawing when the recovered rig topology cannot express the intended silhouette. The new recipe must pass independent per-frame inspection before registration.
+Sequencing registered actions is automatic. Creating a new one is deliberate rig work. Read `poses/README.md`; use sparse named control keys, reuse existing drawing substitutions, and add only minimal non-limb props. Prefer complete native limb chains. If the recovered drawing and pivot vocabulary is proven unable to form an essential destination, a single part-specific registered pose drawing is allowed only under the strict replacement rules in `SKILL.md`: exact bytes and placement, mutually exclusive native visibility, preserved rig-rendered head/body, independent inspection, and checksum-bound normal-speed review. The new recipe must pass independent per-frame inspection before registration.
 
 ## Package integrity
 

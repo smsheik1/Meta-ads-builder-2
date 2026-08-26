@@ -12,7 +12,7 @@
         "properties": {
           "poseId": { "type": "string", "source": "poses/index.json" },
           "holdFrames": { "type": "integer", "minimum": 0, "maximum": 120, "default": 12 },
-          "gapFrames": { "type": "integer", "minimum": 0, "maximum": 24, "default": 3 }
+          "gapFrames": { "type": "integer", "minimum": 0, "maximum": 24, "default": 0 }
         }
       }
     }
@@ -20,7 +20,8 @@
   "maximumOutputFrames": 1800,
   "notes": [
     "Pose IDs are registry entries, never arbitrary filesystem paths.",
-    "Every action duration comes from its recipe; holds and separators are explicit input fields.",
+    "Every action duration comes from its recipe; holds and any intentional white separators are explicit input fields.",
+    "Actions are contiguous by default with no inserted separator frames. Set a positive gapFrames value only when a white separator is intentionally desired; zero does not imply a polished transition.",
     "No finished artist-rendered frame may be supplied as an input."
   ]
 }

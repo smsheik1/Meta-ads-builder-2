@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "canonical": {
-    "input": "fixtures/final-unlabeled-input.json",
+    "formatVersion": "0.1.0",
+    "status": "legacy-pending-review",
     "video": "goldens/ten-action-proof.mp4",
     "poster": "goldens/ten-action-poster.jpg",
     "contactSheet": "goldens/ten-action-contact-sheet.jpg",
@@ -13,5 +14,26 @@
     "fps": 24,
     "artistRenderedFramesUsed": false,
     "userVisualApproval": "pending"
+  },
+  "structuralAnatomyRelease": {
+    "formatVersion": "0.1.2",
+    "status": "codex-approved-under-standing-delegation",
+    "input": "goldens/anatomy-v8-release/input.json",
+    "video": "goldens/anatomy-v8-release/final.mp4",
+    "contactSheet": "goldens/anatomy-v8-release/contact-sheet.jpg",
+    "validationReceipt": "goldens/anatomy-v8-release/validation-receipt.json",
+    "renderReport": "goldens/anatomy-v8-release/render-report.json",
+    "qualityReport": "goldens/anatomy-v8-release/quality-report.json",
+    "humanReview": "goldens/anatomy-v8-release/human-review.json",
+    "deliveryReceipt": "goldens/anatomy-v8-release/delivery.json",
+    "videoSha256": "bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9",
+    "contactSheetSha256": "20cf4c10735759918c46675dd0bbd2abfd95fbd61e47631888a204b477faa998",
+    "durationSeconds": 7.208008,
+    "frames": 173,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "artistRenderedFramesUsed": false,
+    "userVisualApproval": "not-claimed"
   }
 }

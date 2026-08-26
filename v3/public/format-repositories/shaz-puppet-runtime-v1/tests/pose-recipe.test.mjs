@@ -178,6 +178,64 @@ test("pose recipes reject prop path traversal", () => {
   assert.throws(() => createPoseRuntime(fixture(), invalid), /without path traversal/);
 });
 
+test("pose recipes cannot self-certify unbounded arm anatomy", () => {
+  const unbounded = recipe();
+  unbounded.quality = {
+    authoredOpenHandCuffs: ["Left"],
+    armGeometryLimits: {
+      Left: { maximumHandToSleeveAreaRatio: 999 },
+    },
+  };
+  assert.throws(() => createPoseRuntime(fixture(), unbounded), /absolute arm-proportion bounds/);
+
+  const relaxedWithoutException = recipe();
+  relaxedWithoutException.quality = {
+    armGeometryLimits: {
+      Left: { maximumHandToSleeveAreaRatio: 0.6 },
+    },
+  };
+  assert.doesNotThrow(() => createPoseRuntime(fixture(), relaxedWithoutException),
+    "recipe limits may be syntactically wider because inspection clamps them to the observed hand role");
+
+  const globalTuck = recipe();
+  globalTuck.quality = { tuckedHands: ["Left"] };
+  assert.throws(() => createPoseRuntime(fixture(), globalTuck), /both native hand chains/);
+
+  const invalidRange = recipe();
+  invalidRange.quality = {
+    tuckedHandFrames: [{ side: "Left", startFrame: 3, endFrame: 6 }],
+  };
+  assert.throws(() => createPoseRuntime(fixture(), invalidRange), /both native hand chains/);
+
+  const wrongOverlayOwner = recipe();
+  wrongOverlayOwner.quality = { overlayHandSleeveOwner: "Right" };
+  assert.throws(() => createPoseRuntime(fixture(), wrongOverlayOwner), /rig-owned Left OL_Hand/);
+
+  const reviewed = recipe();
+  reviewed.quality = {
+    authoredOpenHandCuffs: ["Left"],
+    armGeometryLimits: {
+      Left: {
+        maximumHandToSleeveAreaRatio: 0.56,
+        maximumHandToHeadWidthRatio: 0.78,
+      },
+    },
+  };
+  assert.doesNotThrow(() => createPoseRuntime(fixture(), reviewed));
+});
+
+test("pose replacement mode cannot also claim a native arm paint order", () => {
+  const replacement = recipe();
+  replacement.quality = { armCompositeMode: "registered-pose-replacement" };
+  assert.doesNotThrow(() => createPoseRuntime(fixture(), replacement));
+
+  replacement.quality.armPaintOrder = "both-front-left-under-right";
+  assert.throws(
+    () => createPoseRuntime(fixture(), replacement),
+    /cannot declare a native-arm paint order/,
+  );
+});
+
 test("pose recipes map each local frame to an explicit Xstage deformation frame", () => {
   const mapped = recipe();
   mapped.deformationFrames = [2, 3, 4, 5, 6];

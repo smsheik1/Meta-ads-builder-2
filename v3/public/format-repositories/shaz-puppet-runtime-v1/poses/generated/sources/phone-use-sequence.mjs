@@ -10,7 +10,7 @@ import { writePoseRecipe } from "../../../runtime/pose-authoring.mjs";
 import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 
 const PHONE_PATH = fileURLToPath(new URL("../look-at-phone.json", import.meta.url));
-const PHONE_SHA256 = "88f259a2de0bd64dbfc2f805f60b00c3745ce6783ec570a685ab958b8e39375e";
+const PHONE_SHA256 = "863ecff5a785cbe82792e3083ef63c1cc55a3276bb681dc3f5a0d98e7a3edf3d";
 
 async function loadLockedPhone() {
   const bytes = await fs.readFile(PHONE_PATH);
@@ -29,11 +29,13 @@ async function buildPhoneUseSequence(manifest) {
   return {
     ...phone,
     id: "phone-use-sequence",
+    props: [],
     authorship: {
       ...phone.authorship,
       learnedFrom: [
         ...phone.authorship.learnedFrom,
         "removed the detached screen-space tap hand; the phone action keeps the authored overlay hand and its native sleeve registration",
+        "removed the literal phone from this reusable gesture after visual review; the native body-language action remains intact",
       ],
     },
     quality: {

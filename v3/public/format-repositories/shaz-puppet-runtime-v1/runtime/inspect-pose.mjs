@@ -21,6 +21,38 @@ import {
 const ALPHA_THRESHOLD = 24;
 const MIN_COMPONENT_PIXELS = 12;
 const LIMB_PROP_PATTERN = /(?:arm|forearm|sleeve|hand|fist)/i;
+const REGISTERED_NON_LIMB_PROPS = new Map([
+  ["phone", {
+    asset: "phone.svg",
+    sha256: "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975",
+  }],
+]);
+const REGISTERED_POSE_REPLACEMENTS = new Map([
+  ["crossed-arms-pose", {
+    asset: "crossed-arms-pose.png",
+    sha256: "73e73755a77822989fd466ab6fe79591b176bbe9ea68940a46359c999a84e311",
+    layer: "body-front",
+    position: [0.41796875, 0.621875],
+    width: 0.2578125,
+    scale: [1, 1],
+    rotation: 0,
+    opacity: 100,
+  }],
+]);
+const OBSERVED_HAND_LIMITS = {
+  "hand-matted": {
+    maximumHandToSleeveAreaRatio: 0.45,
+    maximumHandToHeadWidthRatio: 0.8,
+  },
+  "authored-open-hand-cuff": {
+    maximumHandToSleeveAreaRatio: 0.56,
+    maximumHandToHeadWidthRatio: 0.82,
+  },
+  "overlay-hand-matted": {
+    maximumHandToSleeveAreaRatio: 0.65,
+    maximumHandToHeadWidthRatio: 0.9,
+  },
+};
 
 function parseArgs(values) {
   const args = {
@@ -191,18 +223,109 @@ function paintPlanKey(entry) {
   return `${entry.nodePath}:${entry.variant}`;
 }
 
-function paintOrderValid(layers) {
-  const indexes = new Map(READ_PAINT_PLAN.map((entry, index) => [paintPlanKey(entry), index]));
-  let previous = -1;
-  for (const layer of layers) {
-    const index = indexes.get(paintPlanKey(layer));
-    if (index === undefined || index <= previous) return false;
-    previous = index;
-  }
-  return true;
+function registeredNonLimbProp(prop) {
+  const registered = REGISTERED_NON_LIMB_PROPS.get(prop.id);
+  return Boolean(registered
+    && prop.asset === registered.asset
+    && prop.sha256 === registered.sha256
+    && !LIMB_PROP_PATTERN.test(`${prop.id ?? ""} ${prop.asset ?? ""}`));
 }
 
-function armCompositeValid(layers) {
+function nearlyEqual(left, right, epsilon = 1e-9) {
+  return Number.isFinite(left) && Number.isFinite(right) && Math.abs(left - right) <= epsilon;
+}
+
+function registeredPoseReplacement(prop) {
+  const registered = REGISTERED_POSE_REPLACEMENTS.get(prop.id);
+  return Boolean(registered
+    && prop.asset === registered.asset
+    && prop.sha256 === registered.sha256
+    && prop.layer === registered.layer
+    && Array.isArray(prop.position)
+    && prop.position.length === 2
+    && prop.position.every((value, index) => nearlyEqual(value, registered.position[index]))
+    && nearlyEqual(prop.width, registered.width)
+    && Array.isArray(prop.scale)
+    && prop.scale.length === 2
+    && prop.scale.every((value, index) => nearlyEqual(value, registered.scale[index]))
+    && nearlyEqual(prop.rotation, registered.rotation)
+    && nearlyEqual(prop.opacity, registered.opacity));
+}
+
+function hasVisibleNativeArmArtwork(layers) {
+  return layers.some((layer) => (
+    /\/(?:Left|Right)_(?:Arm|Forearm|Hand)$/.test(layer.nodePath)
+    || layer.nodePath.endsWith("/OL_Hand")
+  ));
+}
+
+function observedHandLimits(handLayer) {
+  if (handLayer.compositeRole === "authored-open-hand-cuff") {
+    return OBSERVED_HAND_LIMITS["authored-open-hand-cuff"];
+  }
+  if (String(handLayer.compositeRole ?? "").startsWith("overlay-hand-matted-to-")) {
+    return OBSERVED_HAND_LIMITS["overlay-hand-matted"];
+  }
+  return OBSERVED_HAND_LIMITS["hand-matted"];
+}
+
+function effectiveHandLimits(handLayer, requested = {}) {
+  const observed = observedHandLimits(handLayer);
+  return {
+    minimumHandToSleeveAreaRatio: requested.minimumHandToSleeveAreaRatio ?? 0.1,
+    maximumHandToSleeveAreaRatio: Math.min(
+      requested.maximumHandToSleeveAreaRatio ?? observed.maximumHandToSleeveAreaRatio,
+      observed.maximumHandToSleeveAreaRatio,
+    ),
+    maximumHandToHeadWidthRatio: Math.min(
+      requested.maximumHandToHeadWidthRatio ?? observed.maximumHandToHeadWidthRatio,
+      observed.maximumHandToHeadWidthRatio,
+    ),
+  };
+}
+
+function shoulderAnchorValid(side, upperArmStats, bodyStats, mirrored = false) {
+  if (upperArmStats?.empty || bodyStats?.empty) return false;
+  const bodyWidth = bodyStats.bbox.maxX - bodyStats.bbox.minX + 1;
+  const minimumLateralMargin = bodyWidth * 0.2;
+  const leftAppearsOnScreenLeft = side === "Left" ? !mirrored : mirrored;
+  return leftAppearsOnScreenLeft
+    ? upperArmStats.centroid.x <= bodyStats.centroid.x - minimumLateralMargin
+    : upperArmStats.centroid.x >= bodyStats.centroid.x + minimumLateralMargin;
+}
+
+function finishedSleeveValid(stats) {
+  return !stats?.empty && stats.components?.length === 1;
+}
+
+function paintOrderValid(layers, recipe = {}) {
+  const actual = layers.map(paintPlanKey);
+  const visible = new Set(actual);
+  let expected = READ_PAINT_PLAN.map(paintPlanKey).filter((key) => visible.has(key));
+  if (recipe.quality?.armPaintOrder === "both-front-left-under-right") {
+    const isLeftArm = (key) => key.includes("/Left_Forearm:") || key.includes("/Left_Hand:");
+    const isRightArm = (key) => key.includes("/Right_Forearm:") || key.includes("/Right_Hand:");
+    const left = expected.filter(isLeftArm);
+    const right = expected.filter(isRightArm);
+    const withoutArms = expected.filter((key) => !isLeftArm(key) && !isRightArm(key));
+    const firstHead = withoutArms.findIndex((key) => key.includes("/Head_Group/"));
+    const insertion = firstHead < 0 ? withoutArms.length : firstHead;
+    expected = [
+      ...withoutArms.slice(0, insertion),
+      ...left,
+      ...right,
+      ...withoutArms.slice(insertion),
+    ];
+  }
+  return JSON.stringify(actual) === JSON.stringify(expected);
+}
+
+function crossedPaintOrderEligible(recipe, maximumCrossoverPixels) {
+  return recipe.quality?.armPaintOrder !== "both-front-left-under-right"
+    || maximumCrossoverPixels >= 20;
+}
+
+function armCompositeValid(layers, recipe = {}, frame = null) {
   for (const side of ["Left", "Right"]) {
     if (layers.some((layer) => layer.nodePath.endsWith(`/${side}_Arm`))) return false;
     const forearm = layers.findIndex((layer) => (
@@ -214,42 +337,36 @@ function armCompositeValid(layers) {
     const allowedHands = side === "Left"
       ? [`/${side}_Hand`, "/OL_Hand"]
       : [`/${side}_Hand`];
-    const hand = layers.findIndex((layer, index) => (
+    const hands = layers.filter((layer, index) => (
       index > forearm
       && layer.variant === "main"
       && allowedHands.some((suffix) => layer.nodePath.endsWith(suffix))
     ));
-    if (hand < 0) return false;
+    if (hands.length !== 1) return false;
+    const [handLayer] = hands;
+    const acceptedRole = new Set([
+        `hand-matted-to-${side.toLowerCase()}-sleeve`,
+        `overlay-hand-matted-to-${side.toLowerCase()}-sleeve`,
+      ]).has(handLayer.compositeRole)
+      || handLayer.compositeRole === "authored-open-hand-cuff";
+    if (handLayer.cuffOwner !== side || !acceptedRole) return false;
   }
   return true;
 }
 
-function registeredCrossedArmCompositeValid(layers, props, recipe) {
-  if (recipe.quality?.armCompositeMode !== "registered-crossed-rig-assembly") return false;
-  const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
-  if (limbProps.length !== 1) return false;
-  const [assembly] = limbProps;
-  if (assembly.id !== "crossed-arms-assembly"
-    || assembly.asset !== "crossed-arms-assembly.png"
-    || assembly.layer !== "front") return false;
-
-  const armLayers = layers.filter((layer) => (
-    /\/(Left|Right)_(Arm|Forearm|Hand)$/.test(layer.nodePath)
-  ));
-  return armLayers.length === 2 && ["Left", "Right"].every((side) => (
-    armLayers.some((layer) => (
-      layer.nodePath.endsWith(`/${side}_Arm`)
-      && layer.variant === "main"
-      && layer.compositeRole === "hidden-construction-fill"
-    ))
-  ));
-}
-
-function armTopologyValid(layers, props, recipe) {
-  const limbProps = props.filter(({ id }) => LIMB_PROP_PATTERN.test(id));
-  if (limbProps.length === 0) return armCompositeValid(layers);
-  if (limbProps.length > 1) return false;
-  return registeredCrossedArmCompositeValid(layers, props, recipe);
+function armTopologyValid(layers, props, recipe, frame = null) {
+  if (recipe.quality?.armCompositeMode === "registered-pose-replacement") {
+    const replacements = props.filter(registeredPoseReplacement);
+    const unsupported = props.filter((prop) => (
+      !registeredNonLimbProp(prop) && !registeredPoseReplacement(prop)
+    ));
+    if (unsupported.length > 0 || replacements.length > 1) return false;
+    if (replacements.length === 1) {
+      return !hasVisibleNativeArmArtwork(layers);
+    }
+    return props.every(registeredNonLimbProp) && armCompositeValid(layers, recipe, frame);
+  }
+  return props.every(registeredNonLimbProp) && armCompositeValid(layers, recipe, frame);
 }
 
 function hairCompositeValid(layers) {
@@ -335,16 +452,23 @@ function expectedEdgesForFrame(recipe, frame) {
 
 async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
   const poseRuntime = createPoseRuntime(manifest, recipe);
+  const masterNode = manifest.scenes[0]?.nodes.find(({ name }) => name === "Shaz_Master-P");
   const failures = [];
   const approvedEdgeContacts = [];
   const frameReports = [];
   const previousFace = new Map();
   const previousLimbProps = new Map();
+  const previousNativeArms = new Map();
   const assetCache = new Map();
   const propCache = new Map();
   const renderedFrameHashes = [];
+  let maximumNativeSleeveCrossoverPixels = 0;
 
   for (let frame = 1; frame <= recipe.durationFrames; frame += 1) {
+    const masterSample = masterNode
+      ? poseRuntime.sampleNodeAtFrame(masterNode, null, frame)
+      : null;
+    const mirrored = Boolean(masterSample?.attrs?.flipHor);
     const rendered = await renderRigFrame({
       manifest,
       frame,
@@ -361,14 +485,16 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       || rendered.receipt.poseRecipeSha256 !== poseRuntime.recipeSha256) {
       failures.push({ frame, gate: "provenance", detail: "frame receipt lost recipe provenance" });
     }
-    if (!paintOrderValid(rendered.receipt.layers)) {
+    if (!paintOrderValid(rendered.receipt.layers, recipe)) {
       failures.push({ frame, gate: "layer-order", detail: "frame layers do not follow READ_PAINT_PLAN" });
     }
-    if (!armTopologyValid(rendered.receipt.layers, rendered.receipt.props, recipe)) {
+    if (!armTopologyValid(rendered.receipt.layers, rendered.receipt.props, recipe, frame)) {
       failures.push({
         frame,
         gate: "arm-composite",
-        detail: "use the connected native arm chain or exactly one registered contact assembly; independent sleeve, hand, forearm, or fist props are forbidden",
+        detail: recipe.quality?.armCompositeMode === "registered-pose-replacement"
+          ? "use either both complete native arm chains or the exact registered pose drawing at its locked placement, never both"
+          : "use the connected native arm chain; independent sleeve, hand, forearm, fist, or flattened arm props are forbidden",
       });
     }
     if (!hairCompositeValid(rendered.receipt.layers)) {
@@ -451,6 +577,12 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       }
     }
 
+    const firstHeadAnalysisLayer = rendered.analysisLayers.findIndex((layer) => (
+      layer.nodePath.includes("/Head_Group/")
+    ));
+    const bodyAnalysisEnd = firstHeadAnalysisLayer < 0
+      ? rendered.analysisLayers.length
+      : firstHeadAnalysisLayer;
     const characterBuffer = await sharp({
       create: {
         width: 1280,
@@ -459,8 +591,14 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       },
     }).composite([
-      ...rendered.analysisLayers.map(({ input }) => ({ input })),
-      ...rendered.analysisProps.map(({ input }) => ({ input })),
+      ...rendered.analysisProps.filter(({ layer }) => layer === "behind")
+        .map(({ input }) => ({ input })),
+      ...rendered.analysisLayers.slice(0, bodyAnalysisEnd).map(({ input }) => ({ input })),
+      ...rendered.analysisProps.filter(({ layer }) => layer === "body-front")
+        .map(({ input }) => ({ input })),
+      ...rendered.analysisLayers.slice(bodyAnalysisEnd).map(({ input }) => ({ input })),
+      ...rendered.analysisProps.filter(({ layer }) => layer === "front")
+        .map(({ input }) => ({ input })),
     ]).png().toBuffer();
     const character = await alphaStats(characterBuffer);
     const sceneStats = await alphaStats(rendered.buffer);
@@ -501,13 +639,32 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     }
 
     const limbPropStats = await Promise.all(rendered.analysisProps
-      .filter(({ id }) => LIMB_PROP_PATTERN.test(id))
+      .filter((prop) => !registeredNonLimbProp(prop))
       .map(async (prop) => ({
         id: prop.id,
         stats: await alphaStats(prop.input),
       })));
     const armGeometry = [];
     if (limbPropStats.length === 0) {
+      const bodyLayer = rendered.analysisLayers.find((layer) => (
+        layer.nodePath.endsWith("/Body") && layer.variant === "main"
+      ));
+      const headLayer = rendered.analysisLayers.find((layer) => (
+        layer.nodePath.endsWith("/Head_Base") && layer.variant === "main"
+      ));
+      const bodyStats = bodyLayer ? await alphaStats(bodyLayer.input) : { empty: true };
+      const headStats = headLayer
+        ? await alphaStats(headLayer.input)
+        : { empty: true };
+      const nativeForearms = ["Left", "Right"].map((side) => rendered.analysisLayers.find((layer) => (
+        layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "main"
+      )));
+      if (nativeForearms.every(Boolean)) {
+        maximumNativeSleeveCrossoverPixels = Math.max(
+          maximumNativeSleeveCrossoverPixels,
+          await alphaContactPixelCount(nativeForearms[0].input, nativeForearms[1].input, 1),
+        );
+      }
       for (const side of ["Left", "Right"]) {
         const forearmLayer = rendered.analysisLayers.find((layer) => (
           layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "main"
@@ -519,57 +676,192 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
               || layer.nodePath.endsWith("/Left_Hand")
             : layer.nodePath.endsWith("/Right_Hand"))
         ));
-        if (!forearmLayer || !handLayer) continue;
-        const [forearmStats, handStats, contactPixels] = await Promise.all([
+        const upperArmLayer = rendered.analysisConstructionLayers?.find((layer) => (
+          layer.nodePath.endsWith(`/${side}_Arm`) && layer.variant === "main"
+        ));
+        if (!forearmLayer) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} finished sleeve is missing`,
+          });
+          continue;
+        }
+        const [
+          forearmStats,
+          handStats,
+          contactPixels,
+          shoulderContactPixels,
+          upperArmStats,
+        ] = await Promise.all([
           alphaStats(forearmLayer.input),
-          alphaStats(handLayer.input),
-          alphaContactPixelCount(handLayer.input, forearmLayer.input),
+          handLayer ? alphaStats(handLayer.input) : Promise.resolve({ empty: true }),
+          handLayer ? alphaContactPixelCount(handLayer.input, forearmLayer.input, 1) : Promise.resolve(0),
+          bodyLayer ? alphaContactPixelCount(forearmLayer.input, bodyLayer.input, 1) : Promise.resolve(0),
+          upperArmLayer ? alphaStats(upperArmLayer.input) : Promise.resolve({ empty: true }),
         ]);
-        if (forearmStats.empty || handStats.empty) continue;
+        if (forearmStats.empty) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} finished sleeve is empty`,
+          });
+          continue;
+        }
+        if (!finishedSleeveValid(forearmStats)) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} finished sleeve split into ${forearmStats.components.length} significant components`,
+          });
+        }
+        if (handStats.empty) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} native hand is missing; hidden-hand self-certification is forbidden`,
+          });
+          continue;
+        }
+        if (!shoulderAnchorValid(side, upperArmStats, bodyStats, mirrored)) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} upper-arm anchor crossed the torso center or disappeared`,
+          });
+        }
         const areaRatio = handStats.opaquePixels / forearmStats.opaquePixels;
+        const handWidth = handStats.bbox.maxX - handStats.bbox.minX + 1;
+        const headWidth = headStats.empty ? 0 : headStats.bbox.maxX - headStats.bbox.minX + 1;
+        const handToHeadWidthRatio = headWidth > 0 ? handWidth / headWidth : null;
+        const limits = effectiveHandLimits(
+          handLayer,
+          recipe.quality?.armGeometryLimits?.[side],
+        );
+        const sleeveRelativeUpperArm = upperArmStats.empty ? null : {
+          x: forearmStats.centroid.x - upperArmStats.centroid.x,
+          y: forearmStats.centroid.y - upperArmStats.centroid.y,
+        };
+        const handRelativeSleeve = {
+          x: handStats.centroid.x - forearmStats.centroid.x,
+          y: handStats.centroid.y - forearmStats.centroid.y,
+        };
+        const handDrawing = String(handLayer.drawing.drawing);
+        const previousArm = previousNativeArms.get(side);
+        let handRelativeSleeveTravel = null;
+        let sleeveRelativeUpperArmTravel = null;
+        let handAreaFoldChange = null;
+        if (previousArm?.frame === frame - 1
+          && previousArm.handNode === handLayer.nodePath
+          && previousArm.handDrawing === handDrawing
+          && sleeveRelativeUpperArm) {
+          handRelativeSleeveTravel = distance(
+            handRelativeSleeve,
+            previousArm.handRelativeSleeve,
+          );
+          sleeveRelativeUpperArmTravel = distance(
+            sleeveRelativeUpperArm,
+            previousArm.sleeveRelativeUpperArm,
+          );
+          handAreaFoldChange = Math.max(
+            handStats.opaquePixels / previousArm.handOpaquePixels,
+            previousArm.handOpaquePixels / handStats.opaquePixels,
+          );
+          if (handRelativeSleeveTravel > 100
+            || sleeveRelativeUpperArmTravel > 45
+            || handAreaFoldChange > 2) {
+            failures.push({
+              frame,
+              gate: "limb-temporal-continuity",
+              detail: `${side.toLowerCase()} native chain popped without a drawing substitution: hand/sleeve ${handRelativeSleeveTravel.toFixed(1)}px, sleeve/upper-arm ${sleeveRelativeUpperArmTravel.toFixed(1)}px, hand area ${handAreaFoldChange.toFixed(2)}x`,
+            });
+          }
+        }
+        if (sleeveRelativeUpperArm) {
+          previousNativeArms.set(side, {
+            frame,
+            handNode: handLayer.nodePath,
+            handDrawing,
+            handOpaquePixels: handStats.opaquePixels,
+            handRelativeSleeve,
+            sleeveRelativeUpperArm,
+          });
+        }
+        const minimumAreaRatio = limits.minimumHandToSleeveAreaRatio;
+        const maximumAreaRatio = limits.maximumHandToSleeveAreaRatio;
+        const maximumHeadWidthRatio = limits.maximumHandToHeadWidthRatio;
         armGeometry.push({
           side,
           mode: "native-rig",
           handNode: handLayer.nodePath,
+          handCompositeRole: handLayer.compositeRole,
+          cuffOwner: handLayer.cuffOwner,
           contactPixels,
+          sleeveBodyContactPixels: shoulderContactPixels,
+          sleeveSignificantComponents: forearmStats.components.length,
+          upperArmCentroid: upperArmStats.empty ? null : upperArmStats.centroid,
+          upperArmAnchorValid: shoulderAnchorValid(side, upperArmStats, bodyStats, mirrored),
+          bodyCenterX: bodyStats.empty ? null : bodyStats.centroid.x,
+          bodyWidth: bodyStats.empty ? null : bodyStats.bbox.maxX - bodyStats.bbox.minX + 1,
+          mirrored,
           handToSleeveAreaRatio: areaRatio,
+          handToHeadWidthRatio,
+          handRelativeSleeve,
+          sleeveRelativeUpperArm,
+          handRelativeSleeveTravel,
+          sleeveRelativeUpperArmTravel,
+          handAreaFoldChange,
         });
-        if (contactPixels < 8) {
+        if (contactPixels < 4) {
           failures.push({
             frame,
             gate: "limb-attachment",
             detail: `${side.toLowerCase()} hand has only ${contactPixels} contact pixels with its sleeve`,
           });
         }
-        if (areaRatio < 0.09 || areaRatio > 0.75) {
+        if (shoulderContactPixels < 4) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${side.toLowerCase()} sleeve has only ${shoulderContactPixels} shoulder contact pixels with the torso`,
+          });
+        }
+        if (areaRatio < minimumAreaRatio || areaRatio > maximumAreaRatio) {
           failures.push({
             frame,
             gate: "limb-proportion",
-            detail: `${side.toLowerCase()} hand/sleeve alpha-area ratio ${areaRatio.toFixed(3)} is outside 0.09–0.75`,
+            detail: `${side.toLowerCase()} hand/sleeve alpha-area ratio ${areaRatio.toFixed(3)} is outside ${minimumAreaRatio}–${maximumAreaRatio}`,
           });
         }
-      }
-    } else if (limbPropStats.length === 1
-      && limbPropStats[0].id === "crossed-arms-assembly") {
-      const assembly = limbPropStats[0].stats;
-      const bboxWidth = assembly.empty ? 0 : assembly.bbox.maxX - assembly.bbox.minX + 1;
-      const bboxHeight = assembly.empty ? 0 : assembly.bbox.maxY - assembly.bbox.minY + 1;
-      armGeometry.push({
-        mode: "registered-crossed-rig-assembly",
-        bboxWidth,
-        bboxHeight,
-        opaquePixels: assembly.empty ? 0 : assembly.opaquePixels,
-      });
-      if (assembly.empty || bboxWidth < 150 || bboxHeight < 60 || assembly.opaquePixels < 7000) {
-        failures.push({
-          frame,
-          gate: "limb-proportion",
-          detail: `crossed-arm assembly geometry ${bboxWidth}x${bboxHeight}/${assembly.empty ? 0 : assembly.opaquePixels}px is below the approved 150x60/7000px floor`,
-        });
+        if (handToHeadWidthRatio !== null && handToHeadWidthRatio > maximumHeadWidthRatio) {
+          failures.push({
+            frame,
+            gate: "limb-proportion",
+            detail: `${side.toLowerCase()} hand/head width ratio ${handToHeadWidthRatio.toFixed(3)} exceeds ${maximumHeadWidthRatio}`,
+          });
+        }
       }
     }
     for (const { id, stats } of limbPropStats) {
       if (stats.empty) continue;
+      const propReceipt = rendered.receipt.props.find((prop) => prop.id === id);
+      if (registeredPoseReplacement(propReceipt)) {
+        armGeometry.push({
+          mode: "registered-pose-replacement",
+          id,
+          significantComponents: stats.components.length,
+          opaquePixels: stats.opaquePixels,
+          bbox: stats.bbox,
+          centroid: stats.centroid,
+        });
+        if (stats.components.length !== 1) {
+          failures.push({
+            frame,
+            gate: "limb-attachment",
+            detail: `${id} split into ${stats.components.length} significant components`,
+          });
+        }
+      }
       const previous = previousLimbProps.get(id);
       if (previous?.frame === frame - 1) {
         const areaRatio = stats.opaquePixels / previous.opaquePixels;
@@ -655,6 +947,13 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
   }
 
   const maximumIdenticalFrames = maximumConsecutiveEqual(renderedFrameHashes);
+  if (!crossedPaintOrderEligible(recipe, maximumNativeSleeveCrossoverPixels)) {
+    failures.push({
+      frame: null,
+      gate: "layer-order",
+      detail: "custom crossed-arm paint order requires an observed native sleeve crossover",
+    });
+  }
   if (recipe.quality?.maximumIdenticalFrames !== undefined
     && maximumIdenticalFrames > recipe.quality.maximumIdenticalFrames) {
     failures.push({
@@ -677,6 +976,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       "arm-composite",
       "limb-proportion",
       "limb-scale-stability",
+      "limb-temporal-continuity",
       "limb-attachment",
       "hair-composite",
       "eye-occlusion",
@@ -692,6 +992,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     failures,
     approvedEdgeContacts,
     maximumIdenticalFrames,
+    maximumNativeSleeveCrossoverPixels,
     frames: frameReports,
   };
 }
@@ -725,7 +1026,13 @@ export {
   alphaContactPixelCount,
   armCompositeValid,
   armTopologyValid,
-  registeredCrossedArmCompositeValid,
+  crossedPaintOrderEligible,
+  effectiveHandLimits,
+  finishedSleeveValid,
+  observedHandLimits,
+  registeredNonLimbProp,
+  registeredPoseReplacement,
+  shoulderAnchorValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,
   hairCompositeValid,

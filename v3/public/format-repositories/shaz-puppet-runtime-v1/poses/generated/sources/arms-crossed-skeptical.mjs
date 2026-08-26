@@ -18,9 +18,11 @@ import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
 
 const CONFIDENT_RECIPE_PATH = fileURLToPath(new URL("../../authored/confident.json", import.meta.url));
 const CONFIDENT_RECIPE_SHA256 = "53496ec22e505fa44673260935ccaa4edc9ea87796b99a1c79031b825c804c1c";
+const CROSSED_ARMS_ASSET_SHA256 = "73e73755a77822989fd466ab6fe79591b176bbe9ea68940a46359c999a84e311";
 const OFFSET = 6;
-const CROSS_ASSEMBLY_SHA256 = "ccee1620caa3c42ab5028913665e6be9f61001236df10b0ae9eb9044aa95947c";
-const CROSS_CONTACT_FRAME = 14;
+const REPLACEMENT_FRAME = 10;
+const REPLACEMENT_POSITION = [0.41796875, 0.621875];
+const REPLACEMENT_WIDTH = 0.2578125;
 const FACE_DRAWINGS = new Set([
   "Eyebrows",
   "Left_Eye",
@@ -39,14 +41,20 @@ function adjustedKey(nodeName, key) {
       scaleMultiply: [0.86, 0.86],
     });
   }
+  if (nodeName === "Arms_Master-P") {
+    return adjustedState(key, { positionDelta: [0, progress * -1.25, 0] });
+  }
   if (nodeName === "Head_Movement-P") {
     return adjustedState(key, { rotationDelta: progress * 6 });
   }
+  if (nodeName === "Left_Arm_Pivot-P") {
+    return adjustedState(key, { rotationDelta: progress * 90 });
+  }
   if (nodeName === "Left_Forearm_Pivot-P") {
-    return adjustedState(key, { rotationDelta: progress * 74 });
+    return adjustedState(key, { rotationDelta: progress * 120 });
   }
   if (nodeName === "Right_Forearm_Pivot-P") {
-    return adjustedState(key, { rotationDelta: progress * -74 });
+    return adjustedState(key, { rotationDelta: progress * -40 });
   }
   return key;
 }
@@ -77,6 +85,18 @@ async function buildArmsCrossedSkeptical(manifest) {
     ];
   }
 
+  // The registered replacement is stage-locked, so the two root controls are
+  // held at the final authored settle as soon as the drawing substitution
+  // occurs. Facial controls keep settling independently after the switch.
+  for (const nodeName of ["Shaz_Master-P", "Shaz_Rig-P"]) {
+    const finalState = controls[nodeName].at(-1);
+    controls[nodeName] = [
+      ...controls[nodeName].filter(({ frame }) => frame < REPLACEMENT_FRAME),
+      controlKey(REPLACEMENT_FRAME, finalState, "hold"),
+      controlKey(confident.durationFrames + OFFSET, finalState, "hold"),
+    ];
+  }
+
   for (const nodeName of ["Left_Pupil", "Right_Pupil"]) {
     const neutral = sourceControlState(manifest, nodeName, 1);
     const sideEye = adjustedState(neutral, { positionDelta: [0.025, 0, 0] });
@@ -86,46 +106,25 @@ async function buildArmsCrossedSkeptical(manifest) {
       controlKey(confident.durationFrames + OFFSET, sideEye),
     ];
   }
-  for (const nodeName of [
-    "Arms_Master-P",
-    "Left_Arm_MOVE-P",
-    "Left_Arm_Pivot-P",
-    "Left_Forearm-P",
-    "Left_Forearm_Pivot-P",
-    "Left_Hand-P",
-    "Right_Arm_MOVE-P",
-    "Right_Arm_Pivot-P",
-    "Right_Forearm_Pivot-P",
-    "Right_Hand-P",
-  ]) {
-    const neutral = sourceControlState(manifest, nodeName, 1);
-    controls[nodeName] = [
-      ...controls[nodeName].filter((key) => key.frame < CROSS_CONTACT_FRAME),
-      controlKey(CROSS_CONTACT_FRAME, neutral, "hold"),
-      controlKey(confident.durationFrames + OFFSET, neutral),
-    ];
-  }
-  for (const nodeName of [
-    "Left_Forearm",
-    "Left_Hand",
-    "Right_Forearm",
-    "Right_Hand",
-  ]) {
-    const visible = sourceControlState(manifest, nodeName, 1);
-    const hidden = adjustedState(visible, { opacity: 0 });
-    controls[nodeName] = [
-      controlKey(1, visible),
-      controlKey(CROSS_CONTACT_FRAME - 1, visible, "hold"),
-      controlKey(CROSS_CONTACT_FRAME, hidden, "hold"),
-      controlKey(confident.durationFrames + OFFSET, hidden),
-    ];
-  }
   const drawings = Object.fromEntries(Object.entries(confident.drawings)
     .filter(([nodeName]) => !FACE_DRAWINGS.has(nodeName))
     .map(([nodeName, keys]) => [nodeName, [
       { frame: 1, drawing: sourceDrawing(manifest, nodeName, 1) },
       ...keys.map((key) => ({ ...key, frame: key.frame + OFFSET })),
     ]]));
+  for (const nodeName of [
+    "Left_Arm",
+    "Left_Forearm",
+    "Left_Hand",
+    "Right_Arm",
+    "Right_Forearm",
+    "Right_Hand",
+  ]) {
+    drawings[nodeName] = [
+      { frame: 1, drawing: sourceDrawing(manifest, nodeName, 1) },
+      { frame: REPLACEMENT_FRAME, drawing: null },
+    ];
+  }
   drawings.Eyebrows = [
     { frame: 1, drawing: sourceDrawing(manifest, "Eyebrows", 1) },
     { frame: 11, drawing: sourceDrawing(manifest, "Eyebrows", 123) },
@@ -141,68 +140,59 @@ async function buildArmsCrossedSkeptical(manifest) {
     { frame: 11, drawing: sourceDrawing(manifest, "Mouth", 121) },
   ];
 
-  return {
-    ...generatedRecipe(manifest, {
-      id: "arms-crossed-skeptical",
-      durationFrames: confident.durationFrames + OFFSET,
-      learnedFrom: [
-        "authored/confident@53496ec2: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
-        "authored/think: skeptical brow, mouth, eye-direction, and head-drag vocabulary",
-        "native rig arm chains carry the anticipation; one checksum-locked torso-local crossover assembly resolves the contact depth without independently floating limb pieces",
-      ],
-      controls,
-      drawings,
-      quality: {
-        maximumIdenticalFrames: 2,
-        armCompositeMode: "registered-crossed-rig-assembly",
-      },
-    }),
-    props: [
-      {
-        id: "crossed-arms-assembly",
-        asset: "crossed-arms-assembly.png",
-        sha256: CROSS_ASSEMBLY_SHA256,
-        layer: "front",
-        keys: [
-          {
-            frame: 1,
-            position: [0.56, 0.376],
-            width: 1,
-            scale: [1.6, 1.6],
-            rotation: 0,
-            opacity: 0,
-            interpolation: "hold",
-          },
-          {
-            frame: CROSS_CONTACT_FRAME - 1,
-            position: [0.56, 0.376],
-            width: 1,
-            scale: [1.6, 1.6],
-            rotation: 0,
-            opacity: 0,
-            interpolation: "hold",
-          },
-          {
-            frame: CROSS_CONTACT_FRAME,
-            position: [0.56, 0.376],
-            width: 1,
-            scale: [1.6, 1.6],
-            rotation: 0,
-            opacity: 100,
-            interpolation: "hold",
-          },
-          {
-            frame: confident.durationFrames + OFFSET,
-            position: [0.56, 0.376],
-            width: 1,
-            scale: [1.6, 1.6],
-            rotation: 0,
-            opacity: 100,
-          },
-        ],
-      },
+  const recipe = generatedRecipe(manifest, {
+    id: "arms-crossed-skeptical",
+    durationFrames: confident.durationFrames + OFFSET,
+    learnedFrom: [
+      "authored/confident@53496ec2: bilateral elbow bend, planted stance, anticipation, and overshoot mechanics",
+      "authored/think: skeptical brow, mouth, eye-direction, and head-drag vocabulary",
+      "native rig arm chains create the anticipation through frame 9, then one provenance-locked folded-arms drawing replaces only the arm artwork",
+      "the replacement preserves the runtime-rendered head, hair, face, torso, collar, strings, and pocket instead of replacing the character",
+      "native chain experiments were rejected because the supplied cuffs and pivots could only form clasped hands, detached wrists, or stretched sleeves",
     ],
-  };
+    controls,
+    drawings,
+    quality: {
+      maximumIdenticalFrames: 2,
+      armCompositeMode: "registered-pose-replacement",
+    },
+  });
+  recipe.authorship.method = "semantic-rig-control-composition-with-registered-pose-drawing";
+  recipe.props = [
+    {
+      id: "crossed-arms-pose",
+      asset: "crossed-arms-pose.png",
+      sha256: CROSSED_ARMS_ASSET_SHA256,
+      layer: "body-front",
+      keys: [
+        {
+          frame: 1,
+          position: REPLACEMENT_POSITION,
+          width: REPLACEMENT_WIDTH,
+          rotation: 0,
+          opacity: 0,
+          interpolation: "hold",
+        },
+        {
+          frame: REPLACEMENT_FRAME,
+          position: REPLACEMENT_POSITION,
+          width: REPLACEMENT_WIDTH,
+          rotation: 0,
+          opacity: 100,
+          interpolation: "hold",
+        },
+        {
+          frame: confident.durationFrames + OFFSET,
+          position: REPLACEMENT_POSITION,
+          width: REPLACEMENT_WIDTH,
+          rotation: 0,
+          opacity: 100,
+          interpolation: "hold",
+        },
+      ],
+    },
+  ];
+  return recipe;
 }
 
 async function main() {

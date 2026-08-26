@@ -1,5 +1,7 @@
 # Generated action watch: arms crossed / skeptical
 
+> **Status: REJECTED AND SUPERSEDED.** This record describes the earlier four-piece crossed-arm substitution assembly. Its acceptance, hashes, and reusable recommendations are retained only as failure provenance and are not current certification. The current `anatomy-v8-release` instead uses native anticipation followed by one exact, arm-only registered destination drawing with mutually exclusive native visibility; see `five-storyboard-sequences-final.md`.
+
 - Official run: `agent-runs/arms-crossed-skeptical-certification-final`
 - Recipe file: `poses/generated/arms-crossed-skeptical.json`
 - Recipe file SHA-256: `0cd953fa72b44430495757b339787e0cd1755fdff917d771b85c698d980b726b`
@@ -15,23 +17,24 @@
 - Visual inspection: exact official render and synchronized close-up both watched completely at normal speed through `ended=true`; every output frame inspected in a dense chronological sheet
 - Acceptance authority: Codex visual audit under explicit user delegation; this does not claim the user personally watched this checksum
 
-## Accepted visual result
+## Rejected historical result
 
-The action reads as neutral, bilateral anticipation, contact-only crossover, skeptical expression change, overshoot, and a settled folded-arm hold. The original upper arms remain attached at both shoulders. At contact, four checksum-locked drawings already present in the recovered rig take ownership of the depth crossover: two finished forearm sleeves and two side-resting hands. The front sleeve flattens across the torso, the second tucks behind it, and each hand lands on the opposite sleeve. No generic capsule redraw, detached limb, random prop, missing fill, construction seam, clipping, facial pop, or visible freeze remains.
+The contemporaneous review reported neutral, bilateral anticipation, a contact-only crossover, a skeptical expression change, overshoot, and a settled folded-arm hold. It accepted four checksum-locked drawings as a replacement crossover. The later anatomy audit rejected that substitution because matching pixels and overlap did not preserve native limb topology.
 
 ## Candidate history
 
 1. The first candidate tried to retain ordinary fixed-depth rig limbs through the whole crossover. The arms could bend, but they could not exchange depth and failed the arm-composite gate.
 2. The second candidate used generic replacement shapes. It crossed mechanically but looked like detached capsules and ignored Shaz's authored sleeve and hand silhouettes.
-3. The accepted candidate reuses registered rig drawings only at contact. Its first calibration still made a heart-shaped overlap, so the same candidate was refined with local aspect scaling, a flatter front forearm, a tucked rear forearm, and the correct side-resting hand drawings. This stayed within the third candidate rather than weakening a gate or opening a shadow run.
+3. The then-accepted candidate reused registered rig drawings only at contact. Its first calibration still made a heart-shaped overlap, so the same candidate was refined with local aspect scaling, a flatter front forearm, a tucked rear forearm, and the side-resting hand drawings. The later anatomy audit rejected the resulting flattened crossover assembly.
 
-## Post-action retro
+## Superseded post-action retro
 
 **What did this teach us, and does the skill, runtime, or test suite need updating?**
 
-- Durable animation rule: when fixed recovered paint order cannot represent a limb depth crossover, preserve the real rig during anticipation and transfer semantic ownership only at contact to the smallest set of existing registered drawings. Do not globally reorder limbs and do not substitute a generic redraw.
-- Durable silhouette rule: a reused drawing may need non-uniform local deformation to match the new gesture, but the source pixels, checksum, palette, and provenance must remain locked. Aspect calibration belongs in ordinary recipe data, not a pose-specific renderer branch.
-- Runtime update: prop recipe keys now support a positive two-component local `scale`, interpolated like width and rotation, so registered substitutions can be lengthened or flattened without inventing new art.
-- Test update: pose-recipe tests protect explicit local aspect scaling; crossed-arm regression tests protect the exact four prop identities, source-asset byte equality, contact-only swap, half-lidded expression, generator reproducibility, and the dedicated crossed-arm composite gate.
-- Skill/playbook update: the depth-crossover substitution rule and its failure signature are recorded in `references/rig-animation-playbook.md`.
-- Pose-specific calibration remains in `poses/generated/sources/arms-crossed-skeptical.mjs`; no storyboard pixels or artist-rendered frames are packaged or used at runtime.
+The conclusions below were recorded for the rejected assembly and must not be promoted or applied:
+
+- **Rejected rule:** transferring crossover ownership to replacement drawings at contact is not sufficient anatomy.
+- **Rejected silhouette approach:** flattening or lengthening replacement limb drawings can match a silhouette while breaking the native shoulder, sleeve, and hand chain.
+- **Historical runtime note:** prop recipe keys gained a two-component local `scale`; that capability does not authorize limb substitutions.
+- **Superseded test note:** allowlisting four prop identities and their bytes did not prove native topology.
+- **Replacement lesson:** prefer complete native chains, but stop after bounded evidence shows the recovered vocabulary cannot form the semantic destination. A single coherent, part-specific pose drawing may then replace the complete corresponding native parts only under exact checksum, placement, paint-layer, exclusivity, and visual-review gates. Four independent limb fragments remain forbidden.

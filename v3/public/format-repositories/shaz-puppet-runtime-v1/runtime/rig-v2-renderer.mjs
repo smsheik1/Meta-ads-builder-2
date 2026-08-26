@@ -928,6 +928,9 @@ async function renderRigFrame({
     const sleeveColor = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "color");
     const sleeveOverlay = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "overlay");
     const hand = layers.find((layer) => layer.nodePath.endsWith(`/${side}_Hand`) && layer.variant === "main");
+    const overlayHand = layers.find((layer) => (
+      layer.nodePath.endsWith("/OL_Hand") && layer.variant === "main"
+    ));
     if (constructionFill && sleeve) {
       sleeve.input = await createFinishedSleeve(
         [constructionFill.input, sleeve.input, ...(sleeveColor ? [sleeveColor.input] : [])],
@@ -946,13 +949,31 @@ async function renderRigFrame({
       if (sleeveColor) sleeveColor.consumed = true;
       if (sleeveOverlay) sleeveOverlay.consumed = true;
     }
-    if (hand && sleeve && String(hand.drawing.drawing) !== "2") {
-      hand.input = await clipHandBehindSleeve(
-        hand.input,
+    if (hand && sleeve) {
+      if (String(hand.drawing.drawing) !== "2") {
+        hand.input = await clipHandBehindSleeve(
+          hand.input,
+          sleeve.input,
+          outputWidth,
+          outputHeight,
+        );
+        hand.compositeRole = `hand-matted-to-${side.toLowerCase()}-sleeve`;
+      } else {
+        hand.compositeRole = "authored-open-hand-cuff";
+      }
+      hand.cuffOwner = side;
+    }
+    // OL_Hand is the rig's authored front-palm channel for the left wrist.
+    // Its cuff ownership comes from recovered rig topology, not a recipe flag.
+    if (overlayHand && sleeve && side === "Left") {
+      overlayHand.input = await clipHandBehindSleeve(
+        overlayHand.input,
         sleeve.input,
         outputWidth,
         outputHeight,
       );
+      overlayHand.compositeRole = `overlay-hand-matted-to-${side.toLowerCase()}-sleeve`;
+      overlayHand.cuffOwner = side;
     }
   }
 
@@ -974,7 +995,26 @@ async function renderRigFrame({
     frontBang.eyeEnvelopeClearancePixelCount = cleared.clearedPixelCount;
   }
 
-  const activeLayers = layers.filter(({ consumed }) => !consumed);
+  let activeLayers = layers.filter(({ consumed }) => !consumed);
+  if (poseRuntime?.recipe.quality?.armPaintOrder === "both-front-left-under-right") {
+    const isLeftArmLayer = (layer) => (
+      layer.nodePath.endsWith("/Left_Forearm") || layer.nodePath.endsWith("/Left_Hand")
+    );
+    const isRightArmLayer = (layer) => (
+      layer.nodePath.endsWith("/Right_Forearm") || layer.nodePath.endsWith("/Right_Hand")
+    );
+    const leftArmLayers = activeLayers.filter(isLeftArmLayer);
+    const rightArmLayers = activeLayers.filter(isRightArmLayer);
+    const withoutArms = activeLayers.filter((layer) => !isLeftArmLayer(layer) && !isRightArmLayer(layer));
+    const firstHeadIndex = withoutArms.findIndex((layer) => layer.nodePath.includes("/Head_Group/"));
+    const insertionIndex = firstHeadIndex < 0 ? withoutArms.length : firstHeadIndex;
+    activeLayers = [
+      ...withoutArms.slice(0, insertionIndex),
+      ...leftArmLayers,
+      ...rightArmLayers,
+      ...withoutArms.slice(insertionIndex),
+    ];
+  }
   const baseCharacter = await sharp({
     create: {
       width: outputWidth,
@@ -984,18 +1024,29 @@ async function renderRigFrame({
     },
   }).composite(activeLayers.map(({ input }) => ({ input }))).png().toBuffer();
   const baseComponentCount = await significantAlphaComponentCount(baseCharacter);
+  const firstHeadLayer = activeLayers.findIndex((layer) => (
+    layer.nodePath.includes("/Head_Group/")
+  ));
+  const bodyLayerEnd = firstHeadLayer < 0 ? activeLayers.length : firstHeadLayer;
 
   const output = await sharp({
     create: { width: outputWidth, height: outputHeight, channels: 4, background },
   }).composite([
     ...props.filter(({ layer }) => layer === "behind").map(({ input }) => ({ input })),
-    ...activeLayers.map(({ input }) => ({ input })),
+    ...activeLayers.slice(0, bodyLayerEnd).map(({ input }) => ({ input })),
+    ...props.filter(({ layer }) => layer === "body-front").map(({ input }) => ({ input })),
+    ...activeLayers.slice(bodyLayerEnd).map(({ input }) => ({ input })),
     ...props.filter(({ layer }) => layer === "front").map(({ input }) => ({ input })),
   ]).png().toBuffer();
 
   return {
     buffer: output,
     ...(includeLayerBuffers ? { analysisLayers: activeLayers } : {}),
+    ...(includeLayerBuffers ? {
+      analysisConstructionLayers: layers.filter((layer) => (
+        layer.compositeRole === "hidden-construction-fill"
+      )),
+    } : {}),
     ...(includeLayerBuffers ? { analysisProps: props } : {}),
     receipt: {
       schemaVersion: "shaz-rig-v2-frame-receipt-v1",
@@ -1018,6 +1069,7 @@ async function renderRigFrame({
         filename,
         deformation,
         compositeRole,
+        cuffOwner,
         sourceLayers,
         sourceFillComponentCount,
         hiddenFillComponentCount,
@@ -1032,6 +1084,7 @@ async function renderRigFrame({
         variant,
         filename,
         compositeRole,
+        ...(cuffOwner ? { cuffOwner } : {}),
         ...(sourceLayers ? { sourceLayers } : {}),
         ...(sourceFillComponentCount !== undefined ? { sourceFillComponentCount } : {}),
         ...(hiddenFillComponentCount !== undefined ? { hiddenFillComponentCount } : {}),

@@ -18,7 +18,19 @@ const CONTROL_FIELDS = new Set([
   "flipVertical",
 ]);
 const INTERPOLATIONS = new Set(["linear", "hold"]);
-const PROP_LAYERS = new Set(["behind", "front"]);
+const PROP_LAYERS = new Set(["behind", "body-front", "front"]);
+const ARM_SIDES = new Set(["Left", "Right"]);
+const ARM_PAINT_ORDERS = new Set(["both-front-left-under-right"]);
+const ARM_COMPOSITE_MODES = new Set(["native-rig", "registered-pose-replacement"]);
+const DEFAULT_ARM_LIMITS = {
+  minimumHandToSleeveAreaRatio: 0.1,
+  maximumHandToSleeveAreaRatio: 0.45,
+  maximumHandToHeadWidthRatio: 0.8,
+};
+const ABSOLUTE_ARM_LIMITS = {
+  maximumHandToSleeveAreaRatio: 0.7,
+  maximumHandToHeadWidthRatio: 0.95,
+};
 const DEFORMATION_NODE_TYPES = new Set([
   "BendyBoneModule",
   "CurveModule",
@@ -51,6 +63,64 @@ function finiteVector(value, length, context) {
     throw new Error(`${context} must contain ${length} numbers`);
   }
   return value.map((entry, index) => finiteNumber(entry, `${context}[${index}]`));
+}
+
+function validateArmQuality(recipe) {
+  const quality = recipe.quality ?? {};
+  if (quality.armCompositeMode !== undefined
+    && !ARM_COMPOSITE_MODES.has(quality.armCompositeMode)) {
+    throw new Error("quality.armCompositeMode must be native-rig or registered-pose-replacement");
+  }
+  if (quality.armCompositeMode === "registered-pose-replacement"
+    && quality.armPaintOrder !== undefined) {
+    throw new Error("registered pose replacements cannot declare a native-arm paint order");
+  }
+  if (quality.armPaintOrder !== undefined
+    && !ARM_PAINT_ORDERS.has(quality.armPaintOrder)) {
+    throw new Error("quality.armPaintOrder is not a registered native-arm paint policy");
+  }
+  if (quality.overlayHandSleeveOwner !== undefined
+    && quality.overlayHandSleeveOwner !== "Left") {
+    throw new Error("quality.overlayHandSleeveOwner may only describe the rig-owned Left OL_Hand channel");
+  }
+  if (quality.tuckedHands !== undefined || quality.tuckedHandFrames !== undefined) {
+    throw new Error("hidden or recipe-declared tucked hands are unsupported; both native hand chains must remain visibly verifiable");
+  }
+
+  const openHandCuffs = quality.authoredOpenHandCuffs ?? [];
+  if (!Array.isArray(openHandCuffs)
+    || openHandCuffs.some((side) => !ARM_SIDES.has(side))
+    || new Set(openHandCuffs).size !== openHandCuffs.length) {
+    throw new Error("quality.authoredOpenHandCuffs must contain unique Left/Right values");
+  }
+
+  const geometry = quality.armGeometryLimits ?? {};
+  if (!geometry || typeof geometry !== "object" || Array.isArray(geometry)
+    || Object.keys(geometry).some((side) => !ARM_SIDES.has(side))) {
+    throw new Error("quality.armGeometryLimits may contain only Left and Right");
+  }
+  for (const [side, limits] of Object.entries(geometry)) {
+    const context = `quality.armGeometryLimits.${side}`;
+    const allowed = new Set(Object.keys(DEFAULT_ARM_LIMITS));
+    if (!limits || typeof limits !== "object" || Array.isArray(limits)
+      || Object.keys(limits).some((key) => !allowed.has(key))) {
+      throw new Error(`${context} contains unsupported limits`);
+    }
+    for (const [key, value] of Object.entries(limits)) finiteNumber(value, `${context}.${key}`);
+    const minimumArea = limits.minimumHandToSleeveAreaRatio
+      ?? DEFAULT_ARM_LIMITS.minimumHandToSleeveAreaRatio;
+    const maximumArea = limits.maximumHandToSleeveAreaRatio
+      ?? DEFAULT_ARM_LIMITS.maximumHandToSleeveAreaRatio;
+    const maximumHead = limits.maximumHandToHeadWidthRatio
+      ?? DEFAULT_ARM_LIMITS.maximumHandToHeadWidthRatio;
+    if (minimumArea < DEFAULT_ARM_LIMITS.minimumHandToSleeveAreaRatio
+      || maximumArea < minimumArea
+      || maximumArea > ABSOLUTE_ARM_LIMITS.maximumHandToSleeveAreaRatio
+      || maximumHead <= 0
+      || maximumHead > ABSOLUTE_ARM_LIMITS.maximumHandToHeadWidthRatio) {
+      throw new Error(`${context} exceeds the absolute arm-proportion bounds`);
+    }
+  }
 }
 
 function indexNodesByName(scene) {
@@ -270,6 +340,7 @@ function createPoseRuntime(manifest, recipe) {
       || recipe.quality.maximumIdenticalFrames > recipe.durationFrames)) {
     throw new Error("quality.maximumIdenticalFrames must be a positive frame count within the pose duration");
   }
+  validateArmQuality(recipe);
 
   const scene = manifest.scenes[0];
   if (!scene) throw new Error("manifest contains no scene");
@@ -333,7 +404,9 @@ function createPoseRuntime(manifest, recipe) {
     if (!/^[a-f0-9]{64}$/.test(prop.sha256 ?? "")) {
       throw new Error(`props[${index}].sha256 must be a lowercase SHA-256`);
     }
-    if (!PROP_LAYERS.has(prop.layer)) throw new Error(`props[${index}].layer must be behind or front`);
+    if (!PROP_LAYERS.has(prop.layer)) {
+      throw new Error(`props[${index}].layer must be behind, body-front, or front`);
+    }
     props.push({
       id: prop.id,
       asset: prop.asset,

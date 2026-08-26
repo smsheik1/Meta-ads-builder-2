@@ -5,7 +5,7 @@ description: Render, author, diagnose, and certify repeatable 2D Shaz puppet ani
 
 # Shaz Puppet Runtime
 
-Skill version: **1.2**.
+Skill version: **1.4**.
 
 Use this kit when the user wants a video assembled from the registered Shaz actions in `poses/index.json` or wants to author and certify one action through the recovered rig. The kit is fully local, makes no provider calls, and costs $0.
 
@@ -18,7 +18,7 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 
 1. Read `README.md`, `input-contract.json`, `composition-contract.json`, `output-contract.json`, `quality.json`, and `content-boundary.json`.
    When planning new capabilities, evaluating completeness, or changing the Format, also read `ROADMAP.md`; it is the canonical backlog and build order.
-2. Run `npm install` once, then `npm run check` and `npm run smoke`.
+2. Run `npm install` once, then `npm run check`, `npm run inspect:registry`, and `npm run smoke`.
 3. Write an input JSON that uses only registered `poseId` values. Use explicit `holdFrames` and `gapFrames`; the last action must use `gapFrames: 0`.
 4. Start a new run with an absolute input path:
 
@@ -56,16 +56,18 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Treat drawing substitutions, visibility, AutoPatch-style masking, and paint order as animation controls.
 - Distinguish visible alpha from semantic ownership. A partial eye, hand, or facial drawing may own a larger matte than its painted pixels; reconstruct that envelope and clip occluders behind it instead of shifting artwork or erasing only an outline.
 - Treat internal palette ownership as content: shape, opacity, and connectivity can all pass while teeth, eye whites, tongues, or skin are painted incorrectly. Add direct color-presence gates for stable semantic regions.
-- Animate limbs through their common rig ancestor and preserve one continuous shoulder-to-sleeve-to-hand chain. Never key a sleeve, forearm, hand, or fist as independent screen-space pieces.
-- Establish handheld props before contact and keep the hand inside the native rig hierarchy. Screen-space hand, finger, fist, sleeve, forearm, and arm substitutes are forbidden; matching coordinates do not create a joint. If a bilateral depth crossover genuinely cannot be represented by the recovered hierarchy, use exactly one checksum-locked torso-local assembly at a single authored boundary.
-- Reject a candidate when dense transition frames or normal-speed playback show a detached, duplicated, missing, scale-popping, undersized, oversized, or independently drifting limb. Whole-character connectivity is insufficient. An asset-ID allowlist is not proof of topology. Inspect each hand-to-sleeve joint and its proportion directly.
+- Prefer limbs animated through their common rig ancestor, with one continuous native shoulder-to-finished-sleeve-to-hand chain per side. Independent screen-space pieces and multi-fragment limb assemblies are forbidden. If three bounded native-rig attempts prove that the recovered drawings and pivots cannot form an essential destination, one coherent, part-specific registered pose drawing may replace the complete corresponding native parts. It must be user-supplied or explicitly authored for the pose, exact-hash and exact-transform locked, use a declared paint layer, preserve the runtime-rendered head and body, and never overlap visible native counterparts. This is a substitution drawing, not permission for a generic full-character sprite.
+- A front overlay hand recipe may record its recovered native sleeve owner as descriptive, validated metadata, but that declaration does not create ownership. The renderer must derive the actual cuff owner from rig topology, matte the overlay at that derived finished cuff, and enforce the rendered hand role's geometry limits; recipe metadata cannot relax those limits. Inspect the semantic wrist joint because overlap with the face or torso is not attachment evidence.
+- When reusing an authored gesture, keep its authored wrist states with the substituted hand drawings. Do not import wrist transforms from an unrelated frame range or inflate hand scale to force contact.
+- Establish handheld props before contact and keep the hand inside the native rig hierarchy. A prop cannot masquerade as a hand, finger, fist, sleeve, or arm; matching coordinates do not create a joint. A prop-free alias removes the prop while leaving the native gesture controls and drawings unchanged. The registered pose-drawing exception above is allowed only as a complete, mutually exclusive semantic substitution and never as a prop-interaction shortcut.
+- Reject a candidate when dense transition frames or normal-speed playback show a detached, duplicated, missing, scale-popping, undersized, oversized, or independently drifting limb. Whole-character connectivity is insufficient. An asset ID alone is not proof: package only registered assets; verify native semantic shoulder/cuff/wrist joints and proportions directly; and for a registered pose drawing verify its exact asset bytes, transform, paint layer, complete native-part suppression, and preserved body/head pixels. Structural checks never replace complete normal-speed playback.
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
 
 ## Important boundaries
 
 - `runtime/rig-v2-renderer.mjs#renderRigFrame` is the only renderer for smoke, proof, and final output.
-- Artist-rendered frames may define phase, presentation cadence, and acceptance criteria, but never copy, resample, or embed their pixels as sprites, deformation data, or generated pose artwork.
+- Finished artist-rendered animation frames may define phase, presentation cadence, and acceptance criteria, but never become runtime sprites, deformation data, or generated pose artwork. A user-supplied pose-design drawing may be registered transparently as destination artwork under the strict substitution contract above; disclose it separately from the recovered Xstage drawings.
 - Never bypass `poses/index.json` with arbitrary recipe paths.
 - Do not weaken per-frame clipping, joint continuity, layer order, prop, facial-pop, or provenance gates to make a run pass.
 - Up to three render attempts are allowed per run. Fix the input or recipe between attempts; do not create shadow runs to evade the limit.

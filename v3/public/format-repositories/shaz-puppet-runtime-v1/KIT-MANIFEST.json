@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "shaz-puppet-runtime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "officialRuntime": "runner.mjs",
   "commands": ["check", "smoke", "init", "validate", "render", "inspect", "finalize"],
   "networkRequired": false,

@@ -4,7 +4,7 @@
   "timeline": {
     "action": "Render every recipe frame through the recovered rig-v2 renderer.",
     "hold": "Clone the final rendered action frame for holdFrames.",
-    "gap": "Insert exactly gapFrames white frames between actions, except after the final action."
+    "gap": "Insert no separator frames by default. When a positive gapFrames value is explicit, insert exactly that many white frames between actions; never insert a gap after the final action. A zero gap makes actions contiguous but does not create a polished blend."
   },
   "renderer": "runtime/rig-v2-renderer.mjs",
   "previewExportParity": "Smoke, proof, and final rendering all call the same renderRigFrame implementation.",

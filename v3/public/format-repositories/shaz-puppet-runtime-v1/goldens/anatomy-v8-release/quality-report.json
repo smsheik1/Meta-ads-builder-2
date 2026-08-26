@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "inspectedAt": "2026-08-26T04:32:07.277Z",
+  "inputSha256": "5735110c7fb278e8c6aef658d5318c2eddee30ae3fab962c732dfa1c4c6a5774",
+  "outputSha256": "bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9",
+  "artistRenderedFramesUsed": false,
+  "measured": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "fps": "24/1",
+    "frames": 173,
+    "durationSeconds": 7.208008
+  },
+  "poseReports": [
+    {
+      "poseId": "facepalm-frustrated",
+      "status": "pass",
+      "poseRecipeSha256": "c229ea7f5d2e257934bab4fe4f37891fe1c0d20aa34347580469409f463441dc",
+      "framesInspected": 36,
+      "maximumIdenticalFrames": 2,
+      "failures": []
+    },
+    {
+      "poseId": "arms-crossed-skeptical",
+      "status": "pass",
+      "poseRecipeSha256": "92c20c30f151cfe5917125308f3a54646ec09fe0ce39a314425d92d1864c47f6",
+      "framesInspected": 19,
+      "maximumIdenticalFrames": 2,
+      "failures": []
+    },
+    {
+      "poseId": "excited-celebration",
+      "status": "pass",
+      "poseRecipeSha256": "4712345a1d0e6c37a639e07b87c041ce6910e4962dc1b03797f78dec6d1ea76c",
+      "framesInspected": 31,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "phone-use-sequence",
+      "status": "pass",
+      "poseRecipeSha256": "be7561b8a0c8f36ba3ad2408db7725216fff76cf112432f310288881350e0807",
+      "framesInspected": 55,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "contactSheet": "contact-sheet.jpg",
+  "contactSheetSampleFrames": [
+    21,
+    57,
+    90,
+    141
+  ],
+  "humanReview": "human-review.json"
+}

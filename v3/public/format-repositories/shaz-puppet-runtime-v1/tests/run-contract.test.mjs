@@ -27,6 +27,19 @@ test("sequence validation resolves registered poses and exact timeline frames", 
   assert.equal(result.durationSeconds, 77 / 24);
 });
 
+test("sequence validation makes actions contiguous unless a separator is explicit", () => {
+  const result = validateInput({
+    schemaVersion: "shaz-sequence-input-v1",
+    title: "Seamless sequence",
+    sequence: [
+      { poseId: "think", holdFrames: 0 },
+      { poseId: "aha", holdFrames: 0 },
+    ],
+  }, registry);
+  assert.deepEqual(result.entries.map(({ gapFrames }) => gapFrames), [0, 0]);
+  assert.equal(result.totalFrames, 54);
+});
+
 test("sequence validation rejects unregistered pose paths", () => {
   assert.throws(() => validateInput({
     schemaVersion: "shaz-sequence-input-v1",
@@ -57,7 +70,7 @@ test("packaged skill protects the one-action learning loop", async () => {
     fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
   ]);
   const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
-  assert.match(skill, /Skill version: \*\*1\.2\*\*/);
+  assert.match(skill, /Skill version: \*\*1\.4\*\*/);
   assert.match(skill, /Do not work on several uncertified actions at once/);
   assert.ok(skill.includes(learningQuestion));
   assert.match(skill, /references\/rig-animation-playbook\.md/);
@@ -68,10 +81,22 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(playbook, /animate multiple uncertified actions/);
   assert.match(playbook, /slow motion is diagnostic only/);
   assert.match(playbook, /exposure-change frames/);
-  assert.match(playbook, /atomic contact silhouette/);
-  assert.match(playbook, /Never animate the component sleeve, forearm, hand, or fist assets independently/);
-  assert.match(playbook, /at most one registered limb assembly/);
-  assert.match(skill, /An asset-ID allowlist is not proof of topology/);
+  assert.match(playbook, /shoulder-to-finished-sleeve-to-hand/);
+  assert.match(playbook, /three bounded native-rig candidates/);
+  assert.match(playbook, /asset ID, path, bytes, normalized transform, opacity timing, and paint layer are exact-locked/);
+  assert.match(playbook, /every corresponding native arm, forearm, and hand drawing becomes invisible/);
+  assert.match(playbook, /cuff.*ownership|sleeve.*ownership/i);
+  assert.match(skill, /one coherent, part-specific registered pose drawing/);
+  assert.match(skill, /never overlap visible native counterparts/);
+});
+
+test("build kit excludes runtime outputs and packages only registered prop assets", async () => {
+  const buildKit = await fs.readFile(path.join(root, "build-kit.mjs"), "utf8");
+  assert.match(buildKit, /if \(parts\[0\] === "downloads"\) return false;/);
+  assert.doesNotMatch(buildKit, /parts\[0\] === "downloads"[^\n]*parts\.length/);
+  assert.match(buildKit, /parts\[0\] === "goldens" \|\| relative === "goldens\.json"/);
+  assert.match(buildKit, /new Set\(\["phone\.svg", "crossed-arms-pose\.png"\]\)/);
+  assert.match(buildKit, /!packagedPropFiles\.has/);
 });
 
 test("full Point cancels demo-shot motion at the master and preserves artist exposure cadence", async () => {

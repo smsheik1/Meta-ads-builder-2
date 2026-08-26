@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import test from "node:test";
 
+import { sampleControlKeys } from "../runtime/pose-recipe.mjs";
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 import { buildArmsCrossedSkeptical } from "../poses/generated/sources/arms-crossed-skeptical.mjs";
 import { buildFacepalmFrustrated } from "../poses/generated/sources/facepalm-frustrated.mjs";
@@ -15,6 +15,12 @@ const load = async (name) => JSON.parse(await fs.readFile(
   new URL(`../poses/generated/${name}.json`, import.meta.url),
   "utf8",
 ));
+
+const normalizedControlKeys = (keys) => keys.map(({
+  frame,
+  interpolation = "linear",
+  ...state
+}) => ({ frame, interpolation, state }));
 
 test("handheld props are established instead of appearing randomly", async () => {
   const phonePose = await load("look-at-phone");
@@ -42,13 +48,15 @@ test("look-at-phone generator exactly reproduces the registered recipe", async (
   assert.deepEqual(await buildLookAtPhone(manifest), checkedIn);
 });
 
-test("phone-use sequence reuses the intact registered phone interaction", async () => {
+test("phone-use sequence preserves the native gesture without a literal phone", async () => {
   const pose = await load("phone-use-sequence");
   const base = await load("look-at-phone");
   assert.equal(pose.durationFrames, base.durationFrames);
   assert.equal(pose.quality.armCompositeMode, "native-rig");
-  assert.deepEqual(pose.props.map(({ id }) => id), ["phone"]);
-  assert.equal(pose.props.some(({ id }) => /phone-sequence|sleeve/.test(id)), false);
+  assert.deepEqual(base.props.map(({ id }) => id), ["phone"],
+    "removing the phone from the sequence must not alter the registered look-at-phone action");
+  assert.deepEqual(pose.props, [],
+    "the final storyboard gesture must not retain the literal phone or a screen-space hand");
   assert.deepEqual(pose.controls, base.controls);
   assert.deepEqual(pose.drawings, base.drawings);
 });
@@ -94,6 +102,8 @@ test("facepalm uses the front hand channel for complete face coverage", async ()
     { frame: 13, drawing: "1" },
     { frame: 16, drawing: "2" },
   ]);
+  assert.equal(pose.quality.overlayHandSleeveOwner, "Left",
+    "the front-painted palm must remain visibly matted to the raised left sleeve");
   for (const key of pose.controls["OL_Hand-P"].filter(({ frame }) => frame >= 16)) {
     assert.ok(key.scale[0] <= 0.421 && key.scale[1] <= 0.421);
     assert.ok(key.rotation >= 98 && key.rotation <= 108);
@@ -128,42 +138,42 @@ test("facepalm generator exactly reproduces the registered recipe", async () => 
   assert.deepEqual(await buildFacepalmFrustrated(manifest), checkedIn);
 });
 
-test("crossed arms use native anticipation then one fixed crossover assembly", async () => {
+test("crossed arms use one exact pose drawing only after native anticipation", async () => {
   const pose = await load("arms-crossed-skeptical");
-  assert.equal(pose.quality.armCompositeMode, "registered-crossed-rig-assembly");
-  assert.deepEqual(pose.props.map(({ id }) => id), ["crossed-arms-assembly"]);
-  const [assembly] = pose.props;
-  assert.equal(assembly.keys[0].opacity, 0);
-  assert.equal(assembly.keys.find(({ frame }) => frame === 13).opacity, 0);
-  assert.equal(assembly.keys.find(({ frame }) => frame === 14).opacity, 100);
-  assert.ok(assembly.keys.every(({ position }) => position[0] === 0.56 && position[1] === 0.376));
-  assert.ok(assembly.keys.every(({ scale }) => scale[0] === 1.6 && scale[1] === 1.6),
-    "the complete crossed-arm assembly must preserve approved hand and sleeve proportions");
-  for (const nodeName of ["Left_Forearm", "Left_Hand", "Right_Forearm", "Right_Hand"]) {
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 13).opacity, 100);
-    assert.equal(pose.controls[nodeName].find(({ frame }) => frame === 14).opacity, 0);
+  assert.equal(pose.quality.armCompositeMode, "registered-pose-replacement");
+  assert.equal(pose.quality.armPaintOrder, undefined);
+  assert.equal(pose.props.length, 1);
+  assert.deepEqual(pose.props[0], {
+    id: "crossed-arms-pose",
+    asset: "crossed-arms-pose.png",
+    sha256: "73e73755a77822989fd466ab6fe79591b176bbe9ea68940a46359c999a84e311",
+    layer: "body-front",
+    keys: [
+      { frame: 1, position: [0.41796875, 0.621875], width: 0.2578125, rotation: 0, opacity: 0, interpolation: "hold" },
+      { frame: 10, position: [0.41796875, 0.621875], width: 0.2578125, rotation: 0, opacity: 100, interpolation: "hold" },
+      { frame: 19, position: [0.41796875, 0.621875], width: 0.2578125, rotation: 0, opacity: 100, interpolation: "hold" },
+    ],
+  });
+  for (const nodeName of [
+    "Left_Arm", "Left_Forearm", "Left_Hand",
+    "Right_Arm", "Right_Forearm", "Right_Hand",
+  ]) {
+    assert.deepEqual(pose.drawings[nodeName].at(-1), { frame: 10, drawing: null },
+      `${nodeName} must switch off on the exact replacement frame`);
   }
   assert.equal(pose.drawings.Left_Eye.at(-1).drawing, "2");
   assert.equal(pose.drawings.Right_Eye.at(-1).drawing, "2");
 });
 
-test("crossed-arm assembly is checksum-locked to rig-derived source parts", async () => {
-  const [assets, receipt, bytes] = await Promise.all([
-    fs.readFile(new URL("../assets.json", import.meta.url), "utf8").then(JSON.parse),
-    fs.readFile(new URL(
-      "../assets/props/crossed-arms-assembly.receipt.json",
-      import.meta.url,
-    ), "utf8").then(JSON.parse),
-    fs.readFile(new URL("../assets/props/crossed-arms-assembly.png", import.meta.url)),
-  ]);
-  const prop = assets.props.find(({ id }) => id === "crossed-arms-assembly");
-  assert.equal(receipt.artistRenderedFramesUsed, false);
-  assert.equal(receipt.sourceParts.length, 4);
-  assert.equal(prop.sha256, receipt.outputSha256);
-  assert.equal(
-    crypto.createHash("sha256").update(bytes).digest("hex"),
-    receipt.outputSha256,
-  );
+test("crossed arms cannot regress to the rejected full-canvas assembly", async () => {
+  const pose = await load("arms-crossed-skeptical");
+  assert.equal(pose.quality.armCompositeMode === "registered-crossed-rig-assembly", false);
+  assert.equal((pose.props ?? []).some(({ id }) => id === "crossed-arms-assembly"), false);
+  assert.equal(pose.props[0].asset, "crossed-arms-pose.png");
+  assert.ok(pose.props[0].keys.every(({ width }) => width === 0.2578125),
+    "the registered drawing must remain a tight arm-only asset, not a full-frame character replacement");
+  assert.equal(JSON.stringify(pose).includes('"scale":[1.6,1.6]'), false,
+    "the rejected 1.6x full-canvas assembly calibration must not return through recipe data");
 });
 
 test("arms-crossed generator exactly reproduces the registered recipe", async () => {
@@ -210,11 +220,11 @@ test("excited celebration preserves the full human-authored timing grammar once"
   assert.equal(pose.drawings.Left_Hand.find(({ frame }) => frame === 3).drawing, "10");
   assert.equal(pose.drawings.Right_Hand.find(({ frame }) => frame === 3).drawing, "10");
   for (const nodeName of ["Left_Hand-P", "Right_Hand-P"]) {
-    const activeFistScales = pose.controls[nodeName]
-      .filter(({ frame }) => frame >= 3 && frame <= 27)
-      .map(({ scale }) => Math.min(...scale));
-    assert.ok(Math.min(...activeFistScales) >= 1.15,
-      `${nodeName} must not shrink the registered victory fist below the sleeve proportion floor`);
+    const authoredKeys = normalizedControlKeys(authoredShrug.controls[nodeName]);
+    for (const { frame, interpolation, ...actualState } of pose.controls[nodeName]) {
+      assert.deepEqual(actualState, sampleControlKeys(authoredKeys, frame),
+        `${nodeName} frame ${frame} must keep the authored Shrug wrist state without fist enlargement`);
+    }
   }
 });
 

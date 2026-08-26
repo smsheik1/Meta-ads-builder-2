@@ -12,7 +12,8 @@
       "authored/think: hand-to-face, head drag, secondary hair, and settle mechanics",
       "authored library: neutral-to-pose anticipation and focused eye direction",
       "authored/think overlay hand: native wrist-registered pointing contact without a screen-space hand substitute",
-      "removed the detached screen-space tap hand; the phone action keeps the authored overlay hand and its native sleeve registration"
+      "removed the detached screen-space tap hand; the phone action keeps the authored overlay hand and its native sleeve registration",
+      "removed the literal phone from this reusable gesture after visual review; the native body-language action remains intact"
     ],
     "artistRenderedFramesUsed": false
   },
@@ -11752,77 +11753,13 @@
   },
   "quality": {
     "maximumIdenticalFrames": 3,
-    "armCompositeMode": "native-rig"
-  },
-  "props": [
-    {
-      "id": "phone",
-      "asset": "phone.svg",
-      "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975",
-      "layer": "front",
-      "keys": [
-        {
-          "frame": 1,
-          "position": [
-            0.355,
-            0.8
-          ],
-          "width": 0.055,
-          "rotation": 8,
-          "opacity": 100,
-          "interpolation": "hold"
-        },
-        {
-          "frame": 7,
-          "position": [
-            0.355,
-            0.8
-          ],
-          "width": 0.055,
-          "rotation": 6,
-          "opacity": 100
-        },
-        {
-          "frame": 10,
-          "position": [
-            0.39,
-            0.8
-          ],
-          "width": 0.052,
-          "rotation": 3,
-          "opacity": 100
-        },
-        {
-          "frame": 12,
-          "position": [
-            0.45,
-            0.63
-          ],
-          "width": 0.05,
-          "rotation": -1,
-          "opacity": 100
-        },
-        {
-          "frame": 13,
-          "position": [
-            0.415,
-            0.53
-          ],
-          "width": 0.048,
-          "rotation": 1,
-          "opacity": 100
-        },
-        {
-          "frame": 55,
-          "position": [
-            0.415,
-            0.53
-          ],
-          "width": 0.048,
-          "rotation": 1,
-          "opacity": 100
-        }
-      ]
+    "armCompositeMode": "native-rig",
+    "overlayHandSleeveOwner": "Left",
+    "armGeometryLimits": {
+      "Left": {
+        "maximumHandToSleeveAreaRatio": 0.65
+      }
     }
-  ]
+  },
+  "props": []
 }

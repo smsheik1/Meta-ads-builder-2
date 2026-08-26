@@ -3,13 +3,8 @@
   "rigManifest": "rig-v2/runtime.json",
   "rigAssets": "rig-v2/assets/receipt.json",
   "props": [
-    { "id": "screen", "path": "assets/props/screen.svg", "sha256": "cf15a5e725edcb3ef49f51cb299001d1d112b4951b6ea7e8a749bfe81159e9e1", "usage": "point-at-screen" },
-    { "id": "phone", "path": "assets/props/phone.svg", "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975", "usage": "look-at-phone; phone-use-sequence" },
-    { "id": "crossed-left-sleeve", "path": "assets/props/crossed-left-sleeve.png", "sha256": "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef", "usage": "source component for crossed-arms-assembly; not independently rendered", "sourceRigAsset": "left-forearm-01.png" },
-    { "id": "crossed-right-sleeve", "path": "assets/props/crossed-right-sleeve.png", "sha256": "6825bd9502845dfee7f44700488d25469fd15a3fddafc8aa5c007ae8ef3d29ba", "usage": "source component for crossed-arms-assembly; not independently rendered", "sourceRigAsset": "right-forearm-01.png" },
-    { "id": "crossed-left-hand", "path": "assets/props/crossed-left-hand.png", "sha256": "e393634f96b9d607f96af9ce01c288d5e3bf8a43ca3cd05e5d67cebe89cab5c2", "usage": "source component for crossed-arms-assembly; not independently rendered", "sourceRigAsset": "left-hand-05.png" },
-    { "id": "crossed-right-hand", "path": "assets/props/crossed-right-hand.png", "sha256": "1ca56cff2c194949889c10e6b5f1d07e9d64ca4837a76db086966f79baaa429d", "usage": "source component for crossed-arms-assembly; not independently rendered", "sourceRigAsset": "right-hand-07.png" },
-    { "id": "crossed-arms-assembly", "path": "assets/props/crossed-arms-assembly.png", "sha256": "ccee1620caa3c42ab5028913665e6be9f61001236df10b0ae9eb9044aa95947c", "usage": "arms-crossed-skeptical; single torso-local contact assembly", "receipt": "assets/props/crossed-arms-assembly.receipt.json" }
+    { "id": "phone", "path": "assets/props/phone.svg", "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975", "usage": "look-at-phone" },
+    { "id": "crossed-arms-pose", "path": "assets/props/crossed-arms-pose.png", "sha256": "73e73755a77822989fd466ab6fe79591b176bbe9ea68940a46359c999a84e311", "usage": "arms-crossed-skeptical registered pose drawing" }
   ],
   "provenance": {
     "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",

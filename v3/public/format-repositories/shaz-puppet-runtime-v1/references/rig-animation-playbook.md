@@ -9,6 +9,7 @@ An action is certified only when:
 - the complete candidate has been watched at normal speed;
 - dense frames and relevant close-ups have been inspected;
 - the character remains on-model with continuous finished silhouettes;
+- every semantic shoulder, cuff, and wrist joint remains credible at on-model proportions;
 - deformation, substitutions, expression, timing, and framing read correctly;
 - automatic pose inspection and focused regression tests pass;
 - synchronized reference comparison passes when an artist reference exists;
@@ -28,7 +29,7 @@ Use the smallest combination that answers the current uncertainty:
 7. Inspect alpha bounds and connected components for detached fragments, missing fill, or clipping.
 8. Inspect the Xstage hierarchy, PEG controls, deformation channels, drawings, and source substitutions when visual evidence does not identify the cause.
 
-Rendered artist frames may be used to identify phases, presentation cadence, and acceptance criteria. Never copy, resample, or embed their pixels as runtime sprites, deformation data, or generated pose artwork.
+Rendered artist animation frames may be used to identify phases, presentation cadence, and acceptance criteria. Never copy, resample, or embed those animation frames as runtime sprites, deformation data, or generated pose artwork. A user-supplied pose-design drawing is different: it may be registered transparently as destination artwork only under the bounded substitution rules below.
 
 ## Author in the right order
 
@@ -68,15 +69,30 @@ Treat color ownership as content, not merely alpha coverage. A drawing can remai
 
 Treat visible alpha and semantic ownership as separate evidence. A partial squint, eyelid, hand, or facial substitution can paint only the visible fragment while still owning the complete region that must exclude hair or other occluders. Recover the intended envelope from the registered drawing family, clip the occluder behind that envelope, then paint the visible substitution. Confirm the result in a synchronized tight crop. Do not begin with coordinate nudges, color-specific erasure, or contour-only cleanup; those can hide one symptom while leaving the occluding fill intact.
 
-Treat front-of-face hand gestures as a layer-ownership problem before treating them as a transform problem. If a valid hand drawing disappears behind the head, reuse that registered rig drawing through the dedicated `OL_Hand` substitution channel, preserve its original asset registration and provenance, and calibrate only the overlay control. Do not reorder the ordinary hand globally or add a pose-specific renderer branch; either can fix one pose while breaking every ordinary hand pose.
+Treat front-of-face hand gestures as a layer- and cuff-ownership problem before treating them as a transform problem. If a valid hand drawing disappears behind the head, reuse that registered rig drawing through the dedicated `OL_Hand` substitution channel and preserve its original asset registration and provenance. The recipe may record the recovered sleeve owner as descriptive, validated metadata, but the renderer must derive actual cuff ownership from rig topology and matte the overlay at that derived finished cuff. The declaration cannot create ownership or relax the geometry limits selected from the rendered hand role. Inspect the semantic wrist joint and calibrate only the overlay control. Do not infer attachment because the palm touches the face, reorder the ordinary hand globally, or add a pose-specific renderer branch.
 
-Treat limb depth crossovers as semantic-ownership transfers when the recovered paint topology cannot exchange front/back order. Keep the ordinary attached rig visible through anticipation. If contact cannot stay native, precompose the required checksum-locked rig drawings into one fixed torso-local assembly, swap it on at one exact boundary, and hide the complete conflicting native pieces on that same frame. Never animate the component sleeve, forearm, hand, or fist assets independently; matching coordinates do not create a joint.
+Treat limb depth crossovers as native paint-order changes first. Keep both shoulder-to-finished-sleeve-to-hand chains in the rig when the recovered drawings and pivots can form the semantic pose. Declare the pose-specific arm paint order in the recipe, and keep exactly one registered native hand channel visible and independently verifiable on each side throughout those native frames. Hidden or tucked hands and duplicate hand channels on either side are invalid.
+
+If up to three bounded native-rig candidates prove that the recovered vocabulary cannot form the essential destination without clasped hands, detached wrists, or distorted sleeves, stop tuning coordinates. One coherent, part-specific pose drawing may replace the complete corresponding native parts, but only when all of these are true:
+
+- the drawing is user-supplied or explicitly authored for that pose and its provenance is disclosed;
+- the asset ID, path, bytes, normalized transform, opacity timing, and paint layer are exact-locked;
+- every corresponding native arm, forearm, and hand drawing becomes invisible on the exact replacement frame, with no double-painting or armless gap;
+- the rig continues to render the original head, face, hair, torso, collar, strings, pocket, and unrelated limbs;
+- the inspector distinguishes the substitution from non-limb props and rejects any other replacement tuple; and
+- dense frames and the exact checksum pass complete normal-speed review.
+
+This is equivalent to adding one authored substitution drawing to an incomplete 2D rig. It is not permission for a full-character sprite, four independently positioned limb fragments, arbitrary image generation, or a renderer branch keyed to a pose name.
+
+When a generated action reuses an authored movement grammar, preserve the authored wrist controls for the same source frames. Change the semantic hand drawing at the declared substitution frame, but do not import wrist coordinates from another action or add arbitrary scale inflation to make the drawing graze the sleeve. Direct overlap can make a structurally wrong hand pass a coarse contact count.
 
 Treat physical prop interaction as a contact-ownership chain. A moving prop is not attached merely because its path resembles a hand path. Preserve the real shoulder, sleeve, forearm, and hand hierarchy; use an existing native or overlay hand drawing for the contact and move the prop with that hand through the hold. Do not replace a hand, finger, fist, sleeve, forearm, or arm with an independently positioned screen-space prop.
 
-For a short bilateral contact that cannot preserve the ordinary limb topology, treat the replacement as one atomic contact silhouette, not several independently transformed pieces. Establish any semantic prop before the reach; hide every conflicting native drawing and reveal the single assembly on the same frame; restore the canonical arm chain on the same boundary that removes it. Test pre-contact, contact, and restoration separately at normal speed and in dense frames.
+For a short bilateral contact, preserve both native limb chains and represent depth with recipe-declared paint order while keeping both native hands visible and independently verifiable. If the recovered controls and registered drawings cannot produce a credible contact after the bounded attempt limit, either report the action blocked or use the single registered pose-drawing contract above. Never assemble the contact from independently positioned pieces. Test approach, substitution boundary, hold, and release separately at normal speed and in dense frames.
 
-Topology certification is outcome-based. A native frame may contain no limb-substitution props. A bilateral crossover frame may contain at most one registered limb assembly. Include visible props in whole-figure inspection, but do not stop there: measure each native hand-to-sleeve contact and hand-to-sleeve area ratio, and enforce minimum visible geometry for an atomic assembly. A palm touching the face can make the whole character one alpha component while its wrist is still detached; a consistently tiny hand can pass frame-to-frame scale stability. Do not certify a composition merely because its asset IDs match an allowlist.
+Topology certification is outcome-based. An innocuous asset ID cannot disguise fragmented anatomy. For native frames, require one visible hand channel per side, identify the intended shoulder, finished sleeve, cuff, hand, and any front-overlay sleeve owner, and measure each semantic contact and proportion. For a registered pose-drawing frame, require the exact trusted tuple and prove that all corresponding native pieces are absent while unrelated rig regions remain. A palm touching the face can make the whole character one alpha component while its wrist is still detached, and an oversized hand can create abundant contact pixels while remaining off-model. Do not certify any composition merely because an asset is allowlisted or a mechanical gate passes.
+
+A prop-free alias is a content subtraction, not a new gesture. Remove the prop declaration while preserving the checksum-locked native controls, drawings, timing, and deformation frames of the accepted source action. Reinspect the result at normal speed because removing the prop can change how the remaining hand silhouette reads.
 
 ### 4. Timing grammar
 
@@ -123,11 +139,12 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | Several defects move between poses | Work scope is too broad | Stop and perfect one action end to end |
 | A generated action changes when rebuilt without a source edit | Mutable authored-recipe dependency | Checksum-lock the source recipe and phase; require exact generator reproducibility |
 | A whole-body mirror stays unmirrored or moves off cadence | Flip was applied only to READ drawings or root angle/position was not reflected | Flip the common PEG and mirror its root position, rotation, and skew together |
-| Crossed arms look like detached capsules or a heart-shaped sleeve lump | Sleeves and hands were animated as separate screen-space pieces | Keep native connected anticipation, then swap once to one checksum-locked torso-local crossed-arm assembly; reject any recipe that renders the component pieces independently |
+| Crossed arms look flattened, detached, clasped, or like a heart-shaped sleeve lump | The native vocabulary cannot form the fold, or anatomy was assembled from independent pieces | Try bounded native-chain paint-order candidates; if they cannot form the destination, replace all arm parts atomically with one exact registered pose drawing while preserving the rig-rendered head/body |
 | A “celebration” still reads as a happy shrug | Filename and facial expression were treated as semantics while the open-palm arm vocabulary stayed unchanged | Establish victory-specific hand silhouettes and a true overhead accent while preserving the proven timing grammar |
-| A hand reaches the right place but disappears behind the face | The ordinary body hand owns the wrong paint layer for a face-covering gesture | Reuse the existing hand drawing through the registered `OL_Hand` front layer and lock its provenance |
+| A hand reaches the right place but disappears behind the face, floats at the wrist, or shows a cuff seam | The ordinary hand owns the wrong paint layer, or the overlay is not mapped and matted through its recovered sleeve topology | Reuse the registered drawing through `OL_Hand`; let the renderer derive its native sleeve owner, matte it at that finished cuff, and treat any recipe owner field as descriptive validation only |
 | A phone or other prop floats, or a repair leaves a detached/tiny hand | Prop motion or a screen-space limb substitute was authored independently from the native joint hierarchy | Keep the complete native limb, use an existing native/overlay hand drawing, move the prop with it, and test hand-to-sleeve plus prop-to-hand contact |
-| Bilateral contact exposes red shoulder capsules, duplicate hands, giant hands, or an armless transition frame | Independent limb pieces were keyed separately, or native/replacement visibility changed on different frames | Replace the faulty abstraction: preserve the native chain or use one atomic contact assembly with a single visibility boundary; test that multi-piece limb props are rejected |
+| Bilateral contact exposes red shoulder capsules, duplicate hands, giant hands, a hidden hand, or an armless transition frame | Native paint order is wrong, or a replacement was not mutually exclusive and complete | Preserve both visible native chains when feasible; otherwise use one complete exact-locked replacement drawing and switch every corresponding native part off on the same frame |
+| A substituted fist touches the sleeve but still looks detached or huge | Wrist states came from an unrelated action or hand scale was inflated to satisfy a coarse contact gate | Keep the same authored wrist states as the source gesture and substitute only the registered hand drawing at native scale |
 
 ## Things to avoid
 
@@ -140,6 +157,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 - Do not diagnose timing while the silhouette is structurally broken.
 - Do not accept passing code, a successful render, or three screenshots as evidence that the animation works.
 - Do not treat connectivity or alpha coverage as proof that internal color regions are correct.
+- Do not treat abundant contact pixels, a checksum alone, or several independently positioned limb fragments as proof of anatomy. A registered pose drawing is valid only with the complete substitution and visual-review contract above.
 - Do not repair a semantic overlap with model-space offsets or contour-only pixel erasure before establishing which drawing owns the complete region.
 - Do not weaken inspection thresholds to accommodate an observed defect.
 - Do not add pose-specific renderer branches when a recipe or existing substitution can express the action.

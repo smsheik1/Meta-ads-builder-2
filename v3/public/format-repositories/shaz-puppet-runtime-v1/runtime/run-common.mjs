@@ -129,7 +129,7 @@ function validateInput(input, registry) {
     const pose = registry.byId.get(entry.poseId);
     if (!pose) throw new Error(`sequence[${index}] references unknown pose ${entry.poseId}`);
     const holdFrames = integerInRange(entry.holdFrames, 12, 0, 120, `sequence[${index}].holdFrames`);
-    const gapFrames = integerInRange(entry.gapFrames, index === input.sequence.length - 1 ? 0 : 3, 0, 24, `sequence[${index}].gapFrames`);
+    const gapFrames = integerInRange(entry.gapFrames, 0, 0, 24, `sequence[${index}].gapFrames`);
     if (index === input.sequence.length - 1 && gapFrames !== 0) {
       throw new Error("the final sequence entry must use gapFrames: 0");
     }

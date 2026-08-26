@@ -4,9 +4,11 @@
     "source Xstage provenance",
     "compiled asset checksums",
     "pose recipe registry checksum",
-    "per-frame joint continuity",
+    "per-frame native shoulder-to-sleeve-to-hand topology or exact registered part-replacement contract",
+    "per-frame hand-to-sleeve cuff ownership and contact",
+    "per-frame hand-to-sleeve and hand-to-head proportion limits",
     "per-frame clipping",
-    "per-frame finished layer order with hidden construction-arm and stray back-bang rejection",
+    "per-frame finished layer order, including recipe-declared native arm crossovers, with hidden construction-arm and stray back-bang rejection",
     "per-frame facial pop limits",
     "pose-specific consecutive-identical-frame limit",
     "exact prop presence",
@@ -16,9 +18,10 @@
   "humanReview": {
     "required": true,
     "questions": [
-      "Do the transitions read as fluid rig animation rather than animatic cuts?",
+      "Do action phases, accents, and holds read as intentional animation without choppy pops or accidental pauses?",
       "Does Shaz remain on-model throughout every action?",
       "Are props and substitution redraws integrated naturally?",
+      "Do action boundaries play continuously without unintended white separator flashes?",
       "Would the output be usable in the Shaz animated channel?"
     ]
   },

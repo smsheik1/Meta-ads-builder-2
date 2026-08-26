@@ -9,7 +9,7 @@
   "authorship": {
     "method": "semantic-rig-control-composition",
     "learnedFrom": [
-      "authored/present@b2f8e206: open-palm setup and full secondary choreography",
+      "authored/present@4577345e: open-palm setup and full secondary choreography",
       "authored/point@fcc7f489: pointing hand, shoulder-to-wrist mechanics, grin, and hip-hand settle",
       "storyboard ebbf669f: off-canvas upper-right point without a literal screen prop"
     ],
@@ -7121,6 +7121,15 @@
     ]
   },
   "quality": {
-    "maximumIdenticalFrames": 2
+    "maximumIdenticalFrames": 2,
+    "authoredOpenHandCuffs": [
+      "Left"
+    ],
+    "armGeometryLimits": {
+      "Left": {
+        "maximumHandToSleeveAreaRatio": 0.56,
+        "maximumHandToHeadWidthRatio": 0.78
+      }
+    }
   }
 }

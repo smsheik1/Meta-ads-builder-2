@@ -130,6 +130,13 @@ async function buildFacepalmFrustrated(manifest) {
     drawings,
     quality: {
       maximumIdenticalFrames: 2,
+      overlayHandSleeveOwner: "Left",
+      armGeometryLimits: {
+        Left: {
+          maximumHandToSleeveAreaRatio: 0.65,
+          maximumHandToHeadWidthRatio: 0.9,
+        },
+      },
     },
   });
 }

@@ -79,6 +79,12 @@ async function buildLookAtPhone(manifest) {
       quality: {
         maximumIdenticalFrames: 3,
         armCompositeMode: "native-rig",
+        overlayHandSleeveOwner: "Left",
+        armGeometryLimits: {
+          Left: {
+            maximumHandToSleeveAreaRatio: 0.65,
+          },
+        },
       },
     }),
     props: [

@@ -11,16 +11,26 @@ const downloads = path.join(root, "downloads");
 const output = path.join(downloads, `${archiveName}.zip`);
 const checksumOutput = `${output}.sha256`;
 const excludedNames = new Set(["node_modules", ".DS_Store", ".git"]);
+const packagedPropFiles = new Set(["phone.svg", "crossed-arms-pose.png"]);
 
 function include(source) {
   const relative = path.relative(root, source);
   if (!relative) return true;
   const parts = relative.split(path.sep);
   if (parts.some((part) => excludedNames.has(part))) return false;
-  if (parts[0] === "downloads" && parts.length > 1) return false;
+  if (parts[0] === "downloads") return false;
   if (parts[0] === "agent-runs" && parts.length > 1 && parts.at(-1) !== ".gitkeep") return false;
-  if (parts[0] === "goldens") return false;
+  if (parts[0] === "goldens" || relative === "goldens.json") return false;
+  if (
+    parts[0] === "assets" &&
+    parts[1] === "props" &&
+    parts.length > 2 &&
+    !packagedPropFiles.has(parts.slice(2).join(path.sep))
+  ) {
+    return false;
+  }
   if (relative === "evidence/blind-kit-operation.md") return false;
+  if (relative === "runtime/build-crossed-arms-assembly.mjs") return false;
   if (relative === "runtime/compile-tvg-assets.mjs") return false;
   return true;
 }

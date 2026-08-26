@@ -12,7 +12,14 @@
     "generatedFrom": "xstage-control-channels-and-drawing-exposures"
   },
   "quality": {
-    "maximumIdenticalFrames": 1
+    "maximumIdenticalFrames": 1,
+    "authoredOpenHandCuffs": ["Left"],
+    "armGeometryLimits": {
+      "Left": {
+        "maximumHandToSleeveAreaRatio": 0.56,
+        "maximumHandToHeadWidthRatio": 0.78
+      }
+    }
   },
   "controls": {
     "Shaz_Master-P": [

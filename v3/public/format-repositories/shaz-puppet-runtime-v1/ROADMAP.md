@@ -5,9 +5,10 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 ## Current proven baseline
 
 - The recovered Shaz rig renders locally without Toon Boom Harmony.
-- Inputs can sequence registered actions with explicit holds and gaps.
+- Inputs can sequence registered actions with explicit holds and optional intentional gaps; actions are contiguous by default with no inserted separator frames, but polished inter-action blending remains future work.
 - All six artist-authored actions are certified against the frame-by-frame visual standard: `shrug`, `present`, `think`, `aha`, `point`, and `confident`.
-- Five storyboard-directed actions and the complete phone-use sequence are certified to the same standard: `point-at-screen`, `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, `look-at-phone`, and `phone-use-sequence`.
+- Release proof `anatomy-v8-release` certifies four repaired actions at their current exact hashes: `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `phone-use-sequence`. Crossed Arms uses one registered arm-only destination drawing after native anticipation because the supplied native cuffs and pivots could not form a credible folded hold; the original head, face, torso, collar, strings, and pocket remain runtime-rendered from the rig.
+- `point-at-screen` and `look-at-phone` remain registered, but their current recipes still need renewed exact-hash visual review; their legacy reviews are not current certification.
 - Audio, lip-sync, script-directed performance, selectable backgrounds, polished action transitions, and plain-English pose generation are not supported yet.
 
 ## Build order
@@ -17,9 +18,10 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 Bring every remaining registered action to the Shrug standard, one at a time:
 
 1. **Complete:** artist-authored `present`, `think`, `aha`, `point`, and `confident`.
-2. **Complete:** `point-at-screen`, `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, `look-at-phone`, and `phone-use-sequence` each have exact-hash visual review, per-frame inspection, focused regressions, and a post-action retro. The first four supplied follow-up sheets resolve to already-certified actions; the phone sheet added the genuinely missing two-handed pickup and handoff phase without duplicating the registry.
+2. **Complete:** release proof `anatomy-v8-release` gives `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `phone-use-sequence` current exact-hash visual review, per-frame inspection, focused regressions, and no separator flashes. Three actions retain native limb topology throughout. Crossed Arms uses a checksum- and placement-locked arm-only drawing substitution with mutually exclusive native-arm visibility. `phone-use-sequence` is intentionally the prop-free gesture variant.
+3. **Pending:** renew exact-hash visual review for the current `point-at-screen` and `look-at-phone` recipes. Do not promote their legacy evidence as current certification.
 
-The next active capability is polished action transitions. Do not reopen body-language reliability unless a new action or a concrete regression is in scope.
+The next active work is the renewed review for `point-at-screen` and `look-at-phone`. Polished action transitions follow after those current hashes pass.
 
 Each action requires complete playback, synchronized full-frame and close-up comparison where relevant, automatic inspection, and checksum-bound human approval. A passing render alone is not certification.
 
