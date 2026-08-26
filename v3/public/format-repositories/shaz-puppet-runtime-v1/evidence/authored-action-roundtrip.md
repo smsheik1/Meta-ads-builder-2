@@ -1,8 +1,10 @@
 # Authored action recipe round trip
 
+> **Status: HISTORICAL HASH RECORD.** The synchronized comparisons and visual lessons remain valid, but later quality metadata and inspector changes altered current recipe bytes. The hashes below certify the artifacts reviewed at that time; use `poses/index.json` plus a fresh run for current file hashes.
+
 Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
 
-The actions below were recovered from their permitted Xstage ranges into `shaz-pose-recipe-v1`, rendered through the official runtime, and certified against the synchronized artist reference. The hashes are the currently approved semantic recipe and runtime video hashes, not stale direct-calibration outputs from before renderer-wide visual repairs. Full Point counteracts the demo-shot X reposition at `Shaz_Master-P`, above every body branch, and preserves the artist montage's stepped presentation cadence. Confident likewise preserves its measured on-twos exposures instead of inventing smooth in-betweens. Finished artist-rendered frames supplied phase, cadence, and acceptance evidence only; their pixels were never copied, resampled, embedded, or used as deformation data.
+The actions below were recovered from their permitted Xstage ranges into `shaz-pose-recipe-v1`, rendered through the official runtime, and certified against the synchronized artist reference. Full Point counteracts the demo-shot X reposition at `Shaz_Master-P`, above every body branch, and preserves the artist montage's stepped presentation cadence. Confident likewise preserves its measured on-twos exposures instead of inventing smooth in-betweens. Finished artist-rendered frames supplied phase, cadence, and acceptance evidence only; their pixels were never copied, resampled, embedded, or used as deformation data.
 
 | Action | Xstage frames | Recipe SHA-256 | Render SHA-256 | Runtime relation |
 | --- | ---: | --- | --- | --- |

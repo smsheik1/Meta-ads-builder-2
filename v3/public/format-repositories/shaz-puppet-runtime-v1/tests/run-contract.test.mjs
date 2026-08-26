@@ -91,12 +91,17 @@ test("packaged skill protects the one-action learning loop", async () => {
 });
 
 test("build kit excludes runtime outputs and packages only registered prop assets", async () => {
-  const buildKit = await fs.readFile(path.join(root, "build-kit.mjs"), "utf8");
+  const [buildKit, manifest] = await Promise.all([
+    fs.readFile(path.join(root, "build-kit.mjs"), "utf8"),
+    fs.readFile(path.join(root, "KIT-MANIFEST.json"), "utf8").then(JSON.parse),
+  ]);
   assert.match(buildKit, /if \(parts\[0\] === "downloads"\) return false;/);
   assert.doesNotMatch(buildKit, /parts\[0\] === "downloads"[^\n]*parts\.length/);
   assert.match(buildKit, /parts\[0\] === "goldens" \|\| relative === "goldens\.json"/);
   assert.match(buildKit, /new Set\(\["phone\.svg", "crossed-arms-pose\.png"\]\)/);
   assert.match(buildKit, /!packagedPropFiles\.has/);
+  assert.match(buildKit, /commands: \["check", "inspect:registry", "smoke"/);
+  assert.ok(manifest.commands.includes("inspect:registry"));
 });
 
 test("full Point cancels demo-shot motion at the master and preserves artist exposure cadence", async () => {

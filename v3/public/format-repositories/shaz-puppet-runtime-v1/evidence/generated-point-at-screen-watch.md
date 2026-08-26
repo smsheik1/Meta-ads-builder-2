@@ -1,5 +1,7 @@
 # Point at Screen certification
 
+> **Status: HISTORICAL EXACT-HASH RECORD.** The current recipe has changed since this watch. Its renewed exact-hash visual review is still pending in `ROADMAP.md`; retain this page for motion and failure provenance only.
+
 - Storyboard SHA-256: `ebbf669f1305636723cc37028d6a0daa5614a134ab2d6d91bd4d0cf3c8e974d3`
 - Registered recipe file SHA-256: `cf762f655b0bb78ea990599dc824addb47402754d14f026ff1f24c8543ca8079`
 - Semantic recipe SHA-256: `7e20c2b7b1106b7905813e956e4f5f53e8afa756a57e47f3534a680d3d4b476f`

@@ -1,6 +1,6 @@
 # Present action certification
 
-Status: **certified; user-approved**.
+> **Status: HISTORICAL EXACT-HASH CERTIFICATION; USER-APPROVED.** The user approved the visual artifact below. Later quality metadata and inspector changes altered the current recipe bytes, so this page does not claim that its recipe hashes are current; `poses/index.json` is authoritative for current bytes.
 
 ## Candidate
 

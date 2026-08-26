@@ -16,7 +16,7 @@ Format version: 0.1.2
 - Current ten-action fixture: 512 frames, 21.333333 seconds under Format 0.1.2; it is not represented by the legacy golden
 - Current alternate fixture: 191 frames, 7.958333 seconds, four actions in a different order and with different holds
 - Historical blind ZIP-only proof: 334 frames, 13.916667 seconds, seven independently chosen actions; it proves an older archive could operate independently, but does not certify the current 0.1.2 ZIP
-- Structural anatomy release proof: `anatomy-v8-release`, 173 frames, 7.208008 seconds, exact output SHA-256 `bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9`; all 141 recipe frames passed finished-silhouette, shoulder/cuff ownership, hand-proportion, exact registered-replacement, paint-order, and temporal gates
+- Structural anatomy release proof: `anatomy-v8-release`, 173 frames, 7.208008 seconds, exact output SHA-256 `bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9`; native frames passed shoulder/cuff ownership and hand-proportion gates, registered-replacement frames passed the exact tuple/component/exclusivity contract, and all 141 recipe frames passed finished-silhouette, paint-order, and temporal gates
 - Provider calls: 0
 - Cost: $0
 - Finished artist-rendered frames used by runtime or generation: false

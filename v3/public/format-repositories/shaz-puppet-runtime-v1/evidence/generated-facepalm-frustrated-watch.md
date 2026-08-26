@@ -1,5 +1,7 @@
 # Generated action watch: Facepalm / Frustrated
 
+> **Status: HISTORICAL AND SUPERSEDED.** The hashes below predate the current cuff-ownership repair. Current exact-hash certification is `anatomy-v8-release`; see `five-storyboard-sequences-final.md`.
+
 ## Exact accepted artifacts
 
 - Storyboard SHA-256: `93b6fd07d9134c69a89418c3c5896f6a225b53a91eb7eb781287aa65ef1c0c1`

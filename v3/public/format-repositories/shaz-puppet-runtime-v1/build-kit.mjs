@@ -47,7 +47,7 @@ try {
     id: "shaz-puppet-runtime",
     version: (await import("./format.json", { with: { type: "json" } })).default.version,
     officialRuntime: "runner.mjs",
-    commands: ["check", "smoke", "init", "validate", "render", "inspect", "finalize"],
+    commands: ["check", "inspect:registry", "smoke", "init", "validate", "render", "inspect", "finalize"],
     networkRequired: false,
     providerCost: "$0",
     artistRenderedFramesUsed: false,

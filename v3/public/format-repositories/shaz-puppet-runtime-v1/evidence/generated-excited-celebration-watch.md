@@ -1,5 +1,7 @@
 # Generated action watch: excited celebration
 
+> **Status: HISTORICAL AND SUPERSEDED.** The hashes below predate the current authored-wrist and proportion repair. Current exact-hash certification is `anatomy-v8-release`; see `five-storyboard-sequences-final.md`.
+
 - Official run: `agent-runs/excited-celebration-certification`
 - Recipe file: `poses/generated/excited-celebration.json`
 - Recipe file SHA-256: `63c8cd76cbb0c47d6c6d1cb6cd5f6275077ef5d8bd70fc33a4de0705de847363`

@@ -1,5 +1,7 @@
 # Look at Phone certification
 
+> **Status: HISTORICAL EXACT-HASH RECORD.** The current recipe has changed since this watch. Its renewed exact-hash visual review is still pending in `ROADMAP.md`; retain this page for motion and failure provenance only.
+
 - Registered recipe: `poses/generated/look-at-phone.json`
 - Recipe file SHA-256: `5610a09d190d234e5b6d5f1bccf17e491088608eda0d1d9cdb4864808190cd08`
 - Canonical recipe SHA-256: `f0ac036665293dc57265c7a4c01a4b12f4a40e8812ed1a83ff3d43b5e6e613bb`
