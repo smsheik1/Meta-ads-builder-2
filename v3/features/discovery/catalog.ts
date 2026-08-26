@@ -2540,21 +2540,21 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
-    id: "shaz-puppet-runtime-ten-actions",
+    id: "shaz-puppet-runtime-anatomy-v8",
     status: "published",
     showInDiscovery: false,
     order: 11.72,
     brand: "Shaz Animated",
-    title: "Ten actions from one recovered 2D rig",
+    title: "Four anatomy-critical actions from one recovered 2D rig",
     curatorNote:
-      "Five artist-calibrated actions and five newly authored actions run through the same Harmony-free puppet renderer, with every frame checked for clipping, continuity, layer order, props, facial jumps, and provenance.",
+      "Facepalm, folded arms, celebration, and a phone-free gesture run through the same Harmony-free puppet renderer, with every frame checked for attachment, proportions, continuity, paint order, and provenance.",
     goal: "entertain",
     media: {
       kind: "video",
-      src: "/format-repositories/shaz-puppet-runtime-v1/goldens/ten-action-proof.mp4",
+      src: "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/final.mp4",
       poster:
-        "/format-repositories/shaz-puppet-runtime-v1/goldens/ten-action-poster.jpg",
-      durationLabel: "21 sec",
+        "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+      durationLabel: "7 sec",
       aspectRatio: "16:9",
     },
     format: {

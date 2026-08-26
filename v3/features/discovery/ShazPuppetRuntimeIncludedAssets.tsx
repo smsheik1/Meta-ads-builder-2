@@ -32,7 +32,7 @@ export function ShazPuppetRuntimeIncludedAssets({
         <div className="mt-8 overflow-hidden border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]">
           <Image
             src={data.includedAssets.contactSheetSrc}
-            alt="Contact sheet of ten Shaz puppet actions rendered by the recovered runtime"
+            alt="Contact sheet from the current Shaz puppet anatomy release"
             width={1300}
             height={556}
             className="block h-auto w-full"

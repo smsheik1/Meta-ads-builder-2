@@ -14,17 +14,19 @@ type PoseRegistry = {
 type AssetsManifest = {
   props: Array<{ id: string; usage: string }>;
 };
+type GoldenRelease = {
+  videoSha256: string;
+  durationSeconds: number;
+  frames: number;
+  width: number;
+  height: number;
+  fps: number;
+  artistRenderedFramesUsed: false;
+  userVisualApproval: string;
+};
 type GoldenManifest = {
-  canonical: {
-    videoSha256: string;
-    durationSeconds: number;
-    frames: number;
-    width: number;
-    height: number;
-    fps: number;
-    artistRenderedFramesUsed: false;
-    userVisualApproval: string;
-  };
+  canonical: GoldenRelease;
+  structuralAnatomyRelease: GoldenRelease;
 };
 
 export type ShazPuppetRuntimeTrustData = FormatRepoTrustData & {
@@ -92,6 +94,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       content: await readText(file),
     })),
   );
+  const currentProof = goldens.structuralAnatomyRelease;
 
   return {
     idPrefix: "shaz-puppet-runtime",
@@ -132,46 +135,43 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       ],
       commands,
     },
-    proof: { durationTimeLabel: "00:21", aspectRatio: "16:9" },
+    proof: { durationTimeLabel: "00:07", aspectRatio: "16:9" },
     proofCopy: {
       eyebrow: "02 · Runtime proof",
-      title: "Ten actions. One recovered rig.",
+      title: "Four repaired actions. One recovered rig.",
     },
     annotations: [
       {
         seconds: 0,
         timeLabel: "00:00",
-        title: "Artist action replay",
-        description: "The original presenting action proves the recovered controls stay on-model.",
+        title: "Connected facepalm",
+        description:
+          "The overlay palm keeps a clean cuff connection while crossing in front of the face.",
         color: "cyan",
       },
       {
-        seconds: 1.42,
-        timeLabel: "00:01",
-        title: "New celebration",
-        description: "A newly authored action uses anticipation, overshoot, and settle through real rig controls.",
+        seconds: 1.83,
+        timeLabel: "00:02",
+        title: "Readable folded arms",
+        description:
+          "A checksum-locked arm drawing replaces only the anatomy the source chain cannot fold cleanly.",
         color: "pink",
       },
       {
-        seconds: 5.21,
-        timeLabel: "00:05",
-        title: "Prop choreography",
-        description: "The screen enters while the pointing arm follows the recovered shoulder and hand mechanics.",
+        seconds: 2.96,
+        timeLabel: "00:03",
+        title: "Attached celebration",
+        description:
+          "Both native sleeve and hand chains stay connected and on-model throughout the motion.",
         color: "lime",
       },
       {
-        seconds: 14.5,
-        timeLabel: "00:14",
-        title: "Frustrated facepalm",
-        description: "Head drag, closed eyes, and hand contact build one readable emotional action.",
+        seconds: 4.58,
+        timeLabel: "00:05",
+        title: "Phone-free finish",
+        description:
+          "The final gesture keeps the approved hand proportions without an unwanted phone prop.",
         color: "yellow",
-      },
-      {
-        seconds: 19.71,
-        timeLabel: "00:19",
-        title: "Skeptical hold",
-        description: "A minimal arm substitution repairs the source rig's fixed depth topology.",
-        color: "pink",
       },
     ],
     quality: {
@@ -180,7 +180,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       summary: [
         { value: "74/74", label: "kit tests passing" },
         { value: `${poseRegistry.poses.length}`, label: "registered actions" },
-        { value: `${goldens.canonical.frames}`, label: "proof frames" },
+        { value: `${currentProof.frames}`, label: "proof frames" },
         { value: "$0", label: "provider cost" },
       ],
       noteTitle: "Approval cannot be faked.",
@@ -198,19 +198,22 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     receipt: {
       rows: [
         { label: "Format", value: format.version },
-        { label: "Video SHA", value: goldens.canonical.videoSha256.slice(0, 16) },
-        { label: "Frames", value: String(goldens.canonical.frames) },
-        { label: "Output", value: `${goldens.canonical.width} × ${goldens.canonical.height} · ${goldens.canonical.fps} fps` },
+        { label: "Video SHA", value: currentProof.videoSha256.slice(0, 16) },
+        { label: "Frames", value: String(currentProof.frames) },
+        {
+          label: "Output",
+          value: `${currentProof.width} × ${currentProof.height} · ${currentProof.fps} fps`,
+        },
         { label: "Artist frames", value: "Excluded" },
       ],
-      note: `Mechanical proof passed. User visual approval: ${goldens.canonical.userVisualApproval}.`,
+      note: `Mechanical proof and Codex visual review passed. User visual approval is ${currentProof.userVisualApproval}.`,
     },
     files,
     includedAssets: {
       poses: poseRegistry.poses,
       props: assets.props,
       contactSheetSrc:
-        "/format-repositories/shaz-puppet-runtime-v1/goldens/ten-action-contact-sheet.jpg",
+        "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
     },
   };
 }

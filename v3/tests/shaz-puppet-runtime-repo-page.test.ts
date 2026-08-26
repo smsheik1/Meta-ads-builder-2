@@ -12,13 +12,13 @@ import { getShazPuppetRuntimeTrustData } from "../features/discovery/shazPuppetR
 
 const repository = "public/format-repositories/shaz-puppet-runtime-v1";
 const download = `${repository}/downloads/wiggly-shaz-puppet-runtime-format-kit.zip`;
-const video = `${repository}/goldens/ten-action-proof.mp4`;
+const video = `${repository}/goldens/anatomy-v8-release/final.mp4`;
 const includedAssetsSource = readFileSync(
   "features/discovery/ShazPuppetRuntimeIncludedAssets.tsx",
   "utf8",
 );
 const expectedVideoSha =
-  "1d8dbe67347548f21239ae0fd5eb15bcca538d0fa0eadc6247b27fd2d5a0d950";
+  "bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9";
 const sha256 = (file: string) =>
   createHash("sha256").update(readFileSync(file)).digest("hex");
 
@@ -26,14 +26,23 @@ assert.equal(existsSync(download), true);
 assert.ok(statSync(download).size < 100 * 1024 * 1024);
 assert.equal(existsSync(video), true);
 assert.equal(sha256(video), expectedVideoSha);
-assert.equal(existsSync(`${repository}/goldens/ten-action-poster.jpg`), true);
-assert.equal(existsSync(`${repository}/goldens/ten-action-contact-sheet.jpg`), true);
+assert.equal(existsSync(`${repository}/goldens/anatomy-v8-release/contact-sheet.jpg`), true);
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
 assert.equal(profile.version, "0.1.2");
 assert.equal(profile.proofEntries.length, 1);
+assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-anatomy-v8");
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
+assert.equal(
+  profile.proofEntries[0]?.media.src,
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/final.mp4",
+);
+assert.equal(
+  profile.proofEntries[0]?.media.poster,
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+);
+assert.equal(profile.proofEntries[0]?.media.durationLabel, "7 sec");
 assert.equal(
   profile.repositoryHref,
   "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
@@ -57,16 +66,26 @@ assert.equal(
 
 const presentation = await getFormatRepoPagePresentation("shaz-puppet-runtime");
 assert.equal(presentation?.kind, "shaz-puppet-runtime");
+assert.equal(
+  presentation?.detailedProofId,
+  "shaz-puppet-runtime-anatomy-v8",
+);
 const trust = await getShazPuppetRuntimeTrustData();
 assert.equal(trust.version, "0.1.2");
 assert.equal(trust.includedAssets.poses.length, 12);
 assert.equal(trust.includedAssets.props.length, 2);
 assert.equal(trust.quality.summary[0]?.value, "74/74");
 assert.ok(trust.commands.includes("npm run inspect:registry"));
+assert.equal(trust.quality.summary[2]?.value, "173");
+assert.equal(trust.proof.durationTimeLabel, "00:07");
+assert.equal(
+  trust.includedAssets.contactSheetSrc,
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+);
 assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
 assert.doesNotMatch(includedAssetsSource, /Eleven reusable actions/);
 assert.equal(trust.receipt.rows[1]?.value, expectedVideoSha.slice(0, 16));
-assert.match(trust.receipt.note, /pending/);
+assert.match(trust.receipt.note, /not-claimed/);
 
 const archive = await JSZip.loadAsync(readFileSync(download));
 const entries = Object.keys(archive.files);

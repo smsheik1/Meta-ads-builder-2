@@ -30,7 +30,7 @@ export type FormatRepoPagePresentation =
       kind: "shaz-puppet-runtime";
       trust: ShazPuppetRuntimeTrustData;
       copy: RepoPageCopy;
-      detailedProofId: "shaz-puppet-runtime-ten-actions";
+      detailedProofId: "shaz-puppet-runtime-anatomy-v8";
     };
 
 export const richFormatRepoSlugs = [
@@ -137,7 +137,7 @@ export async function getFormatRepoPagePresentation(
         ready: "2–8 minutes",
         examplesTitle: "Finished Shaz animations.",
       },
-      detailedProofId: "shaz-puppet-runtime-ten-actions",
+      detailedProofId: "shaz-puppet-runtime-anatomy-v8",
     };
   }
 
