@@ -13,6 +13,10 @@ import { getShazPuppetRuntimeTrustData } from "../features/discovery/shazPuppetR
 const repository = "public/format-repositories/shaz-puppet-runtime-v1";
 const download = `${repository}/downloads/wiggly-shaz-puppet-runtime-format-kit.zip`;
 const video = `${repository}/goldens/ten-action-proof.mp4`;
+const includedAssetsSource = readFileSync(
+  "features/discovery/ShazPuppetRuntimeIncludedAssets.tsx",
+  "utf8",
+);
 const expectedVideoSha =
   "1d8dbe67347548f21239ae0fd5eb15bcca538d0fa0eadc6247b27fd2d5a0d950";
 const sha256 = (file: string) =>
@@ -27,7 +31,7 @@ assert.equal(existsSync(`${repository}/goldens/ten-action-contact-sheet.jpg`), t
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
-assert.equal(profile.version, "0.1.0");
+assert.equal(profile.version, "0.1.2");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
 assert.equal(
@@ -54,10 +58,13 @@ assert.equal(
 const presentation = await getFormatRepoPagePresentation("shaz-puppet-runtime");
 assert.equal(presentation?.kind, "shaz-puppet-runtime");
 const trust = await getShazPuppetRuntimeTrustData();
-assert.equal(trust.version, "0.1.0");
-assert.equal(trust.includedAssets.poses.length, 11);
-assert.equal(trust.includedAssets.props.length, 3);
-assert.equal(trust.quality.summary[0]?.value, "20/20");
+assert.equal(trust.version, "0.1.2");
+assert.equal(trust.includedAssets.poses.length, 12);
+assert.equal(trust.includedAssets.props.length, 2);
+assert.equal(trust.quality.summary[0]?.value, "74/74");
+assert.ok(trust.commands.includes("npm run inspect:registry"));
+assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
+assert.doesNotMatch(includedAssetsSource, /Eleven reusable actions/);
 assert.equal(trust.receipt.rows[1]?.value, expectedVideoSha.slice(0, 16));
 assert.match(trust.receipt.note, /pending/);
 
@@ -85,7 +92,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   entries.filter((entry) => entry.includes("downloads/")),
-  [`${root}/downloads/`],
+  [],
 );
 const expectedZipSha = readFileSync(`${download}.sha256`, "utf8").split(/\s+/)[0];
 assert.equal(sha256(download), expectedZipSha);

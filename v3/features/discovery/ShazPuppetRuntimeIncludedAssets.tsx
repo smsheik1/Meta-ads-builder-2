@@ -27,7 +27,7 @@ export function ShazPuppetRuntimeIncludedAssets({
           id="included-assets-title"
           className="mt-3 max-w-[720px] text-[clamp(34px,5vw,54px)] font-black leading-[0.96] tracking-[-0.04em]"
         >
-          One puppet. Eleven reusable actions.
+          One puppet. {data.includedAssets.poses.length} reusable actions.
         </h2>
         <div className="mt-8 overflow-hidden border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]">
           <Image

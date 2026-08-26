@@ -423,7 +423,7 @@ const formatConfigs: FormatProfileConfig[] = [
   },
   {
     slug: "shaz-puppet-runtime",
-    promise: "Turn a short action sequence into fluid Shaz animation using a recovered 2D puppet, eleven reusable actions, and one Harmony-free renderer.",
+    promise: "Turn a short action sequence into fluid Shaz animation using a recovered 2D puppet, twelve reusable actions, and one Harmony-free renderer.",
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
@@ -452,7 +452,7 @@ const formatConfigs: FormatProfileConfig[] = [
         "One checksum-bound visual review and delivery receipt",
       ],
       instructions: [
-        "Download the runnable Repo and run npm install, npm test, npm run check, and npm run smoke",
+        "Download the runnable Repo and run npm install, npm test, npm run check, npm run inspect:registry, and npm run smoke",
         "Choose only action IDs registered in poses/index.json and use explicit holdFrames and gapFrames",
         "Run init, validate, render, and inspect in order through the packaged runner",
         "Watch the complete MP4; do not approve it from a contact sheet alone",

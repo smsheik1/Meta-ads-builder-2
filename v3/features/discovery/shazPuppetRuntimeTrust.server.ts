@@ -60,6 +60,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     ]);
   const commandOrder = [
     "check",
+    "inspect:registry",
     "smoke",
     "init",
     "validate",
@@ -177,7 +178,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       eyebrow: "03 · Quality gate",
       title: "Every used action is re-inspected.",
       summary: [
-        { value: "20/20", label: "kit tests passing" },
+        { value: "74/74", label: "kit tests passing" },
         { value: `${poseRegistry.poses.length}`, label: "registered actions" },
         { value: `${goldens.canonical.frames}`, label: "proof frames" },
         { value: "$0", label: "provider cost" },

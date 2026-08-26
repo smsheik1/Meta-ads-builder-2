@@ -2560,7 +2560,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "shaz-puppet-runtime",
       name: "Shaz Puppet Runtime",
-      version: "0.1.0",
+      version: "0.1.2",
       owner: "Shaz",
     },
   },
