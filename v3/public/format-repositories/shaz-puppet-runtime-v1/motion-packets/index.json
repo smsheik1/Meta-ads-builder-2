@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "shaz-motion-packet-registry-v1",
+  "fps": 24,
+  "neutralPacketId": "neutral-listening",
+  "policy": {
+    "minimumCooldownFrames": 12,
+    "maximumNonNeutralCoverageRatio": 0.5,
+    "maximumNonNeutralEventsPerMinute": 18,
+    "maximumPlanFrames": 1800
+  },
+  "packets": [
+    {
+      "id": "neutral-listening",
+      "status": "eligible",
+      "sources": [
+        {
+          "poseId": "neutral-listening",
+          "poseFileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406"
+        }
+      ],
+      "semantics": {
+        "intents": ["neutral", "listening", "unemphasized-speech"],
+        "anchors": ["default", "pause", "between-ideas"]
+      },
+      "path": {
+        "entry": [],
+        "hold": {
+          "poseId": "neutral-listening",
+          "poseFrame": 1,
+          "minimumFrames": 1,
+          "maximumFrames": 1800
+        },
+        "release": []
+      },
+      "returnsTo": {
+        "packetId": "neutral-listening",
+        "poseId": "neutral-listening",
+        "poseFrame": 1
+      }
+    },
+    {
+      "id": "key-point-aha-candidate",
+      "status": "ineligible",
+      "sources": [
+        {
+          "poseId": "aha",
+          "poseFileSha256": "e3ebc83fa6409be5ac66ce77189ff445bf38352f16ccaf5423756ae95174d654"
+        }
+      ],
+      "semantics": {
+        "intents": ["key-point", "realization"],
+        "anchors": ["emphasis-word", "idea-reveal"]
+      },
+      "ineligibleReason": "The registered Aha recipe begins from a different pointing pose and has no human-reviewed release back to the official neutral anchor. It may be useful source motion, but it cannot be scheduled as a reusable packet yet."
+    },
+    {
+      "id": "key-point-body-candidate",
+      "status": "ineligible",
+      "sources": [
+        {
+          "poseId": "key-point",
+          "poseFileSha256": "6fc4f1da6fea7392bd8879e39c336c4e54641c2d805993025af9ad6865d9f8c5"
+        }
+      ],
+      "semantics": {
+        "intents": ["key-point", "important-idea"],
+        "anchors": ["emphasis-word", "claim-apex"]
+      },
+      "ineligibleReason": "The body-only action is stage-registered and mechanically clean, but its reverse-frame release has not passed direct normal-speed visual review, so it is not schedulable yet."
+    }
+  ]
+}

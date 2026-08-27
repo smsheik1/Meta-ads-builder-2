@@ -6,12 +6,15 @@ import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
+import { generateCherryCues, verifyCherryEngine } from "./runtime/cherry.mjs";
 import { inspectRun } from "./runtime/inspect-run.mjs";
 import { renderSequence } from "./runtime/render-sequence.mjs";
 import {
   execute,
   exists,
+  measuredAudioDuration,
   parseArgs,
+  probeMedia,
   readJson,
   requireRunId,
   resolveRunDirectory,
@@ -27,7 +30,8 @@ function usage() {
   return `Usage:
   node runner.mjs check
   node runner.mjs smoke
-  node runner.mjs init --run=<id> --input=/absolute/path/input.json
+  node runner.mjs lipsync --audio=/absolute/path/audio --output=/absolute/path/cherry.tsv
+  node runner.mjs init --run=<id> --input=/absolute/path/input.json [--audio=/absolute/path/audio] [--lipsync=off] [--lipsync-cues=/absolute/path/cherry.tsv]
   node runner.mjs validate --run=<id>
   node runner.mjs render --run=<id>
   node runner.mjs inspect --run=<id>
@@ -70,6 +74,8 @@ async function check() {
     "content-boundary.json",
     "assets.json",
     "poses/index.json",
+    "motion-packets/index.json",
+    "vendor/cherry-lip-sync/v0.1.0/VENDOR-MANIFEST.json",
     "rig-v2/runtime.json",
     "rig-v2/assets/receipt.json",
   ];
@@ -77,13 +83,21 @@ async function check() {
     if (!(await exists(path.join(root, relative)))) throw new Error(`missing required kit file: ${relative}`);
   }
   const { manifest, receipt } = await verifyAssetReceipt();
-  const propRecords = (await readJson(path.join(root, "assets.json"))).props;
-  for (const prop of propRecords) {
-    const file = path.resolve(root, prop.path);
-    if (!file.startsWith(`${path.join(root, "assets", "props")}${path.sep}`)) {
-      throw new Error(`prop escapes assets/props: ${prop.id}`);
+  const cherry = await verifyCherryEngine({ root });
+  const assetManifest = await readJson(path.join(root, "assets.json"));
+  for (const [kind, records, directory] of [
+    ["prop", assetManifest.props ?? [], "props"],
+    ["background", assetManifest.backgrounds ?? [], "backgrounds"],
+  ]) {
+    for (const record of records) {
+      const file = path.resolve(root, record.path);
+      if (!file.startsWith(`${path.join(root, "assets", directory)}${path.sep}`)) {
+        throw new Error(`${kind} escapes assets/${directory}: ${record.id}`);
+      }
+      if (await sha256(file) !== record.sha256) {
+        throw new Error(`${kind} checksum mismatch: ${record.id}`);
+      }
     }
-    if (await sha256(file) !== prop.sha256) throw new Error(`prop checksum mismatch: ${prop.id}`);
   }
   await validateRun({
     root,
@@ -100,6 +114,7 @@ async function check() {
       ffmpeg: toolVersion("ffmpeg"),
       ffprobe: toolVersion("ffprobe"),
       sharp: sharpVersion,
+      cherry: `${cherry.manifest.engine} ${cherry.manifest.version} (WASI)`,
     },
     sourceXstageSha256: manifest.source.sha256,
     artistRenderedFramesUsed: false,
@@ -122,19 +137,127 @@ async function init(args) {
   const runId = requireRunId(args.run);
   if (!args.input || !path.isAbsolute(args.input)) throw new Error("--input must be an absolute JSON path");
   await fs.access(args.input);
+  const input = await readJson(args.input);
+  const isPerformance = input.schemaVersion === "shaz-body-language-performance-v1";
+  const isAudioSequence = input.schemaVersion === "shaz-sequence-input-v1"
+    && typeof input.backgroundId === "string";
+  const needsAudio = isPerformance || isAudioSequence;
+  const lipSyncMode = args.lipsync ?? "auto";
+  if (!["auto", "off"].includes(lipSyncMode)) throw new Error("--lipsync must be auto or off");
+  if (args["lipsync-cues"] && lipSyncMode === "off") {
+    throw new Error("--lipsync-cues cannot be combined with --lipsync=off");
+  }
+  if (needsAudio && (!args.audio || !path.isAbsolute(args.audio))) {
+    throw new Error("audio-backed runs require --audio=/absolute/path/audio");
+  }
+  if (!needsAudio && args.audio) {
+    throw new Error("--audio requires a performance input or an audio-backed sequence with backgroundId");
+  }
+  if (needsAudio) await fs.access(args.audio);
+  if (args["lipsync-cues"]) {
+    if (!isAudioSequence) throw new Error("--lipsync-cues currently requires an audio-backed sequence input");
+    if (!path.isAbsolute(args["lipsync-cues"])) {
+      throw new Error("--lipsync-cues must be an absolute Cherry TSV path");
+    }
+    await fs.access(args["lipsync-cues"]);
+  }
   const runDirectory = resolveRunDirectory(root, runId);
   if (await exists(runDirectory)) throw new Error(`run already exists: ${runId}`);
   await fs.mkdir(runDirectory, { recursive: true });
-  await fs.copyFile(args.input, path.join(runDirectory, "input.json"));
+  let lipSyncState = null;
+  try {
+    if (needsAudio) {
+      const extension = path.extname(args.audio).toLowerCase() || ".audio";
+      const audioFile = `user-audio${extension}`;
+      const stagedAudioPath = path.join(runDirectory, audioFile);
+      await fs.copyFile(args.audio, stagedAudioPath);
+      input.audioFile = audioFile;
+      delete input.lipSync;
+      if (isAudioSequence && lipSyncMode !== "off") {
+        const cueFile = "cherry-lipsync.tsv";
+        const cuePath = path.join(runDirectory, cueFile);
+        const sourceAudioSha256 = await sha256(stagedAudioPath);
+        if (args["lipsync-cues"]) {
+          await fs.copyFile(args["lipsync-cues"], cuePath);
+          lipSyncState = {
+            engine: "cherry-lip-sync",
+            engineVersion: "0.1.0",
+            execution: "external",
+            cueSource: "supplied-tsv",
+            cueFile,
+            cueSha256: await sha256(cuePath),
+            sourceAudioSha256,
+            fps: 24,
+            filterSingleFrames: null,
+          };
+        } else {
+          const probe = probeMedia(stagedAudioPath);
+          const durationSeconds = measuredAudioDuration(probe);
+          if (!(durationSeconds > 0)) throw new Error("staged audio has no measurable duration");
+          lipSyncState = await generateCherryCues({
+            root,
+            audioPath: stagedAudioPath,
+            outputPath: cuePath,
+            totalFrames: Math.max(1, Math.round(durationSeconds * 24)),
+          });
+        }
+        input.lipSync = {
+          engine: lipSyncState.engine,
+          engineVersion: lipSyncState.engineVersion,
+          execution: lipSyncState.execution,
+          cueSource: lipSyncState.cueSource,
+          cueFile,
+          cueSha256: lipSyncState.cueSha256,
+          sourceAudioSha256: lipSyncState.sourceAudioSha256,
+          fps: lipSyncState.fps,
+          filterSingleFrames: lipSyncState.filterSingleFrames,
+          ...(lipSyncState.engineManifestSha256 ? {
+            engineManifestSha256: lipSyncState.engineManifestSha256,
+            engineModuleSha256: lipSyncState.engineModuleSha256,
+          } : {}),
+        };
+      }
+      await writeJson(path.join(runDirectory, "input.json"), input);
+    } else {
+      await fs.copyFile(args.input, path.join(runDirectory, "input.json"));
+    }
+  } catch (error) {
+    await fs.rm(runDirectory, { recursive: true, force: true });
+    throw error;
+  }
   await writeJson(path.join(runDirectory, "state.json"), {
     schemaVersion: 1,
     runId,
     status: "initialized",
     attempts: 0,
     initializedAt: new Date().toISOString(),
+    ...(needsAudio ? {
+      userAudio: {
+        file: input.audioFile,
+        sourceBasename: path.basename(args.audio),
+        sha256: await sha256(path.join(runDirectory, input.audioFile)),
+      },
+      ...(lipSyncState ? { lipSync: lipSyncState } : {}),
+    } : {}),
   });
   console.log(JSON.stringify({ status: "initialized", runId, runDirectory }, null, 2));
   return runDirectory;
+}
+
+async function lipsync(args) {
+  if (!args.audio || !path.isAbsolute(args.audio)) throw new Error("--audio must be an absolute audio path");
+  if (!args.output || !path.isAbsolute(args.output)) throw new Error("--output must be an absolute TSV path");
+  await fs.access(args.audio);
+  const durationSeconds = measuredAudioDuration(probeMedia(args.audio));
+  if (!(durationSeconds > 0)) throw new Error("audio has no measurable duration");
+  const receipt = await generateCherryCues({
+    root,
+    audioPath: args.audio,
+    outputPath: args.output,
+    totalFrames: Math.max(1, Math.round(durationSeconds * 24)),
+  });
+  console.log(JSON.stringify(receipt, null, 2));
+  return receipt;
 }
 
 async function runDirectoryFromArgs(args) {
@@ -183,6 +306,14 @@ async function finalize(args) {
   if (review.schemaVersion !== 1 || review.status !== "approved") failures.push("human review has not approved the output");
   if (review.reviewedOutputSha256 !== outputSha256) failures.push("human review checksum is stale");
   if (typeof review.reviewer !== "string" || review.reviewer.trim().length < 1) failures.push("human review must name its reviewer");
+  const isAudiovisual = validated.mode === "performance" || validated.mode === "audio-sequence";
+  if (isAudiovisual) {
+    if (review.directVideoPerception !== true) failures.push("performance review must directly perceive moving video");
+    if (review.directAudioPerception !== true) failures.push("performance review must directly perceive the audio track");
+    if (!Number.isInteger(review.completePasses) || review.completePasses < 1) {
+      failures.push("performance review must record at least one complete audiovisual pass");
+    }
+  }
   if (failures.length > 0) throw new Error(`finalization blocked:\n- ${failures.join("\n- ")}`);
   const delivery = {
     schemaVersion: 1,
@@ -196,6 +327,17 @@ async function finalize(args) {
     providerCalls: 0,
     cost: "$0",
     reviewer: review.reviewer,
+    ...(isAudiovisual ? {
+      audio: validated.receipt.audio,
+      background: validated.receipt.background,
+      ...(validated.receipt.lipSync ? { lipSync: validated.receipt.lipSync } : {}),
+      ...(validated.mode === "performance" ? {
+        motionPacketRegistrySha256: validated.receipt.motionPacketRegistrySha256,
+        events: validated.receipt.events,
+      } : {
+        poses: validated.receipt.poses,
+      }),
+    } : {}),
   };
   await writeJson(path.join(runDirectory, "delivery.json"), delivery);
   console.log(JSON.stringify(delivery, null, 2));
@@ -233,6 +375,7 @@ async function main() {
   const args = parseArgs(values);
   if (command === "check") return check();
   if (command === "smoke") return smoke();
+  if (command === "lipsync") return lipsync(args);
   if (command === "init") return init(args);
   if (command === "validate") {
     const result = await validateRun({ root, runDirectory: await runDirectoryFromArgs(args) });

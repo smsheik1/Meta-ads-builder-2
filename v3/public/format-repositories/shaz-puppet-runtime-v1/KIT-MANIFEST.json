@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "shaz-puppet-runtime",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "officialRuntime": "runner.mjs",
-  "commands": ["check", "inspect:registry", "smoke", "init", "validate", "render", "inspect", "finalize"],
+  "commands": ["check", "inspect:registry", "smoke", "lipsync", "init", "validate", "render", "inspect", "finalize"],
   "networkRequired": false,
   "providerCost": "$0",
   "artistRenderedFramesUsed": false

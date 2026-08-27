@@ -5,7 +5,7 @@ description: Render, author, diagnose, and certify repeatable 2D Shaz puppet ani
 
 # Shaz Puppet Runtime
 
-Skill version: **1.4**.
+Skill version: **1.6**.
 
 Use this kit when the user wants a video assembled from the registered Shaz actions in `poses/index.json` or wants to author and certify one action through the recovered rig. The kit is fully local, makes no provider calls, and costs $0.
 
@@ -23,6 +23,10 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 4. Start a new run with an absolute input path:
 
    `npm run init -- --run=my-run --input=/absolute/path/input.json`
+
+   For an audio-backed `shaz-sequence-input-v1`, also supply `--audio=/absolute/path/audio`. The bundled Cherry 0.1.0 WASI engine generates and checksum-binds speech cues by default. Add `--lipsync-cues=/absolute/path/cherry.tsv` only when supplying a real Cherry TSV for that exact audio, or add `--lipsync=off` when the user explicitly wants audio without mouth animation. Never generate cyclic placeholder cues or reuse a cue file from another audio checksum.
+
+   The separate `shaz-body-language-performance-v1` semantic performance mode remains body-language-only in Format 0.2.0. Its audio controls duration and gesture scheduling, not mouth drawings.
 
 5. Run, in order:
 
@@ -67,6 +71,9 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 ## Important boundaries
 
 - `runtime/rig-v2-renderer.mjs#renderRigFrame` is the only renderer for smoke, proof, and final output.
+- Lip-sync may override only the registered `Mouth` drawing at each output frame. It must not change body controls, pose order, hold length, deformation, props, framing, or any other face drawing. The bundled Cherry 0.1.0 WebAssembly engine runs locally through Node WASI; it is a cue generator, never a second renderer. Validation must bind the exact engine artifact, cue file, and audio checksums.
+- Do not download, invoke, or require a native `cherrylipsync` executable. Use `npm run lipsync -- --audio=/absolute/path/audio --output=/absolute/path/cues.tsv` for cue-only generation, or let audio-backed sequence initialization call the same bundled engine automatically.
+- Treat the waist-up crop as part of the composition contract: the hoodie must continue below the bottom edge throughout every used action, while hands and pointing gestures retain clear horizontal margins. Never reveal the rounded lower hoodie boundary or invent legs.
 - Finished artist-rendered animation frames may define phase, presentation cadence, and acceptance criteria, but never become runtime sprites, deformation data, or generated pose artwork. A user-supplied pose-design drawing may be registered transparently as destination artwork under the strict substitution contract above; disclose it separately from the recovered Xstage drawings.
 - Never bypass `poses/index.json` with arbitrary recipe paths.
 - Do not weaken per-frame clipping, joint continuity, layer order, prop, facial-pop, or provenance gates to make a run pass.

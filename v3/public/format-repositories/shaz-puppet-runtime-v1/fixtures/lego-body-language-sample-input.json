@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Shaz Lego-block body-language sample",
+  "backgroundId": "sisters-room",
+  "sequence": [
+    { "poseId": "neutral-listening", "holdFrames": 14, "gapFrames": 0 },
+    { "poseId": "present", "holdFrames": 17, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 3, "gapFrames": 0 },
+    { "poseId": "confident", "holdFrames": 30, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 4, "gapFrames": 0 },
+    { "poseId": "point", "holdFrames": 7, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 7, "gapFrames": 0 },
+    { "poseId": "shrug", "holdFrames": 12, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 3, "gapFrames": 0 },
+    { "poseId": "aha", "holdFrames": 22, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 11, "gapFrames": 0 }
+  ]
+}

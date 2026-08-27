@@ -9,7 +9,7 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 - All six artist-authored actions are certified against the frame-by-frame visual standard: `shrug`, `present`, `think`, `aha`, `point`, and `confident`.
 - Release proof `anatomy-v8-release` certifies four repaired actions at their current exact hashes: `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `phone-use-sequence`. Crossed Arms uses one registered arm-only destination drawing after native anticipation because the supplied native cuffs and pivots could not form a credible folded hold; the original head, face, torso, collar, strings, and pocket remain runtime-rendered from the rig.
 - `point-at-screen` and `look-at-phone` remain registered, but their current recipes still need renewed exact-hash visual review; their legacy reviews are not current certification.
-- Audio, lip-sync, script-directed performance, selectable backgrounds, polished action transitions, and plain-English pose generation are not supported yet.
+- Packaged MVP complete for audio-backed registered-action sequences: staged user audio uses the fixed Sisters Room background and locally generated, checksum-bound five-shape Cherry mouth motion without changing body choreography. Automatic script direction, selectable backgrounds, polished action transitions, and plain-English pose generation remain unsupported.
 
 ## Build order
 
@@ -31,11 +31,11 @@ Add reusable transition recipes that preserve silhouette, joint continuity, pain
 
 ### 3. Accept dialogue or user audio
 
-Extend the input contract to accept dialogue text, user-supplied audio, or both. Derive timing from the real media and keep dialogue timing separate from body-language decisions.
+**MVP complete for user audio:** audio-backed Lego sequences use measured local media duration and keep dialogue timing separate from body-language decisions. Dialogue-text input and automatic transcription remain future work. The separate semantic performance mode also consumes measured audio for sparse body-language scheduling, but it is not lip-synced in Format 0.2.0.
 
 ### 4. Perform lip-sync
 
-Map timed speech to the rig's real mouth substitutions. Preserve intentional closed-mouth moments, pauses, facial expressions, and independent body motion. Do not make constant mouth movement the default.
+**Packaged MVP complete for `shaz-sequence-input-v1`:** initialization runs the bundled Cherry 0.1.0 WASI module locally when audio is supplied, then maps validated cues to five real rig mouth substitutions on an independent output-frame track. A supplied Cherry TSV remains supported, and `--lipsync=off` is the explicit opt-out. Body controls remain untouched and the final frame returns to rest. Semantic `shaz-body-language-performance-v1` output is still body-language-only; production-complete lip-sync still requires broader visual approval across real dialogue inputs.
 
 ### 5. Select poses intelligently from a script
 

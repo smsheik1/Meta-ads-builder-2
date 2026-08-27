@@ -3,6 +3,26 @@
   "required": ["title", "sequence"],
   "properties": {
     "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "audioFile": { "type": "string", "location": "staged directly inside the run folder" },
+    "backgroundId": { "type": "string", "source": "assets.json#backgrounds" },
+    "lipSync": {
+      "type": "object",
+      "requires": ["audioFile", "backgroundId"],
+      "createdBy": "runner init from bundled Cherry WASI output or a supplied Cherry TSV",
+      "properties": {
+        "engine": { "const": "cherry-lip-sync" },
+        "engineVersion": { "const": "0.1.0" },
+        "execution": { "enum": ["node-wasi-preview1", "external"] },
+        "cueSource": { "enum": ["bundled-wasi-engine", "supplied-tsv"] },
+        "cueFile": { "type": "string", "format": "validated Cherry A-K/X timestamp TSV staged directly inside the run folder" },
+        "cueSha256": { "type": "string", "format": "sha256" },
+        "sourceAudioSha256": { "type": "string", "format": "sha256" },
+        "fps": { "const": 24 },
+        "filterSingleFrames": { "type": ["boolean", "null"], "description": "true for bundled WASI generation; null when supplied-cue filter provenance is unknown" },
+        "engineManifestSha256": { "type": "string", "format": "sha256", "requiredWhen": "cueSource is bundled-wasi-engine" },
+        "engineModuleSha256": { "type": "string", "format": "sha256", "requiredWhen": "cueSource is bundled-wasi-engine" }
+      }
+    },
     "sequence": {
       "type": "array",
       "minItems": 1,
@@ -17,11 +37,19 @@
       }
     }
   },
+  "initialization": {
+    "audioDefault": "When --audio is supplied for a shaz-sequence-input-v1 input with backgroundId, init generates Cherry cues locally with the bundled 0.1.0 WASI engine and adds lipSync to the staged input.",
+    "suppliedCueOverride": "--lipsync-cues=/absolute/path/cherry.tsv stages and validates that exact cue file instead of generating one.",
+    "explicitOptOut": "--lipsync=off stages audio without creating lipSync.",
+    "unsupportedMode": "Automatic cue generation and application do not apply to shaz-body-language-performance-v1 in Format 0.2.0."
+  },
   "maximumOutputFrames": 1800,
   "notes": [
     "Pose IDs are registry entries, never arbitrary filesystem paths.",
     "Every action duration comes from its recipe; holds and any intentional white separators are explicit input fields.",
     "Actions are contiguous by default with no inserted separator frames. Set a positive gapFrames value only when a white separator is intentionally desired; zero does not imply a polished transition.",
-    "No finished artist-rendered frame may be supplied as an input."
+    "No finished artist-rendered frame may be supplied as an input.",
+    "An audio-backed sequence must contain exactly round(audio duration × 24) frames and use a checksum-registered background.",
+    "Lip-sync changes only the Mouth drawing. Init generates cues locally by default for an audio-backed sequence, accepts a supplied exact-audio TSV, or disables mouth animation only when --lipsync=off is explicit."
   ]
 }

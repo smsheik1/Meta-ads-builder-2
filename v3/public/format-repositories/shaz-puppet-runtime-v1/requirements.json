@@ -1,14 +1,27 @@
 {
   "schemaVersion": 1,
   "localTools": [
-    { "name": "node", "minimum": "20", "required": true },
+    { "name": "node", "minimum": "20", "required": true, "requiredFor": "official runtime and bundled Cherry WASI cue engine" },
     { "name": "npm", "required": true },
     { "name": "ffmpeg", "required": true },
     { "name": "ffprobe", "required": true },
     { "name": "zip", "requiredFor": "build:kit" }
   ],
+  "bundledEngines": [
+    {
+      "name": "cherry-lip-sync",
+      "version": "0.1.0",
+      "artifact": "WebAssembly/WASI module",
+      "host": "node",
+      "nativeExecutable": false,
+      "networkRequired": false,
+      "purpose": "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs"
+    }
+  ],
   "environmentVariables": [],
   "providerCalls": [],
   "networkRequired": false,
+  "networkRequiredForOperation": false,
+  "networkMayBeRequiredForNpmInstall": true,
   "estimatedCost": "$0"
 }

@@ -6,6 +6,28 @@
     { "id": "phone", "path": "assets/props/phone.svg", "sha256": "aadcadb428f4f63ad54ed9575e5120a8519a3520af3b2460714a337a1fd21975", "usage": "look-at-phone" },
     { "id": "crossed-arms-pose", "path": "assets/props/crossed-arms-pose.png", "sha256": "73e73755a77822989fd466ab6fe79591b176bbe9ea68940a46359c999a84e311", "usage": "arms-crossed-skeptical registered pose drawing" }
   ],
+  "backgrounds": [
+    {
+      "id": "sisters-room",
+      "path": "assets/backgrounds/sisters-room.png",
+      "mediaType": "image/png",
+      "width": 3840,
+      "height": 2160,
+      "hasAlpha": false,
+      "sha256": "740f61cbd58581b3c944fc77038fd51756305083b22ae3e28df0f1f5190ec485",
+      "usage": "fixed Sisters Room environment for the Shaz blind-animation experiment; no camera motion",
+      "provenance": {
+        "sourceFilename": "BG (8) Sisters room.psd",
+        "sourceMediaType": "image/vnd.adobe.photoshop",
+        "sourceWidth": 3840,
+        "sourceHeight": 2160,
+        "sourceSha256": "5ad1d74940954256925905428fb945bd07ecf4a22d104ff42c55696caa6c5566",
+        "operation": "flatten visible PSD composite to lossless RGB PNG",
+        "tool": "macOS sips",
+        "deterministicExportVerified": true
+      }
+    }
+  ],
   "provenance": {
     "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
     "artistRenderedFramesUsed": false,

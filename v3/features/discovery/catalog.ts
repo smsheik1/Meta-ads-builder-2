@@ -2545,9 +2545,9 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     showInDiscovery: false,
     order: 11.72,
     brand: "Shaz Animated",
-    title: "Four anatomy-critical actions from one recovered 2D rig",
+    title: "Historical 0.1.2 body-rig proof",
     curatorNote:
-      "Facepalm, folded arms, celebration, and a phone-free gesture run through the same Harmony-free puppet renderer, with every frame checked for attachment, proportions, continuity, paint order, and provenance.",
+      "This preserved pre-Cherry proof runs facepalm, folded arms, celebration, and a phone-free gesture through the same Harmony-free puppet renderer. It verifies the Format 0.1.2 body rig, not the Cherry WASI lip-sync bundled in the current 0.2.0 download.",
     goal: "entertain",
     media: {
       kind: "video",

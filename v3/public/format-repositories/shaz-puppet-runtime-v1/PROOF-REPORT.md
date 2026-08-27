@@ -1,25 +1,33 @@
 # Shaz Puppet Runtime proof
 
-Format version: 0.1.2
+Format version: 0.2.0
 
 ## Runtime proof
 
 - Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
 - Compiled rig assets verified: 210
-- Registered pose recipes: 12
-- Existing automated tests: 74 passing
-- Registry-wide inspection: all 12 registered actions, 433 recipe frames, zero failures
+- Registered pose recipes: 14
+- Automated tests: 105 passing, including bundled-engine parity, cue provenance, tamper rejection, audio-backed rendering, and fixed-stage framing
+- Registry-wide inspection: all 14 registered actions, 461 recipe frames, zero failures
 - Official smoke: 58 frames, 2.416667 seconds, validation/render/inspection/finalization passing
 - Five recreated artist-authored actions: 242 frames, 10.083333 seconds, output SHA-256 `8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae`
 - Five-action mechanical inspection: Present, Think, Ah-ha, Point, and Confident passed all 170 recipe frames with zero failures
 - Legacy Format 0.1.0 ten-action golden: 504 frames, 21.0 seconds, 1280 × 720, H.264, yuv420p, 24 fps; retained as pending-review history rather than current certification
-- Current ten-action fixture: 512 frames, 21.333333 seconds under Format 0.1.2; it is not represented by the legacy golden
+- Current ten-action fixture: 512 frames, 21.333333 seconds under the pre-Cherry 0.1.2 runtime; it is not represented by the legacy golden
 - Current alternate fixture: 191 frames, 7.958333 seconds, four actions in a different order and with different holds
-- Historical blind ZIP-only proof: 334 frames, 13.916667 seconds, seven independently chosen actions; it proves an older archive could operate independently, but does not certify the current 0.1.2 ZIP
+- Historical blind ZIP-only proof: 334 frames, 13.916667 seconds, seven independently chosen actions; it proves an older archive could operate independently, but does not certify the current 0.2.0 ZIP
 - Structural anatomy release proof: `anatomy-v8-release`, 173 frames, 7.208008 seconds, exact output SHA-256 `bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9`; native frames passed shoulder/cuff ownership and hand-proportion gates, registered-replacement frames passed the exact tuple/component/exclusivity contract, and all 141 recipe frames passed finished-silhouette, paint-order, and temporal gates
 - Provider calls: 0
 - Cost: $0
 - Finished artist-rendered frames used by runtime or generation: false
+
+## Format 0.2.0 bundled Cherry 0.1.0 proof boundary
+
+Audio-backed `shaz-sequence-input-v1` initialization now generates Cherry 0.1.0 cues locally through the bundled, checksum-verified WASI module by default. A supplied exact-audio TSV remains accepted, and `--lipsync=off` is the explicit audio-without-mouth-motion path. The package includes no native Cherry executable and makes no provider call. The cue-only entrypoint and sequence initializer use the same bundled engine; the existing `renderRigFrame` implementation remains the only character renderer.
+
+The separate `shaz-body-language-performance-v1` semantic performance path remains body-language-only in Format 0.2.0. Its audio determines duration and event scheduling but does not auto-generate or apply mouth cues.
+
+Fresh-package proof passed from a sealed extraction with no supplied cue TSV. Install, all tests, `check`, registry inspection, and smoke passed before two meaningfully different speech inputs completed `init → validate → render → inspect` through the bundled WASI engine. Both videos decoded completely and reported zero mechanical failures. The exact run receipts are recorded in `evidence/bundled-cherry-wasi-proof.md`; creative approval remains intentionally separate from this mechanical package certification.
 
 ## Creative review status
 

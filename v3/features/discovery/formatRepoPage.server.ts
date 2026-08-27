@@ -11,6 +11,7 @@ type RepoPageCopy = {
   provided: string;
   ready: string;
   examplesTitle: string;
+  examplesDescription?: string;
 };
 
 export type FormatRepoPagePresentation =
@@ -132,10 +133,12 @@ export async function getFormatRepoPagePresentation(
       copy: {
         runTitle: "Animate Shaz.",
         runDescription:
-          "Choose registered actions and timing. The agent validates, renders, inspects, and waits for your visual approval.",
-        provided: "An action sequence",
+          "Choose registered actions and timing, then optionally add local audio. Format 0.2.0 generates Cherry cues through bundled WASI, renders every body and mouth frame through the same Shaz renderer, inspects the result, and waits for your visual approval.",
+        provided: "Actions + optional audio",
         ready: "2–8 minutes",
-        examplesTitle: "Finished Shaz animations.",
+        examplesTitle: "Historical 0.1.2 body-rig proof.",
+        examplesDescription:
+          "This preserved video was rendered by Format 0.1.2 and proves the recovered body rig only. It is not a Format 0.2.0 lip-sync certification.",
       },
       detailedProofId: "shaz-puppet-runtime-anatomy-v8",
     };
