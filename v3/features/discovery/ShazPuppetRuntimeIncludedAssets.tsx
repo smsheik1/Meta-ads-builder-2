@@ -9,6 +9,52 @@ const kindLabels: Record<string, string> = {
   generated: "New rig action",
 };
 
+const mouthShapes = [
+  {
+    asset: "mouth-01.png",
+    cues: "A · X",
+    height: 165,
+    label: "Rest / closed",
+    sounds: "silence + closed-lip consonants",
+    width: 283,
+  },
+  {
+    asset: "mouth-04.png",
+    cues: "B · G · I · J",
+    height: 217,
+    label: "Teeth / EE",
+    sounds: "teeth, EE, F/V + CH/J/SH",
+    width: 354,
+  },
+  {
+    asset: "mouth-05.png",
+    cues: "C · H",
+    height: 230,
+    label: "Small open",
+    sounds: "EH + tongue-forward L",
+    width: 296,
+  },
+  {
+    asset: "mouth-02.png",
+    cues: "D",
+    height: 258,
+    label: "Wide open",
+    sounds: "wide AH",
+    width: 390,
+  },
+  {
+    asset: "mouth-03.png",
+    cues: "E · F · K",
+    height: 166,
+    label: "Rounded O",
+    sounds: "OH, OO/W + R",
+    width: 134,
+  },
+] as const;
+
+const rigAssetRoot =
+  "/format-repositories/shaz-puppet-runtime-v1/rig-v2/assets";
+
 export function ShazPuppetRuntimeIncludedAssets({
   data,
 }: {
@@ -71,6 +117,52 @@ export function ShazPuppetRuntimeIncludedAssets({
               </p>
             </article>
           ))}
+        </div>
+        <div
+          className="mt-8 border-2 border-[#080817] bg-[#fff0f7] p-4 shadow-[5px_5px_0_#080817] sm:p-5"
+          data-testid="shaz-mouth-shape-kit"
+        >
+          <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#9a315f]">
+            The talking kit
+          </p>
+          <h3 className="mt-2 text-2xl font-black tracking-[-0.025em]">
+            Five authored mouths. Every sound has somewhere to go.
+          </h3>
+          <p className="mt-2 max-w-[760px] text-sm font-bold leading-6 text-[#596176]">
+            Cherry chooses a cue from the audio; the existing Shaz renderer
+            swaps only the Mouth drawing. The body pose, hands, timing, and
+            background stay untouched.
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3 min-[760px]:grid-cols-5">
+            {mouthShapes.map((mouth, index) => (
+              <article
+                key={mouth.asset}
+                className="border-2 border-[#080817] bg-white p-3"
+              >
+                <div className="flex aspect-[4/3] items-center justify-center rounded-sm bg-[#ffd9e9] p-3">
+                  <Image
+                    src={`${rigAssetRoot}/${mouth.asset}`}
+                    alt={`${mouth.label} authored Shaz mouth drawing`}
+                    width={mouth.width}
+                    height={mouth.height}
+                    className="block max-h-full w-full object-contain"
+                  />
+                </div>
+                <p className="mt-3 text-[9px] font-black uppercase tracking-[0.13em] text-[#9a315f]">
+                  {String(index + 1).padStart(2, "0")} · Cherry {mouth.cues}
+                </p>
+                <h4 className="mt-1 text-base font-black leading-tight">
+                  {mouth.label}
+                </h4>
+                <p className="mt-1 text-xs font-bold leading-5 text-[#667087]">
+                  {mouth.sounds}
+                </p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-4 text-xs font-black uppercase tracking-[0.11em] text-[#9a315f]">
+            Mouth-only override · one recovered rig renderer · zero body drift
+          </p>
         </div>
         <p className="mt-8 text-xs font-black uppercase tracking-[0.15em] text-[#667087]">
           Historical Format 0.1.2 body-rig proof · not a 0.2.0 lip-sync

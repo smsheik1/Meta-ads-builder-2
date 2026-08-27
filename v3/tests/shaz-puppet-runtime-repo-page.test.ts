@@ -139,6 +139,30 @@ assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
 assert.match(includedAssetsSource, /Local lip-sync included/);
 assert.match(includedAssetsSource, /data\.includedAssets\.bundledEngines/);
 assert.match(includedAssetsSource, /not a 0\.2\.0 lip-sync\s+certification/);
+assert.match(includedAssetsSource, /shaz-mouth-shape-kit/);
+assert.match(
+  includedAssetsSource,
+  /Five authored mouths\. Every sound has somewhere to go\./,
+);
+for (const mouthAsset of [
+  "mouth-01.png",
+  "mouth-04.png",
+  "mouth-05.png",
+  "mouth-02.png",
+  "mouth-03.png",
+]) {
+  assert.match(includedAssetsSource, new RegExp(mouthAsset.replace(".", "\\.")));
+}
+for (const mapping of [
+  "A · X",
+  "B · G · I · J",
+  "C · H",
+  "D",
+  "E · F · K",
+]) {
+  assert.match(includedAssetsSource, new RegExp(mapping.replaceAll(" · ", " \\· ")));
+}
+assert.match(includedAssetsSource, /swaps only the Mouth drawing/);
 assert.match(connectionsSource, /Bundled local lip-sync/);
 assert.match(connectionsSource, /same Shaz/);
 assert.equal(
