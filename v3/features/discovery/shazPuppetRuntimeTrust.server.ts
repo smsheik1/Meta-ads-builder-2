@@ -39,16 +39,18 @@ type GoldenRelease = {
 };
 type GoldenManifest = {
   canonical: GoldenRelease;
+  authoredActionsShowcase: GoldenRelease;
   structuralAnatomyRelease: GoldenRelease;
 };
 
 export type ShazPuppetRuntimeTrustData = FormatRepoTrustData & {
   includedAssets: {
     poses: PoseRegistry["poses"];
+    showcasePoses: PoseRegistry["poses"];
     props: AssetsManifest["props"];
     backgrounds: AssetsManifest["backgrounds"];
     bundledEngines: RequirementsManifest["bundledEngines"];
-    contactSheetSrc: string;
+    showcasePosterSrc: string;
   };
 };
 
@@ -123,7 +125,17 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       content: await readText(file),
     })),
   );
-  const currentProof = goldens.structuralAnatomyRelease;
+  const currentProof = goldens.authoredActionsShowcase;
+  const showcasePoseIds = new Set([
+    "present",
+    "think",
+    "aha",
+    "point",
+    "confident",
+  ]);
+  const showcasePoses = poseRegistry.poses.filter(({ id }) =>
+    showcasePoseIds.has(id),
+  );
 
   return {
     idPrefix: "shaz-puppet-runtime",
@@ -170,43 +182,51 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       ],
       commands,
     },
-    proof: { durationTimeLabel: "00:07", aspectRatio: "16:9" },
+    proof: { durationTimeLabel: "00:10", aspectRatio: "16:9" },
     proofCopy: {
-      eyebrow: "02 · Historical 0.1.2 body-rig proof",
-      title: "Four repaired actions. Preserved pre-Cherry evidence.",
+      eyebrow: "02 · Trusted artist-authored actions",
+      title: "Five recreated actions. No generated poses in the showcase.",
     },
     annotations: [
       {
         seconds: 0,
         timeLabel: "00:00",
-        title: "Connected facepalm",
+        title: "Present",
         description:
-          "The overlay palm keeps a clean cuff connection while crossing in front of the face.",
+          "The artist-authored presenting gesture replays through the recovered rig.",
         color: "cyan",
       },
       {
-        seconds: 1.83,
-        timeLabel: "00:02",
-        title: "Readable folded arms",
+        seconds: 1.42,
+        timeLabel: "00:01",
+        title: "Think",
         description:
-          "A checksum-locked arm drawing replaces only the anatomy the source chain cannot fold cleanly.",
+          "The hand-to-face performance keeps the authored drawing changes and timing.",
         color: "pink",
       },
       {
-        seconds: 2.96,
-        timeLabel: "00:03",
-        title: "Attached celebration",
+        seconds: 4.08,
+        timeLabel: "00:04",
+        title: "Ah-ha",
         description:
-          "Both native sleeve and hand chains stay connected and on-model throughout the motion.",
+          "The raised-finger realization lands as the original artist animated it.",
         color: "lime",
       },
       {
-        seconds: 4.58,
+        seconds: 5.25,
         timeLabel: "00:05",
-        title: "Phone-free finish",
+        title: "Point",
         description:
-          "The final gesture keeps the approved hand proportions without an unwanted phone prop.",
+          "The full pointing performance preserves its authored anticipation and settle.",
         color: "yellow",
+      },
+      {
+        seconds: 9.04,
+        timeLabel: "00:09",
+        title: "Confident",
+        description:
+          "The hands-on-hips finish closes the five-action authored set.",
+        color: "cyan",
       },
     ],
     quality: {
@@ -215,11 +235,11 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       summary: [
         { value: format.version, label: "downloadable Format" },
         { value: `${poseRegistry.poses.length}`, label: "registered actions" },
-        { value: `${currentProof.frames}`, label: "historical proof frames" },
+        { value: `${showcasePoses.length}`, label: "showcase-approved actions" },
         { value: "$0", label: "provider cost" },
       ],
-      noteTitle: "Proof scope stays explicit.",
-      note: `The download is Format ${format.version} with bundled Cherry WASI cue generation. The playable anatomy-v8 video is a historical Format ${currentProof.formatVersion} body-rig proof; it does not certify the current lip-sync path.`,
+      noteTitle: "Showcase scope stays explicit.",
+      note: `The download is Format ${format.version} with bundled Cherry WASI cue generation. The playable body-rig proof contains only Present, Think, Ah-ha, Point, and Confident from historical Format ${currentProof.formatVersion}; generated experimental poses are excluded from this showcase.`,
       criteriaTitle: "Automatic gates",
       criteriaSubtitle: `${quality.automaticGates.length} checks plus ${quality.humanReview.questions.length} visual questions`,
       criteria: quality.automaticGates.map((label, index) => ({
@@ -242,16 +262,17 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         },
         { label: "Artist frames", value: "Excluded" },
       ],
-      note: `Historical mechanical proof and Codex visual review passed for Format ${currentProof.formatVersion}. It does not certify Format ${format.version} or its bundled Cherry WASI lip-sync; user visual approval is ${currentProof.userVisualApproval}.`,
+      note: `The Format ${currentProof.formatVersion} body-rig proof contains only the five recreated artist-authored actions. It does not certify Format ${format.version} or its bundled Cherry WASI lip-sync; approval evidence is ${currentProof.userVisualApproval}.`,
     },
     files,
     includedAssets: {
       poses: poseRegistry.poses,
+      showcasePoses,
       props: assets.props,
       backgrounds: assets.backgrounds,
       bundledEngines: requirements.bundledEngines,
-      contactSheetSrc:
-        "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+      showcasePosterSrc:
+        "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
     },
   };
 }

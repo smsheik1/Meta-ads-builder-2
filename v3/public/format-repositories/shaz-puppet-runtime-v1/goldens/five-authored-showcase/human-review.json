@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "status": "approved",
+  "reviewedOutputSha256": "8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae",
+  "reviewer": "user-delegated agent visual acceptance",
+  "notes": "The user explicitly authorized autonomous completion without pausing while asleep. The exact 10.083333-second five-action runtime video was replayed from the start and reached ended=true; its contact sheet, per-pose reports, and prior synchronized artist comparisons were also inspected. This does not claim the user personally watched the artifact."
+}

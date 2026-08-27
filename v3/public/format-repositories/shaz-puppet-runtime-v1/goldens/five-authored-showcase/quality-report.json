@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "inspectedAt": "2026-08-19T04:38:31.990Z",
+  "inputSha256": "6d00aa6a977db2312138f3648d9082a14e4316db3928198c7853e3e353921acc",
+  "outputSha256": "8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae",
+  "artistRenderedFramesUsed": false,
+  "measured": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "fps": "24/1",
+    "frames": 242,
+    "durationSeconds": 10.083333
+  },
+  "poseReports": [
+    {
+      "poseId": "present",
+      "status": "pass",
+      "poseRecipeSha256": "0ca0a1a4620d6210d901402488b0ff2f96ed390819d098ba0264645092c1a5e7",
+      "framesInspected": 19,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "think",
+      "status": "pass",
+      "poseRecipeSha256": "8f260f187de082b1cf0ce4f0b0b8cb78dcb808e9f04662ba0630298e503e800f",
+      "framesInspected": 49,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "aha",
+      "status": "pass",
+      "poseRecipeSha256": "6bb1e4b5905c87015f5a21c7950ccebe4882907c82a8aecf861668eb17ac23a1",
+      "framesInspected": 13,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "point",
+      "status": "pass",
+      "poseRecipeSha256": "82dde0723d1d283dba4470f0a1874f8e3f57048197f6b82c76774e1effae4f02",
+      "framesInspected": 76,
+      "maximumIdenticalFrames": 26,
+      "failures": []
+    },
+    {
+      "poseId": "confident",
+      "status": "pass",
+      "poseRecipeSha256": "8d64e77ca4ae2239ddb02bb66dc28d77584327940c45a188bc060c1e25baeedf",
+      "framesInspected": 13,
+      "maximumIdenticalFrames": 2,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "contactSheet": "contact-sheet.jpg",
+  "contactSheetSampleFrames": [
+    16,
+    65,
+    111,
+    171,
+    229
+  ],
+  "humanReview": "human-review.json"
+}

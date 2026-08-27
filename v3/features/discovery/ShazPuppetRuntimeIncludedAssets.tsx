@@ -75,13 +75,16 @@ export function ShazPuppetRuntimeIncludedAssets({
           id="included-assets-title"
           className="mt-3 max-w-[720px] text-[clamp(34px,5vw,54px)] font-black leading-[0.96] tracking-[-0.04em]"
         >
-          Format {data.version}. {data.includedAssets.poses.length} actions.
-          Local lip-sync included.
+          Format {data.version}. {data.includedAssets.showcasePoses.length}{" "}
+          trusted actions shown. Local lip-sync included.
         </h2>
         <p className="mt-5 max-w-[760px] text-base font-bold leading-7 text-[#596176]">
           The download bundles Cherry Lip Sync as a checksum-locked WASI cue
           engine. It runs locally, then the existing Shaz rig renderer maps
-          those cues to five authored mouth drawings.
+          those cues to five authored mouth drawings. The download currently
+          contains {data.includedAssets.poses.length} registered recipes; this
+          public showcase is intentionally limited to the five actions with
+          approval-grade evidence.
         </p>
         <div className="mt-7 grid gap-3 min-[701px]:grid-cols-2">
           {data.includedAssets.bundledEngines.map((engine) => (
@@ -165,20 +168,20 @@ export function ShazPuppetRuntimeIncludedAssets({
           </p>
         </div>
         <p className="mt-8 text-xs font-black uppercase tracking-[0.15em] text-[#667087]">
-          Historical Format 0.1.2 body-rig proof · not a 0.2.0 lip-sync
-          certification
+          Five trusted artist-authored actions · generated experimental poses
+          excluded
         </p>
         <div className="mt-8 overflow-hidden border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]">
           <Image
-            src={data.includedAssets.contactSheetSrc}
-            alt="Contact sheet from the historical Format 0.1.2 Shaz anatomy-v8 body-rig proof"
+            src={data.includedAssets.showcasePosterSrc}
+            alt="Present, Think, Ah-ha, Point, and Confident recreated through the Shaz rig runtime"
             width={1300}
             height={556}
             className="block h-auto w-full"
           />
         </div>
         <div className="mt-7 grid gap-3 min-[520px]:grid-cols-2 min-[821px]:grid-cols-3">
-          {data.includedAssets.poses.map((pose, index) => (
+          {data.includedAssets.showcasePoses.map((pose, index) => (
             <article
               key={pose.id}
               className="border-2 border-[#080817] bg-white p-4 shadow-[3px_3px_0_#080817]"
