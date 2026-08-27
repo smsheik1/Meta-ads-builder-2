@@ -1,12 +1,16 @@
 {
   "schemaVersion": 1,
-  "canvas": { "width": 1280, "height": 720, "fps": 24, "background": "#ffffff" },
+  "canvas": { "width": 1280, "height": 720, "fps": 24, "background": "white or one checksum-registered fixed background" },
   "timeline": {
     "action": "Render every recipe frame through the recovered rig-v2 renderer.",
-    "hold": "Clone the final rendered action frame for holdFrames.",
+    "hold": "Clone the final rendered action frame for silent sequences. When lip-sync is active, re-render that same final body state for each hold frame while changing only its Mouth drawing.",
     "gap": "Insert no separator frames by default. When a positive gapFrames value is explicit, insert exactly that many white frames between actions; never insert a gap after the final action. A zero gap makes actions contiguous but does not create a polished blend."
   },
   "renderer": "runtime/rig-v2-renderer.mjs",
   "previewExportParity": "Smoke, proof, and final rendering all call the same renderRigFrame implementation.",
-  "audio": "not applicable"
+  "audio": "Optional user audio is staged locally and muxed as AAC. Its measured duration owns the audio-backed sequence length.",
+  "lipSync": "For audio-backed shaz-sequence-input-v1 runs, init generates Cherry 0.1.0 A-K/X cues with the bundled WASI module unless supplied cues or --lipsync=off are explicit. Cues map to five existing Shaz mouth drawings through the same renderRigFrame call. Body controls, deformations, props, and pose timing remain unchanged.",
+  "semanticPerformanceLipSync": "shaz-body-language-performance-v1 remains body-language-only in Format 0.2.0; its audio drives measured duration and gesture scheduling, not mouth drawings.",
+  "camera": "Fixed; no zoom, pan, slide, or Ken Burns motion.",
+  "characterFraming": "Shaz is a waist-up rig. In audio-backed compositions the hoodie must continue below the bottom canvas edge in every frame, so its rounded lower boundary never reveals the missing legs. The same fixed stage view must also preserve clear left and right margins across every used action."
 }

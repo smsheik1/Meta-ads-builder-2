@@ -13,8 +13,21 @@ type PoseRegistry = {
 };
 type AssetsManifest = {
   props: Array<{ id: string; usage: string }>;
+  backgrounds: Array<{ id: string; path: string; usage: string }>;
+};
+type RequirementsManifest = {
+  bundledEngines: Array<{
+    name: string;
+    version: string;
+    artifact: string;
+    host: string;
+    nativeExecutable: boolean;
+    networkRequired: boolean;
+    purpose: string;
+  }>;
 };
 type GoldenRelease = {
+  formatVersion: string;
   videoSha256: string;
   durationSeconds: number;
   frames: number;
@@ -33,6 +46,8 @@ export type ShazPuppetRuntimeTrustData = FormatRepoTrustData & {
   includedAssets: {
     poses: PoseRegistry["poses"];
     props: AssetsManifest["props"];
+    backgrounds: AssetsManifest["backgrounds"];
+    bundledEngines: RequirementsManifest["bundledEngines"];
     contactSheetSrc: string;
   };
 };
@@ -51,19 +66,28 @@ async function readText(file: string) {
 }
 
 export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntimeTrustData> {
-  const [format, packageManifest, quality, poseRegistry, assets, goldens] =
-    await Promise.all([
-      readJson<FormatManifest>("format.json"),
-      readJson<PackageManifest>("package.json"),
-      readJson<QualityContract>("quality.json"),
-      readJson<PoseRegistry>("poses/index.json"),
-      readJson<AssetsManifest>("assets.json"),
-      readJson<GoldenManifest>("goldens.json"),
-    ]);
+  const [
+    format,
+    packageManifest,
+    quality,
+    poseRegistry,
+    assets,
+    requirements,
+    goldens,
+  ] = await Promise.all([
+    readJson<FormatManifest>("format.json"),
+    readJson<PackageManifest>("package.json"),
+    readJson<QualityContract>("quality.json"),
+    readJson<PoseRegistry>("poses/index.json"),
+    readJson<AssetsManifest>("assets.json"),
+    readJson<RequirementsManifest>("requirements.json"),
+    readJson<GoldenManifest>("goldens.json"),
+  ]);
   const commandOrder = [
     "check",
     "inspect:registry",
     "smoke",
+    "lipsync",
     "init",
     "validate",
     "render",
@@ -76,6 +100,9 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       if (command === "init") {
         return "npm run init -- --run=episode-01 --input=/absolute/path/input.json";
       }
+      if (command === "lipsync") {
+        return "npm run lipsync -- --audio=/absolute/path/audio.wav --output=/absolute/path/cherry.tsv";
+      }
       if (["validate", "render", "inspect", "finalize"].includes(command)) {
         return `npm run ${command} -- --run=episode-01`;
       }
@@ -83,7 +110,9 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     });
   const files = await Promise.all(
     [
+      ["Format manifest", "format.json"],
       ["Agent instructions", "SKILL.md"],
+      ["Runtime requirements", "requirements.json"],
       ["Input contract", "input-contract.json"],
       ["Quality gates", "quality.json"],
       ["Proof report", "PROOF-REPORT.md"],
@@ -101,35 +130,41 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     version: format.version,
     assembly: {
       title: "The animation line",
-      path: "Sequence → Validate → Rig render → Inspect → Approve",
-      ariaLabel: "Five steps from pose sequence to approved Shaz animation",
+      path: "Sequence + local cues → Validate → Rig render → Inspect → Approve",
+      ariaLabel:
+        "Five steps from action sequence and optional audio to approved Shaz animation",
       commandsLabel: "What the coding agent runs",
       commandsAriaLabel: "Exact Shaz Puppet Runtime commands",
       steps: [
         {
-          title: "Sequence actions",
+          title: "Sequence + local cues",
           cost: "Free",
-          description: "Chooses registered actions and explicit hold and gap timing.",
+          description:
+            "Chooses registered actions and timing, then runs bundled Cherry 0.1.0 through Node WASI when audio is supplied.",
         },
         {
           title: "Validate",
           cost: "Free",
-          description: "Locks the input, rig source, recipes, and provenance checksums.",
+          description:
+            "Locks the input, rig source, recipes, and provenance checksums.",
         },
         {
           title: "Rig render",
           cost: "Free",
-          description: "Renders every frame from recovered 2D rig controls through one runtime.",
+          description:
+            "Renders body frames and cue-selected mouth drawings through the same recovered rig renderer.",
         },
         {
           title: "Inspect",
           cost: "Free",
-          description: "Checks joints, clipping, layers, props, faces, frame count, and codec.",
+          description:
+            "Checks joints, clipping, layers, props, faces, frame count, and codec.",
         },
         {
           title: "Review and deliver",
           cost: "Free",
-          description: "Binds a real visual review to the exact final-video checksum.",
+          description:
+            "Binds a real visual review to the exact final-video checksum.",
           waiting: "Waits for your review",
         },
       ],
@@ -137,8 +172,8 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     },
     proof: { durationTimeLabel: "00:07", aspectRatio: "16:9" },
     proofCopy: {
-      eyebrow: "02 · Runtime proof",
-      title: "Four repaired actions. One recovered rig.",
+      eyebrow: "02 · Historical 0.1.2 body-rig proof",
+      title: "Four repaired actions. Preserved pre-Cherry evidence.",
     },
     annotations: [
       {
@@ -175,16 +210,16 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       },
     ],
     quality: {
-      eyebrow: "03 · Quality gate",
-      title: "Every used action is re-inspected.",
+      eyebrow: "03 · Format 0.2.0 quality contract",
+      title: "Body motion and lip-sync stay inside one renderer.",
       summary: [
-        { value: "74/74", label: "kit tests passing" },
+        { value: format.version, label: "downloadable Format" },
         { value: `${poseRegistry.poses.length}`, label: "registered actions" },
-        { value: `${currentProof.frames}`, label: "proof frames" },
+        { value: `${currentProof.frames}`, label: "historical proof frames" },
         { value: "$0", label: "provider cost" },
       ],
-      noteTitle: "Approval cannot be faked.",
-      note: "Finalization requires a human-review checksum matching the exact MP4; the blind package test correctly remained blocked when continuous video perception was unavailable.",
+      noteTitle: "Proof scope stays explicit.",
+      note: `The download is Format ${format.version} with bundled Cherry WASI cue generation. The playable anatomy-v8 video is a historical Format ${currentProof.formatVersion} body-rig proof; it does not certify the current lip-sync path.`,
       criteriaTitle: "Automatic gates",
       criteriaSubtitle: `${quality.automaticGates.length} checks plus ${quality.humanReview.questions.length} visual questions`,
       criteria: quality.automaticGates.map((label, index) => ({
@@ -197,7 +232,8 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     commands,
     receipt: {
       rows: [
-        { label: "Format", value: format.version },
+        { label: "Download Format", value: format.version },
+        { label: "Proof Format", value: currentProof.formatVersion },
         { label: "Video SHA", value: currentProof.videoSha256.slice(0, 16) },
         { label: "Frames", value: String(currentProof.frames) },
         {
@@ -206,12 +242,14 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         },
         { label: "Artist frames", value: "Excluded" },
       ],
-      note: `Mechanical proof and Codex visual review passed. User visual approval is ${currentProof.userVisualApproval}.`,
+      note: `Historical mechanical proof and Codex visual review passed for Format ${currentProof.formatVersion}. It does not certify Format ${format.version} or its bundled Cherry WASI lip-sync; user visual approval is ${currentProof.userVisualApproval}.`,
     },
     files,
     includedAssets: {
       poses: poseRegistry.poses,
       props: assets.props,
+      backgrounds: assets.backgrounds,
+      bundledEngines: requirements.bundledEngines,
       contactSheetSrc:
         "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
     },

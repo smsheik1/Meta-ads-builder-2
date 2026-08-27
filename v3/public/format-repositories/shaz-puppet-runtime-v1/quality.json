@@ -13,7 +13,11 @@
     "pose-specific consecutive-identical-frame limit",
     "exact prop presence",
     "1280x720 H.264 yuv420p at 24 fps",
-    "exact timeline duration"
+    "exact timeline duration",
+    "AAC presence and audible volume for audio-backed runs",
+    "fixed background and fixed camera for audio-backed runs",
+    "waist-up hoodie continuation below the bottom frame edge and clear horizontal margins across every used action",
+    "lip-sync cue source, audio checksum, cue checksum, bundled engine artifact checksum when locally generated, engine version, five-mouth mapping, and final resting mouth when lip-sync is requested"
   ],
   "humanReview": {
     "required": true,
@@ -22,7 +26,10 @@
       "Does Shaz remain on-model throughout every action?",
       "Are props and substitution redraws integrated naturally?",
       "Do action boundaries play continuously without unintended white separator flashes?",
-      "Would the output be usable in the Shaz animated channel?"
+      "Would the output be usable in the Shaz animated channel?",
+      "When lip-sync is active, do mouth attacks and held shapes follow the actual speech rate without changing body choreography?",
+      "Does the mouth remain still during real pauses and finish on the resting drawing?",
+      "Does the waist-up crop feel intentional, with no visible lower hoodie boundary that reveals the missing legs?"
     ]
   },
   "attemptLimit": 3

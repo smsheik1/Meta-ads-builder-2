@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "wiggly-vendor-artifact-v1",
+  "engine": "cherry-lip-sync",
+  "version": "0.1.0",
+  "module": {
+    "path": "cherrylipsync.wasm",
+    "sha256": "1bf5730acc7a81b1f0b6c818a9068001b9e9a797a7eb990ae091eb1b01603382",
+    "bytes": 1773959,
+    "format": "wasm",
+    "abi": "wasi-preview1"
+  },
+  "source": {
+    "repository": "https://github.com/amberwhitehead/cherry-lip-sync",
+    "release": "https://github.com/amberwhitehead/cherry-lip-sync/releases/tag/v0.1.0",
+    "tag": "v0.1.0",
+    "commit": "ab3e68a8e2d38fc72d1672c450478dff7710bc14",
+    "archiveUrl": "https://github.com/amberwhitehead/cherry-lip-sync/archive/refs/tags/v0.1.0.tar.gz",
+    "archiveSha256": "cf16c5bf5fdeed18a96240e74144287f80957c1c1461891eb74585ac3ab94bfc",
+    "cargoTomlSha256BeforePatch": "4054b2a5e2b702126e159d6df5dd1a5b51f60817d095e702a95057bb82d982ea",
+    "cargoLockSha256": "9d338e01f153f24d26f826ef5942ff48ae5ead3cd1d1b1a3ec2ceccb7259ed05"
+  },
+  "build": {
+    "target": "wasm32-wasip1",
+    "command": "cargo build --locked --offline --release --target wasm32-wasip1 --bin cherrylipsync",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "host": "aarch64-apple-darwin",
+    "locked": true,
+    "offline": true,
+    "rustSourceChanged": false,
+    "cargoLockChanged": false
+  },
+  "patches": [
+    {
+      "path": "patches/0001-make-non-runtime-dependencies-optional.patch",
+      "sha256": "0977dde984db8f5117b34415a8ef01214d9b471966325bce4574b6baa1c65059",
+      "scope": "Cargo.toml only: mark unused burn-import and test_bin direct dependencies optional"
+    }
+  ],
+  "parityFixture": {
+    "input": {
+      "path": "fixtures/hello.ogg",
+      "sha256": "e8d3fcba953c7109e5be2f147063194581e93d55acbe41f0347f9aee6a55bade",
+      "bytes": 20176
+    },
+    "arguments": ["-f", "24", "--filter"],
+    "expectedCueOutput": {
+      "path": "fixtures/hello.filtered.fps24.tsv",
+      "sha256": "96767d332d8630843e9c367f133950bcf3dd56e7e3ccb2dcb22b59eb4cfb5340",
+      "bytes": 64
+    },
+    "comparedAgainst": "upstream v0.1.0 macOS arm64 release output",
+    "result": "byte-identical"
+  },
+  "redistributedFiles": [
+    {
+      "path": "LICENSE-MIT",
+      "sha256": "5b14752809a9da53db9b5b994c58966609725092cd3900d2cd056f6e7c14f1d4"
+    },
+    {
+      "path": "LICENSE-APACHE",
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "f4c5a9e62c4fe13caf95d8fc6acf3212cbc4c7a6b39ec4e9cf84886d8c2764e6"
+    },
+    {
+      "path": "UPSTREAM-README.md",
+      "sha256": "fcb9154e65da34eb8f0120265f2fa6591ff4c47ab7f732e720030df7bbbce3f3"
+    }
+  ],
+  "licenseExpression": "MIT OR Apache-2.0",
+  "nativeExecutableIncluded": false
+}

@@ -2,6 +2,18 @@
   "schemaVersion": 1,
   "finalVideo": "final.mp4",
   "video": { "codec": "h264", "pixelFormat": "yuv420p", "width": 1280, "height": 720, "fps": 24 },
+  "audioBackedVideo": { "audioCodec": "aac", "durationTolerance": "one video frame plus 0.01 seconds" },
+  "optionalLipSyncEvidence": [
+    "engine",
+    "engineVersion",
+    "cueSource",
+    "sourceAudioSha256",
+    "cueSha256",
+    "engineManifestSha256 when cues were generated locally",
+    "engineModuleSha256 when cues were generated locally",
+    "mappingId",
+    "frameHistogram"
+  ],
   "requiredEvidence": [
     "validation-receipt.json",
     "render-report.json",

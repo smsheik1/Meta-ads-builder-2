@@ -124,6 +124,19 @@ function scaleMatrix(x, y) {
   return [x, 0, 0, y, 0, 0];
 }
 
+function normalizeStageView(value = {}) {
+  const scale = value.scale ?? 1;
+  const offset = value.offset ?? [0, 0];
+  if (!Number.isFinite(scale) || scale < 0.5 || scale > 1.4) {
+    throw new Error("stageView.scale must be a number from 0.5 to 1.4");
+  }
+  if (!Array.isArray(offset) || offset.length !== 2
+    || offset.some((entry) => !Number.isFinite(entry) || Math.abs(entry) > 0.25)) {
+    throw new Error("stageView.offset must contain two normalized numbers from -0.25 to 0.25");
+  }
+  return { scale, offset: [...offset] };
+}
+
 function assetFilename(drawing, variant = "main") {
   const assetId = ELEMENT_ASSET_IDS[drawing.element];
   if (!assetId) throw new Error(`no TVG asset mapping for ${drawing.element}`);
@@ -156,16 +169,17 @@ function tightStageMatrix(
   outputHeight,
   modelOrigin,
   modelUnitsPerPixel = 1,
+  stageView = { scale: 1, offset: [0, 0] },
 ) {
   const [sourceWidth, sourceHeight] = manifest.stage.resolution.size;
   const pixelsPerModelUnit = manifest.stage.pixelPerModelUnitForVectorLayers;
   const stage = [
-    pixelsPerModelUnit * outputWidth / sourceWidth,
+    pixelsPerModelUnit * outputWidth / sourceWidth * stageView.scale,
     0,
     0,
-    pixelsPerModelUnit * outputHeight / sourceHeight,
-    outputWidth / 2,
-    outputHeight / 2,
+    pixelsPerModelUnit * outputHeight / sourceHeight * stageView.scale,
+    outputWidth / 2 + stageView.offset[0] * outputWidth,
+    outputHeight / 2 + stageView.offset[1] * outputHeight,
   ];
   return multiply(stage, multiply(
     worldMatrix,
@@ -641,12 +655,23 @@ async function readPropAsset(propRoot, prop, cache) {
   return cache.get(source);
 }
 
-function propStageMatrix(prop, outputWidth, outputHeight, imageWidth, imageHeight) {
-  const pixelWidth = prop.width * outputWidth;
+function propStageMatrix(
+  prop,
+  outputWidth,
+  outputHeight,
+  imageWidth,
+  imageHeight,
+  stageView = { scale: 1, offset: [0, 0] },
+) {
+  const pixelWidth = prop.width * outputWidth * stageView.scale;
   const scale = pixelWidth / imageWidth;
   const [scaleX, scaleY] = prop.scale ?? [1, 1];
-  const centerX = prop.position[0] * outputWidth;
-  const centerY = prop.position[1] * outputHeight;
+  const centerX = outputWidth / 2
+    + (prop.position[0] - 0.5) * outputWidth * stageView.scale
+    + stageView.offset[0] * outputWidth;
+  const centerY = outputHeight / 2
+    + (prop.position[1] - 0.5) * outputHeight * stageView.scale
+    + stageView.offset[1] * outputHeight;
   return [
     translation(centerX, centerY),
     rotationMatrix(prop.rotation),
@@ -663,13 +688,22 @@ async function renderRigFrame({
   poseRuntime = null,
   outputWidth = 1280,
   outputHeight = 720,
+  stageView: requestedStageView = undefined,
   background = { r: 255, g: 255, b: 255, alpha: 1 },
   assetCache = new Map(),
   propCache = new Map(),
   includeLayerBuffers = false,
+  mouthDrawing = null,
 }) {
   if (manifest.schemaVersion !== "harmony-xstage-runtime-v1") {
     throw new Error(`unsupported manifest schema ${manifest.schemaVersion}`);
+  }
+  const stageView = normalizeStageView(requestedStageView);
+  if (mouthDrawing !== null
+    && (!Number.isInteger(Number(mouthDrawing))
+      || Number(mouthDrawing) < 1
+      || Number(mouthDrawing) > 10)) {
+    throw new Error("mouthDrawing must be null or a registered drawing number from 1 to 10");
   }
   const scene = manifest.scenes[0];
   if (!scene) throw new Error("manifest contains no scene");
@@ -692,6 +726,7 @@ async function renderRigFrame({
       outputHeight,
       asset.width,
       asset.height,
+      stageView,
     );
     const transformed = await sharp(svgTransform(
       asset.buffer,
@@ -712,9 +747,18 @@ async function renderRigFrame({
       ? poseRuntime.sampleNodeAtFrame(node, columns, frame)
       : sampleNode(node, columns, frame);
     if ((sampled.attrs?.opacity ?? 100) <= 0) continue;
-    const drawing = poseRuntime
+    let drawing = poseRuntime
       ? poseRuntime.resolveDrawing(node, frame)
       : resolveReadDrawing(manifest, scene, node, frame);
+    if (mouthDrawing !== null && nodePath.endsWith("/Mouth")) {
+      if (!drawing) throw new Error("mouth override requires a visible registered Mouth drawing");
+      const drawingNumber = String(mouthDrawing);
+      drawing = {
+        ...drawing,
+        drawing: drawingNumber,
+        file: `${drawing.element}/${drawing.element}-${drawingNumber}.tvg`,
+      };
+    }
     if (!drawing) continue;
     const filename = assetFilename(drawing, variant);
     const asset = await readTightAsset(
@@ -812,6 +856,7 @@ async function renderRigFrame({
       outputHeight,
       renderAsset.modelOrigin,
       renderAsset.modelUnitsPerPixel,
+      stageView,
     );
     let transformed = await sharp(svgTransform(
       renderAsset.buffer,
@@ -866,6 +911,7 @@ async function renderRigFrame({
         outputHeight,
         shadeAsset.modelOrigin,
         1,
+        stageView,
       );
       const transformedShade = await sharp(svgTransform(
         shade.buffer,
@@ -1060,6 +1106,8 @@ async function renderRigFrame({
         poseRecipeSha256: poseRuntime.recipeSha256,
       } : {}),
       artistRenderedFramesUsed: false,
+      ...(mouthDrawing !== null ? { mouthDrawingOverride: String(mouthDrawing) } : {}),
+      stageView,
       baseComponentCount,
       props: props.map(({ input, ...prop }) => prop),
       layers: activeLayers.map(({

@@ -7,6 +7,10 @@ export function ShazPuppetRuntimeConnections({
 }: {
   data: ShazPuppetRuntimeTrustData;
 }) {
+  const cherry = data.includedAssets.bundledEngines.find(
+    (engine) => engine.name === "cherry-lip-sync",
+  );
+
   return (
     <section
       id="accounts-youll-connect"
@@ -25,13 +29,21 @@ export function ShazPuppetRuntimeConnections({
         </h2>
         <div className="mt-6 grid border-2 border-[#080817] bg-white min-[701px]:grid-cols-3">
           <Fact icon={<Laptop aria-hidden="true" />} title="Runs locally">
-            Node, Sharp, FFmpeg, and the packaged rig runtime do the work.
+            Node, Sharp, FFmpeg, the packaged rig runtime, and Cherry WASI do
+            the work.
           </Fact>
-          <Fact icon={<CircleDollarSign aria-hidden="true" />} title="$0 provider cost">
+          <Fact
+            icon={<CircleDollarSign aria-hidden="true" />}
+            title="$0 provider cost"
+          >
             No network or paid generation call is part of the workflow.
           </Fact>
-          <Fact icon={<ShieldCheck aria-hidden="true" />} title={`${data.includedAssets.poses.length} locked actions`}>
-            Every action is registry- and checksum-bound before rendering.
+          <Fact
+            icon={<ShieldCheck aria-hidden="true" />}
+            title="Bundled local lip-sync"
+          >
+            Cherry {cherry?.version ?? "0.1.0"} generates speech cues inside
+            Node WASI. The same Shaz renderer paints every mouth shape.
           </Fact>
         </div>
       </div>
@@ -54,7 +66,9 @@ function Fact({
         {icon}
         <h3 className="text-lg font-black">{title}</h3>
       </div>
-      <p className="mt-3 text-sm font-bold leading-6 text-[#596176]">{children}</p>
+      <p className="mt-3 text-sm font-bold leading-6 text-[#596176]">
+        {children}
+      </p>
     </article>
   );
 }

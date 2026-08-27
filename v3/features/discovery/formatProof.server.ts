@@ -14,6 +14,7 @@ type FormatProfileConfig = {
   technicalHref?: string;
   repositoryHref?: string;
   manifestPath?: string;
+  historicalProofVersion?: string;
   whatStays: string[];
   whatChanges: string[];
   characterOptions?: DiscoveryCharacterOption[];
@@ -423,13 +424,15 @@ const formatConfigs: FormatProfileConfig[] = [
   },
   {
     slug: "shaz-puppet-runtime",
-    promise: "Turn a short action sequence into fluid Shaz animation using a recovered 2D puppet, twelve reusable actions, and one Harmony-free renderer.",
+    promise: "Download Format 0.2.0 to sequence verified Shaz actions and generate optional lip-sync locally with the bundled Cherry WASI cue engine. The saved anatomy video is historical 0.1.2 body-rig proof.",
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
+    historicalProofVersion: "0.1.2",
     whatStays: [
       "The on-model Shaz puppet and recovered source hierarchy",
-      "One renderer for smoke, proof, and final output",
+      "One recovered rig renderer for body frames, lip-sync mouth shapes, smoke, proof, and final output",
+      "Bundled Cherry 0.1.0 WASI cue generation for audio-backed action sequences",
       "Checksum-locked actions and exact explicit timing",
       "Per-frame clipping, continuity, layer, prop, face, and provenance gates",
       "Human approval bound to the exact final video",
@@ -438,23 +441,29 @@ const formatConfigs: FormatProfileConfig[] = [
       "The selected actions and their order",
       "The final-pose hold durations",
       "The white separator durations",
+      "Optional supplied audio and a checksum-registered fixed background",
       "New semantic pose recipes after independent rig validation",
     ],
     handoff: {
       requiredInputs: [
         "A short sequence of registered Shaz action IDs",
         "Optional explicit hold and separator timing",
+        "Optional local audio plus a packaged background for automatic Cherry lip-sync",
       ],
       deliverables: [
         "One validated checksum-bound sequence",
-        "One 1280 × 720 H.264 MP4",
+        "One 1280 × 720 H.264 MP4, with AAC when audio is supplied",
+        "Checksum-bound Cherry engine, audio, and cue provenance when lip-sync is active",
         "One contact sheet and per-action quality report",
         "One checksum-bound visual review and delivery receipt",
       ],
       instructions: [
-        "Download the runnable Repo and run npm install, npm test, npm run check, npm run inspect:registry, and npm run smoke",
+        "Download the runnable Repo, confirm Format 0.2.0, then run npm install, npm test, npm run check, npm run inspect:registry, and npm run smoke",
         "Choose only action IDs registered in poses/index.json and use explicit holdFrames and gapFrames",
-        "Run init, validate, render, and inspect in order through the packaged runner",
+        "For an audio-backed action sequence, pass --audio during init; the bundled Cherry 0.1.0 WASI engine generates local cues by default",
+        "Use supplied exact-audio cues only when explicit, or --lipsync=off when audio without mouth animation is intentional",
+        "Run init, validate, render, and inspect in order through the packaged runner; Cherry supplies cues and the recovered rig renderer remains the only renderer",
+        "Keep shaz-body-language-performance-v1 body-language-only; Format 0.2.0 does not auto-apply lip-sync on that separate semantic path",
         "Watch the complete MP4; do not approve it from a contact sheet alone",
         "Record the verdict against the exact output checksum, then run finalize",
         "Treat a genuinely new action as separate rig authoring work and validate it before registration",
@@ -465,8 +474,8 @@ const formatConfigs: FormatProfileConfig[] = [
         { label: "Inspection + review", cost: "$0", time: "about 1-3 min" },
       ],
       totalEstimate: "$0 provider cost, usually 2-8 min",
-      output: "One horizontal 1280 × 720 MP4 plus inspection and delivery receipts",
-      firstQuestion: "Which registered Shaz actions should the animation use, and in what order?",
+      output: "One horizontal 1280 × 720 MP4 plus inspection and delivery receipts; audio-backed sequences include AAC and local Cherry cue provenance",
+      firstQuestion: "Which registered Shaz actions should the animation use, in what order, and should supplied audio drive local lip-sync?",
     },
   },
   {
@@ -2255,7 +2264,11 @@ export function getDiscoveryFormatProfile(slug: string): DiscoveryFormatProfile 
   if (!identity) return null;
 
   const manifest = config.manifestPath ? readFormatManifest(config.manifestPath) : null;
-  if (manifest && (manifest.id !== slug || manifest.version !== identity.version)) {
+  const expectedProofVersion = config.historicalProofVersion ?? manifest?.version;
+  if (
+    (manifest && manifest.id !== slug) ||
+    (expectedProofVersion && identity.version !== expectedProofVersion)
+  ) {
     throw new Error(`Discovery Format metadata does not match ${config.manifestPath}.`);
   }
 

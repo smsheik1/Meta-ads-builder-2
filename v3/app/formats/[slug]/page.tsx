@@ -39,7 +39,9 @@ export async function generateMetadata({
 
   return {
     title: `${format.name} Format | Wiggly`,
-    description: `${format.promise} See real finished ads made with version ${format.version}.`,
+    description: format.repositoryHref
+      ? `${format.promise} Download version ${format.version} and inspect its saved proof.`
+      : `${format.promise} See real saved proof for version ${format.version}.`,
   };
 }
 
@@ -267,8 +269,8 @@ export default async function FormatPage({
                 </h2>
               </div>
               <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
-                {format.proofEntries.length} finished videos made with this
-                Format.
+                {repoPageCopy.examplesDescription ??
+                  `${format.proofEntries.length} finished videos made with this Format.`}
               </p>
             </div>
 

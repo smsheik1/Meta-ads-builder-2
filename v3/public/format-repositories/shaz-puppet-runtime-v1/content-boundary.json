@@ -4,6 +4,7 @@
     "rig-v2/runtime.json",
     "rig-v2/assets",
     "runtime/rig-v2-renderer.mjs",
+    "checksum-locked bundled Cherry 0.1.0 WASI cue engine, provenance, and licenses",
     "recovered paint order and transform math",
     "pose recipe schema and validation gates"
   ],
@@ -12,11 +13,16 @@
     "pose selection",
     "explicit final-pose hold duration",
     "explicit intentional inter-action separator duration; omitted separators default to zero",
+    "user-supplied audio for an audio-backed sequence",
+    "one registered fixed background",
+    "a locally generated or user-supplied checksum-bound Cherry cue TSV that changes only registered Mouth drawings",
     "new pose recipes authored through named rig controls and, only when the recovered vocabulary is proven insufficient, an exact registered part-specific substitution drawing"
   ],
   "forbidden": [
     "finished artist-rendered frames as runtime sprites or pose-generation inputs",
     "a second renderer for preview or export",
+    "requiring or silently launching a native cherrylipsync executable",
+    "lip-sync cues changing body controls, pose timing, props, camera, or non-Mouth drawings",
     "unregistered recipe file paths",
     "unregistered screen-space or flattened limb substitutions, full-character replacements, or any pose drawing that can double-paint native anatomy",
     "silent relaxation of clipping, continuity, layer, prop, facial-pop, or provenance gates"

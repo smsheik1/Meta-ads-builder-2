@@ -3,7 +3,14 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { loadCherryEngine } from "./cherry.mjs";
 import { createPoseRuntime, loadPoseRecipe } from "./pose-recipe.mjs";
+import { parseCherryTsv } from "./lipsync.mjs";
+import {
+  PERFORMANCE_SCHEMA,
+  loadMotionPacketRegistry,
+  validatePerformancePlan,
+} from "./motion-packets.mjs";
 import { loadManifest } from "./rig-v2-renderer.mjs";
 
 const RUN_ID = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
@@ -56,7 +63,7 @@ async function sha256(file) {
   return crypto.createHash("sha256").update(await fs.readFile(file)).digest("hex");
 }
 
-function execute(program, values, { cwd } = {}) {
+function execute(program, values, { cwd, includeStderr = false } = {}) {
   const result = spawnSync(program, values, {
     cwd,
     encoding: "utf8",
@@ -65,7 +72,22 @@ function execute(program, values, { cwd } = {}) {
   if (result.status !== 0) {
     throw new Error(`${program} failed:\n${result.stderr || result.stdout || `exit ${result.status}`}`);
   }
-  return result.stdout;
+  return includeStderr ? `${result.stdout}${result.stderr}` : result.stdout;
+}
+
+function probeMedia(file) {
+  return JSON.parse(execute("ffprobe", [
+    "-v", "error",
+    "-show_streams",
+    "-show_format",
+    "-of", "json",
+    file,
+  ]));
+}
+
+function measuredAudioDuration(probe) {
+  const audio = probe.streams?.find((stream) => stream.codec_type === "audio");
+  return Number(audio?.duration || probe.format?.duration || 0);
 }
 
 function exactKeys(value, allowed, context) {
@@ -112,7 +134,7 @@ function integerInRange(value, fallback, minimum, maximum, context) {
 
 function validateInput(input, registry) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("input must be an object");
-  exactKeys(input, ["schemaVersion", "title", "sequence"], "input");
+  exactKeys(input, ["schemaVersion", "title", "sequence", "audioFile", "backgroundId", "lipSync"], "input");
   if (input.schemaVersion !== INPUT_SCHEMA) throw new Error(`unsupported input schema ${input.schemaVersion}`);
   if (typeof input.title !== "string" || input.title.trim().length < 1 || input.title.length > 120) {
     throw new Error("input.title must contain 1-120 characters");
@@ -140,7 +162,122 @@ function validateInput(input, registry) {
   if (totalFrames > MAX_OUTPUT_FRAMES) {
     throw new Error(`sequence produces ${totalFrames} frames; maximum is ${MAX_OUTPUT_FRAMES}`);
   }
-  return { title: input.title.trim(), entries, totalFrames, durationSeconds: totalFrames / 24 };
+  let audioFile = null;
+  let backgroundId = null;
+  if (input.audioFile !== undefined || input.backgroundId !== undefined) {
+    if (typeof input.audioFile !== "string"
+      || input.audioFile.length < 1
+      || input.audioFile.length > 160
+      || path.basename(input.audioFile) !== input.audioFile) {
+      throw new Error("input.audioFile must name a file directly inside the run folder");
+    }
+    if (!RUN_ID.test(input.backgroundId ?? "")) {
+      throw new Error("input.backgroundId must name a registered background");
+    }
+    audioFile = input.audioFile;
+    backgroundId = input.backgroundId;
+  }
+  if (input.lipSync !== undefined && (!audioFile || !backgroundId)) {
+    throw new Error("input.lipSync requires an audio-backed sequence");
+  }
+  return {
+    title: input.title.trim(),
+    entries,
+    totalFrames,
+    durationSeconds: totalFrames / 24,
+    audioFile,
+    backgroundId,
+    lipSync: input.lipSync ?? null,
+  };
+}
+
+async function validateLipSync({ config, root, runDirectory, audioPath, totalFrames }) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    throw new Error("input.lipSync must be an object");
+  }
+  exactKeys(config, [
+    "engine",
+    "engineVersion",
+    "execution",
+    "cueSource",
+    "cueFile",
+    "cueSha256",
+    "sourceAudioSha256",
+    "fps",
+    "filterSingleFrames",
+    "engineManifestSha256",
+    "engineModuleSha256",
+  ], "input.lipSync");
+  if (config.engine !== "cherry-lip-sync" || config.engineVersion !== "0.1.0") {
+    throw new Error("input.lipSync must use cherry-lip-sync 0.1.0");
+  }
+  if (typeof config.cueFile !== "string"
+    || config.cueFile.length < 1
+    || config.cueFile.length > 160
+    || path.basename(config.cueFile) !== config.cueFile) {
+    throw new Error("input.lipSync.cueFile must name a TSV directly inside the run folder");
+  }
+  const cuePath = path.resolve(runDirectory, config.cueFile);
+  if (path.dirname(cuePath) !== path.resolve(runDirectory) || !(await exists(cuePath))) {
+    throw new Error(`lip-sync cue file is missing: ${config.cueFile}`);
+  }
+  if (!/^[a-f0-9]{64}$/.test(config.cueSha256 ?? "") || await sha256(cuePath) !== config.cueSha256) {
+    throw new Error("lip-sync cue checksum does not match input.lipSync");
+  }
+  if (!/^[a-f0-9]{64}$/.test(config.sourceAudioSha256 ?? "")
+    || await sha256(audioPath) !== config.sourceAudioSha256) {
+    throw new Error("lip-sync source audio checksum does not match the staged audio");
+  }
+  if (config.fps !== 24) throw new Error("input.lipSync.fps must be 24");
+  if (!["bundled-wasi-engine", "supplied-tsv"].includes(config.cueSource)) {
+    throw new Error("input.lipSync.cueSource is unsupported");
+  }
+  if (config.cueSource === "bundled-wasi-engine") {
+    if (config.execution !== "node-wasi-preview1" || config.filterSingleFrames !== true) {
+      throw new Error("bundled Cherry cues must record the WASI --filter execution");
+    }
+    const engine = await loadCherryEngine(root);
+    if (config.engineManifestSha256 !== engine.manifestSha256
+      || config.engineModuleSha256 !== engine.moduleSha256) {
+      throw new Error("bundled Cherry engine provenance is stale");
+    }
+  } else {
+    if (config.execution !== "external" || config.filterSingleFrames !== null) {
+      throw new Error("supplied Cherry cues must record external/unknown filtering provenance");
+    }
+    if (config.engineManifestSha256 !== undefined || config.engineModuleSha256 !== undefined) {
+      throw new Error("supplied Cherry cues must not claim the bundled engine hashes");
+    }
+  }
+  const parsed = parseCherryTsv(await fs.readFile(cuePath, "utf8"), {
+    fps: 24,
+    totalFrames,
+  });
+  return {
+    ...parsed,
+    cuePath,
+    receipt: {
+      engine: config.engine,
+      engineVersion: config.engineVersion,
+      cueFile: config.cueFile,
+      cueSha256: config.cueSha256,
+      cueCount: parsed.cues.length,
+      cueSource: config.cueSource,
+      execution: config.execution,
+      sourceAudioSha256: config.sourceAudioSha256,
+      fps: config.fps,
+      filterSingleFrames: config.filterSingleFrames,
+      ...(config.cueSource === "bundled-wasi-engine" ? {
+        engineManifestSha256: config.engineManifestSha256,
+        engineModuleSha256: config.engineModuleSha256,
+      } : {}),
+      mappingId: parsed.mappingId,
+      mapping: parsed.mapping,
+      usedMouthDrawings: Object.keys(parsed.histogram).sort(),
+      frameHistogram: parsed.histogram,
+      forcedFinalRestFrame: parsed.forcedFinalRestFrame,
+    },
+  };
 }
 
 async function validateRun({ root, runDirectory }) {
@@ -150,7 +287,184 @@ async function validateRun({ root, runDirectory }) {
   const manifest = await loadManifest(manifestPath);
   const registry = await loadPoseRegistry(root, manifest);
   const input = await readJson(inputPath);
+  if (input.schemaVersion === PERFORMANCE_SCHEMA) {
+    const audioPath = path.resolve(runDirectory, input.audioFile ?? "");
+    if (path.dirname(audioPath) !== path.resolve(runDirectory)) {
+      throw new Error("performance input.audioFile must name a file directly inside the run folder");
+    }
+    if (!input.audioFile || !(await exists(audioPath))) {
+      throw new Error(`performance audio is missing: ${input.audioFile || "(unset)"}`);
+    }
+    const audioProbe = probeMedia(audioPath);
+    const audioStream = audioProbe.streams?.find((stream) => stream.codec_type === "audio");
+    const audioDurationSeconds = measuredAudioDuration(audioProbe);
+    if (!audioStream) throw new Error("the staged performance file has no audio stream");
+    if (!(audioDurationSeconds > 0)) throw new Error("the staged performance audio duration could not be measured");
+    const packetRegistry = await loadMotionPacketRegistry({ root, poseRegistry: registry });
+    const timeline = validatePerformancePlan(input, { packetRegistry, audioDurationSeconds });
+    const assets = await readJson(path.join(root, "assets.json"));
+    const background = (assets.backgrounds ?? []).find(({ id }) => id === "sisters-room");
+    if (!background) throw new Error("registered Sisters Room background is missing");
+    const backgroundPath = path.resolve(root, background.path);
+    if (await sha256(backgroundPath) !== background.sha256) {
+      throw new Error("registered Sisters Room background checksum mismatch");
+    }
+    const usedPoseIds = new Set([packetRegistry.neutralPacket.path.hold.poseId]);
+    for (const event of timeline.events) {
+      for (const source of event.packet.sources) usedPoseIds.add(source.poseId);
+    }
+    const receipt = {
+      schemaVersion: 2,
+      status: "pass",
+      validatedAt: new Date().toISOString(),
+      mode: "body-language-performance",
+      formatVersion: (await readJson(path.join(root, "format.json"))).version,
+      inputSha256: await sha256(inputPath),
+      audio: {
+        file: input.audioFile,
+        sha256: await sha256(audioPath),
+        codec: audioStream.codec_name,
+        durationSeconds: audioDurationSeconds,
+      },
+      background: {
+        id: background.id,
+        path: background.path,
+        sha256: background.sha256,
+        cameraMotion: false,
+      },
+      sourceXstageSha256: manifest.source.sha256,
+      poseRegistrySha256: registry.sha256,
+      motionPacketRegistrySha256: packetRegistry.sha256,
+      artistRenderedFramesUsed: false,
+      totalFrames: timeline.durationFrames,
+      durationSeconds: timeline.durationSeconds,
+      events: timeline.events.map((event) => ({
+        index: event.index,
+        packetId: event.packetId,
+        startFrame: event.startFrame,
+        apexFrame: event.holdStartFrame,
+        holdFrames: event.holdFrames,
+        endFrameExclusive: event.endFrameExclusive,
+        anchor: event.anchor,
+        intent: event.intent,
+        rationale: event.rationale,
+      })),
+      poses: [...usedPoseIds].map((poseId) => {
+        const pose = registry.byId.get(poseId);
+        return {
+          poseId,
+          recipeSha256: pose.poseRuntime.recipeSha256,
+          fileSha256: pose.sha256,
+        };
+      }),
+      providerCalls: 0,
+      estimatedCost: "$0",
+    };
+    await writeJson(path.join(runDirectory, "validation-receipt.json"), receipt);
+    return {
+      mode: "performance",
+      input,
+      inputPath,
+      audioPath,
+      audioProbe,
+      manifest,
+      manifestPath,
+      registry,
+      packetRegistry,
+      timeline,
+      background,
+      backgroundPath,
+      receipt,
+    };
+  }
   const timeline = validateInput(input, registry);
+  if (timeline.audioFile) {
+    const audioPath = path.resolve(runDirectory, timeline.audioFile);
+    if (path.dirname(audioPath) !== path.resolve(runDirectory) || !(await exists(audioPath))) {
+      throw new Error(`audio-backed sequence is missing staged audio ${timeline.audioFile}`);
+    }
+    const audioProbe = probeMedia(audioPath);
+    const audioStream = audioProbe.streams?.find((stream) => stream.codec_type === "audio");
+    const audioDurationSeconds = measuredAudioDuration(audioProbe);
+    if (!audioStream || !(audioDurationSeconds > 0)) {
+      throw new Error("the staged sequence audio is missing or has no measurable duration");
+    }
+    const expectedFrames = Math.max(1, Math.round(audioDurationSeconds * 24));
+    if (timeline.totalFrames !== expectedFrames) {
+      throw new Error(
+        `audio-backed sequence produces ${timeline.totalFrames} frames; measured audio requires ${expectedFrames}`,
+      );
+    }
+    const assets = await readJson(path.join(root, "assets.json"));
+    const background = (assets.backgrounds ?? []).find(({ id }) => id === timeline.backgroundId);
+    if (!background) throw new Error(`unknown registered background ${timeline.backgroundId}`);
+    const backgroundPath = path.resolve(root, background.path);
+    if (await sha256(backgroundPath) !== background.sha256) {
+      throw new Error(`registered background checksum mismatch: ${background.id}`);
+    }
+    const lipSync = timeline.lipSync
+      ? await validateLipSync({
+        config: timeline.lipSync,
+        root,
+        runDirectory,
+        audioPath,
+        totalFrames: timeline.totalFrames,
+      })
+      : null;
+    const receipt = {
+      schemaVersion: 2,
+      status: "pass",
+      mode: "audio-backed-sequence",
+      validatedAt: new Date().toISOString(),
+      formatVersion: (await readJson(path.join(root, "format.json"))).version,
+      inputSha256: await sha256(inputPath),
+      sourceXstageSha256: manifest.source.sha256,
+      poseRegistrySha256: registry.sha256,
+      artistRenderedFramesUsed: false,
+      totalFrames: timeline.totalFrames,
+      durationSeconds: timeline.durationSeconds,
+      audio: {
+        file: timeline.audioFile,
+        sha256: await sha256(audioPath),
+        codec: audioStream.codec_name,
+        durationSeconds: audioDurationSeconds,
+      },
+      background: {
+        id: background.id,
+        path: background.path,
+        sha256: background.sha256,
+        cameraMotion: false,
+      },
+      ...(lipSync ? { lipSync: lipSync.receipt } : {}),
+      poses: timeline.entries.map(({ index, poseId, pose, holdFrames, gapFrames }) => ({
+        index,
+        poseId,
+        recipeSha256: pose.poseRuntime.recipeSha256,
+        fileSha256: pose.sha256,
+        recipeFrames: pose.recipe.durationFrames,
+        holdFrames,
+        gapFrames,
+      })),
+      providerCalls: 0,
+      estimatedCost: "$0",
+    };
+    await writeJson(path.join(runDirectory, "validation-receipt.json"), receipt);
+    return {
+      mode: "audio-sequence",
+      input,
+      inputPath,
+      audioPath,
+      audioProbe,
+      manifest,
+      manifestPath,
+      registry,
+      timeline,
+      background,
+      backgroundPath,
+      lipSync,
+      receipt,
+    };
+  }
   const receipt = {
     schemaVersion: 1,
     status: "pass",
@@ -181,12 +495,15 @@ export {
   execute,
   exists,
   loadPoseRegistry,
+  measuredAudioDuration,
   parseArgs,
+  probeMedia,
   readJson,
   requireRunId,
   resolveRunDirectory,
   sha256,
   validateInput,
+  validateLipSync,
   validateRun,
   writeJson,
 };

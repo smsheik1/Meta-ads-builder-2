@@ -4,9 +4,11 @@
   "artistReferenceDurationSeconds": 11.582031,
   "artistRenderedFramesUsed": false,
   "actions": [
+    { "id": "neutral-listening", "recipe": "neutral-listening.json", "sourceFrames": [32, 32], "sha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406" },
     { "id": "present", "recipe": "present.json", "sourceFrames": [37, 55] },
     { "id": "shrug", "recipe": "shrug.json", "sourceFrames": [67, 97] },
     { "id": "think", "recipe": "think.json", "sourceFrames": [117, 165] },
+    { "id": "key-point", "recipe": "key-point.json", "sourceFrames": [175, 201], "sha256": "6fc4f1da6fea7392bd8879e39c336c4e54641c2d805993025af9ad6865d9f8c5" },
     { "id": "aha", "recipe": "aha.json", "sourceFrames": [189, 201] },
     { "id": "point", "recipe": "point.json", "sourceFrames": [189, 264] },
     { "id": "confident", "recipe": "confident.json", "sourceFrames": [287, 299] }

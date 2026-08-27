@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "shaz-pose-recipe-v1",
+  "id": "neutral-listening",
+  "fps": 24,
+  "durationFrames": 1,
+  "baseFrame": 32,
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "sourceAction": {
+    "startFrame": 32,
+    "endFrame": 32,
+    "generatedFrom": "xstage-control-channels-and-drawing-exposures",
+    "meaning": "neutral body-language anchor; face and lip-sync remain separate tracks"
+  },
+  "quality": {
+    "sourceApprovedEdgeContacts": [
+      {
+        "edge": "bottom",
+        "frames": [1, 1],
+        "reason": "Recovered source neutral frame 32 intentionally continues the relaxed right fingertips beyond the lower output edge"
+      }
+    ]
+  },
+  "controls": {},
+  "drawings": {}
+}
