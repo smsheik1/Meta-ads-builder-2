@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "status": "rendered",
+  "renderedAt": "2026-08-19T04:37:13.022Z",
+  "inputSha256": "6d00aa6a977db2312138f3648d9082a14e4316db3928198c7853e3e353921acc",
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "renderer": "runtime/rig-v2-renderer.mjs#renderRigFrame",
+  "finalVideo": "final.mp4",
+  "outputSha256": "8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae",
+  "totalFrames": 242,
+  "durationSeconds": 10.083333333333334,
+  "segments": [
+    {
+      "index": 0,
+      "poseId": "present",
+      "recipeFrames": 19,
+      "holdFrames": 12,
+      "gapFrames": 3,
+      "outputStartFrame": 1,
+      "outputEndFrame": 34,
+      "poseRecipeSha256": "0ca0a1a4620d6210d901402488b0ff2f96ed390819d098ba0264645092c1a5e7",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      }
+    },
+    {
+      "index": 1,
+      "poseId": "think",
+      "recipeFrames": 49,
+      "holdFrames": 12,
+      "gapFrames": 3,
+      "outputStartFrame": 35,
+      "outputEndFrame": 98,
+      "poseRecipeSha256": "8f260f187de082b1cf0ce4f0b0b8cb78dcb808e9f04662ba0630298e503e800f",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 18,
+        "propCount": 0
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      }
+    },
+    {
+      "index": 2,
+      "poseId": "aha",
+      "recipeFrames": 13,
+      "holdFrames": 12,
+      "gapFrames": 3,
+      "outputStartFrame": 99,
+      "outputEndFrame": 126,
+      "poseRecipeSha256": "6bb1e4b5905c87015f5a21c7950ccebe4882907c82a8aecf861668eb17ac23a1",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      }
+    },
+    {
+      "index": 3,
+      "poseId": "point",
+      "recipeFrames": 76,
+      "holdFrames": 12,
+      "gapFrames": 3,
+      "outputStartFrame": 127,
+      "outputEndFrame": 217,
+      "poseRecipeSha256": "82dde0723d1d283dba4470f0a1874f8e3f57048197f6b82c76774e1effae4f02",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      }
+    },
+    {
+      "index": 4,
+      "poseId": "confident",
+      "recipeFrames": 13,
+      "holdFrames": 12,
+      "gapFrames": 0,
+      "outputStartFrame": 218,
+      "outputEndFrame": 242,
+      "poseRecipeSha256": "8d64e77ca4ae2239ddb02bb66dc28d77584327940c45a188bc060c1e25baeedf",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0
+      }
+    }
+  ],
+  "providerCalls": 0,
+  "cost": "$0"
+}

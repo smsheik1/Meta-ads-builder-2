@@ -12,7 +12,10 @@ import { getShazPuppetRuntimeTrustData } from "../features/discovery/shazPuppetR
 
 const repository = "public/format-repositories/shaz-puppet-runtime-v1";
 const download = `${repository}/downloads/wiggly-shaz-puppet-runtime-format-kit.zip`;
-const video = `${repository}/goldens/anatomy-v8-release/final.mp4`;
+const showcase = `${repository}/goldens/five-authored-showcase`;
+const video = `${showcase}/final.mp4`;
+const contactSheet = `${showcase}/contact-sheet.jpg`;
+const poster = `${showcase}/poster.jpg`;
 const includedAssetsSource = readFileSync(
   "features/discovery/ShazPuppetRuntimeIncludedAssets.tsx",
   "utf8",
@@ -22,7 +25,23 @@ const connectionsSource = readFileSync(
   "utf8",
 );
 const expectedVideoSha =
-  "bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9";
+  "8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae";
+const expectedContactSheetSha =
+  "8cdc5ea13306953fa1617d5022a886f407e22d2f8bf706bf97e6c7d03cf08233";
+const expectedPosterSha =
+  "5a0a821a61ebf39719488db16e345db4b28c6e87d5cde9c8c282d07f613b4c22";
+const trustedShowcasePoseIds = [
+  "present",
+  "think",
+  "aha",
+  "point",
+  "confident",
+];
+const rejectedShowcasePoseIds = [
+  "facepalm-frustrated",
+  "arms-crossed-skeptical",
+  "excited-celebration",
+];
 const sha256 = (file: string) =>
   createHash("sha256").update(readFileSync(file)).digest("hex");
 
@@ -30,38 +49,51 @@ assert.equal(existsSync(download), true);
 assert.ok(statSync(download).size < 100 * 1024 * 1024);
 assert.equal(existsSync(video), true);
 assert.equal(sha256(video), expectedVideoSha);
-assert.equal(
-  existsSync(`${repository}/goldens/anatomy-v8-release/contact-sheet.jpg`),
-  true,
+assert.equal(existsSync(contactSheet), true);
+assert.equal(sha256(contactSheet), expectedContactSheetSha);
+assert.equal(existsSync(poster), true);
+assert.equal(sha256(poster), expectedPosterSha);
+const showcaseInput = JSON.parse(
+  readFileSync(`${showcase}/input.json`, "utf8"),
+) as { sequence: Array<{ poseId: string }> };
+assert.deepEqual(
+  showcaseInput.sequence.map(({ poseId }) => poseId),
+  trustedShowcasePoseIds,
 );
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
 assert.equal(profile.version, "0.2.0");
 assert.equal(profile.proofEntries.length, 1);
-assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-anatomy-v8");
-assert.equal(profile.proofEntries[0]?.format.version, "0.1.2");
+assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-five-authored");
+assert.equal(profile.proofEntries[0]?.format.version, "0.1.0");
 assert.match(
   profile.proofEntries[0]?.title ?? "",
-  /Historical 0\.1\.2 body-rig proof/,
+  /Five recreated artist-authored actions/,
 );
 assert.match(
   profile.proofEntries[0]?.curatorNote ?? "",
-  /not the Cherry WASI lip-sync/,
+  /Generated experimental poses are excluded/,
 );
 assert.match(profile.promise, /Format 0\.2\.0/);
 assert.match(profile.promise, /bundled Cherry WASI cue engine/);
-assert.match(profile.promise, /historical 0\.1\.2 body-rig proof/);
+assert.match(profile.promise, /five trusted artist-authored actions/);
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
 assert.equal(
   profile.proofEntries[0]?.media.src,
-  "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/final.mp4",
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/final.mp4",
 );
 assert.equal(
   profile.proofEntries[0]?.media.poster,
-  "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
 );
-assert.equal(profile.proofEntries[0]?.media.durationLabel, "7 sec");
+assert.equal(profile.proofEntries[0]?.media.durationLabel, "10 sec");
+for (const rejectedPoseId of rejectedShowcasePoseIds) {
+  assert.doesNotMatch(
+    JSON.stringify(profile.proofEntries[0]),
+    new RegExp(rejectedPoseId),
+  );
+}
 assert.equal(
   profile.repositoryHref,
   "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
@@ -88,12 +120,12 @@ assert.equal(
 
 const presentation = await getFormatRepoPagePresentation("shaz-puppet-runtime");
 assert.equal(presentation?.kind, "shaz-puppet-runtime");
-assert.equal(presentation?.detailedProofId, "shaz-puppet-runtime-anatomy-v8");
+assert.equal(presentation?.detailedProofId, "shaz-puppet-runtime-five-authored");
 assert.match(presentation?.copy.runDescription ?? "", /Format 0\.2\.0/);
 assert.match(presentation?.copy.runDescription ?? "", /bundled WASI/);
 assert.match(
   presentation?.copy.examplesDescription ?? "",
-  /rendered by Format 0\.1\.2/,
+  /Present, Think, Ah-ha, Point, and Confident/,
 );
 assert.match(
   presentation?.copy.examplesDescription ?? "",
@@ -102,6 +134,10 @@ assert.match(
 const trust = await getShazPuppetRuntimeTrustData();
 assert.equal(trust.version, "0.2.0");
 assert.equal(trust.includedAssets.poses.length, 14);
+assert.deepEqual(
+  trust.includedAssets.showcasePoses.map(({ id }) => id),
+  trustedShowcasePoseIds,
+);
 assert.equal(trust.includedAssets.props.length, 2);
 assert.equal(trust.includedAssets.backgrounds.length, 1);
 assert.deepEqual(trust.includedAssets.bundledEngines, [
@@ -124,21 +160,22 @@ assert.ok(
     "npm run lipsync -- --audio=/absolute/path/audio.wav --output=/absolute/path/cherry.tsv",
   ),
 );
-assert.equal(trust.quality.summary[2]?.value, "173");
-assert.equal(trust.quality.summary[2]?.label, "historical proof frames");
-assert.equal(trust.proof.durationTimeLabel, "00:07");
-assert.match(trust.proofCopy.eyebrow, /Historical 0\.1\.2 body-rig proof/);
+assert.equal(trust.quality.summary[2]?.value, "5");
+assert.equal(trust.quality.summary[2]?.label, "showcase-approved actions");
+assert.equal(trust.proof.durationTimeLabel, "00:10");
+assert.match(trust.proofCopy.eyebrow, /Trusted artist-authored actions/);
 assert.match(trust.quality.note, /download is Format 0\.2\.0/);
-assert.match(trust.quality.note, /historical Format 0\.1\.2 body-rig proof/);
-assert.match(trust.quality.note, /does not certify the current lip-sync path/);
+assert.match(trust.quality.note, /Present, Think, Ah-ha, Point, and Confident/);
+assert.match(trust.quality.note, /experimental poses are excluded/);
 assert.equal(
-  trust.includedAssets.contactSheetSrc,
-  "/format-repositories/shaz-puppet-runtime-v1/goldens/anatomy-v8-release/contact-sheet.jpg",
+  trust.includedAssets.showcasePosterSrc,
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
 );
 assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
 assert.match(includedAssetsSource, /Local lip-sync included/);
 assert.match(includedAssetsSource, /data\.includedAssets\.bundledEngines/);
-assert.match(includedAssetsSource, /not a 0\.2\.0 lip-sync\s+certification/);
+assert.match(includedAssetsSource, /generated experimental poses\s+excluded/);
+assert.match(includedAssetsSource, /data\.includedAssets\.showcasePoses\.map/);
 assert.match(includedAssetsSource, /shaz-mouth-shape-kit/);
 assert.match(
   includedAssetsSource,
@@ -171,14 +208,15 @@ assert.equal(
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Proof Format")?.value,
-  "0.1.2",
+  "0.1.0",
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Video SHA")?.value,
   expectedVideoSha.slice(0, 16),
 );
 assert.match(trust.receipt.note, /does not certify Format 0\.2\.0/);
-assert.match(trust.receipt.note, /not-claimed/);
+assert.match(trust.receipt.note, /present-think-aha-point-direct/);
+assert.match(trust.receipt.note, /confident-delegated/);
 
 const archive = await JSZip.loadAsync(readFileSync(download));
 const entries = Object.keys(archive.files);

@@ -424,11 +424,11 @@ const formatConfigs: FormatProfileConfig[] = [
   },
   {
     slug: "shaz-puppet-runtime",
-    promise: "Download Format 0.2.0 to sequence verified Shaz actions and generate optional lip-sync locally with the bundled Cherry WASI cue engine. The saved anatomy video is historical 0.1.2 body-rig proof.",
+    promise: "Download Format 0.2.0 to sequence registered Shaz actions and generate optional lip-sync locally with the bundled Cherry WASI cue engine. The public body-rig showcase contains only five trusted artist-authored actions.",
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
-    historicalProofVersion: "0.1.2",
+    historicalProofVersion: "0.1.0",
     whatStays: [
       "The on-model Shaz puppet and recovered source hierarchy",
       "One recovered rig renderer for body frames, lip-sync mouth shapes, smoke, proof, and final output",
