@@ -28,7 +28,14 @@ type RequirementsManifest = {
 };
 type GoldenRelease = {
   formatVersion: string;
+  status?: string;
   videoSha256: string;
+  audioSha256?: string;
+  cueSha256?: string;
+  cueCount?: number;
+  usedMouthDrawings?: string[];
+  finalAudioCodec?: string;
+  meanVolumeDb?: number;
   durationSeconds: number;
   frames: number;
   width: number;
@@ -39,6 +46,7 @@ type GoldenRelease = {
 };
 type GoldenManifest = {
   canonical: GoldenRelease;
+  talkingSceneShowcase: GoldenRelease;
   authoredActionsShowcase: GoldenRelease;
   structuralAnatomyRelease: GoldenRelease;
 };
@@ -125,7 +133,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       content: await readText(file),
     })),
   );
-  const currentProof = goldens.authoredActionsShowcase;
+  const currentProof = goldens.talkingSceneShowcase;
   const showcasePoseIds = new Set([
     "present",
     "think",
@@ -182,51 +190,59 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       ],
       commands,
     },
-    proof: { durationTimeLabel: "00:10", aspectRatio: "16:9" },
+    proof: { durationTimeLabel: "00:12", aspectRatio: "16:9" },
     proofCopy: {
-      eyebrow: "02 · Trusted artist-authored actions",
-      title: "Five recreated actions. No generated poses in the showcase.",
+      eyebrow: "02 · Audio-backed talking proof",
+      title: "Real audio. Body language. Five lip-sync mouths. One renderer.",
     },
     annotations: [
       {
         seconds: 0,
         timeLabel: "00:00",
-        title: "Present",
+        title: "Audio becomes mouth motion",
         description:
-          "The artist-authored presenting gesture replays through the recovered rig.",
+          "Bundled Cherry WASI generates 100 cues locally, then the rig selects among five authored mouth drawings.",
         color: "cyan",
       },
       {
-        seconds: 1.42,
-        timeLabel: "00:01",
-        title: "Think",
+        seconds: 0.63,
+        timeLabel: "00:00",
+        title: "Present",
         description:
-          "The hand-to-face performance keeps the authored drawing changes and timing.",
+          "Shaz opens with the presenting gesture while the mouth track continues independently.",
         color: "pink",
       },
       {
-        seconds: 4.08,
-        timeLabel: "00:04",
-        title: "Ah-ha",
+        seconds: 2.29,
+        timeLabel: "00:02",
+        title: "Confident",
         description:
-          "The raised-finger realization lands as the original artist animated it.",
+          "A hands-on-hips hold carries the next spoken phrase without freezing the lips.",
         color: "lime",
       },
       {
-        seconds: 5.25,
-        timeLabel: "00:05",
+        seconds: 4.29,
+        timeLabel: "00:04",
         title: "Point",
         description:
-          "The full pointing performance preserves its authored anticipation and settle.",
+          "The full pointing performance supplies the strongest body-language beat.",
         color: "yellow",
       },
       {
-        seconds: 9.04,
-        timeLabel: "00:09",
-        title: "Confident",
+        seconds: 8.08,
+        timeLabel: "00:08",
+        title: "Shrug",
         description:
-          "The hands-on-hips finish closes the five-action authored set.",
+          "A two-handed shrug broadens the silhouette while the fixed camera keeps the waist-up rig grounded.",
         color: "cyan",
+      },
+      {
+        seconds: 10.04,
+        timeLabel: "00:10",
+        title: "Ah-ha",
+        description:
+          "The raised-finger accent closes the scene before the character returns to neutral.",
+        color: "pink",
       },
     ],
     quality: {
@@ -235,11 +251,11 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       summary: [
         { value: format.version, label: "downloadable Format" },
         { value: `${poseRegistry.poses.length}`, label: "registered actions" },
-        { value: `${showcasePoses.length}`, label: "showcase-approved actions" },
+        { value: `${showcasePoses.length}`, label: "trusted poses below" },
         { value: "$0", label: "provider cost" },
       ],
-      noteTitle: "Showcase scope stays explicit.",
-      note: `The download is Format ${format.version} with bundled Cherry WASI cue generation. The playable body-rig proof contains only Present, Think, Ah-ha, Point, and Confident from historical Format ${currentProof.formatVersion}; generated experimental poses are excluded from this showcase.`,
+      noteTitle: "A real first-draft talking proof.",
+      note: `The download and exact playable proof are both Format ${currentProof.formatVersion}. A blind run generated ${currentProof.cueCount} Cherry cues locally, used ${currentProof.usedMouthDrawings?.length} authored mouth drawings, and passed automatic audiovisual and rig inspection. The user selected it as the main example after calling it very good for a first draft; final checksum-bound creative certification remains pending.`,
       criteriaTitle: "Automatic gates",
       criteriaSubtitle: `${quality.automaticGates.length} checks plus ${quality.humanReview.questions.length} visual questions`,
       criteria: quality.automaticGates.map((label, index) => ({
@@ -260,9 +276,17 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
           label: "Output",
           value: `${currentProof.width} × ${currentProof.height} · ${currentProof.fps} fps`,
         },
+        {
+          label: "Audio",
+          value: `${currentProof.finalAudioCodec?.toUpperCase()} · ${currentProof.meanVolumeDb} dB`,
+        },
+        {
+          label: "Lip-sync",
+          value: `${currentProof.cueCount} cues · ${currentProof.usedMouthDrawings?.length} mouths`,
+        },
         { label: "Artist frames", value: "Excluded" },
       ],
-      note: `The Format ${currentProof.formatVersion} body-rig proof contains only the five recreated artist-authored actions. It does not certify Format ${format.version} or its bundled Cherry WASI lip-sync; approval evidence is ${currentProof.userVisualApproval}.`,
+      note: `This exact Format ${currentProof.formatVersion} talking-scene checksum passed validation, render, audiovisual inspection, and a fresh-package blind replay. Its stored human-review receipt remains pending, so the page calls it a working first draft rather than final creative certification. User feedback: ${currentProof.userVisualApproval}.`,
     },
     files,
     includedAssets: {

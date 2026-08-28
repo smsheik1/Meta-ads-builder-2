@@ -12,10 +12,21 @@ import { getShazPuppetRuntimeTrustData } from "../features/discovery/shazPuppetR
 
 const repository = "public/format-repositories/shaz-puppet-runtime-v1";
 const download = `${repository}/downloads/wiggly-shaz-puppet-runtime-format-kit.zip`;
-const showcase = `${repository}/goldens/five-authored-showcase`;
-const video = `${showcase}/final.mp4`;
-const contactSheet = `${showcase}/contact-sheet.jpg`;
-const poster = `${showcase}/poster.jpg`;
+const talkingShowcase = `${repository}/goldens/talking-scene-lipsync-v1`;
+const video = `${talkingShowcase}/final.mp4`;
+const contactSheet = `${talkingShowcase}/contact-sheet.jpg`;
+const poster = `${talkingShowcase}/poster.jpg`;
+const cueFile = `${talkingShowcase}/cherry-lipsync.tsv`;
+const audio = `${talkingShowcase}/user-audio.wav`;
+const input = `${talkingShowcase}/input.json`;
+const validationReceipt = `${talkingShowcase}/validation-receipt.json`;
+const renderReport = `${talkingShowcase}/render-report.json`;
+const qualityReport = `${talkingShowcase}/quality-report.json`;
+const humanReview = `${talkingShowcase}/human-review.json`;
+const poseShowcase = `${repository}/goldens/five-authored-showcase`;
+const poseVideo = `${poseShowcase}/final.mp4`;
+const poseContactSheet = `${poseShowcase}/contact-sheet.jpg`;
+const posePoster = `${poseShowcase}/poster.jpg`;
 const includedAssetsSource = readFileSync(
   "features/discovery/ShazPuppetRuntimeIncludedAssets.tsx",
   "utf8",
@@ -25,10 +36,30 @@ const connectionsSource = readFileSync(
   "utf8",
 );
 const expectedVideoSha =
-  "8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae";
+  "59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf";
 const expectedContactSheetSha =
-  "8cdc5ea13306953fa1617d5022a886f407e22d2f8bf706bf97e6c7d03cf08233";
+  "1ad95d6dd67313f7d49f91e6f6a20a1694360f1cd95d64c2fd40943ff6db9874";
 const expectedPosterSha =
+  "4d494ead2293efcdf0d46c3a7a392d5b7674bac77dc4ef3b40d5a0dabb93afec";
+const expectedCueSha =
+  "6a6d5604461dfe9aadc40ab3bf5f7b5171c64e674c95384c58275294ee32820d";
+const expectedAudioSha =
+  "37648e2e0b4c37d22ec529b4301c8abd9435f92ce641c804e521e5b3bdd23f1b";
+const expectedInputSha =
+  "5d6428d1247cf0ba6a0392296d2df57312300172fee5465e3ad64b1f2b52dd06";
+const expectedValidationReceiptSha =
+  "80ef605e5bd40e3dddb4d89f3cd27d29fb1e688e2e3b0e7fe50d62c945e27623";
+const expectedRenderReportSha =
+  "8cef0c46cb131ba48e3835422b9691576b4f1d278c4034b6c7efaebb3beb9a40";
+const expectedQualityReportSha =
+  "a088e364c40c047c52a02f60c91d0fc59b9c65eb9720492e443c967c817f00e3";
+const expectedHumanReviewSha =
+  "cf1178d2dcbc0edc11e14c39d821d6705d60139330b5eb49f1dc27b435880829";
+const expectedPoseVideoSha =
+  "8a5183154aaefb9a844d3bd8be48170e7576986f0d0717de5243057c2ea435ae";
+const expectedPoseContactSheetSha =
+  "8cdc5ea13306953fa1617d5022a886f407e22d2f8bf706bf97e6c7d03cf08233";
+const expectedPosePosterSha =
   "5a0a821a61ebf39719488db16e345db4b28c6e87d5cde9c8c282d07f613b4c22";
 const trustedShowcasePoseIds = [
   "present",
@@ -53,41 +84,155 @@ assert.equal(existsSync(contactSheet), true);
 assert.equal(sha256(contactSheet), expectedContactSheetSha);
 assert.equal(existsSync(poster), true);
 assert.equal(sha256(poster), expectedPosterSha);
-const showcaseInput = JSON.parse(
-  readFileSync(`${showcase}/input.json`, "utf8"),
+assert.equal(existsSync(cueFile), true);
+assert.equal(sha256(cueFile), expectedCueSha);
+assert.equal(existsSync(audio), true);
+assert.equal(sha256(audio), expectedAudioSha);
+assert.equal(sha256(input), expectedInputSha);
+assert.equal(sha256(validationReceipt), expectedValidationReceiptSha);
+assert.equal(sha256(renderReport), expectedRenderReportSha);
+assert.equal(sha256(qualityReport), expectedQualityReportSha);
+assert.equal(sha256(humanReview), expectedHumanReviewSha);
+assert.equal(existsSync(poseVideo), true);
+assert.equal(sha256(poseVideo), expectedPoseVideoSha);
+assert.equal(existsSync(poseContactSheet), true);
+assert.equal(sha256(poseContactSheet), expectedPoseContactSheetSha);
+assert.equal(existsSync(posePoster), true);
+assert.equal(sha256(posePoster), expectedPosePosterSha);
+const talkingInput = JSON.parse(
+  readFileSync(input, "utf8"),
 ) as { sequence: Array<{ poseId: string }> };
 assert.deepEqual(
-  showcaseInput.sequence.map(({ poseId }) => poseId),
+  [...new Set(talkingInput.sequence.map(({ poseId }) => poseId))],
+  ["neutral-listening", "present", "confident", "point", "shrug", "aha"],
+);
+const validation = JSON.parse(readFileSync(validationReceipt, "utf8")) as {
+  status: string;
+  inputSha256: string;
+  audio: { sha256: string };
+  lipSync: { cueSha256: string; cueCount: number; usedMouthDrawings: string[] };
+};
+const render = JSON.parse(readFileSync(renderReport, "utf8")) as {
+  status: string;
+  inputSha256: string;
+  outputSha256: string;
+  audioSha256: string;
+  lipSync: { cueSha256: string; cueCount: number; usedMouthDrawings: string[] };
+};
+const quality = JSON.parse(readFileSync(qualityReport, "utf8")) as {
+  status: string;
+  inputSha256: string;
+  outputSha256: string;
+  measured: { audioCodec: string; frames: number; durationSeconds: number };
+  failures: unknown[];
+};
+const review = JSON.parse(readFileSync(humanReview, "utf8")) as {
+  status: string;
+  reviewedOutputSha256: string;
+  directVideoPerception: boolean;
+  directAudioPerception: boolean;
+};
+assert.equal(validation.status, "pass");
+assert.equal(validation.inputSha256, expectedInputSha);
+assert.equal(validation.audio.sha256, expectedAudioSha);
+assert.equal(validation.lipSync.cueSha256, expectedCueSha);
+assert.equal(validation.lipSync.cueCount, 100);
+assert.deepEqual(validation.lipSync.usedMouthDrawings, ["1", "2", "3", "4", "5"]);
+assert.equal(render.status, "rendered");
+assert.equal(render.inputSha256, expectedInputSha);
+assert.equal(render.outputSha256, expectedVideoSha);
+assert.equal(render.audioSha256, expectedAudioSha);
+assert.equal(render.lipSync.cueSha256, expectedCueSha);
+assert.equal(render.lipSync.cueCount, 100);
+assert.deepEqual(render.lipSync.usedMouthDrawings, ["1", "2", "3", "4", "5"]);
+assert.equal(quality.status, "pass");
+assert.equal(quality.inputSha256, expectedInputSha);
+assert.equal(quality.outputSha256, expectedVideoSha);
+assert.equal(quality.measured.audioCodec, "aac");
+assert.equal(quality.measured.frames, 288);
+assert.equal(quality.measured.durationSeconds, 12);
+assert.deepEqual(quality.failures, []);
+assert.equal(review.status, "pending");
+assert.equal(review.reviewedOutputSha256, expectedVideoSha);
+assert.equal(review.directVideoPerception, false);
+assert.equal(review.directAudioPerception, false);
+const poseShowcaseInput = JSON.parse(
+  readFileSync(`${poseShowcase}/input.json`, "utf8"),
+) as { sequence: Array<{ poseId: string }> };
+assert.deepEqual(
+  poseShowcaseInput.sequence.map(({ poseId }) => poseId),
   trustedShowcasePoseIds,
 );
+const goldens = JSON.parse(
+  readFileSync(`${repository}/goldens.json`, "utf8"),
+) as {
+  talkingSceneShowcase: {
+    inputSha256: string;
+    videoSha256: string;
+    posterSha256: string;
+    contactSheetSha256: string;
+    validationReceiptSha256: string;
+    renderReportSha256: string;
+    qualityReportSha256: string;
+    humanReviewSha256: string;
+    cueSha256: string;
+    audioSha256: string;
+  };
+};
+assert.equal(goldens.talkingSceneShowcase.inputSha256, expectedInputSha);
+assert.equal(goldens.talkingSceneShowcase.videoSha256, expectedVideoSha);
+assert.equal(goldens.talkingSceneShowcase.posterSha256, expectedPosterSha);
+assert.equal(
+  goldens.talkingSceneShowcase.contactSheetSha256,
+  expectedContactSheetSha,
+);
+assert.equal(
+  goldens.talkingSceneShowcase.validationReceiptSha256,
+  expectedValidationReceiptSha,
+);
+assert.equal(
+  goldens.talkingSceneShowcase.renderReportSha256,
+  expectedRenderReportSha,
+);
+assert.equal(
+  goldens.talkingSceneShowcase.qualityReportSha256,
+  expectedQualityReportSha,
+);
+assert.equal(
+  goldens.talkingSceneShowcase.humanReviewSha256,
+  expectedHumanReviewSha,
+);
+assert.equal(goldens.talkingSceneShowcase.cueSha256, expectedCueSha);
+assert.equal(goldens.talkingSceneShowcase.audioSha256, expectedAudioSha);
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
 assert.equal(profile.version, "0.2.0");
 assert.equal(profile.proofEntries.length, 1);
-assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-five-authored");
-assert.equal(profile.proofEntries[0]?.format.version, "0.1.0");
+assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-talking-scene");
+assert.equal(profile.proofEntries[0]?.format.version, "0.2.0");
 assert.match(
   profile.proofEntries[0]?.title ?? "",
-  /Five recreated artist-authored actions/,
+  /Shaz performs a real talking scene/,
 );
 assert.match(
   profile.proofEntries[0]?.curatorNote ?? "",
-  /Generated experimental poses are excluded/,
+  /five recovered mouth drawings/,
 );
 assert.match(profile.promise, /Format 0\.2\.0/);
 assert.match(profile.promise, /bundled Cherry WASI cue engine/);
-assert.match(profile.promise, /five trusted artist-authored actions/);
+assert.match(profile.promise, /audio into a Shaz talking scene/);
+assert.match(profile.promise, /secondary pose gallery/);
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
 assert.equal(
   profile.proofEntries[0]?.media.src,
-  "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/final.mp4",
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/talking-scene-lipsync-v1/final.mp4",
 );
 assert.equal(
   profile.proofEntries[0]?.media.poster,
-  "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
+  "/format-repositories/shaz-puppet-runtime-v1/goldens/talking-scene-lipsync-v1/poster.jpg",
 );
-assert.equal(profile.proofEntries[0]?.media.durationLabel, "10 sec");
+assert.equal(profile.proofEntries[0]?.media.durationLabel, "12 sec");
 for (const rejectedPoseId of rejectedShowcasePoseIds) {
   assert.doesNotMatch(
     JSON.stringify(profile.proofEntries[0]),
@@ -120,16 +265,17 @@ assert.equal(
 
 const presentation = await getFormatRepoPagePresentation("shaz-puppet-runtime");
 assert.equal(presentation?.kind, "shaz-puppet-runtime");
-assert.equal(presentation?.detailedProofId, "shaz-puppet-runtime-five-authored");
+assert.equal(presentation?.detailedProofId, "shaz-puppet-runtime-talking-scene");
 assert.match(presentation?.copy.runDescription ?? "", /Format 0\.2\.0/);
 assert.match(presentation?.copy.runDescription ?? "", /bundled WASI/);
+assert.match(presentation?.copy.examplesTitle ?? "", /Shaz actually talks/);
 assert.match(
   presentation?.copy.examplesDescription ?? "",
-  /Present, Think, Ah-ha, Point, and Confident/,
+  /Play the 12-second scene with sound/,
 );
 assert.match(
   presentation?.copy.examplesDescription ?? "",
-  /not a Format 0\.2\.0 lip-sync certification/,
+  /secondary gallery below/,
 );
 const trust = await getShazPuppetRuntimeTrustData();
 assert.equal(trust.version, "0.2.0");
@@ -161,12 +307,13 @@ assert.ok(
   ),
 );
 assert.equal(trust.quality.summary[2]?.value, "5");
-assert.equal(trust.quality.summary[2]?.label, "showcase-approved actions");
-assert.equal(trust.proof.durationTimeLabel, "00:10");
-assert.match(trust.proofCopy.eyebrow, /Trusted artist-authored actions/);
-assert.match(trust.quality.note, /download is Format 0\.2\.0/);
-assert.match(trust.quality.note, /Present, Think, Ah-ha, Point, and Confident/);
-assert.match(trust.quality.note, /experimental poses are excluded/);
+assert.equal(trust.quality.summary[2]?.label, "trusted poses below");
+assert.equal(trust.proof.durationTimeLabel, "00:12");
+assert.match(trust.proofCopy.eyebrow, /Audio-backed talking proof/);
+assert.match(trust.proofCopy.title, /Five lip-sync mouths/);
+assert.match(trust.quality.note, /blind run generated 100 Cherry cues/);
+assert.match(trust.quality.note, /5 authored mouth drawings/);
+assert.match(trust.quality.note, /very good for a first draft/);
 assert.equal(
   trust.includedAssets.showcasePosterSrc,
   "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
@@ -208,15 +355,22 @@ assert.equal(
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Proof Format")?.value,
-  "0.1.0",
+  "0.2.0",
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Video SHA")?.value,
   expectedVideoSha.slice(0, 16),
 );
-assert.match(trust.receipt.note, /does not certify Format 0\.2\.0/);
-assert.match(trust.receipt.note, /present-think-aha-point-direct/);
-assert.match(trust.receipt.note, /confident-delegated/);
+assert.equal(
+  trust.receipt.rows.find(({ label }) => label === "Audio")?.value,
+  "AAC · -15.6 dB",
+);
+assert.equal(
+  trust.receipt.rows.find(({ label }) => label === "Lip-sync")?.value,
+  "100 cues · 5 mouths",
+);
+assert.match(trust.receipt.note, /fresh-package blind replay/);
+assert.match(trust.receipt.note, /stored human-review receipt remains pending/);
 
 const archive = await JSZip.loadAsync(readFileSync(download));
 const entries = Object.keys(archive.files);

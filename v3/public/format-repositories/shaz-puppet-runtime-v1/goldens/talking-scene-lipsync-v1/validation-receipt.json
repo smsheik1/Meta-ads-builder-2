@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 2,
+  "status": "pass",
+  "mode": "audio-backed-sequence",
+  "validatedAt": "2026-08-27T21:53:28.693Z",
+  "formatVersion": "0.2.0",
+  "inputSha256": "5d6428d1247cf0ba6a0392296d2df57312300172fee5465e3ad64b1f2b52dd06",
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "poseRegistrySha256": "a5f2533a97733fb68f34170b4a9c4ccdd3ed2e62965375da8c962dd61711587d",
+  "artistRenderedFramesUsed": false,
+  "totalFrames": 288,
+  "durationSeconds": 12,
+  "audio": {
+    "file": "user-audio.wav",
+    "sha256": "37648e2e0b4c37d22ec529b4301c8abd9435f92ce641c804e521e5b3bdd23f1b",
+    "codec": "pcm_s16le",
+    "durationSeconds": 12
+  },
+  "background": {
+    "id": "sisters-room",
+    "path": "assets/backgrounds/sisters-room.png",
+    "sha256": "740f61cbd58581b3c944fc77038fd51756305083b22ae3e28df0f1f5190ec485",
+    "cameraMotion": false
+  },
+  "lipSync": {
+    "engine": "cherry-lip-sync",
+    "engineVersion": "0.1.0",
+    "cueFile": "cherry-lipsync.tsv",
+    "cueSha256": "6a6d5604461dfe9aadc40ab3bf5f7b5171c64e674c95384c58275294ee32820d",
+    "cueCount": 100,
+    "cueSource": "bundled-wasi-engine",
+    "execution": "node-wasi-preview1",
+    "sourceAudioSha256": "37648e2e0b4c37d22ec529b4301c8abd9435f92ce641c804e521e5b3bdd23f1b",
+    "fps": 24,
+    "filterSingleFrames": true,
+    "engineManifestSha256": "38cfe1aab3009643a2758e426344919d887f3e0f4d402fa51db8266c0366e1cd",
+    "engineModuleSha256": "1bf5730acc7a81b1f0b6c818a9068001b9e9a797a7eb990ae091eb1b01603382",
+    "mappingId": "shaz-five-mouth-v1",
+    "mapping": {
+      "A": "1",
+      "B": "4",
+      "C": "5",
+      "D": "2",
+      "E": "3",
+      "F": "3",
+      "G": "4",
+      "H": "5",
+      "I": "4",
+      "J": "4",
+      "K": "3",
+      "X": "1"
+    },
+    "usedMouthDrawings": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "frameHistogram": {
+      "1": 48,
+      "2": 61,
+      "3": 23,
+      "4": 108,
+      "5": 48
+    },
+    "forcedFinalRestFrame": true
+  },
+  "poses": [
+    {
+      "index": 0,
+      "poseId": "neutral-listening",
+      "recipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "fileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406",
+      "recipeFrames": 1,
+      "holdFrames": 14,
+      "gapFrames": 0
+    },
+    {
+      "index": 1,
+      "poseId": "present",
+      "recipeSha256": "7bddc3278543f2cc5e982860e74d301b31fa0f06ddedcb7566f69069e9c522e5",
+      "fileSha256": "4577345e15985d0fe71159fa6ebca5dae1e991b9e82ee2b1905a80040c826715",
+      "recipeFrames": 19,
+      "holdFrames": 17,
+      "gapFrames": 0
+    },
+    {
+      "index": 2,
+      "poseId": "neutral-listening",
+      "recipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "fileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406",
+      "recipeFrames": 1,
+      "holdFrames": 3,
+      "gapFrames": 0
+    },
+    {
+      "index": 3,
+      "poseId": "confident",
+      "recipeSha256": "8d64e77ca4ae2239ddb02bb66dc28d77584327940c45a188bc060c1e25baeedf",
+      "fileSha256": "53496ec22e505fa44673260935ccaa4edc9ea87796b99a1c79031b825c804c1c",
+      "recipeFrames": 13,
+      "holdFrames": 30,
+      "gapFrames": 0
+    },
+    {
+      "index": 4,
+      "poseId": "neutral-listening",
+      "recipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "fileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406",
+      "recipeFrames": 1,
+      "holdFrames": 4,
+      "gapFrames": 0
+    },
+    {
+      "index": 5,
+      "poseId": "point",
+      "recipeSha256": "82dde0723d1d283dba4470f0a1874f8e3f57048197f6b82c76774e1effae4f02",
+      "fileSha256": "fcc7f489498683514104d7612dc4fbf5be22243b1f867b6190db74c8e9225a39",
+      "recipeFrames": 76,
+      "holdFrames": 7,
+      "gapFrames": 0
+    },
+    {
+      "index": 6,
+      "poseId": "neutral-listening",
+      "recipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "fileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406",
+      "recipeFrames": 1,
+      "holdFrames": 7,
+      "gapFrames": 0
+    },
+    {
+      "index": 7,
+      "poseId": "shrug",
+      "recipeSha256": "5a7f76b59b1f857b7705f4816f8bb29f4c96cd4b22b653c59bb72bb2b7d0ef74",
+      "fileSha256": "9cba89c6393a43580c25eb6059132a39ef30490958936d7f375071faf2f451b1",
+      "recipeFrames": 31,
+      "holdFrames": 12,
+      "gapFrames": 0
+    },
+    {
+      "index": 8,
+      "poseId": "neutral-listening",
+      "recipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "fileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406",
+      "recipeFrames": 1,
+      "holdFrames": 3,
+      "gapFrames": 0
+    },
+    {
+      "index": 9,
+      "poseId": "aha",
+      "recipeSha256": "6bb1e4b5905c87015f5a21c7950ccebe4882907c82a8aecf861668eb17ac23a1",
+      "fileSha256": "e3ebc83fa6409be5ac66ce77189ff445bf38352f16ccaf5423756ae95174d654",
+      "recipeFrames": 13,
+      "holdFrames": 22,
+      "gapFrames": 0
+    },
+    {
+      "index": 10,
+      "poseId": "neutral-listening",
+      "recipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "fileSha256": "ca91808736aca7c2b4be3881a688abf9c755617bc61c9b21516a8e2361540406",
+      "recipeFrames": 1,
+      "holdFrames": 11,
+      "gapFrames": 0
+    }
+  ],
+  "providerCalls": 0,
+  "estimatedCost": "$0"
+}
