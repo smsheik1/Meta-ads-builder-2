@@ -58,7 +58,7 @@
     "suppliedCueOverride": "--lipsync-cues=/absolute/path/cherry.tsv stages and validates that exact cue file instead of generating one.",
     "explicitOptOut": "--lipsync=off stages audio without creating lipSync.",
     "talkToCameraPreset": "With sequencePreset talk-to-camera, init derives durationFrames from the measured audio and resolves one gap-free neutral-listening body hold. The user supplies no sequence or frame math, and lip-sync cannot be disabled.",
-    "unsupportedMode": "Automatic cue generation and application do not apply to shaz-body-language-performance-v1 in Format 0.3.0.",
+    "unsupportedMode": "Automatic cue generation and application do not apply to shaz-body-language-performance-v1 in Format 0.3.1.",
     "performanceBackgroundDefault": "shaz-body-language-performance-v1 accepts an optional backgroundId from the same registry and resolves an omitted value to assets.defaultBackgroundId."
   },
   "maximumOutputFrames": 1800,

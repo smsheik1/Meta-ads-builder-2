@@ -1,6 +1,6 @@
 # Final unlabeled ten-action watch
 
-> **Status: LEGACY AND REJECTED AS CURRENT CERTIFICATION.** This video includes an earlier fragmented crossed-arm assembly later rejected for broken finished anatomy. Retain the record as pending-review history only; use `five-storyboard-sequences-final.md` and `anatomy-v8-release` for the current four-action structural certification. The current `point-at-screen` and `look-at-phone` recipes still require renewed exact-hash review.
+> **Status: LEGACY AND REJECTED.** This video includes an earlier fragmented crossed-arm assembly later rejected for broken finished anatomy. The replacement `anatomy-v8-release` poses were also rejected by the user after public-page review. Retain this record as history only. The current `point-at-screen` and `look-at-phone` recipes still need fresh visual review.
 
 - Render: pre-packaging ten-action proof (video itself is not bundled in the runtime ZIP)
 - SHA-256: `fde72d3a6a834df350e92642109259a8a706e18e65479aeb0de993900f1a962f`

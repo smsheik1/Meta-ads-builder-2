@@ -1,6 +1,6 @@
 # Generated action watch: arms crossed / skeptical
 
-> **Status: REJECTED AND SUPERSEDED.** This record describes the earlier four-piece crossed-arm substitution assembly. Its acceptance, hashes, and reusable recommendations are retained only as failure provenance and are not current certification. The current `anatomy-v8-release` instead uses native anticipation followed by one exact, arm-only registered destination drawing with mutually exclusive native visibility; see `five-storyboard-sequences-final.md`.
+> **Status: REJECTED AND SUPERSEDED.** This record describes the earlier four-piece crossed-arm substitution assembly. A later one-piece replacement appeared in `anatomy-v8-release`, but the user rejected that visible result too. Keep both records as failure provenance; neither is current creative approval.
 
 - Official run: `agent-runs/arms-crossed-skeptical-certification-final`
 - Recipe file: `poses/generated/arms-crossed-skeptical.json`

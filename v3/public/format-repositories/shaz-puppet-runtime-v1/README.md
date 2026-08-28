@@ -1,22 +1,10 @@
-# Shaz Puppet Runtime
+# Animate Shaz
 
-A self-contained Wiggly video Format kit for animating the supplied Shaz 2D puppet without Toon Boom Harmony. It reconstructs the original Xstage hierarchy, pivots, transforms, drawing substitutions, AutoPatch composites, and paint order into one local renderer, then sequences checksum-locked pose recipes into a 1280×720 H.264 video.
+Give Shaz a voice track, pick a room, and render a 1280×720 talking scene locally. Use **Talk to Camera** for everyday speech. Add one of the approved gestures when the performance needs a beat of body language.
 
-This is not a sprite-sheet player. Runtime frames are rendered from recovered rig controls and compiled drawing assets. Artist renders may supply phase, cadence, and acceptance evidence, but their pixels are excluded from runtime and generation inputs.
+The kit draws Shaz from the recovered Toon Boom rig without requiring Toon Boom Harmony. It does not play back a sprite sheet or reuse finished artist-video frames.
 
-See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body language first, then transitions, dialogue/audio, lip-sync, script-directed performance, backgrounds, and finally plain-English pose generation.
-
-## What is included
-
-- Six lossless authored-action calibrations from the supplied rig.
-- Six newly authored semantic actions: excited celebration, point at screen, look at phone, facepalm/frustrated, arms crossed/skeptical, and a prop-free gesture variant derived from the phone action while preserving its native rig controls.
-- One registered arm-only destination drawing for the folded-arms hold that the recovered native cuff and pivot vocabulary cannot form credibly; it is exact-hash/placement locked and never replaces the original head or body.
-- One held-out authored shrug used to prove the control model generalized before new actions were attempted.
-- A strict sequence contract, one official renderer, per-frame mechanical inspection, human review, and checksum-bound finalization.
-- An audio-backed sequence path with four checksum-registered fixed backgrounds, five real rig mouth shapes, and a bundled Cherry 0.1.0 WebAssembly cue engine.
-- Two meaningfully different proof inputs plus a free local smoke fixture.
-
-## Quick start
+## Start here
 
 ```sh
 npm install
@@ -25,41 +13,26 @@ npm run inspect:registry
 npm run smoke
 ```
 
-Create an input using IDs from `poses/index.json`:
+These commands check the package, inspect every registered recipe, and make a free local smoke video. After installation, the normal workflow needs no network connection, API key, provider call, or paid service.
 
-```json
-{
-  "schemaVersion": "shaz-sequence-input-v1",
-  "title": "My Shaz sequence",
-  "sequence": [
-    { "poseId": "think", "holdFrames": 8, "gapFrames": 0 },
-    { "poseId": "aha", "holdFrames": 12, "gapFrames": 0 }
-  ]
-}
-```
+## The safe building blocks
 
-For the exact five-action batch certified in the skill-building loop, start from `fixtures/five-recreated-authored-input.json`. It sequences Present, Think, Ah-ha, Point, and Confident through the same official runtime.
+Use `neutral-listening` as the calm body behind Talk to Camera. The other five entries below are the artist-reviewed gestures in the current performance set.
 
-Run the official workflow:
+| ID | Best use |
+| --- | --- |
+| `neutral-listening` | Calm audience-facing speech; used by Talk to Camera |
+| `present` | Friendly introduction or offer |
+| `think` | Thoughtful pause |
+| `aha` | Realization |
+| `point` | Strong directional emphasis |
+| `confident` | Assured statement or finish |
 
-```sh
-npm run init -- --run=my-sequence --input=/absolute/path/input.json
-npm run validate -- --run=my-sequence
-npm run render -- --run=my-sequence
-npm run inspect -- --run=my-sequence
-```
+`poses/index.json` contains eight more recipes. They are registered, so the runtime can load and inspect them, but they are **not cleared for automatic use**. Registered means runnable, not creatively approved. `shrug`, `key-point`, `excited-celebration`, `point-at-screen`, `look-at-phone`, `facepalm-frustrated`, `arms-crossed-skeptical`, and `phone-use-sequence` each need a fresh complete visual review before they appear in a user video.
 
-Watch `agent-runs/my-sequence/final.mp4`, inspect the contact sheet and quality report, then record the honest verdict in `human-review.json`. Finalize only after approval:
+## Talk to Camera
 
-```sh
-npm run finalize -- --run=my-sequence
-```
-
-The finalized video and evidence remain in `agent-runs/my-sequence/`. After `npm install`, no network, API key, provider call, or paid service is required.
-
-### Talk to Camera — default dialogue
-
-For ordinary audience-facing speech, use the `talk-to-camera` sequence preset instead of inventing a new pose or calculating hold frames:
+For ordinary direct-to-audience speech, copy `fixtures/talk-to-camera/input.json`:
 
 ```json
 {
@@ -70,30 +43,53 @@ For ordinary audience-facing speech, use the `talk-to-camera` sequence preset in
 }
 ```
 
+Start the run with the user's audio:
+
 ```sh
 npm run init -- --run=my-talking-head \
   --input=/absolute/path/input.json \
   --audio=/absolute/path/dialogue.wav
 ```
 
-Initialization measures the audio, holds the checksum-bound `neutral-listening` body for that exact duration, and generates Cherry mouth cues automatically. The preset adds no body keys, props, camera motion, gaps, or second renderer. It rejects handwritten `sequence` timing and `--lipsync=off`; use it as the calm default between expressive gesture sequences. A ready-to-copy input lives at `fixtures/talk-to-camera/input.json`.
+Initialization measures the audio and holds `neutral-listening` for that exact duration. Cherry changes only Shaz's mouth. The preset adds no body keys, props, camera movement, gaps, or alternate renderer. Do not supply `sequence`, `durationFrames`, or handwritten frame math, and do not use `--lipsync=off` with this preset.
 
-### Built-in backgrounds
+## Build a gesture sequence
 
-Every background is an opaque 3840×2160 PNG registered and checksum-bound in `assets.json`. Sisters Room remains the main/default environment. Set `backgroundId` explicitly for an audio-backed sequence or Talk to Camera input; semantic body-language performance inputs accept the same IDs and use Sisters Room when `backgroundId` is omitted.
+For a more expressive moment, write a sequence with approved pose IDs and explicit timing:
 
-| ID | Label | Intended use |
-| --- | --- | --- |
-| `sisters-room` | Sisters Room | Main/default Shaz dialogue environment |
-| `living-room` | Living Room | Warmer home dialogue environment |
-| `map-photo-zone` | Photo Zone | Clean purple room with the original map artwork removed |
-| `pure-white` | Pure White | Minimal scenes or downstream compositing |
+```json
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "A thought and an answer",
+  "sequence": [
+    { "poseId": "think", "holdFrames": 8, "gapFrames": 0 },
+    { "poseId": "aha", "holdFrames": 12, "gapFrames": 0 }
+  ]
+}
+```
 
-All four choices preserve the one fixed camera and one character-renderer path. The clean area in Photo Zone is reserved for a future supporting-image/video feature only. This release does not accept or render an overlay there, and an agent must not invent one.
+Actions touch by default. A positive `gapFrames` value deliberately inserts white frames; it does not create a polished transition. The final action must use `gapFrames: 0`.
 
-### Audio-backed Lego sequence with local lip-sync
+The five-action fixture at `fixtures/five-recreated-authored-input.json` shows Present, Think, Ah-ha, Point, and Confident through the official runtime.
 
-Give a `shaz-sequence-input-v1` input a registered `backgroundId`, then stage user audio during initialization:
+## Pick a background
+
+Audio-backed scenes must name one of these built-in backgrounds:
+
+| ID | Use |
+| --- | --- |
+| `sisters-room` | Main/default Shaz room |
+| `living-room` | Warmer home setting |
+| `map-photo-zone` | Clean purple room with the original map art removed |
+| `pure-white` | Minimal scene or later compositing |
+
+Each background is an opaque 3840×2160 PNG registered in `assets.json`. They all use the same fixed camera and waist-up character placement.
+
+The clear area in Photo Zone is reserved for a future supporting-image or supporting-video feature. This package does not accept an overlay there. Do not invent, crop, or position one.
+
+## Add local lip-sync
+
+For an audio-backed gesture sequence, include `backgroundId` in the input and stage the audio during initialization:
 
 ```sh
 npm run init -- --run=my-talking-sequence \
@@ -101,55 +97,67 @@ npm run init -- --run=my-talking-sequence \
   --audio=/absolute/path/user-audio.wav
 ```
 
-Initialization runs the bundled Cherry 0.1.0 WebAssembly module locally, stages the generated A-K/X timestamp TSV beside the audio, and checksum-binds both files before rendering. The cue engine runs inside Node's WASI sandbox; the package does not execute or require a native `cherrylipsync` binary, Python, Rust, an API key, or a network call.
+By default, the bundled Cherry Lip Sync 0.1.0 WebAssembly engine creates the speech cues locally. The renderer maps those cues to five existing mouth drawings: rest/closed, teeth, small-open, wide-open, and rounded O. Only the `Mouth` drawing changes; the selected body recipe, timing, deformations, props, and framing stay untouched.
 
-The renderer maps Cherry to five existing authored drawings: rest/closed, teeth, small-open, wide-open, and rounded O. It overrides only the `Mouth` READ on each output frame; body recipes, holds, deformations, props, and choreography remain checksum-bound and unchanged. Held body frames are re-rendered so the mouth can follow slower or faster speech instead of cycling at a fixed rate.
+There are three cue choices:
 
-Three cue modes are explicit:
+- **Automatic:** `--audio` uses the bundled Cherry engine.
+- **Use an existing Cherry file:** add `--lipsync-cues=/absolute/path/cherry.tsv`. The TSV must come from that exact audio.
+- **Audio without mouth motion:** add `--lipsync=off`.
 
-- **Default:** `--audio` auto-generates cues with the bundled WASI engine.
-- **Supplied cues:** add `--lipsync-cues=/absolute/path/cherry.tsv` to use a real Cherry 0.1.0 TSV that belongs to that exact audio.
-- **No lip-sync:** add `--lipsync=off` to stage and mux the audio without mouth animation.
-
-To generate only a Cherry TSV without creating a run:
+To create only a cue file:
 
 ```sh
 npm run lipsync -- --audio=/absolute/path/user-audio.wav --output=/absolute/path/cherry.tsv
 ```
 
-The separate `shaz-body-language-performance-v1` semantic performance mode still uses audio only for measured duration and gesture scheduling. It does **not** auto-generate or apply lip-sync cues in Format 0.3.0.
+The engine runs inside Node's WASI sandbox. The package does not run or require a native `cherrylipsync` app, Python, Rust, an API key, or a network call. Rust is needed only to rebuild the bundled WebAssembly module from source.
 
-## Registered actions
+The separate `shaz-body-language-performance-v1` mode uses audio to measure duration and schedule gestures. It does not apply mouth cues.
 
-| ID | Origin | Meaning |
-| --- | --- | --- |
-| `neutral-listening` | authored neutral anchor | audience-facing default speech/listening body used internally by Talk to Camera |
-| `present` | authored calibration | friendly presenting gesture |
-| `shrug` | held-out authored calibration | uncertain shrug |
-| `think` | authored calibration | thinking |
-| `key-point` | authored body replay | one concise emphasis beat |
-| `aha` | authored calibration | raised-finger “Ah-ha!” realization |
-| `point` | authored calibration | full side-point → Ah-ha accent → side-point return |
-| `confident` | authored calibration | confident stance |
-| `excited-celebration` | new rig action | excited celebration |
-| `point-at-screen` | new rig action | presents, then points toward an off-canvas upper-right target |
-| `look-at-phone` | new rig action | looks down at a phone prop |
-| `facepalm-frustrated` | new rig action | frustrated head-in-hand reaction |
-| `arms-crossed-skeptical` | new rig action | skeptical crossed-arm hold |
-| `phone-use-sequence` | new rig sequence | prop-free reusable hand-to-face gesture derived from the registered phone action |
+## Render, watch, and deliver
 
-## Why it is repeatable
+Run the official workflow in this order:
 
-The user input controls action order and explicit hold/gap timing, and may additionally stage user audio, select one registered fixed background, and use a generated or supplied checksum-bound Cherry cue file. Actions are contiguous by default, with no inserted separator frames; this does not claim a polished transition between independently authored actions. Recipe and background checksums bind every selection to its registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks native shoulder/sleeve/hand topology or the one exact registered pose-replacement contract, cuff ownership, hand proportions, clipping, paint order, props, facial stability, video/audio format, frame count, duration, and any requested lip-sync receipt. Finalization binds the human review to the exact video checksum.
+```sh
+npm run init -- --run=my-sequence --input=/absolute/path/input.json
+npm run validate -- --run=my-sequence
+npm run render -- --run=my-sequence
+npm run inspect -- --run=my-sequence
+```
 
-Audio-backed videos use one fixed waist-up stage view. Shaz's hoodie continues below the bottom edge in every frame, matching the supplied channel reference and concealing the rig's intentionally absent legs; all used actions must simultaneously retain clear left and right margins.
+For audio-backed work, include the `--audio` option on `init` as shown above.
 
-## Authoring new actions
+Watch `agent-runs/my-sequence/final.mp4` all the way through. Also inspect `contact-sheet.jpg` and `quality-report.json`. Then edit only `human-review.json`: keep the exact output checksum, identify the reviewer, add concise notes, and set the status to `approved` or `rejected`.
 
-Sequencing registered actions is automatic. Creating a new one is deliberate rig work. Read `poses/README.md`; use sparse named control keys, reuse existing drawing substitutions, and add only minimal non-limb props. Prefer complete native limb chains. If the recovered drawing and pivot vocabulary is proven unable to form an essential destination, a single part-specific registered pose drawing is allowed only under the strict replacement rules in `SKILL.md`: exact bytes and placement, mutually exclusive native visibility, preserved rig-rendered head/body, independent inspection, and checksum-bound normal-speed review. The new recipe must pass independent per-frame inspection before registration.
+Only an approved run can be finalized:
+
+```sh
+npm run finalize -- --run=my-sequence
+```
+
+The finalized video and its receipts stay in `agent-runs/my-sequence/`.
+
+## What the checks protect
+
+The runtime verifies the chosen recipe and background files, renders every frame through the same character renderer, and checks the final video rather than trusting the plan. Its gates cover joint continuity, cuff ownership, hand proportions, clipping, paint order, props, facial stability, frame count, duration, audio, background, fixed camera, and lip-sync provenance when used.
+
+Automatic checks cannot decide whether a pose looks good. That is why complete normal-speed playback and an honest human review remain required.
+
+Shaz always uses one fixed waist-up composition. The hoodie must continue below the bottom edge so the absent legs are never revealed, while both sides keep enough room for hands and pointing gestures.
+
+## Author a new action
+
+Sequencing an approved action is routine. Creating or repairing one is rig work.
+
+Read `poses/README.md` and `references/rig-animation-playbook.md` completely. Work on one action at a time. Use sparse named controls and existing drawing substitutions wherever possible, and keep each native shoulder-to-sleeve-to-hand chain intact.
+
+If three bounded native-rig attempts prove that the recovered drawings and pivots cannot form an essential destination, the narrow replacement rule in `SKILL.md` allows one coherent part-specific drawing. Its exact bytes, transform, paint layer, and visibility swap must be fixed; the original head and body must remain rig-rendered; and the result still needs independent inspection and complete normal-speed review.
+
+Adding a recipe to `poses/index.json` makes it runnable. It does not make it creatively approved.
 
 ## Package integrity
 
-`npm run build:kit` removes the previous stable ZIP before rebuilding it. The ZIP excludes `node_modules`, run outputs, downloads, the original source archive, and all finished artist renders. A `.sha256` file is written beside it.
+`npm run build:kit` removes the previous stable ZIP before rebuilding it and writes a `.sha256` file beside the new archive. The ZIP leaves out `node_modules`, run outputs, downloads, the original source archive, and finished artist renders.
 
-See `PROVENANCE.md` for the source and evidence boundary.
+See `PROVENANCE.md` for where the rig, backgrounds, Cherry engine, and pose assets came from. See `PROOF-REPORT.md` for what has been proven and what still needs review.

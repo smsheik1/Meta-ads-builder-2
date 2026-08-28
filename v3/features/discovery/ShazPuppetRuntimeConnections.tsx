@@ -25,25 +25,29 @@ export function ShazPuppetRuntimeConnections({
           id="accounts-youll-connect-title"
           className="mt-2 text-4xl font-black leading-none sm:text-5xl"
         >
-          No services. No keys. No Harmony.
+          No subscriptions. No API keys. It runs on your Mac.
         </h2>
         <div className="mt-6 grid border-2 border-[#080817] bg-white min-[701px]:grid-cols-3">
-          <Fact icon={<Laptop aria-hidden="true" />} title="Runs locally">
-            Node, Sharp, FFmpeg, the packaged rig runtime, and Cherry WASI do
-            the work.
+          <Fact
+            icon={<Laptop aria-hidden="true" />}
+            title="Everything stays local"
+          >
+            The rig, lip-sync, and video tools are all included in the download.
+            Your audio never has to leave your machine.
           </Fact>
           <Fact
             icon={<CircleDollarSign aria-hidden="true" />}
-            title="$0 provider cost"
+            title="$0 service fees"
           >
-            No network or paid generation call is part of the workflow.
+            The workflow makes no network calls and uses no paid generation
+            service.
           </Fact>
           <Fact
             icon={<ShieldCheck aria-hidden="true" />}
-            title="Bundled local lip-sync"
+            title="Lip-sync is built in"
           >
-            Cherry {cherry?.version ?? "0.1.0"} generates speech cues inside
-            Node WASI. The same Shaz renderer paints every mouth shape.
+            Cherry {cherry?.version ?? "0.1.0"} listens to the audio and picks
+            the mouth shapes. The same Shaz rig draws them.
           </Fact>
         </div>
       </div>

@@ -1,6 +1,6 @@
 # Five storyboard-directed actions: final integration
 
-> **Status: REJECTED AS CURRENT CERTIFICATION; SUPERSEDED.** This historical integration includes the fragmented crossed-arm substitution later rejected by the anatomy audit. `anatomy-v8-release` is the current exact-hash structural certification for its four repaired actions. The current `point-at-screen` and `look-at-phone` recipes still require renewed exact-hash review.
+> **Status: REJECTED AND SUPERSEDED.** This historical integration includes the fragmented crossed-arm substitution later rejected by the anatomy audit. The later `anatomy-v8-release` poses were also rejected by the user after public-page review. Keep this as engineering history only. The current `point-at-screen` and `look-at-phone` recipes still need fresh visual review.
 
 ## Historical sequence
 
@@ -35,7 +35,7 @@ The contemporaneous review reported that the sequence preserved each intended se
 
 ## Superseded learning-loop record
 
-This run was once treated as independent certification for all five actions. That conclusion is superseded: anatomy-v8 later repaired and certified `facepalm-frustrated`, `arms-crossed-skeptical`, and `excited-celebration` plus the prop-free `phone-use-sequence`; current `point-at-screen` and `look-at-phone` still need renewed exact-hash review.
+This run was once treated as independent certification for all five actions. That conclusion is superseded. Anatomy v8 later repaired `facepalm-frustrated`, `arms-crossed-skeptical`, and `excited-celebration` plus the prop-free `phone-use-sequence`, but the user rejected those visible poses too. The current `point-at-screen` and `look-at-phone` recipes still need fresh visual review.
 
 ## Historical package audit
 

@@ -3,6 +3,6 @@
   "title": "Free mechanics smoke",
   "sequence": [
     { "poseId": "present", "holdFrames": 3, "gapFrames": 2 },
-    { "poseId": "excited-celebration", "holdFrames": 3, "gapFrames": 0 }
+    { "poseId": "confident", "holdFrames": 3, "gapFrames": 0 }
   ]
 }

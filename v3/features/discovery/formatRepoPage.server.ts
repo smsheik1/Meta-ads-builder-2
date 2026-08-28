@@ -131,14 +131,14 @@ export async function getFormatRepoPagePresentation(
       kind: slug,
       trust: await getShazPuppetRuntimeTrustData(),
       copy: {
-        runTitle: "Animate Shaz.",
+        runTitle: "Give Shaz a line.",
         runDescription:
-          "Add local audio, choose one of four built-in backgrounds, and use Talk to Camera for ordinary speech—or registered actions for expressive beats. Format 0.3.0 measures the dialogue automatically, generates Cherry cues through bundled WASI, renders every body and mouth frame through the same Shaz renderer, inspects the result, and waits for your visual approval.",
-        provided: "Audio + dialogue mode + background",
+          "Add a voice track and pick a room. Talk to Camera handles most of the scene; add an artist-reviewed gesture where the performance needs one. The kit handles timing, mouth shapes, rendering, and checks locally.",
+        provided: "One voice track + room choice",
         ready: "2–8 minutes",
-        examplesTitle: "Shaz actually talks.",
+        examplesTitle: "Hear Shaz perform it.",
         examplesDescription:
-          "Play the historical 0.2.0 proof with sound: real audio drives five authored mouth drawings while registered body-language actions play through the recovered rig. The downloadable 0.3.0 Repo keeps Talk to Camera as the calm default and adds Sisters Room, Living Room, Photo Zone, and Pure White as checksum-registered fixed environments. The five trusted artist-authored poses remain preserved in the secondary gallery below.",
+          "This 12-second first draft uses a real voice track, five hand-drawn mouth shapes, and a handful of body-language beats. It passed the technical checks; creative review is still pending. Play it with sound.",
       },
       detailedProofId: "shaz-puppet-runtime-talking-scene",
     };
