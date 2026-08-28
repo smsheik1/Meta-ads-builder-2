@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "canvas": { "width": 1280, "height": 720, "fps": 24, "background": "one checksum-registered fixed background from assets.json; Sisters Room is the default" },
+  "canvas": { "width": 1280, "height": 720, "fps": 24, "background": "audio-backed runs use one checksum-registered fixed background from assets.json, with Sisters Room as the default; silent legacy sequences retain the implicit white canvas" },
   "timeline": {
     "action": "Render every recipe frame through the recovered rig-v2 renderer.",
     "hold": "Clone the final rendered action frame for silent sequences. When lip-sync is active, re-render that same final body state for each hold frame while changing only its Mouth drawing.",
