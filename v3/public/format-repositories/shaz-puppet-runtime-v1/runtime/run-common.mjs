@@ -15,6 +15,7 @@ import { loadManifest } from "./rig-v2-renderer.mjs";
 
 const RUN_ID = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 const INPUT_SCHEMA = "shaz-sequence-input-v1";
+const TALK_TO_CAMERA_PRESET = "talk-to-camera";
 const MAX_ACTIONS = 24;
 const MAX_OUTPUT_FRAMES = 1800;
 
@@ -134,31 +135,75 @@ function integerInRange(value, fallback, minimum, maximum, context) {
 
 function validateInput(input, registry) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("input must be an object");
-  exactKeys(input, ["schemaVersion", "title", "sequence", "audioFile", "backgroundId", "lipSync"], "input");
+  exactKeys(input, [
+    "schemaVersion",
+    "title",
+    "sequence",
+    "sequencePreset",
+    "durationFrames",
+    "audioFile",
+    "backgroundId",
+    "lipSync",
+  ], "input");
   if (input.schemaVersion !== INPUT_SCHEMA) throw new Error(`unsupported input schema ${input.schemaVersion}`);
   if (typeof input.title !== "string" || input.title.trim().length < 1 || input.title.length > 120) {
     throw new Error("input.title must contain 1-120 characters");
   }
-  if (!Array.isArray(input.sequence) || input.sequence.length < 1 || input.sequence.length > MAX_ACTIONS) {
-    throw new Error(`input.sequence must contain 1-${MAX_ACTIONS} actions`);
+  const hasSequencePreset = Object.hasOwn(input, "sequencePreset");
+  const sequencePreset = hasSequencePreset ? input.sequencePreset : null;
+  if (hasSequencePreset && sequencePreset !== TALK_TO_CAMERA_PRESET) {
+    throw new Error(`unsupported input.sequencePreset ${sequencePreset}`);
   }
   let totalFrames = 0;
-  const entries = input.sequence.map((entry, index) => {
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-      throw new Error(`sequence[${index}] must be an object`);
+  let entries;
+  if (sequencePreset === TALK_TO_CAMERA_PRESET) {
+    if (input.sequence !== undefined) {
+      throw new Error("input.sequencePreset talk-to-camera cannot be combined with input.sequence");
     }
-    exactKeys(entry, ["poseId", "holdFrames", "gapFrames"], `sequence[${index}]`);
-    const pose = registry.byId.get(entry.poseId);
-    if (!pose) throw new Error(`sequence[${index}] references unknown pose ${entry.poseId}`);
-    const holdFrames = integerInRange(entry.holdFrames, 12, 0, 120, `sequence[${index}].holdFrames`);
-    const gapFrames = integerInRange(entry.gapFrames, 0, 0, 24, `sequence[${index}].gapFrames`);
-    if (index === input.sequence.length - 1 && gapFrames !== 0) {
-      throw new Error("the final sequence entry must use gapFrames: 0");
+    const durationFrames = integerInRange(
+      input.durationFrames,
+      null,
+      1,
+      MAX_OUTPUT_FRAMES,
+      "input.durationFrames",
+    );
+    const pose = registry.byId.get("neutral-listening");
+    if (!pose) throw new Error("talk-to-camera requires the registered neutral-listening pose");
+    const holdFrames = durationFrames - pose.recipe.durationFrames;
+    if (holdFrames < 0) throw new Error("talk-to-camera audio is shorter than its neutral body frame");
+    totalFrames = durationFrames;
+    entries = [{
+      index: 0,
+      poseId: pose.id,
+      pose,
+      holdFrames,
+      gapFrames: 0,
+      outputFrames: durationFrames,
+    }];
+  } else {
+    if (input.durationFrames !== undefined) {
+      throw new Error("input.durationFrames is runtime-derived and requires sequencePreset talk-to-camera");
     }
-    const outputFrames = pose.recipe.durationFrames + holdFrames + gapFrames;
-    totalFrames += outputFrames;
-    return { index, poseId: pose.id, pose, holdFrames, gapFrames, outputFrames };
-  });
+    if (!Array.isArray(input.sequence) || input.sequence.length < 1 || input.sequence.length > MAX_ACTIONS) {
+      throw new Error(`input.sequence must contain 1-${MAX_ACTIONS} actions`);
+    }
+    entries = input.sequence.map((entry, index) => {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+        throw new Error(`sequence[${index}] must be an object`);
+      }
+      exactKeys(entry, ["poseId", "holdFrames", "gapFrames"], `sequence[${index}]`);
+      const pose = registry.byId.get(entry.poseId);
+      if (!pose) throw new Error(`sequence[${index}] references unknown pose ${entry.poseId}`);
+      const holdFrames = integerInRange(entry.holdFrames, 12, 0, 120, `sequence[${index}].holdFrames`);
+      const gapFrames = integerInRange(entry.gapFrames, 0, 0, 24, `sequence[${index}].gapFrames`);
+      if (index === input.sequence.length - 1 && gapFrames !== 0) {
+        throw new Error("the final sequence entry must use gapFrames: 0");
+      }
+      const outputFrames = pose.recipe.durationFrames + holdFrames + gapFrames;
+      totalFrames += outputFrames;
+      return { index, poseId: pose.id, pose, holdFrames, gapFrames, outputFrames };
+    });
+  }
   if (totalFrames > MAX_OUTPUT_FRAMES) {
     throw new Error(`sequence produces ${totalFrames} frames; maximum is ${MAX_OUTPUT_FRAMES}`);
   }
@@ -180,11 +225,20 @@ function validateInput(input, registry) {
   if (input.lipSync !== undefined && (!audioFile || !backgroundId)) {
     throw new Error("input.lipSync requires an audio-backed sequence");
   }
+  if (sequencePreset === TALK_TO_CAMERA_PRESET) {
+    if (!audioFile || !backgroundId) {
+      throw new Error("talk-to-camera requires staged audio and a registered background");
+    }
+    if (!input.lipSync || typeof input.lipSync !== "object" || Array.isArray(input.lipSync)) {
+      throw new Error("talk-to-camera requires a validated lip-sync cue track");
+    }
+  }
   return {
     title: input.title.trim(),
     entries,
     totalFrames,
     durationSeconds: totalFrames / 24,
+    sequencePreset,
     audioFile,
     backgroundId,
     lipSync: input.lipSync ?? null,
@@ -436,6 +490,7 @@ async function validateRun({ root, runDirectory }) {
         cameraMotion: false,
       },
       ...(lipSync ? { lipSync: lipSync.receipt } : {}),
+      ...(timeline.sequencePreset ? { sequencePreset: timeline.sequencePreset } : {}),
       poses: timeline.entries.map(({ index, poseId, pose, holdFrames, gapFrames }) => ({
         index,
         poseId,
@@ -492,6 +547,7 @@ async function validateRun({ root, runDirectory }) {
 }
 
 export {
+  MAX_OUTPUT_FRAMES,
   execute,
   exists,
   loadPoseRegistry,

@@ -10,7 +10,8 @@
   "previewExportParity": "Smoke, proof, and final rendering all call the same renderRigFrame implementation.",
   "audio": "Optional user audio is staged locally and muxed as AAC. Its measured duration owns the audio-backed sequence length.",
   "lipSync": "For audio-backed shaz-sequence-input-v1 runs, init generates Cherry 0.1.0 A-K/X cues with the bundled WASI module unless supplied cues or --lipsync=off are explicit. Cues map to five existing Shaz mouth drawings through the same renderRigFrame call. Body controls, deformations, props, and pose timing remain unchanged.",
-  "semanticPerformanceLipSync": "shaz-body-language-performance-v1 remains body-language-only in Format 0.2.0; its audio drives measured duration and gesture scheduling, not mouth drawings.",
+  "talkToCameraPreset": "sequencePreset talk-to-camera resolves the entire measured audio duration to one gap-free hold of the registered neutral-listening body. Cherry controls only Mouth; the preset adds no body keys, props, camera motion, or second renderer.",
+  "semanticPerformanceLipSync": "shaz-body-language-performance-v1 remains body-language-only in Format 0.2.1; its audio drives measured duration and gesture scheduling, not mouth drawings.",
   "camera": "Fixed; no zoom, pan, slide, or Ken Burns motion.",
   "characterFraming": "Shaz is a waist-up rig. In audio-backed compositions the hoodie must continue below the bottom canvas edge in every frame, so its rounded lower boundary never reveals the missing legs. The same fixed stage view must also preserve clear left and right margins across every used action."
 }

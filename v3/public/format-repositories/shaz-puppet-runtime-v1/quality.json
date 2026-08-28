@@ -17,7 +17,8 @@
     "AAC presence and audible volume for audio-backed runs",
     "fixed background and fixed camera for audio-backed runs",
     "waist-up hoodie continuation below the bottom frame edge and clear horizontal margins across every used action",
-    "lip-sync cue source, audio checksum, cue checksum, bundled engine artifact checksum when locally generated, engine version, five-mouth mapping, and final resting mouth when lip-sync is requested"
+    "lip-sync cue source, audio checksum, cue checksum, bundled engine artifact checksum when locally generated, engine version, five-mouth mapping, and final resting mouth when lip-sync is requested",
+    "talk-to-camera preset provenance, exact measured-audio frame count, exclusive neutral-listening body ownership, zero gaps, and contact-sheet samples at real mouth changes"
   ],
   "humanReview": {
     "required": true,

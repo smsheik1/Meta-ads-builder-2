@@ -10,6 +10,7 @@ This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents sh
 - Release proof `anatomy-v8-release` certifies four repaired actions at their current exact hashes: `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `phone-use-sequence`. Crossed Arms uses one registered arm-only destination drawing after native anticipation because the supplied native cuffs and pivots could not form a credible folded hold; the original head, face, torso, collar, strings, and pocket remain runtime-rendered from the rig.
 - `point-at-screen` and `look-at-phone` remain registered, but their current recipes still need renewed exact-hash visual review; their legacy reviews are not current certification.
 - Packaged MVP complete for audio-backed registered-action sequences: staged user audio uses the fixed Sisters Room background and locally generated, checksum-bound five-shape Cherry mouth motion without changing body choreography. Automatic script direction, selectable backgrounds, polished action transitions, and plain-English pose generation remain unsupported.
+- Format 0.2.1 adds the `talk-to-camera` default-dialogue preset: a blind agent supplies audio without sequence or frame math, and the runtime holds the existing audience-facing neutral body for the measured duration while Cherry drives only Mouth.
 
 ## Build order
 
@@ -31,7 +32,7 @@ Add reusable transition recipes that preserve silhouette, joint continuity, pain
 
 ### 3. Accept dialogue or user audio
 
-**MVP complete for user audio:** audio-backed Lego sequences use measured local media duration and keep dialogue timing separate from body-language decisions. Dialogue-text input and automatic transcription remain future work. The separate semantic performance mode also consumes measured audio for sparse body-language scheduling, but it is not lip-synced in Format 0.2.0.
+**MVP complete for user audio:** audio-backed Lego sequences use measured local media duration and keep dialogue timing separate from body-language decisions. The `talk-to-camera` preset removes manual timing for default dialogue by deriving its neutral hold directly from the audio. Dialogue-text input and automatic transcription remain future work. The separate semantic performance mode also consumes measured audio for sparse body-language scheduling, but it is not lip-synced in Format 0.2.1.
 
 ### 4. Perform lip-sync
 

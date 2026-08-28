@@ -5,13 +5,14 @@ description: Render, author, diagnose, and certify repeatable 2D Shaz puppet ani
 
 # Shaz Puppet Runtime
 
-Skill version: **1.6**.
+Skill version: **1.7**.
 
 Use this kit when the user wants a video assembled from the registered Shaz actions in `poses/index.json` or wants to author and certify one action through the recovered rig. The kit is fully local, makes no provider calls, and costs $0.
 
 ## Choose the mode
 
 - **Sequence operation:** assemble already registered actions. Follow the required runtime workflow below.
+- **Talk to Camera:** use `sequencePreset: "talk-to-camera"` for ordinary direct-address speech. It holds the existing `neutral-listening` body for the measured audio duration while Cherry changes only Mouth. Do not author a new pose or calculate frames.
 - **Action authoring:** recreate, create, diagnose, or refine exactly one action. Read `references/rig-animation-playbook.md` completely, then follow the author-and-learn loop. Do not work on several uncertified actions at once.
 
 ## Required workflow
@@ -19,14 +20,16 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 1. Read `README.md`, `input-contract.json`, `composition-contract.json`, `output-contract.json`, `quality.json`, and `content-boundary.json`.
    When planning new capabilities, evaluating completeness, or changing the Format, also read `ROADMAP.md`; it is the canonical backlog and build order.
 2. Run `npm install` once, then `npm run check`, `npm run inspect:registry`, and `npm run smoke`.
-3. Write an input JSON that uses only registered `poseId` values. Use explicit `holdFrames` and `gapFrames`; the last action must use `gapFrames: 0`.
+3. Choose one input style:
+   - For ordinary audience-facing dialogue, copy `fixtures/talk-to-camera/input.json`. Supply no `sequence`, `durationFrames`, or frame math; init derives one exact-length `neutral-listening` hold from the audio and requires lip-sync.
+   - For expressive choreography, write a `sequence` using only registered `poseId` values. Use explicit `holdFrames` and `gapFrames`; the last action must use `gapFrames: 0`.
 4. Start a new run with an absolute input path:
 
    `npm run init -- --run=my-run --input=/absolute/path/input.json`
 
    For an audio-backed `shaz-sequence-input-v1`, also supply `--audio=/absolute/path/audio`. The bundled Cherry 0.1.0 WASI engine generates and checksum-binds speech cues by default. Add `--lipsync-cues=/absolute/path/cherry.tsv` only when supplying a real Cherry TSV for that exact audio, or add `--lipsync=off` when the user explicitly wants audio without mouth animation. Never generate cyclic placeholder cues or reuse a cue file from another audio checksum.
 
-   The separate `shaz-body-language-performance-v1` semantic performance mode remains body-language-only in Format 0.2.0. Its audio controls duration and gesture scheduling, not mouth drawings.
+   The separate `shaz-body-language-performance-v1` semantic performance mode remains body-language-only in Format 0.2.1. Its audio controls duration and gesture scheduling, not mouth drawings.
 
 5. Run, in order:
 
@@ -67,6 +70,7 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Reject a candidate when dense transition frames or normal-speed playback show a detached, duplicated, missing, scale-popping, undersized, oversized, or independently drifting limb. Whole-character connectivity is insufficient. An asset ID alone is not proof: package only registered assets; verify native semantic shoulder/cuff/wrist joints and proportions directly; and for a registered pose drawing verify its exact asset bytes, transform, paint layer, complete native-part suppression, and preserved body/head pixels. Structural checks never replace complete normal-speed playback.
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
+- Default to Talk to Camera for unaccented speech. Treat Present, Point, Shrug, Ah-ha, Confident, and future gestures as brief semantic accents rather than continuous motion.
 
 ## Important boundaries
 

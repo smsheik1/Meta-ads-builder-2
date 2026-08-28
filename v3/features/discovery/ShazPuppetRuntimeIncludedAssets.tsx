@@ -122,6 +122,48 @@ export function ShazPuppetRuntimeIncludedAssets({
           ))}
         </div>
         <div
+          className="mt-8 overflow-hidden border-2 border-[#080817] bg-[#dff8ff] shadow-[5px_5px_0_#080817]"
+          data-testid="shaz-talk-to-camera-option"
+        >
+          <div className="grid min-[760px]:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+            <div className="p-5 sm:p-7">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
+                {data.includedAssets.defaultDialogue.subtitle} option
+              </p>
+              <h3 className="mt-2 text-[clamp(30px,5vw,48px)] font-black leading-none tracking-[-0.04em]">
+                {data.includedAssets.defaultDialogue.label}
+              </h3>
+              <p className="mt-4 max-w-[620px] text-base font-bold leading-7 text-[#445168]">
+                {data.includedAssets.defaultDialogue.description} Use it for
+                ordinary speech, then add Present, Point, Shrug, Ah-ha, or
+                Confident only when the line earns a gesture.
+              </p>
+              <div className="mt-5 inline-flex max-w-full flex-wrap items-center gap-2 border-2 border-[#080817] bg-white px-3 py-2 font-mono text-xs font-bold shadow-[2px_2px_0_#080817]">
+                <span className="uppercase tracking-[0.11em] text-[#667087]">
+                  Input
+                </span>
+                <code>{`sequencePreset: "${data.includedAssets.defaultDialogue.id}"`}</code>
+              </div>
+            </div>
+            <div className="border-t-2 border-[#080817] bg-[#c9ff55] p-5 min-[760px]:border-l-2 min-[760px]:border-t-0 sm:p-7">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
+                Reuses the approved body
+              </p>
+              <p className="mt-2 font-mono text-lg font-black">
+                {data.includedAssets.defaultDialogue.internalPoseId}
+              </p>
+              <ul className="mt-5 space-y-3 text-sm font-black leading-6 text-[#263446]">
+                {data.includedAssets.defaultDialogue.rules.map((rule) => (
+                  <li key={rule} className="flex gap-2">
+                    <span aria-hidden="true">✓</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div
           className="mt-8 border-2 border-[#080817] bg-[#fff0f7] p-4 shadow-[5px_5px_0_#080817] sm:p-5"
           data-testid="shaz-mouth-shape-kit"
         >

@@ -293,6 +293,9 @@ async function renderSequence({ root, runDirectory }) {
       outputSha256: await sha256(output),
       totalFrames: outputFrame,
       durationSeconds: outputFrame / 24,
+      ...(validated.timeline.sequencePreset
+        ? { sequencePreset: validated.timeline.sequencePreset }
+        : {}),
       segments,
       ...(isAudioSequence ? {
         audioSha256: validated.receipt.audio.sha256,

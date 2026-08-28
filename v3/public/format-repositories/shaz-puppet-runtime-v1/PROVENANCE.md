@@ -14,7 +14,7 @@ This kit packages the supplied character assets for the owner's authorized Wiggl
 
 ## Bundled Cherry cue engine
 
-Format 0.2.0 includes Cherry Lip Sync 0.1.0 as a checksum-locked `wasm32-wasip1` module. It is used only to generate A-K/X speech cues before the existing Shaz renderer runs; it is not a renderer and does not contain Shaz artwork.
+Beginning with Format 0.2.0, the package includes Cherry Lip Sync 0.1.0 as a checksum-locked `wasm32-wasip1` module. It is used only to generate A-K/X speech cues before the existing Shaz renderer runs; it is not a renderer and does not contain Shaz artwork.
 
 - Upstream repository: <https://github.com/amberwhitehead/cherry-lip-sync>
 - Immutable tag: `v0.1.0`

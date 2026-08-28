@@ -14,6 +14,10 @@
     "mappingId",
     "frameHistogram"
   ],
+  "optionalPresetEvidence": [
+    "sequencePreset in validation-receipt.json",
+    "matching sequencePreset in render-report.json, quality-report.json, and delivery.json"
+  ],
   "requiredEvidence": [
     "validation-receipt.json",
     "render-report.json",
