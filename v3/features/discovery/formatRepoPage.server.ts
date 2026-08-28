@@ -31,7 +31,7 @@ export type FormatRepoPagePresentation =
       kind: "shaz-puppet-runtime";
       trust: ShazPuppetRuntimeTrustData;
       copy: RepoPageCopy;
-      detailedProofId: "shaz-puppet-runtime-five-authored";
+      detailedProofId: "shaz-puppet-runtime-talking-scene";
     };
 
 export const richFormatRepoSlugs = [
@@ -136,11 +136,11 @@ export async function getFormatRepoPagePresentation(
           "Choose registered actions and timing, then optionally add local audio. Format 0.2.0 generates Cherry cues through bundled WASI, renders every body and mouth frame through the same Shaz renderer, inspects the result, and waits for your visual approval.",
         provided: "Actions + optional audio",
         ready: "2–8 minutes",
-        examplesTitle: "Five trusted artist-authored actions.",
+        examplesTitle: "Shaz actually talks.",
         examplesDescription:
-          "Present, Think, Ah-ha, Point, and Confident are the only poses in this preserved body-rig showcase. Generated experimental poses are intentionally excluded. It is not a Format 0.2.0 lip-sync certification.",
+          "Play the 12-second scene with sound: real audio drives five authored mouth drawings while registered body-language actions play through the recovered rig. The five trusted artist-authored poses remain preserved in the secondary gallery below.",
       },
-      detailedProofId: "shaz-puppet-runtime-five-authored",
+      detailedProofId: "shaz-puppet-runtime-talking-scene",
     };
   }
 

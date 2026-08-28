@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "inspectedAt": "2026-08-27T21:54:53.803Z",
+  "inputSha256": "5d6428d1247cf0ba6a0392296d2df57312300172fee5465e3ad64b1f2b52dd06",
+  "outputSha256": "59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf",
+  "artistRenderedFramesUsed": false,
+  "measured": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "fps": "24/1",
+    "frames": 288,
+    "durationSeconds": 12,
+    "audioCodec": "aac",
+    "meanVolumeDb": -15.6
+  },
+  "poseReports": [
+    {
+      "poseId": "neutral-listening",
+      "status": "pass",
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "framesInspected": 1,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "present",
+      "status": "pass",
+      "poseRecipeSha256": "7bddc3278543f2cc5e982860e74d301b31fa0f06ddedcb7566f69069e9c522e5",
+      "framesInspected": 19,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "confident",
+      "status": "pass",
+      "poseRecipeSha256": "8d64e77ca4ae2239ddb02bb66dc28d77584327940c45a188bc060c1e25baeedf",
+      "framesInspected": 13,
+      "maximumIdenticalFrames": 2,
+      "failures": []
+    },
+    {
+      "poseId": "point",
+      "status": "pass",
+      "poseRecipeSha256": "82dde0723d1d283dba4470f0a1874f8e3f57048197f6b82c76774e1effae4f02",
+      "framesInspected": 76,
+      "maximumIdenticalFrames": 26,
+      "failures": []
+    },
+    {
+      "poseId": "shrug",
+      "status": "pass",
+      "poseRecipeSha256": "5a7f76b59b1f857b7705f4816f8bb29f4c96cd4b22b653c59bb72bb2b7d0ef74",
+      "framesInspected": 31,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "aha",
+      "status": "pass",
+      "poseRecipeSha256": "6bb1e4b5905c87015f5a21c7950ccebe4882907c82a8aecf861668eb17ac23a1",
+      "framesInspected": 13,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "contactSheet": "contact-sheet.jpg",
+  "contactSheetSampleFrames": [
+    7,
+    32,
+    52,
+    76,
+    100,
+    144,
+    189,
+    215,
+    238,
+    258,
+    281
+  ],
+  "humanReview": "human-review.json",
+  "slowReview": "review-slow.mp4"
+}

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "status": "pending",
+  "reviewedOutputSha256": "59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf",
+  "reviewer": null,
+  "directVideoPerception": false,
+  "directAudioPerception": false,
+  "completePasses": 0,
+  "notes": "Watch and hear final.mp4 completely at normal speed, then inspect review-slow.mp4 when present. Set status to approved or rejected without changing reviewedOutputSha256."
+}

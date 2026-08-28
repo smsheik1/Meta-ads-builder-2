@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 2,
+  "status": "rendered",
+  "mode": "audio-backed-sequence",
+  "renderedAt": "2026-08-27T21:53:21.577Z",
+  "inputSha256": "5d6428d1247cf0ba6a0392296d2df57312300172fee5465e3ad64b1f2b52dd06",
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "renderer": "runtime/rig-v2-renderer.mjs#renderRigFrame",
+  "finalVideo": "final.mp4",
+  "outputSha256": "59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf",
+  "totalFrames": 288,
+  "durationSeconds": 12,
+  "segments": [
+    {
+      "index": 0,
+      "poseId": "neutral-listening",
+      "recipeFrames": 1,
+      "holdFrames": 14,
+      "gapFrames": 0,
+      "outputStartFrame": 1,
+      "outputEndFrame": 15,
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "1"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "1"
+      }
+    },
+    {
+      "index": 1,
+      "poseId": "present",
+      "recipeFrames": 19,
+      "holdFrames": 17,
+      "gapFrames": 0,
+      "outputStartFrame": 16,
+      "outputEndFrame": 51,
+      "poseRecipeSha256": "7bddc3278543f2cc5e982860e74d301b31fa0f06ddedcb7566f69069e9c522e5",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "1"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      }
+    },
+    {
+      "index": 2,
+      "poseId": "neutral-listening",
+      "recipeFrames": 1,
+      "holdFrames": 3,
+      "gapFrames": 0,
+      "outputStartFrame": 52,
+      "outputEndFrame": 55,
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      }
+    },
+    {
+      "index": 3,
+      "poseId": "confident",
+      "recipeFrames": 13,
+      "holdFrames": 30,
+      "gapFrames": 0,
+      "outputStartFrame": 56,
+      "outputEndFrame": 98,
+      "poseRecipeSha256": "8d64e77ca4ae2239ddb02bb66dc28d77584327940c45a188bc060c1e25baeedf",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      }
+    },
+    {
+      "index": 4,
+      "poseId": "neutral-listening",
+      "recipeFrames": 1,
+      "holdFrames": 4,
+      "gapFrames": 0,
+      "outputStartFrame": 99,
+      "outputEndFrame": 103,
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "1"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      }
+    },
+    {
+      "index": 5,
+      "poseId": "point",
+      "recipeFrames": 76,
+      "holdFrames": 7,
+      "gapFrames": 0,
+      "outputStartFrame": 104,
+      "outputEndFrame": 186,
+      "poseRecipeSha256": "82dde0723d1d283dba4470f0a1874f8e3f57048197f6b82c76774e1effae4f02",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      }
+    },
+    {
+      "index": 6,
+      "poseId": "neutral-listening",
+      "recipeFrames": 1,
+      "holdFrames": 7,
+      "gapFrames": 0,
+      "outputStartFrame": 187,
+      "outputEndFrame": 194,
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      }
+    },
+    {
+      "index": 7,
+      "poseId": "shrug",
+      "recipeFrames": 31,
+      "holdFrames": 12,
+      "gapFrames": 0,
+      "outputStartFrame": 195,
+      "outputEndFrame": 237,
+      "poseRecipeSha256": "5a7f76b59b1f857b7705f4816f8bb29f4c96cd4b22b653c59bb72bb2b7d0ef74",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 18,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "5"
+      }
+    },
+    {
+      "index": 8,
+      "poseId": "neutral-listening",
+      "recipeFrames": 1,
+      "holdFrames": 3,
+      "gapFrames": 0,
+      "outputStartFrame": 238,
+      "outputEndFrame": 241,
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      }
+    },
+    {
+      "index": 9,
+      "poseId": "aha",
+      "recipeFrames": 13,
+      "holdFrames": 22,
+      "gapFrames": 0,
+      "outputStartFrame": 242,
+      "outputEndFrame": 276,
+      "poseRecipeSha256": "6bb1e4b5905c87015f5a21c7950ccebe4882907c82a8aecf861668eb17ac23a1",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "4"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "5"
+      }
+    },
+    {
+      "index": 10,
+      "poseId": "neutral-listening",
+      "recipeFrames": 1,
+      "holdFrames": 11,
+      "gapFrames": 0,
+      "outputStartFrame": 277,
+      "outputEndFrame": 288,
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "firstFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "2"
+      },
+      "lastFrameReceipt": {
+        "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+        "artistRenderedFramesUsed": false,
+        "layerCount": 20,
+        "propCount": 0,
+        "mouthDrawingOverride": "1"
+      }
+    }
+  ],
+  "audioSha256": "37648e2e0b4c37d22ec529b4301c8abd9435f92ce641c804e521e5b3bdd23f1b",
+  "background": {
+    "id": "sisters-room",
+    "path": "assets/backgrounds/sisters-room.png",
+    "sha256": "740f61cbd58581b3c944fc77038fd51756305083b22ae3e28df0f1f5190ec485",
+    "cameraMotion": false
+  },
+  "cameraMotion": false,
+  "stageView": {
+    "scale": 1.33,
+    "offset": [
+      0.12,
+      0.142
+    ]
+  },
+  "mouthMode": "cherry-tsv-shaz-five-mouth-v1",
+  "lipSync": {
+    "engine": "cherry-lip-sync",
+    "engineVersion": "0.1.0",
+    "cueFile": "cherry-lipsync.tsv",
+    "cueSha256": "6a6d5604461dfe9aadc40ab3bf5f7b5171c64e674c95384c58275294ee32820d",
+    "cueCount": 100,
+    "cueSource": "bundled-wasi-engine",
+    "execution": "node-wasi-preview1",
+    "sourceAudioSha256": "37648e2e0b4c37d22ec529b4301c8abd9435f92ce641c804e521e5b3bdd23f1b",
+    "fps": 24,
+    "filterSingleFrames": true,
+    "engineManifestSha256": "38cfe1aab3009643a2758e426344919d887f3e0f4d402fa51db8266c0366e1cd",
+    "engineModuleSha256": "1bf5730acc7a81b1f0b6c818a9068001b9e9a797a7eb990ae091eb1b01603382",
+    "mappingId": "shaz-five-mouth-v1",
+    "mapping": {
+      "A": "1",
+      "B": "4",
+      "C": "5",
+      "D": "2",
+      "E": "3",
+      "F": "3",
+      "G": "4",
+      "H": "5",
+      "I": "4",
+      "J": "4",
+      "K": "3",
+      "X": "1"
+    },
+    "usedMouthDrawings": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "frameHistogram": {
+      "1": 48,
+      "2": 61,
+      "3": 23,
+      "4": 108,
+      "5": 48
+    },
+    "forcedFinalRestFrame": true
+  },
+  "providerCalls": 0,
+  "cost": "$0"
+}

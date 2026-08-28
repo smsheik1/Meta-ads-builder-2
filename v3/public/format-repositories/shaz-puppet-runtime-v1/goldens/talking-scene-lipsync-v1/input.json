@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Shaz Lego-block body-language sample with bundled Cherry",
+  "backgroundId": "sisters-room",
+  "sequence": [
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 14,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "present",
+      "holdFrames": 17,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 3,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "confident",
+      "holdFrames": 30,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 4,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "point",
+      "holdFrames": 7,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 7,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "shrug",
+      "holdFrames": 12,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 3,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "aha",
+      "holdFrames": 22,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 11,
+      "gapFrames": 0
+    }
+  ],
+  "audioFile": "user-audio.wav",
+  "lipSync": {
+    "engine": "cherry-lip-sync",
+    "engineVersion": "0.1.0",
+    "execution": "node-wasi-preview1",
+    "cueSource": "bundled-wasi-engine",
+    "cueFile": "cherry-lipsync.tsv",
+    "cueSha256": "6a6d5604461dfe9aadc40ab3bf5f7b5171c64e674c95384c58275294ee32820d",
+    "sourceAudioSha256": "37648e2e0b4c37d22ec529b4301c8abd9435f92ce641c804e521e5b3bdd23f1b",
+    "fps": 24,
+    "filterSingleFrames": true,
+    "engineManifestSha256": "38cfe1aab3009643a2758e426344919d887f3e0f4d402fa51db8266c0366e1cd",
+    "engineModuleSha256": "1bf5730acc7a81b1f0b6c818a9068001b9e9a797a7eb990ae091eb1b01603382"
+  }
+}

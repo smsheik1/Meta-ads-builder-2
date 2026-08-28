@@ -168,8 +168,8 @@ export function ShazPuppetRuntimeIncludedAssets({
           </p>
         </div>
         <p className="mt-8 text-xs font-black uppercase tracking-[0.15em] text-[#667087]">
-          Five trusted artist-authored actions · generated experimental poses
-          excluded
+          Secondary trusted pose gallery · five artist-authored actions ·
+          generated experimental poses excluded
         </p>
         <div className="mt-8 overflow-hidden border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]">
           <Image
