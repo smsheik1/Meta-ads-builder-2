@@ -70,7 +70,7 @@ test("packaged skill protects the one-action learning loop", async () => {
     fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
   ]);
   const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
-  assert.match(skill, /Skill version: \*\*1\.6\*\*/);
+  assert.match(skill, /Skill version: \*\*1\.7\*\*/);
   assert.match(skill, /Do not work on several uncertified actions at once/);
   assert.ok(skill.includes(learningQuestion));
   assert.match(skill, /references\/rig-animation-playbook\.md/);
@@ -88,6 +88,30 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(playbook, /cuff.*ownership|sleeve.*ownership/i);
   assert.match(skill, /one coherent, part-specific registered pose drawing/);
   assert.match(skill, /never overlap visible native counterparts/);
+  assert.match(skill, /sequencePreset: "talk-to-camera"/);
+  assert.match(skill, /Do not author a new pose or calculate frames/);
+  assert.match(skill, /Default to Talk to Camera for unaccented speech/);
+  assert.match(skill, /neutral-listening/);
+});
+
+test("Talk to Camera remains a preset alias over the one registered neutral body", async () => {
+  const [fixture, poseIndex, readme, inputContract] = await Promise.all([
+    fs.readFile(path.join(root, "fixtures", "talk-to-camera", "input.json"), "utf8").then(JSON.parse),
+    fs.readFile(path.join(root, "poses", "index.json"), "utf8").then(JSON.parse),
+    fs.readFile(path.join(root, "README.md"), "utf8"),
+    fs.readFile(path.join(root, "input-contract.json"), "utf8").then(JSON.parse),
+  ]);
+
+  assert.equal(fixture.sequencePreset, "talk-to-camera");
+  assert.equal(fixture.sequence, undefined);
+  assert.equal(fixture.durationFrames, undefined);
+  assert.equal(poseIndex.poses.length, 14);
+  assert.ok(poseIndex.poses.some(({ id }) => id === "neutral-listening"));
+  assert.ok(!poseIndex.poses.some(({ id }) => id === "talk-to-camera"));
+  assert.match(readme, /Talk to Camera — default dialogue/);
+  assert.match(readme, /composition preset, not a new pose recipe|adds no body keys/);
+  assert.equal(inputContract.properties.sequencePreset.const, "talk-to-camera");
+  assert.equal(inputContract.properties.durationFrames.userSupplied, false);
 });
 
 test("build kit excludes runtime outputs and packages only registered prop assets", async () => {

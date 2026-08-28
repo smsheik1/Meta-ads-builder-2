@@ -10,6 +10,7 @@ import { generateCherryCues, verifyCherryEngine } from "./runtime/cherry.mjs";
 import { inspectRun } from "./runtime/inspect-run.mjs";
 import { renderSequence } from "./runtime/render-sequence.mjs";
 import {
+  MAX_OUTPUT_FRAMES,
   execute,
   exists,
   measuredAudioDuration,
@@ -25,6 +26,7 @@ import {
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const ATTEMPT_LIMIT = 3;
+const TALK_TO_CAMERA_PRESET = "talk-to-camera";
 
 function usage() {
   return `Usage:
@@ -139,13 +141,27 @@ async function init(args) {
   await fs.access(args.input);
   const input = await readJson(args.input);
   const isPerformance = input.schemaVersion === "shaz-body-language-performance-v1";
+  const isTalkToCamera = input.schemaVersion === "shaz-sequence-input-v1"
+    && input.sequencePreset !== undefined;
+  if (isTalkToCamera && input.sequencePreset !== TALK_TO_CAMERA_PRESET) {
+    throw new Error(`unsupported sequencePreset ${input.sequencePreset}`);
+  }
+  if (isTalkToCamera && input.sequence !== undefined) {
+    throw new Error("talk-to-camera source input must omit sequence; init derives it from the audio");
+  }
+  if (isTalkToCamera && input.durationFrames !== undefined) {
+    throw new Error("talk-to-camera source input must omit durationFrames; init measures the audio");
+  }
   const isAudioSequence = input.schemaVersion === "shaz-sequence-input-v1"
-    && typeof input.backgroundId === "string";
+    && (typeof input.backgroundId === "string" || isTalkToCamera);
   const needsAudio = isPerformance || isAudioSequence;
   const lipSyncMode = args.lipsync ?? "auto";
   if (!["auto", "off"].includes(lipSyncMode)) throw new Error("--lipsync must be auto or off");
   if (args["lipsync-cues"] && lipSyncMode === "off") {
     throw new Error("--lipsync-cues cannot be combined with --lipsync=off");
+  }
+  if (isTalkToCamera && lipSyncMode === "off") {
+    throw new Error("talk-to-camera requires lip-sync; omit --lipsync=off");
   }
   if (needsAudio && (!args.audio || !path.isAbsolute(args.audio))) {
     throw new Error("audio-backed runs require --audio=/absolute/path/audio");
@@ -173,6 +189,19 @@ async function init(args) {
       await fs.copyFile(args.audio, stagedAudioPath);
       input.audioFile = audioFile;
       delete input.lipSync;
+      let sequenceAudioFrames = null;
+      if (isAudioSequence) {
+        const probe = probeMedia(stagedAudioPath);
+        const durationSeconds = measuredAudioDuration(probe);
+        if (!(durationSeconds > 0)) throw new Error("staged audio has no measurable duration");
+        sequenceAudioFrames = Math.max(1, Math.round(durationSeconds * 24));
+        if (sequenceAudioFrames > MAX_OUTPUT_FRAMES) {
+          throw new Error(
+            `audio requires ${sequenceAudioFrames} frames; maximum is ${MAX_OUTPUT_FRAMES}`,
+          );
+        }
+        if (isTalkToCamera) input.durationFrames = sequenceAudioFrames;
+      }
       if (isAudioSequence && lipSyncMode !== "off") {
         const cueFile = "cherry-lipsync.tsv";
         const cuePath = path.join(runDirectory, cueFile);
@@ -191,14 +220,11 @@ async function init(args) {
             filterSingleFrames: null,
           };
         } else {
-          const probe = probeMedia(stagedAudioPath);
-          const durationSeconds = measuredAudioDuration(probe);
-          if (!(durationSeconds > 0)) throw new Error("staged audio has no measurable duration");
           lipSyncState = await generateCherryCues({
             root,
             audioPath: stagedAudioPath,
             outputPath: cuePath,
-            totalFrames: Math.max(1, Math.round(durationSeconds * 24)),
+            totalFrames: sequenceAudioFrames,
           });
         }
         input.lipSync = {
@@ -238,6 +264,7 @@ async function init(args) {
         sha256: await sha256(path.join(runDirectory, input.audioFile)),
       },
       ...(lipSyncState ? { lipSync: lipSyncState } : {}),
+      ...(isTalkToCamera ? { sequencePreset: TALK_TO_CAMERA_PRESET } : {}),
     } : {}),
   });
   console.log(JSON.stringify({ status: "initialized", runId, runDirectory }, null, 2));
@@ -331,6 +358,9 @@ async function finalize(args) {
       audio: validated.receipt.audio,
       background: validated.receipt.background,
       ...(validated.receipt.lipSync ? { lipSync: validated.receipt.lipSync } : {}),
+      ...(validated.receipt.sequencePreset
+        ? { sequencePreset: validated.receipt.sequencePreset }
+        : {}),
       ...(validated.mode === "performance" ? {
         motionPacketRegistrySha256: validated.receipt.motionPacketRegistrySha256,
         events: validated.receipt.events,

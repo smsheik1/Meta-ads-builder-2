@@ -37,6 +37,9 @@ async function inspectRun({ root, runDirectory }) {
   if (renderReport.outputSha256 !== outputSha256) failures.push("render report output checksum is stale");
   if (renderReport.totalFrames !== expectedFrames) failures.push("render report frame count does not match validation");
   if (renderReport.artistRenderedFramesUsed !== false) failures.push("render report lost artist-frame exclusion provenance");
+  if ((renderReport.sequencePreset ?? null) !== (validated.timeline.sequencePreset ?? null)) {
+    failures.push("render report sequence preset provenance is stale");
+  }
 
   const probe = probeVideo(finalVideo);
   if (probe.codec_name !== "h264") failures.push(`video codec is ${probe.codec_name}, expected h264`);
@@ -123,6 +126,19 @@ async function inspectRun({ root, runDirectory }) {
     sampleFrames = unique.length <= 12
       ? unique
       : Array.from({ length: 12 }, (_, index) => unique[Math.round(index * (unique.length - 1) / 11)]);
+  } else if (validated.timeline.sequencePreset === "talk-to-camera" && validated.lipSync) {
+    const mouthDrawings = validated.lipSync.frameDrawings;
+    const candidates = [
+      0,
+      ...mouthDrawings.flatMap((drawing, index) => (
+        index > 0 && drawing !== mouthDrawings[index - 1] ? [index] : []
+      )),
+      validated.timeline.totalFrames - 1,
+    ];
+    const unique = [...new Set(candidates)].sort((left, right) => left - right);
+    sampleFrames = unique.length <= 12
+      ? unique
+      : Array.from({ length: 12 }, (_, index) => unique[Math.round(index * (unique.length - 1) / 11)]);
   } else {
     const sampledSegments = renderReport.segments.length <= 12
       ? renderReport.segments
@@ -189,6 +205,9 @@ async function inspectRun({ root, runDirectory }) {
     },
     poseReports,
     failures,
+    ...(validated.timeline.sequencePreset
+      ? { sequencePreset: validated.timeline.sequencePreset }
+      : {}),
     contactSheet: "contact-sheet.jpg",
     contactSheetSampleFrames: sampleFrames,
     humanReview: "human-review.json",

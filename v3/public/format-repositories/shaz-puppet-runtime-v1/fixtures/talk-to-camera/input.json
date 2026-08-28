@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Talk to Camera",
+  "backgroundId": "sisters-room",
+  "sequencePreset": "talk-to-camera"
+}

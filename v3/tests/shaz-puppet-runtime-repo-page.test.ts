@@ -207,7 +207,7 @@ assert.equal(goldens.talkingSceneShowcase.audioSha256, expectedAudioSha);
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
-assert.equal(profile.version, "0.2.0");
+assert.equal(profile.version, "0.2.1");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-talking-scene");
 assert.equal(profile.proofEntries[0]?.format.version, "0.2.0");
@@ -219,7 +219,8 @@ assert.match(
   profile.proofEntries[0]?.curatorNote ?? "",
   /five recovered mouth drawings/,
 );
-assert.match(profile.promise, /Format 0\.2\.0/);
+assert.match(profile.promise, /Format 0\.2\.1/);
+assert.match(profile.promise, /Talk to Camera default/);
 assert.match(profile.promise, /bundled Cherry WASI cue engine/);
 assert.match(profile.promise, /audio into a Shaz talking scene/);
 assert.match(profile.promise, /secondary pose gallery/);
@@ -244,6 +245,14 @@ assert.equal(
   "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
 );
 assert.ok(profile.handoff);
+assert.match(
+  profile.handoff.requiredInputs.join(" "),
+  /Talk to Camera for ordinary speech/,
+);
+assert.match(
+  profile.handoff.instructions.join(" "),
+  /no sequence, durationFrames, or frame math/,
+);
 assert.equal(
   profile.handoff.totalEstimate,
   "$0 provider cost, usually 2-8 min",
@@ -266,20 +275,44 @@ assert.equal(
 const presentation = await getFormatRepoPagePresentation("shaz-puppet-runtime");
 assert.equal(presentation?.kind, "shaz-puppet-runtime");
 assert.equal(presentation?.detailedProofId, "shaz-puppet-runtime-talking-scene");
-assert.match(presentation?.copy.runDescription ?? "", /Format 0\.2\.0/);
+assert.match(presentation?.copy.runDescription ?? "", /Format 0\.2\.1/);
+assert.match(presentation?.copy.runDescription ?? "", /Talk to Camera/);
 assert.match(presentation?.copy.runDescription ?? "", /bundled WASI/);
+assert.equal(presentation?.copy.provided, "Audio + dialogue mode");
 assert.match(presentation?.copy.examplesTitle ?? "", /Shaz actually talks/);
 assert.match(
   presentation?.copy.examplesDescription ?? "",
-  /Play the 12-second scene with sound/,
+  /historical 0\.2\.0 proof with sound/,
+);
+assert.match(
+  presentation?.copy.examplesDescription ?? "",
+  /downloadable 0\.2\.1 Repo/,
 );
 assert.match(
   presentation?.copy.examplesDescription ?? "",
   /secondary gallery below/,
 );
 const trust = await getShazPuppetRuntimeTrustData();
-assert.equal(trust.version, "0.2.0");
+assert.equal(trust.version, "0.2.1");
 assert.equal(trust.includedAssets.poses.length, 14);
+assert.equal(
+  trust.includedAssets.poses.some(({ id }) => id === "talk-to-camera"),
+  false,
+  "Talk to Camera is a composition preset, not a fifteenth pose.",
+);
+assert.deepEqual(trust.includedAssets.defaultDialogue, {
+  id: "talk-to-camera",
+  label: "Talk to Camera",
+  subtitle: "Default dialogue",
+  internalPoseId: "neutral-listening",
+  description:
+    "Shaz faces the audience with a calm, grounded body while Cherry changes only the Mouth drawing for the supplied audio.",
+  rules: [
+    "Audio sets the exact duration",
+    "No sequence or frame math",
+    "No extra pose or second renderer",
+  ],
+});
 assert.deepEqual(
   trust.includedAssets.showcasePoses.map(({ id }) => id),
   trustedShowcasePoseIds,
@@ -298,9 +331,16 @@ assert.deepEqual(trust.includedAssets.bundledEngines, [
       "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs",
   },
 ]);
-assert.equal(trust.quality.summary[0]?.value, "0.2.0");
+assert.equal(trust.quality.summary[0]?.value, "0.2.1");
 assert.equal(trust.quality.summary[0]?.label, "downloadable Format");
 assert.ok(trust.commands.includes("npm run inspect:registry"));
+assert.ok(
+  trust.commands.some((command) => (
+    command.includes("npm run init")
+    && command.includes("--audio=/absolute/path/dialogue.wav")
+  )),
+  "the copyable Talk to Camera init command must include its required audio input",
+);
 assert.ok(
   trust.commands.includes(
     "npm run lipsync -- --audio=/absolute/path/audio.wav --output=/absolute/path/cherry.tsv",
@@ -311,9 +351,14 @@ assert.equal(trust.quality.summary[2]?.label, "trusted poses below");
 assert.equal(trust.proof.durationTimeLabel, "00:12");
 assert.match(trust.proofCopy.eyebrow, /Audio-backed talking proof/);
 assert.match(trust.proofCopy.title, /Five lip-sync mouths/);
-assert.match(trust.quality.note, /blind run generated 100 Cherry cues/);
+assert.match(trust.quality.note, /blind proof generated 100 Cherry cues/);
 assert.match(trust.quality.note, /5 authored mouth drawings/);
-assert.match(trust.quality.note, /very good for a first draft/);
+assert.match(trust.quality.note, /download is Format 0\.2\.1/);
+assert.match(trust.quality.note, /historical Format 0\.2\.0/);
+assert.match(
+  trust.quality.note,
+  /without altering the proof or registering a duplicate pose/,
+);
 assert.equal(
   trust.includedAssets.showcasePosterSrc,
   "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
@@ -321,6 +366,14 @@ assert.equal(
 assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
 assert.match(includedAssetsSource, /Local lip-sync included/);
 assert.match(includedAssetsSource, /data\.includedAssets\.bundledEngines/);
+assert.match(includedAssetsSource, /shaz-talk-to-camera-option/);
+assert.match(includedAssetsSource, /defaultDialogue\.subtitle/);
+assert.match(includedAssetsSource, /ordinary speech/);
+assert.match(includedAssetsSource, /sequencePreset/);
+assert.match(
+  includedAssetsSource,
+  /data\.includedAssets\.defaultDialogue\.internalPoseId/,
+);
 assert.match(includedAssetsSource, /generated experimental poses\s+excluded/);
 assert.match(includedAssetsSource, /data\.includedAssets\.showcasePoses\.map/);
 assert.match(includedAssetsSource, /shaz-mouth-shape-kit/);
@@ -351,7 +404,7 @@ assert.match(connectionsSource, /Bundled local lip-sync/);
 assert.match(connectionsSource, /same Shaz/);
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Download Format")?.value,
-  "0.2.0",
+  "0.2.1",
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Proof Format")?.value,
@@ -414,7 +467,7 @@ const packagedRequirements = JSON.parse(
     networkRequired: boolean;
   }>;
 };
-assert.equal(packagedFormat.version, "0.2.0");
+assert.equal(packagedFormat.version, "0.2.1");
 assert.match(packagedFormat.summary, /bundled Cherry WASI cue engine/);
 assert.deepEqual(packagedRequirements.bundledEngines, [
   {

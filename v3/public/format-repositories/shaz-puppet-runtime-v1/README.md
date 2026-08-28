@@ -57,6 +57,27 @@ npm run finalize -- --run=my-sequence
 
 The finalized video and evidence remain in `agent-runs/my-sequence/`. After `npm install`, no network, API key, provider call, or paid service is required.
 
+### Talk to Camera — default dialogue
+
+For ordinary audience-facing speech, use the `talk-to-camera` sequence preset instead of inventing a new pose or calculating hold frames:
+
+```json
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Direct-to-audience dialogue",
+  "backgroundId": "sisters-room",
+  "sequencePreset": "talk-to-camera"
+}
+```
+
+```sh
+npm run init -- --run=my-talking-head \
+  --input=/absolute/path/input.json \
+  --audio=/absolute/path/dialogue.wav
+```
+
+Initialization measures the audio, holds the checksum-bound `neutral-listening` body for that exact duration, and generates Cherry mouth cues automatically. The preset adds no body keys, props, camera motion, gaps, or second renderer. It rejects handwritten `sequence` timing and `--lipsync=off`; use it as the calm default between expressive gesture sequences. A ready-to-copy input lives at `fixtures/talk-to-camera/input.json`.
+
 ### Audio-backed Lego sequence with local lip-sync
 
 Give a `shaz-sequence-input-v1` input a registered `backgroundId`, then stage user audio during initialization:
@@ -83,13 +104,13 @@ To generate only a Cherry TSV without creating a run:
 npm run lipsync -- --audio=/absolute/path/user-audio.wav --output=/absolute/path/cherry.tsv
 ```
 
-The separate `shaz-body-language-performance-v1` semantic performance mode still uses audio only for measured duration and gesture scheduling. It does **not** auto-generate or apply lip-sync cues in Format 0.2.0.
+The separate `shaz-body-language-performance-v1` semantic performance mode still uses audio only for measured duration and gesture scheduling. It does **not** auto-generate or apply lip-sync cues in Format 0.2.1.
 
 ## Registered actions
 
 | ID | Origin | Meaning |
 | --- | --- | --- |
-| `neutral-listening` | authored neutral anchor | restrained listening hold for dialogue pacing |
+| `neutral-listening` | authored neutral anchor | audience-facing default speech/listening body used internally by Talk to Camera |
 | `present` | authored calibration | friendly presenting gesture |
 | `shrug` | held-out authored calibration | uncertain shrug |
 | `think` | authored calibration | thinking |

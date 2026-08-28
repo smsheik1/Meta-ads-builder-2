@@ -53,6 +53,14 @@ type GoldenManifest = {
 
 export type ShazPuppetRuntimeTrustData = FormatRepoTrustData & {
   includedAssets: {
+    defaultDialogue: {
+      id: string;
+      label: string;
+      subtitle: string;
+      internalPoseId: string;
+      description: string;
+      rules: string[];
+    };
     poses: PoseRegistry["poses"];
     showcasePoses: PoseRegistry["poses"];
     props: AssetsManifest["props"];
@@ -108,7 +116,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     .filter((command) => packageManifest.scripts[command])
     .map((command) => {
       if (command === "init") {
-        return "npm run init -- --run=episode-01 --input=/absolute/path/input.json";
+        return "npm run init -- --run=episode-01 --input=/absolute/path/input.json --audio=/absolute/path/dialogue.wav";
       }
       if (command === "lipsync") {
         return "npm run lipsync -- --audio=/absolute/path/audio.wav --output=/absolute/path/cherry.tsv";
@@ -150,17 +158,17 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     version: format.version,
     assembly: {
       title: "The animation line",
-      path: "Sequence + local cues → Validate → Rig render → Inspect → Approve",
+      path: "Talk to Camera or sequence + local cues → Validate → Rig render → Inspect → Approve",
       ariaLabel:
-        "Five steps from action sequence and optional audio to approved Shaz animation",
+        "Five steps from default dialogue or an action sequence to approved Shaz animation",
       commandsLabel: "What the coding agent runs",
       commandsAriaLabel: "Exact Shaz Puppet Runtime commands",
       steps: [
         {
-          title: "Sequence + local cues",
+          title: "Dialogue mode + local cues",
           cost: "Free",
           description:
-            "Chooses registered actions and timing, then runs bundled Cherry 0.1.0 through Node WASI when audio is supplied.",
+            "Uses Talk to Camera for ordinary speech or registered actions for emphasis, then runs bundled Cherry 0.1.0 through Node WASI.",
         },
         {
           title: "Validate",
@@ -246,7 +254,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       },
     ],
     quality: {
-      eyebrow: "03 · Format 0.2.0 quality contract",
+      eyebrow: "03 · Format 0.2.1 quality contract",
       title: "Body motion and lip-sync stay inside one renderer.",
       summary: [
         { value: format.version, label: "downloadable Format" },
@@ -255,7 +263,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         { value: "$0", label: "provider cost" },
       ],
       noteTitle: "A real first-draft talking proof.",
-      note: `The download and exact playable proof are both Format ${currentProof.formatVersion}. A blind run generated ${currentProof.cueCount} Cherry cues locally, used ${currentProof.usedMouthDrawings?.length} authored mouth drawings, and passed automatic audiovisual and rig inspection. The user selected it as the main example after calling it very good for a first draft; final checksum-bound creative certification remains pending.`,
+      note: `The download is Format ${format.version}; the exact playable talking proof remains historical Format ${currentProof.formatVersion}. That blind proof generated ${currentProof.cueCount} Cherry cues locally, used ${currentProof.usedMouthDrawings?.length} authored mouth drawings, and passed automatic audiovisual and rig inspection. Format ${format.version} adds the contract-tested Talk to Camera default without altering the proof or registering a duplicate pose. Final checksum-bound creative certification remains pending.`,
       criteriaTitle: "Automatic gates",
       criteriaSubtitle: `${quality.automaticGates.length} checks plus ${quality.humanReview.questions.length} visual questions`,
       criteria: quality.automaticGates.map((label, index) => ({
@@ -290,6 +298,19 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     },
     files,
     includedAssets: {
+      defaultDialogue: {
+        id: "talk-to-camera",
+        label: "Talk to Camera",
+        subtitle: "Default dialogue",
+        internalPoseId: "neutral-listening",
+        description:
+          "Shaz faces the audience with a calm, grounded body while Cherry changes only the Mouth drawing for the supplied audio.",
+        rules: [
+          "Audio sets the exact duration",
+          "No sequence or frame math",
+          "No extra pose or second renderer",
+        ],
+      },
       poses: poseRegistry.poses,
       showcasePoses,
       props: assets.props,

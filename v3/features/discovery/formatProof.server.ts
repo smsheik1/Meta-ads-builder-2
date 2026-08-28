@@ -424,7 +424,7 @@ const formatConfigs: FormatProfileConfig[] = [
   },
   {
     slug: "shaz-puppet-runtime",
-    promise: "Download Format 0.2.0 to turn local audio into a Shaz talking scene with sequenced body language and five-mouth lip-sync from the bundled Cherry WASI cue engine. Five trusted artist-authored actions remain visible in the secondary pose gallery.",
+    promise: "Download Format 0.2.1 to turn local audio into a Shaz talking scene with the Talk to Camera default or sequenced body language, plus five-mouth lip-sync from the bundled Cherry WASI cue engine. Five trusted artist-authored actions remain visible in the secondary pose gallery.",
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
@@ -432,12 +432,13 @@ const formatConfigs: FormatProfileConfig[] = [
     whatStays: [
       "The on-model Shaz puppet and recovered source hierarchy",
       "One recovered rig renderer for body frames, lip-sync mouth shapes, smoke, proof, and final output",
-      "Bundled Cherry 0.1.0 WASI cue generation for audio-backed action sequences",
+      "Bundled Cherry 0.1.0 WASI cue generation for Talk to Camera and audio-backed action sequences",
       "Checksum-locked actions and exact explicit timing",
       "Per-frame clipping, continuity, layer, prop, face, and provenance gates",
       "Human approval bound to the exact final video",
     ],
     whatChanges: [
+      "Talk to Camera for ordinary speech or registered actions for expressive beats",
       "The selected actions and their order",
       "The final-pose hold durations",
       "The white separator durations",
@@ -446,9 +447,9 @@ const formatConfigs: FormatProfileConfig[] = [
     ],
     handoff: {
       requiredInputs: [
-        "A short sequence of registered Shaz action IDs",
-        "Optional explicit hold and separator timing",
-        "Optional local audio plus a packaged background for automatic Cherry lip-sync",
+        "One local audio file for the dialogue",
+        "Talk to Camera for ordinary speech, or a short sequence of registered Shaz action IDs for expressive beats",
+        "Explicit hold and separator timing only when using a custom action sequence",
       ],
       deliverables: [
         "One validated checksum-bound sequence",
@@ -458,12 +459,13 @@ const formatConfigs: FormatProfileConfig[] = [
         "One checksum-bound visual review and delivery receipt",
       ],
       instructions: [
-        "Download the runnable Repo, confirm Format 0.2.0, then run npm install, npm test, npm run check, npm run inspect:registry, and npm run smoke",
-        "Choose only action IDs registered in poses/index.json and use explicit holdFrames and gapFrames",
+        "Download the runnable Repo, confirm Format 0.2.1, then run npm install, npm test, npm run check, npm run inspect:registry, and npm run smoke",
+        "For ordinary direct-to-audience speech, choose sequencePreset talk-to-camera; supply the audio but no sequence, durationFrames, or frame math",
+        "For expressive choreography, choose only action IDs registered in poses/index.json and use explicit holdFrames and gapFrames",
         "For an audio-backed action sequence, pass --audio during init; the bundled Cherry 0.1.0 WASI engine generates local cues by default",
-        "Use supplied exact-audio cues only when explicit, or --lipsync=off when audio without mouth animation is intentional",
+        "Use supplied exact-audio cues only when explicit; --lipsync=off is available only for custom sequences, never Talk to Camera",
         "Run init, validate, render, and inspect in order through the packaged runner; Cherry supplies cues and the recovered rig renderer remains the only renderer",
-        "Keep shaz-body-language-performance-v1 body-language-only; Format 0.2.0 does not auto-apply lip-sync on that separate semantic path",
+        "Keep shaz-body-language-performance-v1 body-language-only; Format 0.2.1 does not auto-apply lip-sync on that separate semantic path",
         "Watch the complete MP4; do not approve it from a contact sheet alone",
         "Record the verdict against the exact output checksum, then run finalize",
         "Treat a genuinely new action as separate rig authoring work and validate it before registration",
@@ -475,7 +477,7 @@ const formatConfigs: FormatProfileConfig[] = [
       ],
       totalEstimate: "$0 provider cost, usually 2-8 min",
       output: "One horizontal 1280 × 720 MP4 plus inspection and delivery receipts; audio-backed sequences include AAC and local Cherry cue provenance",
-      firstQuestion: "Which registered Shaz actions should the animation use, in what order, and should supplied audio drive local lip-sync?",
+      firstQuestion: "Attach the dialogue audio. Should Shaz use Talk to Camera for ordinary speech, or expressive registered actions for selected beats?",
     },
   },
   {

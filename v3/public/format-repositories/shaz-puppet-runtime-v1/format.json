@@ -1,8 +1,8 @@
 {
   "id": "shaz-puppet-runtime",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "title": "Shaz Puppet Runtime",
-  "summary": "Animate the supplied Shaz 2D puppet without Toon Boom Harmony by sequencing verified reusable pose recipes through one recovered rig renderer, with optional local lip-sync from the bundled Cherry WASI cue engine.",
+  "summary": "Animate the supplied Shaz 2D puppet without Toon Boom Harmony by sequencing verified reusable pose recipes or using the duration-flexible Talk to Camera preset, with local lip-sync from the bundled Cherry WASI cue engine.",
   "mediaType": "video",
   "services": [],
   "providerCost": "$0",
