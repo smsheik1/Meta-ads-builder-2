@@ -1,13 +1,13 @@
 # Shaz Puppet Runtime proof
 
-Format version: 0.2.1
+Format version: 0.3.0
 
 ## Runtime proof
 
 - Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
 - Compiled rig assets verified: 210
 - Registered pose recipes: 14
-- Automated tests: 110 passing, including bundled-engine parity, cue provenance, tamper rejection, audio-backed rendering, fixed-stage framing, and the duration-derived Talk to Camera preset
+- Automated tests: 111 passing, including bundled-engine parity, cue provenance, tamper rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, and the exact four-background registry
 - Registry-wide inspection: all 14 registered actions, 461 recipe frames, zero failures
 - Official smoke: 58 frames, 2.416667 seconds, validation/render/inspection/finalization passing
 - Historical Format 0.2.0 audio-backed talking proof: 288 frames, 12.0 seconds, 1280 × 720, H.264 + AAC, exact output SHA-256 `59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf`
@@ -18,7 +18,7 @@ Format version: 0.2.1
 - Legacy Format 0.1.0 ten-action golden: 504 frames, 21.0 seconds, 1280 × 720, H.264, yuv420p, 24 fps; retained as pending-review history rather than current certification
 - Current ten-action fixture: 512 frames, 21.333333 seconds under the pre-Cherry 0.1.2 runtime; it is not represented by the legacy golden
 - Current alternate fixture: 191 frames, 7.958333 seconds, four actions in a different order and with different holds
-- Historical blind ZIP-only proof: 334 frames, 13.916667 seconds, seven independently chosen actions; it proves an older archive could operate independently, but does not certify the current 0.2.1 ZIP
+- Historical blind ZIP-only proof: 334 frames, 13.916667 seconds, seven independently chosen actions; it proves an older archive could operate independently, but does not certify the current 0.3.0 ZIP
 - Historical structural anatomy run: `anatomy-v8-release`, 173 frames, 7.208008 seconds, exact output SHA-256 `bcf3556ffde53beb7e9efe989bd7e26655b0a2f3a23a5e80ed63f334d0edc9f9`. Its mechanical checks passed, but the user later rejected its visible poses; it is not the public showcase or current creative proof.
 - Provider calls: 0
 - Cost: $0
@@ -32,11 +32,19 @@ The preset reuses the existing one-frame authored neutral anchor. It does not ad
 
 A sealed Format 0.2.1 extraction passed 110/110 packaged tests and then ran the minimal preset input against two materially different audio files (2.843-second OGG and 12-second WAV). Both derived their complete timelines without user frame math, used only `neutral-listening`, generated bundled-WASI cues, produced H.264 + AAC, passed inspection with zero failures, and decoded completely. Exact receipts are recorded in `evidence/talk-to-camera-preset-proof.md`; creative approval remains separate.
 
+## Format 0.3.0 background library boundary
+
+`assets.json` registers exactly four opaque 3840 × 2160 RGB PNG backgrounds and identifies `sisters-room` as the default. Audio-backed Lego sequences and Talk to Camera resolve an explicit registered ID; the separate semantic performance mode accepts the same IDs and defaults an omitted value through the manifest. Background selection remains input data behind the same fixed stage view and one character renderer.
+
+Living Room is an exact flattened composite from the supplied PSD. Photo Zone hides only the visible source map-art layer and preserves the clean purple striped wall beneath it. Its recorded supporting-media bounds are provenance for a future feature only; Format 0.3.0 accepts and renders no overlay there. Pure White is an exact generated `#FFFFFF` canvas.
+
+A sealed extraction passed 111/111 packaged tests and `check`, contained exactly the four registered background files, and rendered the same Talk to Camera audio/timing/cues twice: once over Living Room and once over Photo Zone. Both 68-frame H.264 + AAC outputs decoded completely and passed inspection with zero failures. Their receipts bind distinct background IDs and checksums while audio, cues, pose, holds, camera, and mouth histogram remain identical. Exact receipts are recorded in `evidence/background-library-proof.md`; creative approval remains separate.
+
 ## Bundled Cherry 0.1.0 proof boundary
 
 Audio-backed `shaz-sequence-input-v1` initialization now generates Cherry 0.1.0 cues locally through the bundled, checksum-verified WASI module by default. A supplied exact-audio TSV remains accepted, and `--lipsync=off` is the explicit audio-without-mouth-motion path. The package includes no native Cherry executable and makes no provider call. The cue-only entrypoint and sequence initializer use the same bundled engine; the existing `renderRigFrame` implementation remains the only character renderer.
 
-The separate `shaz-body-language-performance-v1` semantic performance path remains body-language-only in Format 0.2.1. Its audio determines duration and event scheduling but does not auto-generate or apply mouth cues.
+The separate `shaz-body-language-performance-v1` semantic performance path remains body-language-only in Format 0.3.0. Its audio determines duration and event scheduling but does not auto-generate or apply mouth cues.
 
 The historical Format 0.2.0 fresh-package proof passed from a sealed extraction with no supplied cue TSV. Install, all tests, `check`, registry inspection, and smoke passed before two meaningfully different speech inputs completed `init → validate → render → inspect` through the bundled WASI engine. Both videos decoded completely and reported zero mechanical failures. Those exact run receipts are recorded in `evidence/bundled-cherry-wasi-proof.md`; they prove the bundled cue engine, not the new 0.2.1 preset.
 

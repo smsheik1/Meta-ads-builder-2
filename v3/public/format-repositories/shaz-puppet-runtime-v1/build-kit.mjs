@@ -12,7 +12,12 @@ const output = path.join(downloads, `${archiveName}.zip`);
 const checksumOutput = `${output}.sha256`;
 const excludedNames = new Set(["node_modules", ".DS_Store", ".git"]);
 const packagedPropFiles = new Set(["phone.svg", "crossed-arms-pose.png"]);
-const packagedBackgroundFiles = new Set(["sisters-room.png"]);
+const packagedBackgroundFiles = new Set([
+  "living-room.png",
+  "map-photo-zone.png",
+  "pure-white.png",
+  "sisters-room.png",
+]);
 
 export function include(source) {
   const relative = path.relative(root, source);

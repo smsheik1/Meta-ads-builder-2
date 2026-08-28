@@ -218,6 +218,7 @@ test("performance plan is audio-derived, sparse, anchored at the apex, and neutr
   });
 
   assert.equal(timeline.durationFrames, 240);
+  assert.equal(timeline.backgroundId, null);
   assert.equal(timeline.neutralPacketId, "neutral-listening");
   assert.equal(timeline.events[0].holdStartFrame, 51);
   assert.equal(timeline.events[0].endFrameExclusive, 66);
@@ -230,6 +231,28 @@ test("performance plan is audio-derived, sparse, anchored at the apex, and neutr
   });
   assert.equal(allNeutral.coveredFrames, 0);
   assert.deepEqual(allNeutral.events, []);
+
+  const selectedBackground = validatePerformancePlan(validPlan({ backgroundId: "living-room" }), {
+    packetRegistry,
+    audioDurationSeconds: 10,
+    defaultBackgroundId: "sisters-room",
+  });
+  assert.equal(selectedBackground.backgroundId, "living-room");
+
+  const defaultBackground = validatePerformancePlan(validPlan({ events: [] }), {
+    packetRegistry,
+    audioDurationSeconds: 10,
+    defaultBackgroundId: "sisters-room",
+  });
+  assert.equal(defaultBackground.backgroundId, "sisters-room");
+  assert.throws(
+    () => validatePerformancePlan(validPlan({ backgroundId: "../escape" }), {
+      packetRegistry,
+      audioDurationSeconds: 10,
+      defaultBackgroundId: "sisters-room",
+    }),
+    /backgroundId must name a registered background/,
+  );
 });
 
 test("performance plan rejects unsafe packets, explicit neutral, and timing not derived from audio", async () => {

@@ -68,6 +68,32 @@ const trustedShowcasePoseIds = [
   "point",
   "confident",
 ];
+const expectedBackgrounds = [
+  {
+    id: "sisters-room",
+    label: "Sisters Room",
+    path: "assets/backgrounds/sisters-room.png",
+    sha256: "740f61cbd58581b3c944fc77038fd51756305083b22ae3e28df0f1f5190ec485",
+  },
+  {
+    id: "living-room",
+    label: "Living Room",
+    path: "assets/backgrounds/living-room.png",
+    sha256: "f5b6f3c78351028a1fd1d6b067337f2a99ed456647b5ce7608426f42088ece3e",
+  },
+  {
+    id: "map-photo-zone",
+    label: "Photo Zone",
+    path: "assets/backgrounds/map-photo-zone.png",
+    sha256: "2c5d6b6520b2bab37b74a3b46a32c01d266ca520e2fca5425192312c569cb937",
+  },
+  {
+    id: "pure-white",
+    label: "Pure White",
+    path: "assets/backgrounds/pure-white.png",
+    sha256: "f91cf55509a036596da76a95f07a4034459ff0c6b23aac48b4ff6c2661edb807",
+  },
+] as const;
 const rejectedShowcasePoseIds = [
   "facepalm-frustrated",
   "arms-crossed-skeptical",
@@ -99,9 +125,9 @@ assert.equal(existsSync(poseContactSheet), true);
 assert.equal(sha256(poseContactSheet), expectedPoseContactSheetSha);
 assert.equal(existsSync(posePoster), true);
 assert.equal(sha256(posePoster), expectedPosePosterSha);
-const talkingInput = JSON.parse(
-  readFileSync(input, "utf8"),
-) as { sequence: Array<{ poseId: string }> };
+const talkingInput = JSON.parse(readFileSync(input, "utf8")) as {
+  sequence: Array<{ poseId: string }>;
+};
 assert.deepEqual(
   [...new Set(talkingInput.sequence.map(({ poseId }) => poseId))],
   ["neutral-listening", "present", "confident", "point", "shrug", "aha"],
@@ -137,7 +163,13 @@ assert.equal(validation.inputSha256, expectedInputSha);
 assert.equal(validation.audio.sha256, expectedAudioSha);
 assert.equal(validation.lipSync.cueSha256, expectedCueSha);
 assert.equal(validation.lipSync.cueCount, 100);
-assert.deepEqual(validation.lipSync.usedMouthDrawings, ["1", "2", "3", "4", "5"]);
+assert.deepEqual(validation.lipSync.usedMouthDrawings, [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+]);
 assert.equal(render.status, "rendered");
 assert.equal(render.inputSha256, expectedInputSha);
 assert.equal(render.outputSha256, expectedVideoSha);
@@ -207,7 +239,7 @@ assert.equal(goldens.talkingSceneShowcase.audioSha256, expectedAudioSha);
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
-assert.equal(profile.version, "0.2.1");
+assert.equal(profile.version, "0.3.0");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-talking-scene");
 assert.equal(profile.proofEntries[0]?.format.version, "0.2.0");
@@ -219,10 +251,11 @@ assert.match(
   profile.proofEntries[0]?.curatorNote ?? "",
   /five recovered mouth drawings/,
 );
-assert.match(profile.promise, /Format 0\.2\.1/);
+assert.match(profile.promise, /Format 0\.3\.0/);
 assert.match(profile.promise, /Talk to Camera default/);
 assert.match(profile.promise, /bundled Cherry WASI cue engine/);
 assert.match(profile.promise, /audio into a Shaz talking scene/);
+assert.match(profile.promise, /four checksum-registered fixed backgrounds/);
 assert.match(profile.promise, /secondary pose gallery/);
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
 assert.equal(
@@ -274,11 +307,18 @@ assert.equal(
 
 const presentation = await getFormatRepoPagePresentation("shaz-puppet-runtime");
 assert.equal(presentation?.kind, "shaz-puppet-runtime");
-assert.equal(presentation?.detailedProofId, "shaz-puppet-runtime-talking-scene");
-assert.match(presentation?.copy.runDescription ?? "", /Format 0\.2\.1/);
+assert.equal(
+  presentation?.detailedProofId,
+  "shaz-puppet-runtime-talking-scene",
+);
+assert.match(presentation?.copy.runDescription ?? "", /Format 0\.3\.0/);
 assert.match(presentation?.copy.runDescription ?? "", /Talk to Camera/);
 assert.match(presentation?.copy.runDescription ?? "", /bundled WASI/);
-assert.equal(presentation?.copy.provided, "Audio + dialogue mode");
+assert.match(
+  presentation?.copy.runDescription ?? "",
+  /four built-in backgrounds/,
+);
+assert.equal(presentation?.copy.provided, "Audio + dialogue mode + background");
 assert.match(presentation?.copy.examplesTitle ?? "", /Shaz actually talks/);
 assert.match(
   presentation?.copy.examplesDescription ?? "",
@@ -286,14 +326,14 @@ assert.match(
 );
 assert.match(
   presentation?.copy.examplesDescription ?? "",
-  /downloadable 0\.2\.1 Repo/,
+  /downloadable 0\.3\.0 Repo/,
 );
 assert.match(
   presentation?.copy.examplesDescription ?? "",
   /secondary gallery below/,
 );
 const trust = await getShazPuppetRuntimeTrustData();
-assert.equal(trust.version, "0.2.1");
+assert.equal(trust.version, "0.3.0");
 assert.equal(trust.includedAssets.poses.length, 14);
 assert.equal(
   trust.includedAssets.poses.some(({ id }) => id === "talk-to-camera"),
@@ -318,7 +358,26 @@ assert.deepEqual(
   trustedShowcasePoseIds,
 );
 assert.equal(trust.includedAssets.props.length, 2);
-assert.equal(trust.includedAssets.backgrounds.length, 1);
+assert.equal(trust.includedAssets.defaultBackgroundId, "sisters-room");
+assert.deepEqual(
+  trust.includedAssets.backgrounds.map(({ id, label, path, sha256 }) => ({
+    id,
+    label,
+    path,
+    sha256,
+  })),
+  expectedBackgrounds,
+);
+for (const background of expectedBackgrounds) {
+  const file = `${repository}/${background.path}`;
+  assert.equal(existsSync(file), true);
+  assert.equal(sha256(file), background.sha256);
+}
+assert.equal(
+  trust.includedAssets.backgrounds.find(({ id }) => id === "map-photo-zone")
+    ?.supportingMediaZone?.status,
+  "reserved-not-active",
+);
 assert.deepEqual(trust.includedAssets.bundledEngines, [
   {
     name: "cherry-lip-sync",
@@ -331,14 +390,15 @@ assert.deepEqual(trust.includedAssets.bundledEngines, [
       "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs",
   },
 ]);
-assert.equal(trust.quality.summary[0]?.value, "0.2.1");
+assert.equal(trust.quality.summary[0]?.value, "0.3.0");
 assert.equal(trust.quality.summary[0]?.label, "downloadable Format");
 assert.ok(trust.commands.includes("npm run inspect:registry"));
 assert.ok(
-  trust.commands.some((command) => (
-    command.includes("npm run init")
-    && command.includes("--audio=/absolute/path/dialogue.wav")
-  )),
+  trust.commands.some(
+    (command) =>
+      command.includes("npm run init") &&
+      command.includes("--audio=/absolute/path/dialogue.wav"),
+  ),
   "the copyable Talk to Camera init command must include its required audio input",
 );
 assert.ok(
@@ -353,11 +413,12 @@ assert.match(trust.proofCopy.eyebrow, /Audio-backed talking proof/);
 assert.match(trust.proofCopy.title, /Five lip-sync mouths/);
 assert.match(trust.quality.note, /blind proof generated 100 Cherry cues/);
 assert.match(trust.quality.note, /5 authored mouth drawings/);
-assert.match(trust.quality.note, /download is Format 0\.2\.1/);
+assert.match(trust.quality.note, /download is Format 0\.3\.0/);
 assert.match(trust.quality.note, /historical Format 0\.2\.0/);
+assert.match(trust.quality.note, /four checksum-registered fixed backgrounds/);
 assert.match(
   trust.quality.note,
-  /without altering the proof or registering a duplicate pose/,
+  /supporting-media zone is reserved but not active/,
 );
 assert.equal(
   trust.includedAssets.showcasePosterSrc,
@@ -366,6 +427,13 @@ assert.equal(
 assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
 assert.match(includedAssetsSource, /Local lip-sync included/);
 assert.match(includedAssetsSource, /data\.includedAssets\.bundledEngines/);
+assert.match(includedAssetsSource, /shaz-background-library/);
+assert.match(includedAssetsSource, /Pick the room\. Keep the camera fixed\./);
+assert.match(includedAssetsSource, /data\.includedAssets\.backgrounds\.map/);
+assert.match(includedAssetsSource, /defaultBackgroundId/);
+assert.match(includedAssetsSource, /Future media zone reserved/);
+assert.match(includedAssetsSource, /formatAssetRoot/);
+assert.match(includedAssetsSource, /background\.path/);
 assert.match(includedAssetsSource, /shaz-talk-to-camera-option/);
 assert.match(includedAssetsSource, /defaultDialogue\.subtitle/);
 assert.match(includedAssetsSource, /ordinary speech/);
@@ -388,23 +456,23 @@ for (const mouthAsset of [
   "mouth-02.png",
   "mouth-03.png",
 ]) {
-  assert.match(includedAssetsSource, new RegExp(mouthAsset.replace(".", "\\.")));
+  assert.match(
+    includedAssetsSource,
+    new RegExp(mouthAsset.replace(".", "\\.")),
+  );
 }
-for (const mapping of [
-  "A · X",
-  "B · G · I · J",
-  "C · H",
-  "D",
-  "E · F · K",
-]) {
-  assert.match(includedAssetsSource, new RegExp(mapping.replaceAll(" · ", " \\· ")));
+for (const mapping of ["A · X", "B · G · I · J", "C · H", "D", "E · F · K"]) {
+  assert.match(
+    includedAssetsSource,
+    new RegExp(mapping.replaceAll(" · ", " \\· ")),
+  );
 }
 assert.match(includedAssetsSource, /swaps only the Mouth drawing/);
 assert.match(connectionsSource, /Bundled local lip-sync/);
 assert.match(connectionsSource, /same Shaz/);
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Download Format")?.value,
-  "0.2.1",
+  "0.3.0",
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Proof Format")?.value,
@@ -442,6 +510,7 @@ for (const required of [
   "rig-v2/assets/receipt.json",
   "runtime/cherry-wasi-runner.mjs",
   "runtime/lipsync.mjs",
+  ...expectedBackgrounds.map(({ path }) => path),
   "vendor/cherry-lip-sync/v0.1.0/cherrylipsync.wasm",
 ]) {
   assert.ok(
@@ -467,7 +536,7 @@ const packagedRequirements = JSON.parse(
     networkRequired: boolean;
   }>;
 };
-assert.equal(packagedFormat.version, "0.2.1");
+assert.equal(packagedFormat.version, "0.3.0");
 assert.match(packagedFormat.summary, /bundled Cherry WASI cue engine/);
 assert.deepEqual(packagedRequirements.bundledEngines, [
   {

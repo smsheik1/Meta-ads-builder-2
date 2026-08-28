@@ -12,6 +12,17 @@ The phone is a simple purpose-built non-limb prop. Most character substitutions 
 
 This kit packages the supplied character assets for the owner's authorized Wiggly workflow. It does not grant third parties rights to redistribute or commercially exploit the character or source art.
 
+## Built-in backgrounds
+
+Format 0.3.0 packages four opaque 3840×2160 RGB PNG backgrounds. `assets.json` binds every output checksum, label, dimensions, use, source operation, and source checksum where a PSD exists.
+
+- Sisters Room is the default and comes from `BG (8) Sisters room.psd` (`5ad1d74940954256925905428fb945bd07ecf4a22d104ff42c55696caa6c5566`).
+- Living Room comes from the embedded composite in `BG (4) living room.psd` (`1da1c55eeccea94b49b14634b8167d2aeeee9be5618fff94d166d95595e3bd3d`), with boundary alpha flattened onto white before deterministic RGB encoding.
+- Photo Zone comes from `BG (22) map.psd` (`2666ddcf35837d74dc3e80803e138331a0f61f0ea46f78a42c535037a58eeb19`) with only the visible `Layer 4` map artwork hidden. The PSD's already-hidden smart-object layer named `map` remains hidden. The cleared wall is a fixed background; its recorded bounds do not activate a supporting-media renderer.
+- Pure White is a deterministic generated `#FFFFFF` RGB canvas and has no source PSD.
+
+The source PSD files are not bundled. No background introduces a second character renderer, camera motion, or a background-specific character transform.
+
 ## Bundled Cherry cue engine
 
 Beginning with Format 0.2.0, the package includes Cherry Lip Sync 0.1.0 as a checksum-locked `wasm32-wasip1` module. It is used only to generate A-K/X speech cues before the existing Shaz renderer runs; it is not a renderer and does not contain Shaz artwork.

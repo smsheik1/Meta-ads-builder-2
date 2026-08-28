@@ -8,7 +8,7 @@
   "properties": {
     "title": { "type": "string", "minLength": 1, "maxLength": 120 },
     "audioFile": { "type": "string", "location": "staged directly inside the run folder" },
-    "backgroundId": { "type": "string", "source": "assets.json#backgrounds" },
+    "backgroundId": { "type": "string", "source": "assets.json#backgrounds", "description": "Selects one exact checksum-registered fixed background. Sisters Room is the main/default choice." },
     "sequencePreset": {
       "const": "talk-to-camera",
       "mutuallyExclusiveWith": "sequence",
@@ -58,7 +58,8 @@
     "suppliedCueOverride": "--lipsync-cues=/absolute/path/cherry.tsv stages and validates that exact cue file instead of generating one.",
     "explicitOptOut": "--lipsync=off stages audio without creating lipSync.",
     "talkToCameraPreset": "With sequencePreset talk-to-camera, init derives durationFrames from the measured audio and resolves one gap-free neutral-listening body hold. The user supplies no sequence or frame math, and lip-sync cannot be disabled.",
-    "unsupportedMode": "Automatic cue generation and application do not apply to shaz-body-language-performance-v1 in Format 0.2.1."
+    "unsupportedMode": "Automatic cue generation and application do not apply to shaz-body-language-performance-v1 in Format 0.3.0.",
+    "performanceBackgroundDefault": "shaz-body-language-performance-v1 accepts an optional backgroundId from the same registry and resolves an omitted value to assets.defaultBackgroundId."
   },
   "maximumOutputFrames": 1800,
   "notes": [
@@ -68,6 +69,7 @@
     "No finished artist-rendered frame may be supplied as an input.",
     "Talk to Camera is a composition preset, not a fifteenth pose. It reuses the checksum-bound neutral-listening body and changes only the Mouth drawing through the validated Cherry track.",
     "An audio-backed sequence must contain exactly round(audio duration × 24) frames and use a checksum-registered background.",
-    "Lip-sync changes only the Mouth drawing. Init generates cues locally by default for an audio-backed sequence, accepts a supplied exact-audio TSV, or disables mouth animation only when --lipsync=off is explicit."
+    "Lip-sync changes only the Mouth drawing. Init generates cues locally by default for an audio-backed sequence, accepts a supplied exact-audio TSV, or disables mouth animation only when --lipsync=off is explicit.",
+    "The Photo Zone background is a fixed clean background in this release. Its reserved supporting-media bounds are metadata only; no overlay input is accepted or rendered."
   ]
 }

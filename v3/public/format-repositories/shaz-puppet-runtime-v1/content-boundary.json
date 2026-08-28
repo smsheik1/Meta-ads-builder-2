@@ -14,7 +14,7 @@
     "explicit final-pose hold duration",
     "explicit intentional inter-action separator duration; omitted separators default to zero",
     "user-supplied audio for an audio-backed sequence",
-    "one registered fixed background",
+    "one of the four checksum-registered fixed backgrounds; Sisters Room is the default",
     "a locally generated or user-supplied checksum-bound Cherry cue TSV that changes only registered Mouth drawings",
     "the talk-to-camera composition preset, which maps measured audio to the existing neutral-listening body and required Cherry mouth cues",
     "new pose recipes authored through named rig controls and, only when the recovered vocabulary is proven insufficient, an exact registered part-specific substitution drawing"
@@ -25,6 +25,7 @@
     "requiring or silently launching a native cherrylipsync executable",
     "lip-sync cues changing body controls, pose timing, props, camera, or non-Mouth drawings",
     "registering talk-to-camera as a duplicate pose instead of reusing neutral-listening",
+    "placing images, video, or other supporting media into the reserved Photo Zone before that future input contract and renderer behavior are implemented",
     "unregistered recipe file paths",
     "unregistered screen-space or flattened limb substitutions, full-character replacements, or any pose drawing that can double-paint native anatomy",
     "silent relaxation of clipping, continuity, layer, prop, facial-pop, or provenance gates"
