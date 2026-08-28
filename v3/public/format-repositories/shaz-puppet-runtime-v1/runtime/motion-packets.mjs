@@ -370,11 +370,15 @@ async function loadMotionPacketRegistry({ root, poseRegistry }) {
   };
 }
 
-function validatePerformancePlan(input, { packetRegistry, audioDurationSeconds }) {
+function validatePerformancePlan(input, {
+  packetRegistry,
+  audioDurationSeconds,
+  defaultBackgroundId = null,
+}) {
   object(input, "performance input");
   exactKeys(
     input,
-    ["schemaVersion", "title", "fps", "audioFile", "durationFrames", "events"],
+    ["schemaVersion", "title", "fps", "audioFile", "backgroundId", "durationFrames", "events"],
     "performance input",
   );
   if (input.schemaVersion !== PERFORMANCE_SCHEMA) {
@@ -388,6 +392,10 @@ function validatePerformancePlan(input, { packetRegistry, audioDurationSeconds }
   }
   const title = boundedString(input.title, 1, 120, "performance input.title");
   const audioFile = safeRelativePath(input.audioFile, "performance input.audioFile");
+  const backgroundId = input.backgroundId ?? defaultBackgroundId;
+  if (backgroundId !== null && !PACKET_ID.test(backgroundId)) {
+    throw new Error("performance input.backgroundId must name a registered background");
+  }
   if (!Number.isFinite(audioDurationSeconds) || audioDurationSeconds <= 0) {
     throw new Error("audioDurationSeconds must be measured from the staged audio file");
   }
@@ -486,6 +494,7 @@ function validatePerformancePlan(input, { packetRegistry, audioDurationSeconds }
     title,
     fps: 24,
     audioFile,
+    backgroundId,
     audioDurationSeconds,
     durationFrames,
     durationSeconds: durationFrames / 24,

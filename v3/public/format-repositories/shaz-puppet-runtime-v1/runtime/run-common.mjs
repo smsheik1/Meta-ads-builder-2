@@ -354,14 +354,18 @@ async function validateRun({ root, runDirectory }) {
     const audioDurationSeconds = measuredAudioDuration(audioProbe);
     if (!audioStream) throw new Error("the staged performance file has no audio stream");
     if (!(audioDurationSeconds > 0)) throw new Error("the staged performance audio duration could not be measured");
-    const packetRegistry = await loadMotionPacketRegistry({ root, poseRegistry: registry });
-    const timeline = validatePerformancePlan(input, { packetRegistry, audioDurationSeconds });
     const assets = await readJson(path.join(root, "assets.json"));
-    const background = (assets.backgrounds ?? []).find(({ id }) => id === "sisters-room");
-    if (!background) throw new Error("registered Sisters Room background is missing");
+    const packetRegistry = await loadMotionPacketRegistry({ root, poseRegistry: registry });
+    const timeline = validatePerformancePlan(input, {
+      packetRegistry,
+      audioDurationSeconds,
+      defaultBackgroundId: assets.defaultBackgroundId,
+    });
+    const background = (assets.backgrounds ?? []).find(({ id }) => id === timeline.backgroundId);
+    if (!background) throw new Error(`unknown registered background ${timeline.backgroundId}`);
     const backgroundPath = path.resolve(root, background.path);
     if (await sha256(backgroundPath) !== background.sha256) {
-      throw new Error("registered Sisters Room background checksum mismatch");
+      throw new Error(`registered background checksum mismatch: ${background.id}`);
     }
     const usedPoseIds = new Set([packetRegistry.neutralPacket.path.hold.poseId]);
     for (const event of timeline.events) {

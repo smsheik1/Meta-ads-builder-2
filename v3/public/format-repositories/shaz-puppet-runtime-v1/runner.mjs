@@ -87,6 +87,13 @@ async function check() {
   const { manifest, receipt } = await verifyAssetReceipt();
   const cherry = await verifyCherryEngine({ root });
   const assetManifest = await readJson(path.join(root, "assets.json"));
+  const backgroundIds = (assetManifest.backgrounds ?? []).map(({ id }) => id);
+  if (new Set(backgroundIds).size !== backgroundIds.length) {
+    throw new Error("background registry contains duplicate ids");
+  }
+  if (!backgroundIds.includes(assetManifest.defaultBackgroundId)) {
+    throw new Error("assets.defaultBackgroundId must name a registered background");
+  }
   for (const [kind, records, directory] of [
     ["prop", assetManifest.props ?? [], "props"],
     ["background", assetManifest.backgrounds ?? [], "backgrounds"],

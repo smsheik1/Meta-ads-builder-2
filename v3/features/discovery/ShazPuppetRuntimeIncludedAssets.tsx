@@ -54,6 +54,7 @@ const mouthShapes = [
 
 const rigAssetRoot =
   "/format-repositories/shaz-puppet-runtime-v1/rig-v2/assets";
+const formatAssetRoot = "/format-repositories/shaz-puppet-runtime-v1";
 
 export function ShazPuppetRuntimeIncludedAssets({
   data,
@@ -86,7 +87,7 @@ export function ShazPuppetRuntimeIncludedAssets({
           public showcase is intentionally limited to the five actions with
           approval-grade evidence.
         </p>
-        <div className="mt-7 grid gap-3 min-[701px]:grid-cols-2">
+        <div className="mt-7">
           {data.includedAssets.bundledEngines.map((engine) => (
             <article
               key={engine.name}
@@ -104,22 +105,65 @@ export function ShazPuppetRuntimeIncludedAssets({
               </p>
             </article>
           ))}
-          {data.includedAssets.backgrounds.map((background) => (
-            <article
-              key={background.id}
-              className="border-2 border-[#080817] bg-[#c9ff55] p-4 shadow-[3px_3px_0_#080817]"
-            >
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
-                Checksum-registered background
-              </p>
-              <h3 className="mt-2 text-xl font-black">
-                {background.id.replaceAll("-", " ")}
-              </h3>
-              <p className="mt-2 text-sm font-bold leading-6 text-[#596176]">
-                {background.usage}
-              </p>
-            </article>
-          ))}
+        </div>
+        <div className="mt-10" data-testid="shaz-background-library">
+          <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
+            Four checksum-registered environments
+          </p>
+          <h3 className="mt-2 text-[clamp(28px,4vw,42px)] font-black leading-none tracking-[-0.035em]">
+            Pick the room. Keep the camera fixed.
+          </h3>
+          <p className="mt-3 max-w-[760px] text-sm font-bold leading-6 text-[#596176]">
+            Sisters Room remains the main default. Living Room adds a warmer
+            home setting, Photo Zone removes the old map artwork cleanly, and
+            Pure White gives agents a neutral stage. Every choice uses the same
+            renderer and is checksum-bound in the delivery receipt.
+          </p>
+          <div className="mt-5 grid gap-4 min-[640px]:grid-cols-2">
+            {data.includedAssets.backgrounds.map((background) => (
+              <article
+                key={background.id}
+                className="overflow-hidden border-2 border-[#080817] bg-white shadow-[4px_4px_0_#080817]"
+              >
+                <div className="relative aspect-video border-b-2 border-[#080817] bg-white">
+                  <Image
+                    src={`${formatAssetRoot}/${background.path}`}
+                    alt={`${background.label} built-in Shaz background`}
+                    width={3840}
+                    height={2160}
+                    sizes="(min-width: 640px) 480px, calc(100vw - 32px)"
+                    className="block h-full w-full object-cover"
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-xl font-black">{background.label}</h4>
+                    {background.id ===
+                    data.includedAssets.defaultBackgroundId ? (
+                      <span className="border-2 border-[#080817] bg-[#c9ff55] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em]">
+                        Default
+                      </span>
+                    ) : null}
+                    {background.supportingMediaZone?.status ===
+                    "reserved-not-active" ? (
+                      <span className="border-2 border-[#080817] bg-[#fff0f7] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#9a315f]">
+                        Future media zone reserved
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-2 text-sm font-bold leading-6 text-[#596176]">
+                    {background.usage}
+                  </p>
+                  {background.supportingMediaZone ? (
+                    <p className="mt-3 text-xs font-black leading-5 text-[#9a315f]">
+                      Not active yet:{" "}
+                      {background.supportingMediaZone.runtimeBehavior}.
+                    </p>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
         <div
           className="mt-8 overflow-hidden border-2 border-[#080817] bg-[#dff8ff] shadow-[5px_5px_0_#080817]"

@@ -13,7 +13,7 @@ See [`ROADMAP.md`](ROADMAP.md) for the canonical build order: certify body langu
 - One registered arm-only destination drawing for the folded-arms hold that the recovered native cuff and pivot vocabulary cannot form credibly; it is exact-hash/placement locked and never replaces the original head or body.
 - One held-out authored shrug used to prove the control model generalized before new actions were attempted.
 - A strict sequence contract, one official renderer, per-frame mechanical inspection, human review, and checksum-bound finalization.
-- An audio-backed sequence path with the fixed Sisters Room background, five real rig mouth shapes, and a bundled Cherry 0.1.0 WebAssembly cue engine.
+- An audio-backed sequence path with four checksum-registered fixed backgrounds, five real rig mouth shapes, and a bundled Cherry 0.1.0 WebAssembly cue engine.
 - Two meaningfully different proof inputs plus a free local smoke fixture.
 
 ## Quick start
@@ -78,6 +78,19 @@ npm run init -- --run=my-talking-head \
 
 Initialization measures the audio, holds the checksum-bound `neutral-listening` body for that exact duration, and generates Cherry mouth cues automatically. The preset adds no body keys, props, camera motion, gaps, or second renderer. It rejects handwritten `sequence` timing and `--lipsync=off`; use it as the calm default between expressive gesture sequences. A ready-to-copy input lives at `fixtures/talk-to-camera/input.json`.
 
+### Built-in backgrounds
+
+Every background is an opaque 3840×2160 PNG registered and checksum-bound in `assets.json`. Sisters Room remains the main/default environment. Set `backgroundId` explicitly for an audio-backed sequence or Talk to Camera input; semantic body-language performance inputs accept the same IDs and use Sisters Room when `backgroundId` is omitted.
+
+| ID | Label | Intended use |
+| --- | --- | --- |
+| `sisters-room` | Sisters Room | Main/default Shaz dialogue environment |
+| `living-room` | Living Room | Warmer home dialogue environment |
+| `map-photo-zone` | Photo Zone | Clean purple room with the original map artwork removed |
+| `pure-white` | Pure White | Minimal scenes or downstream compositing |
+
+All four choices preserve the one fixed camera and one character-renderer path. The clean area in Photo Zone is reserved for a future supporting-image/video feature only. This release does not accept or render an overlay there, and an agent must not invent one.
+
 ### Audio-backed Lego sequence with local lip-sync
 
 Give a `shaz-sequence-input-v1` input a registered `backgroundId`, then stage user audio during initialization:
@@ -104,7 +117,7 @@ To generate only a Cherry TSV without creating a run:
 npm run lipsync -- --audio=/absolute/path/user-audio.wav --output=/absolute/path/cherry.tsv
 ```
 
-The separate `shaz-body-language-performance-v1` semantic performance mode still uses audio only for measured duration and gesture scheduling. It does **not** auto-generate or apply lip-sync cues in Format 0.2.1.
+The separate `shaz-body-language-performance-v1` semantic performance mode still uses audio only for measured duration and gesture scheduling. It does **not** auto-generate or apply lip-sync cues in Format 0.3.0.
 
 ## Registered actions
 
@@ -127,7 +140,7 @@ The separate `shaz-body-language-performance-v1` semantic performance mode still
 
 ## Why it is repeatable
 
-The user input controls action order and explicit hold/gap timing, and may additionally stage user audio, one registered fixed background, and a generated or supplied checksum-bound Cherry cue file. Actions are contiguous by default, with no inserted separator frames; this does not claim a polished transition between independently authored actions. Recipe checksums bind every action to the registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks native shoulder/sleeve/hand topology or the one exact registered pose-replacement contract, cuff ownership, hand proportions, clipping, paint order, props, facial stability, video/audio format, frame count, duration, and any requested lip-sync receipt. Finalization binds the human review to the exact video checksum.
+The user input controls action order and explicit hold/gap timing, and may additionally stage user audio, select one registered fixed background, and use a generated or supplied checksum-bound Cherry cue file. Actions are contiguous by default, with no inserted separator frames; this does not claim a polished transition between independently authored actions. Recipe and background checksums bind every selection to its registry; every render records the source Xstage checksum and proves `artistRenderedFramesUsed: false`. Inspection re-renders every used recipe and checks native shoulder/sleeve/hand topology or the one exact registered pose-replacement contract, cuff ownership, hand proportions, clipping, paint order, props, facial stability, video/audio format, frame count, duration, and any requested lip-sync receipt. Finalization binds the human review to the exact video checksum.
 
 Audio-backed videos use one fixed waist-up stage view. Shaz's hoodie continues below the bottom edge in every frame, matching the supplied channel reference and concealing the rig's intentionally absent legs; all used actions must simultaneously retain clear left and right margins.
 

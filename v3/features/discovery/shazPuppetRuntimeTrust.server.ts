@@ -11,9 +11,21 @@ type QualityContract = {
 type PoseRegistry = {
   poses: Array<{ id: string; kind: string }>;
 };
+type BackgroundAsset = {
+  id: string;
+  label: string;
+  path: string;
+  sha256: string;
+  usage: string;
+  supportingMediaZone?: {
+    status: "reserved-not-active";
+    runtimeBehavior: string;
+  };
+};
 type AssetsManifest = {
+  defaultBackgroundId: string;
   props: Array<{ id: string; usage: string }>;
-  backgrounds: Array<{ id: string; path: string; usage: string }>;
+  backgrounds: BackgroundAsset[];
 };
 type RequirementsManifest = {
   bundledEngines: Array<{
@@ -65,6 +77,7 @@ export type ShazPuppetRuntimeTrustData = FormatRepoTrustData & {
     showcasePoses: PoseRegistry["poses"];
     props: AssetsManifest["props"];
     backgrounds: AssetsManifest["backgrounds"];
+    defaultBackgroundId: AssetsManifest["defaultBackgroundId"];
     bundledEngines: RequirementsManifest["bundledEngines"];
     showcasePosterSrc: string;
   };
@@ -254,7 +267,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       },
     ],
     quality: {
-      eyebrow: "03 · Format 0.2.1 quality contract",
+      eyebrow: `03 · Format ${format.version} quality contract`,
       title: "Body motion and lip-sync stay inside one renderer.",
       summary: [
         { value: format.version, label: "downloadable Format" },
@@ -263,7 +276,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         { value: "$0", label: "provider cost" },
       ],
       noteTitle: "A real first-draft talking proof.",
-      note: `The download is Format ${format.version}; the exact playable talking proof remains historical Format ${currentProof.formatVersion}. That blind proof generated ${currentProof.cueCount} Cherry cues locally, used ${currentProof.usedMouthDrawings?.length} authored mouth drawings, and passed automatic audiovisual and rig inspection. Format ${format.version} adds the contract-tested Talk to Camera default without altering the proof or registering a duplicate pose. Final checksum-bound creative certification remains pending.`,
+      note: `The download is Format ${format.version}; the exact playable talking proof remains historical Format ${currentProof.formatVersion}. That blind proof generated ${currentProof.cueCount} Cherry cues locally, used ${currentProof.usedMouthDrawings?.length} authored mouth drawings, and passed automatic audiovisual and rig inspection. The current Repo keeps Talk to Camera and adds four checksum-registered fixed backgrounds, with Sisters Room as the default. The future supporting-media zone is reserved but not active. Final checksum-bound creative certification remains pending.`,
       criteriaTitle: "Automatic gates",
       criteriaSubtitle: `${quality.automaticGates.length} checks plus ${quality.humanReview.questions.length} visual questions`,
       criteria: quality.automaticGates.map((label, index) => ({
@@ -315,6 +328,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       showcasePoses,
       props: assets.props,
       backgrounds: assets.backgrounds,
+      defaultBackgroundId: assets.defaultBackgroundId,
       bundledEngines: requirements.bundledEngines,
       showcasePosterSrc:
         "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",

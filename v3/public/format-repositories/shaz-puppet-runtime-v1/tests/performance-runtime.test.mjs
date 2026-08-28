@@ -101,6 +101,43 @@ test("performance validation rejects audio paths outside the run folder", async 
   );
 });
 
+test("performance validation resolves an explicit registered background and rejects an unknown id", async (t) => {
+  const runDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-performance-background-"));
+  t.after(() => fs.rm(runDirectory, { recursive: true, force: true }));
+  const audioFile = path.join(runDirectory, "user-audio.wav");
+  execute("ffmpeg", [
+    "-hide_banner", "-loglevel", "error", "-y",
+    "-f", "lavfi", "-i", "anullsrc=r=48000:cl=mono:d=1",
+    "-c:a", "pcm_s16le",
+    audioFile,
+  ]);
+  const inputPath = path.join(runDirectory, "input.json");
+  const input = {
+    schemaVersion: "shaz-body-language-performance-v1",
+    title: "Selectable background mechanics proof",
+    fps: 24,
+    audioFile: "user-audio.wav",
+    backgroundId: "pure-white",
+    durationFrames: 24,
+    events: [],
+  };
+  await writeJson(inputPath, input);
+
+  const selected = await validateRun({ root, runDirectory });
+  assert.equal(selected.timeline.backgroundId, "pure-white");
+  assert.equal(selected.receipt.background.id, "pure-white");
+  assert.equal(
+    selected.receipt.background.sha256,
+    "f91cf55509a036596da76a95f07a4034459ff0c6b23aac48b4ff6c2661edb807",
+  );
+
+  await writeJson(inputPath, { ...input, backgroundId: "not-registered" });
+  await assert.rejects(
+    validateRun({ root, runDirectory }),
+    /unknown registered background not-registered/,
+  );
+});
+
 test("official sequence path stacks complete registered poses over fixed background and audio", async (t) => {
   const runDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-audio-sequence-"));
   t.after(() => fs.rm(runDirectory, { recursive: true, force: true }));

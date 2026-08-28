@@ -5,7 +5,7 @@ description: Render, author, diagnose, and certify repeatable 2D Shaz puppet ani
 
 # Shaz Puppet Runtime
 
-Skill version: **1.7**.
+Skill version: **1.8**.
 
 Use this kit when the user wants a video assembled from the registered Shaz actions in `poses/index.json` or wants to author and certify one action through the recovered rig. The kit is fully local, makes no provider calls, and costs $0.
 
@@ -23,13 +23,15 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 3. Choose one input style:
    - For ordinary audience-facing dialogue, copy `fixtures/talk-to-camera/input.json`. Supply no `sequence`, `durationFrames`, or frame math; init derives one exact-length `neutral-listening` hold from the audio and requires lip-sync.
    - For expressive choreography, write a `sequence` using only registered `poseId` values. Use explicit `holdFrames` and `gapFrames`; the last action must use `gapFrames: 0`.
+   - Choose a fixed background from `assets.json`: `sisters-room` (main/default), `living-room`, `map-photo-zone`, or `pure-white`. Set `backgroundId` explicitly for an audio-backed sequence. A semantic performance input may omit it to use `assets.defaultBackgroundId`. Never invent a background ID.
+   - `map-photo-zone` is only a clean fixed background in this release. Its cleared area is reserved for a future supporting-media feature; do not add, crop, or position an image or video there.
 4. Start a new run with an absolute input path:
 
    `npm run init -- --run=my-run --input=/absolute/path/input.json`
 
    For an audio-backed `shaz-sequence-input-v1`, also supply `--audio=/absolute/path/audio`. The bundled Cherry 0.1.0 WASI engine generates and checksum-binds speech cues by default. Add `--lipsync-cues=/absolute/path/cherry.tsv` only when supplying a real Cherry TSV for that exact audio, or add `--lipsync=off` when the user explicitly wants audio without mouth animation. Never generate cyclic placeholder cues or reuse a cue file from another audio checksum.
 
-   The separate `shaz-body-language-performance-v1` semantic performance mode remains body-language-only in Format 0.2.1. Its audio controls duration and gesture scheduling, not mouth drawings.
+   The separate `shaz-body-language-performance-v1` semantic performance mode remains body-language-only in Format 0.3.0. Its audio controls duration and gesture scheduling, not mouth drawings. It accepts the same registered `backgroundId` values and defaults to Sisters Room.
 
 5. Run, in order:
 
@@ -71,13 +73,14 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 - Diagnose by failure layer: assembly first, deformation second, substitution/expression third, timing fourth, polish last.
 - Turn repeated mechanical failures into tests or inspection gates; do not rely on an agent remembering prose forever.
 - Default to Talk to Camera for unaccented speech. Treat Present, Point, Shrug, Ah-ha, Confident, and future gestures as brief semantic accents rather than continuous motion.
+- Keep background choice separate from pose and mouth decisions. Every built-in background is fixed input data rendered behind the same waist-up character path; never add camera motion or a background-specific character transform.
 
 ## Important boundaries
 
 - `runtime/rig-v2-renderer.mjs#renderRigFrame` is the only renderer for smoke, proof, and final output.
 - Lip-sync may override only the registered `Mouth` drawing at each output frame. It must not change body controls, pose order, hold length, deformation, props, framing, or any other face drawing. The bundled Cherry 0.1.0 WebAssembly engine runs locally through Node WASI; it is a cue generator, never a second renderer. Validation must bind the exact engine artifact, cue file, and audio checksums.
 - Do not download, invoke, or require a native `cherrylipsync` executable. Use `npm run lipsync -- --audio=/absolute/path/audio --output=/absolute/path/cues.tsv` for cue-only generation, or let audio-backed sequence initialization call the same bundled engine automatically.
-- Treat the waist-up crop as part of the composition contract: the hoodie must continue below the bottom edge throughout every used action, while hands and pointing gestures retain clear horizontal margins. Never reveal the rounded lower hoodie boundary or invent legs.
+- Treat the waist-up crop as part of the composition contract on every registered background: the hoodie must continue below the bottom edge throughout every used action, while hands and pointing gestures retain clear horizontal margins. Never reveal the rounded lower hoodie boundary or invent legs.
 - Finished artist-rendered animation frames may define phase, presentation cadence, and acceptance criteria, but never become runtime sprites, deformation data, or generated pose artwork. A user-supplied pose-design drawing may be registered transparently as destination artwork under the strict substitution contract above; disclose it separately from the recovered Xstage drawings.
 - Never bypass `poses/index.json` with arbitrary recipe paths.
 - Do not weaken per-frame clipping, joint continuity, layer order, prop, facial-pop, or provenance gates to make a run pass.
@@ -88,4 +91,4 @@ Use this kit when the user wants a video assembled from the registered Shaz acti
 
 ## Return to the user
 
-Return the absolute path to `final.mp4`, the video checksum from `delivery.json`, the ordered action list, and whether any limitations remain. Never claim delivery if `delivery.json` is absent.
+Return the absolute path to `final.mp4`, the video checksum from `delivery.json`, the selected background ID, the ordered action list, and whether any limitations remain. Never claim delivery if `delivery.json` is absent.

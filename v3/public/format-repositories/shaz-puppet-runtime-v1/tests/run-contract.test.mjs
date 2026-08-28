@@ -70,7 +70,7 @@ test("packaged skill protects the one-action learning loop", async () => {
     fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
   ]);
   const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
-  assert.match(skill, /Skill version: \*\*1\.7\*\*/);
+  assert.match(skill, /Skill version: \*\*1\.8\*\*/);
   assert.match(skill, /Do not work on several uncertified actions at once/);
   assert.ok(skill.includes(learningQuestion));
   assert.match(skill, /references\/rig-animation-playbook\.md/);
@@ -92,6 +92,8 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(skill, /Do not author a new pose or calculate frames/);
   assert.match(skill, /Default to Talk to Camera for unaccented speech/);
   assert.match(skill, /neutral-listening/);
+  assert.match(skill, /sisters-room.*living-room.*map-photo-zone.*pure-white/);
+  assert.match(skill, /reserved for a future supporting-media feature/);
 });
 
 test("Talk to Camera remains a preset alias over the one registered neutral body", async () => {
