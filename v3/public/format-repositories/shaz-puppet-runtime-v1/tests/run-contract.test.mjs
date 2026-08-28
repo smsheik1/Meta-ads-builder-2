@@ -70,11 +70,11 @@ test("packaged skill protects the one-action learning loop", async () => {
     fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
   ]);
   const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
-  assert.match(skill, /Skill version: \*\*1\.8\*\*/);
-  assert.match(skill, /Do not work on several uncertified actions at once/);
+  assert.match(skill, /Skill version: \*\*1\.9\*\*/);
+  assert.match(skill, /Do not repair several unapproved actions at once/);
   assert.ok(skill.includes(learningQuestion));
   assert.match(skill, /references\/rig-animation-playbook\.md/);
-  assert.match(skill, /Normal speed is the certification view|normal speed; slow motion is diagnostic/);
+  assert.match(skill, /normal speed[\s\S]*Slow motion is useful for diagnosis/);
   assert.match(skill, /stepped exposure/);
   assert.ok(playbook.includes(learningQuestion));
   assert.match(playbook, /Mechanical invariant/);
@@ -86,14 +86,17 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(playbook, /asset ID, path, bytes, normalized transform, opacity timing, and paint layer are exact-locked/);
   assert.match(playbook, /every corresponding native arm, forearm, and hand drawing becomes invisible/);
   assert.match(playbook, /cuff.*ownership|sleeve.*ownership/i);
-  assert.match(skill, /one coherent, part-specific registered pose drawing/);
+  assert.match(skill, /one coherent part-specific drawing/);
   assert.match(skill, /never overlap visible native counterparts/);
   assert.match(skill, /sequencePreset: "talk-to-camera"/);
-  assert.match(skill, /Do not author a new pose or calculate frames/);
-  assert.match(skill, /Default to Talk to Camera for unaccented speech/);
+  assert.match(skill, /Do not invent a pose or calculate frames/);
+  assert.match(skill, /Use Talk to Camera for unaccented speech/);
   assert.match(skill, /neutral-listening/);
   assert.match(skill, /sisters-room.*living-room.*map-photo-zone.*pure-white/);
-  assert.match(skill, /reserved for a future supporting-media feature/);
+  assert.match(skill, /reserved for future supporting media/);
+  assert.match(skill, /Registered means runnable\. It does not mean creatively approved\./);
+  assert.match(skill, /neutral-listening[\s\S]*present[\s\S]*think[\s\S]*aha[\s\S]*point[\s\S]*confident/);
+  assert.match(skill, /shrug[\s\S]*key-point[\s\S]*excited-celebration[\s\S]*point-at-screen[\s\S]*look-at-phone[\s\S]*facepalm-frustrated[\s\S]*arms-crossed-skeptical[\s\S]*phone-use-sequence/);
 });
 
 test("Talk to Camera remains a preset alias over the one registered neutral body", async () => {
@@ -110,8 +113,9 @@ test("Talk to Camera remains a preset alias over the one registered neutral body
   assert.equal(poseIndex.poses.length, 14);
   assert.ok(poseIndex.poses.some(({ id }) => id === "neutral-listening"));
   assert.ok(!poseIndex.poses.some(({ id }) => id === "talk-to-camera"));
-  assert.match(readme, /Talk to Camera — default dialogue/);
+  assert.match(readme, /## Talk to Camera/);
   assert.match(readme, /composition preset, not a new pose recipe|adds no body keys/);
+  assert.match(readme, /Registered means runnable, not creatively approved\./);
   assert.equal(inputContract.properties.sequencePreset.const, "talk-to-camera");
   assert.equal(inputContract.properties.durationFrames.userSupplied, false);
 });
@@ -128,6 +132,15 @@ test("build kit excludes runtime outputs and packages only registered prop asset
   assert.match(buildKit, /!packagedPropFiles\.has/);
   assert.match(buildKit, /commands: \["check", "inspect:registry", "smoke"/);
   assert.ok(manifest.commands.includes("inspect:registry"));
+});
+
+test("packaged smoke uses only the reviewed gesture set", async () => {
+  const smoke = JSON.parse(await fs.readFile(path.join(root, "fixtures", "smoke", "input.json"), "utf8"));
+  const safePoseIds = new Set(["neutral-listening", "present", "think", "aha", "point", "confident"]);
+  assert.ok(
+    smoke.sequence.every(({ poseId }) => safePoseIds.has(poseId)),
+    "the downloadable smoke must not showcase a pose that still needs creative review",
+  );
 });
 
 test("full Point cancels demo-shot motion at the master and preserves artist exposure cadence", async () => {

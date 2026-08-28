@@ -1,6 +1,6 @@
 # Generated action watch: Facepalm / Frustrated
 
-> **Status: HISTORICAL AND SUPERSEDED.** The hashes below predate the current cuff-ownership repair. Current exact-hash certification is `anatomy-v8-release`; see `five-storyboard-sequences-final.md`.
+> **Status: HISTORICAL AND USER-REJECTED.** The hashes below predate the later cuff-ownership repair. That repair appeared in `anatomy-v8-release`, whose visible poses the user later rejected. Keep this page as engineering history, not current creative approval.
 
 ## Exact accepted artifacts
 

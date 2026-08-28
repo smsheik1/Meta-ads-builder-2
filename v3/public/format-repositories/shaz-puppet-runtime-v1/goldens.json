@@ -75,7 +75,7 @@
   },
   "structuralAnatomyRelease": {
     "formatVersion": "0.1.2",
-    "status": "codex-approved-under-standing-delegation",
+    "status": "historical-user-rejected",
     "input": "goldens/anatomy-v8-release/input.json",
     "video": "goldens/anatomy-v8-release/final.mp4",
     "contactSheet": "goldens/anatomy-v8-release/contact-sheet.jpg",
@@ -92,6 +92,6 @@
     "height": 720,
     "fps": 24,
     "artistRenderedFramesUsed": false,
-    "userVisualApproval": "not-claimed"
+    "userVisualApproval": "rejected-after-public-page-review; retained as historical engineering evidence only"
   }
 }

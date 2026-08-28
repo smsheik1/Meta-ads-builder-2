@@ -12,7 +12,7 @@
 - Dense 63-frame sheet SHA-256: `a513fed5b0e4bad25b5fae833c62806833359e8ad9a24937f47d8c72269c519b`
 - Square-pixel close-up SHA-256: `bbd40aa2401f779bef4d714e9330d58d46b3b0239184ade51d2d9cd6fca70f61`
 - Automatic inspection: PASS, 55/55 recipe frames, zero failures, maximum identical run 1 frame
-- Official finalization: ready, no provider calls, $0
+- Historical run state: technically ready at the time, no provider calls, $0; not current creative approval
 
 ## Visual result
 

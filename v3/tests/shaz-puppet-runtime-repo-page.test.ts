@@ -35,6 +35,9 @@ const connectionsSource = readFileSync(
   "features/discovery/ShazPuppetRuntimeConnections.tsx",
   "utf8",
 );
+const formatProofSource = readFileSync("features/discovery/formatProof.server.ts", "utf8");
+const repoPageSource = readFileSync("features/discovery/formatRepoPage.server.ts", "utf8");
+const trustSource = readFileSync("features/discovery/shazPuppetRuntimeTrust.server.ts", "utf8");
 const expectedVideoSha =
   "59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf";
 const expectedContactSheetSha =
@@ -239,9 +242,11 @@ assert.equal(goldens.talkingSceneShowcase.audioSha256, expectedAudioSha);
 
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
-assert.equal(profile.version, "0.3.0");
+assert.equal(profile.name, "Animate Shaz");
+assert.equal(profile.version, "0.3.1");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-talking-scene");
+assert.equal(profile.proofEntries[0]?.format.name, "Animate Shaz");
 assert.equal(profile.proofEntries[0]?.format.version, "0.2.0");
 assert.match(
   profile.proofEntries[0]?.title ?? "",
@@ -249,14 +254,13 @@ assert.match(
 );
 assert.match(
   profile.proofEntries[0]?.curatorNote ?? "",
-  /five recovered mouth drawings/,
+  /five hand-drawn mouth shapes/,
 );
-assert.match(profile.promise, /Format 0\.3\.0/);
-assert.match(profile.promise, /Talk to Camera default/);
-assert.match(profile.promise, /bundled Cherry WASI cue engine/);
-assert.match(profile.promise, /audio into a Shaz talking scene/);
-assert.match(profile.promise, /four checksum-registered fixed backgrounds/);
-assert.match(profile.promise, /secondary pose gallery/);
+assert.match(profile.proofEntries[0]?.curatorNote ?? "", /creative review is still pending/);
+assert.match(profile.promise, /Give Shaz a voice track/);
+assert.match(profile.promise, /pick a room/);
+assert.match(profile.promise, /Talk to Camera handles everyday speech/);
+assert.match(profile.promise, /five artist-reviewed gestures/);
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
 assert.equal(
   profile.proofEntries[0]?.media.src,
@@ -280,16 +284,15 @@ assert.equal(
 assert.ok(profile.handoff);
 assert.match(
   profile.handoff.requiredInputs.join(" "),
-  /Talk to Camera for ordinary speech/,
+  /five artist-reviewed gestures/,
 );
 assert.match(
   profile.handoff.instructions.join(" "),
   /no sequence, durationFrames, or frame math/,
 );
-assert.equal(
-  profile.handoff.totalEstimate,
-  "$0 provider cost, usually 2-8 min",
-);
+assert.match(profile.handoff.instructions.join(" "), /present, think, aha, point, and confident/);
+assert.match(profile.handoff.instructions.join(" "), /registered recipes are technically runnable reference material/);
+assert.equal(profile.handoff.totalEstimate, "$0 in service fees, usually 2-8 min");
 assert.equal(
   getPublishedDiscoveryEntries().some(
     (entry) => entry.format.slug === "shaz-puppet-runtime",
@@ -311,29 +314,28 @@ assert.equal(
   presentation?.detailedProofId,
   "shaz-puppet-runtime-talking-scene",
 );
-assert.match(presentation?.copy.runDescription ?? "", /Format 0\.3\.0/);
+assert.equal(presentation?.copy.runTitle, "Give Shaz a line.");
 assert.match(presentation?.copy.runDescription ?? "", /Talk to Camera/);
-assert.match(presentation?.copy.runDescription ?? "", /bundled WASI/);
-assert.match(
-  presentation?.copy.runDescription ?? "",
-  /four built-in backgrounds/,
-);
-assert.equal(presentation?.copy.provided, "Audio + dialogue mode + background");
-assert.match(presentation?.copy.examplesTitle ?? "", /Shaz actually talks/);
-assert.match(
-  presentation?.copy.examplesDescription ?? "",
-  /historical 0\.2\.0 proof with sound/,
-);
-assert.match(
-  presentation?.copy.examplesDescription ?? "",
-  /downloadable 0\.3\.0 Repo/,
-);
-assert.match(
-  presentation?.copy.examplesDescription ?? "",
-  /secondary gallery below/,
-);
+assert.match(presentation?.copy.runDescription ?? "", /artist-reviewed gesture/);
+assert.match(presentation?.copy.runDescription ?? "", /handles timing, mouth shapes, rendering, and checks locally/);
+assert.equal(presentation?.copy.provided, "One voice track + room choice");
+assert.equal(presentation?.copy.examplesTitle, "Hear Shaz perform it.");
+assert.match(presentation?.copy.examplesDescription ?? "", /12-second first draft/);
+assert.match(presentation?.copy.examplesDescription ?? "", /five hand-drawn mouth shapes/);
+assert.match(presentation?.copy.examplesDescription ?? "", /creative review is still pending/);
+const publicHeroCopy = [profile.name, profile.promise, presentation?.copy.runTitle, presentation?.copy.runDescription].join(" ");
+assert.doesNotMatch(publicHeroCopy, /Download Format \d/i);
+assert.doesNotMatch(publicHeroCopy, /checksum|WASI|registered actions|trusted actions|Puppet Runtime/i);
+for (const staleCopy of [
+  "Download Format 0.3.0 to turn local audio",
+  "checksum-registered fixed backgrounds",
+  "trusted artist-authored actions",
+  "bundled WASI",
+]) {
+  assert.doesNotMatch(`${formatProofSource}\n${repoPageSource}`, new RegExp(staleCopy, "i"));
+}
 const trust = await getShazPuppetRuntimeTrustData();
-assert.equal(trust.version, "0.3.0");
+assert.equal(trust.version, "0.3.1");
 assert.equal(trust.includedAssets.poses.length, 14);
 assert.equal(
   trust.includedAssets.poses.some(({ id }) => id === "talk-to-camera"),
@@ -346,11 +348,11 @@ assert.deepEqual(trust.includedAssets.defaultDialogue, {
   subtitle: "Default dialogue",
   internalPoseId: "neutral-listening",
   description:
-    "Shaz faces the audience with a calm, grounded body while Cherry changes only the Mouth drawing for the supplied audio.",
+    "Shaz faces the audience in a calm, grounded pose while the supplied audio changes only the mouth drawing.",
   rules: [
-    "Audio sets the exact duration",
-    "No sequence or frame math",
-    "No extra pose or second renderer",
+    "The audio decides the length",
+    "No manual frame math",
+    "The same body and renderer stay in place",
   ],
 });
 assert.deepEqual(
@@ -390,8 +392,8 @@ assert.deepEqual(trust.includedAssets.bundledEngines, [
       "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs",
   },
 ]);
-assert.equal(trust.quality.summary[0]?.value, "0.3.0");
-assert.equal(trust.quality.summary[0]?.label, "downloadable Format");
+assert.equal(trust.quality.summary[0]?.value, "0.3.1");
+assert.equal(trust.quality.summary[0]?.label, "kit version");
 assert.ok(trust.commands.includes("npm run inspect:registry"));
 assert.ok(
   trust.commands.some(
@@ -407,28 +409,34 @@ assert.ok(
   ),
 );
 assert.equal(trust.quality.summary[2]?.value, "5");
-assert.equal(trust.quality.summary[2]?.label, "trusted poses below");
+assert.equal(trust.quality.summary[2]?.label, "artist-reviewed gestures");
 assert.equal(trust.proof.durationTimeLabel, "00:12");
-assert.match(trust.proofCopy.eyebrow, /Audio-backed talking proof/);
-assert.match(trust.proofCopy.title, /Five lip-sync mouths/);
-assert.match(trust.quality.note, /blind proof generated 100 Cherry cues/);
-assert.match(trust.quality.note, /5 authored mouth drawings/);
-assert.match(trust.quality.note, /download is Format 0\.3\.0/);
-assert.match(trust.quality.note, /historical Format 0\.2\.0/);
-assert.match(trust.quality.note, /four checksum-registered fixed backgrounds/);
-assert.match(
-  trust.quality.note,
-  /supporting-media zone is reserved but not active/,
+assert.match(trust.proofCopy.eyebrow, /First-draft talking scene/);
+assert.equal(trust.proofCopy.title, "A real voice track, performed by Shaz.");
+assert.match(trust.quality.noteTitle, /strong first draft/);
+assert.match(trust.quality.note, /generated 100 mouth-timing cues locally/);
+assert.match(trust.quality.note, /5 hand-drawn mouth shapes/);
+assert.match(trust.quality.note, /earlier 0\.2\.0 kit/);
+assert.match(trust.quality.note, /four built-in backgrounds/);
+assert.match(trust.quality.note, /Photo Zone is reserved for future supporting media but does not display it yet/);
+assert.match(trust.quality.note, /Creative review of this exact video is still pending/);
+assert.doesNotMatch(
+  trustSource,
+  /blind proof generated|checksum-registered fixed backgrounds|final checksum-bound creative certification|Body motion and lip-sync stay inside one renderer/i,
 );
 assert.equal(
   trust.includedAssets.showcasePosterSrc,
   "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
 );
 assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
-assert.match(includedAssetsSource, /Local lip-sync included/);
+assert.match(includedAssetsSource, /Five reviewed gestures\. Local lip-sync\. Four rooms\./);
+assert.match(includedAssetsSource, /runnable actions in all/);
+assert.match(includedAssetsSource, /engineering reference material/);
+assert.match(includedAssetsSource, /fresh creative review/);
 assert.match(includedAssetsSource, /data\.includedAssets\.bundledEngines/);
 assert.match(includedAssetsSource, /shaz-background-library/);
 assert.match(includedAssetsSource, /Pick the room\. Keep the camera fixed\./);
+assert.match(includedAssetsSource, /Four built-in backgrounds/);
 assert.match(includedAssetsSource, /data\.includedAssets\.backgrounds\.map/);
 assert.match(includedAssetsSource, /defaultBackgroundId/);
 assert.match(includedAssetsSource, /Future media zone reserved/);
@@ -437,17 +445,18 @@ assert.match(includedAssetsSource, /background\.path/);
 assert.match(includedAssetsSource, /shaz-talk-to-camera-option/);
 assert.match(includedAssetsSource, /defaultDialogue\.subtitle/);
 assert.match(includedAssetsSource, /ordinary speech/);
+assert.match(includedAssetsSource, /Present, Think, Ah-ha, Point, or/);
 assert.match(includedAssetsSource, /sequencePreset/);
 assert.match(
   includedAssetsSource,
   /data\.includedAssets\.defaultDialogue\.internalPoseId/,
 );
-assert.match(includedAssetsSource, /generated experimental poses\s+excluded/);
+assert.match(includedAssetsSource, /Five artist-reviewed gestures/);
 assert.match(includedAssetsSource, /data\.includedAssets\.showcasePoses\.map/);
 assert.match(includedAssetsSource, /shaz-mouth-shape-kit/);
 assert.match(
   includedAssetsSource,
-  /Five authored mouths\. Every sound has somewhere to go\./,
+  /Five hand-drawn mouths\. Every sound has somewhere to go\./,
 );
 for (const mouthAsset of [
   "mouth-01.png",
@@ -467,15 +476,17 @@ for (const mapping of ["A · X", "B · G · I · J", "C · H", "D", "E · F · K
     new RegExp(mapping.replaceAll(" · ", " \\· ")),
   );
 }
-assert.match(includedAssetsSource, /swaps only the Mouth drawing/);
-assert.match(connectionsSource, /Bundled local lip-sync/);
-assert.match(connectionsSource, /same Shaz/);
+assert.match(includedAssetsSource, /swaps between five mouth drawings/);
+assert.match(connectionsSource, /No subscriptions\. No API keys\. It runs on your Mac\./);
+assert.match(connectionsSource, /Everything stays local/);
+assert.match(connectionsSource, /Lip-sync is built in/);
+assert.match(connectionsSource, /same Shaz rig/);
 assert.equal(
-  trust.receipt.rows.find(({ label }) => label === "Download Format")?.value,
-  "0.3.0",
+  trust.receipt.rows.find(({ label }) => label === "Kit version")?.value,
+  "0.3.1",
 );
 assert.equal(
-  trust.receipt.rows.find(({ label }) => label === "Proof Format")?.value,
+  trust.receipt.rows.find(({ label }) => label === "Demo made with")?.value,
   "0.2.0",
 );
 assert.equal(
@@ -490,8 +501,8 @@ assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Lip-sync")?.value,
   "100 cues · 5 mouths",
 );
-assert.match(trust.receipt.note, /fresh-package blind replay/);
-assert.match(trust.receipt.note, /stored human-review receipt remains pending/);
+assert.match(trust.receipt.note, /exact video checksum is recorded above/);
+assert.match(trust.receipt.note, /Human creative review is still pending/);
 
 const archive = await JSZip.loadAsync(readFileSync(download));
 const entries = Object.keys(archive.files);
@@ -536,8 +547,9 @@ const packagedRequirements = JSON.parse(
     networkRequired: boolean;
   }>;
 };
-assert.equal(packagedFormat.version, "0.3.0");
-assert.match(packagedFormat.summary, /bundled Cherry WASI cue engine/);
+assert.equal(packagedFormat.version, "0.3.1");
+assert.match(packagedFormat.summary, /Give Shaz a voice track/);
+assert.match(packagedFormat.summary, /four built-in backgrounds/);
 assert.deepEqual(packagedRequirements.bundledEngines, [
   {
     name: "cherry-lip-sync",

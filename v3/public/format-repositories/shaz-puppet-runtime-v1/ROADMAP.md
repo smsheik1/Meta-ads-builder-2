@@ -1,58 +1,66 @@
-# Shaz Puppet Runtime Roadmap
+# Animate Shaz roadmap
 
-This is the canonical product roadmap for the Shaz Wiggly Repo. Future agents should read it before proposing new capabilities or claiming the Format is complete.
+This is the working order for the Shaz Wiggly Repo. Read it before adding a capability or claiming that a pose is ready.
 
-## Current proven baseline
+## Available now
 
 - The recovered Shaz rig renders locally without Toon Boom Harmony.
-- Inputs can sequence registered actions with explicit holds and optional intentional gaps; actions are contiguous by default with no inserted separator frames, but polished inter-action blending remains future work.
-- All six artist-authored actions are certified against the frame-by-frame visual standard: `shrug`, `present`, `think`, `aha`, `point`, and `confident`.
-- Release proof `anatomy-v8-release` certifies four repaired actions at their current exact hashes: `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `phone-use-sequence`. Crossed Arms uses one registered arm-only destination drawing after native anticipation because the supplied native cuffs and pivots could not form a credible folded hold; the original head, face, torso, collar, strings, and pocket remain runtime-rendered from the rig.
-- `point-at-screen` and `look-at-phone` remain registered, but their current recipes still need renewed exact-hash visual review; their legacy reviews are not current certification.
-- Packaged MVP complete for audio-backed registered-action sequences: staged user audio uses one of four checksum-registered fixed backgrounds and locally generated, checksum-bound five-shape Cherry mouth motion without changing body choreography. Sisters Room remains the manifest default. Automatic script direction, polished action transitions, and plain-English pose generation remain unsupported.
-- Format 0.2.1 introduced the `talk-to-camera` default-dialogue preset: a blind agent supplies audio without sequence or frame math, and the runtime holds the existing audience-facing neutral body for the measured duration while Cherry drives only Mouth.
-- Format 0.3.0 adds Sisters Room, Living Room, Photo Zone, and Pure White as a sealed background library. `map-photo-zone` removes the source map art, but its supporting-media area is metadata-only until a later release.
+- **Talk to Camera** turns user audio into a direct-to-audience scene without manual frame math. It measures the audio, holds `neutral-listening` for the exact duration, and lets Cherry change only the mouth.
+- An explicit sequence can arrange approved actions with chosen holds and gaps. Actions are contiguous by default. This is sequencing, not polished inter-action blending.
+- Six building blocks are safe defaults: `neutral-listening`, `present`, `think`, `aha`, `point`, and `confident`.
+- Audio-backed sequences can use five real rig mouth shapes generated locally by the bundled Cherry 0.1.0 engine. A supplied exact-audio Cherry TSV and an explicit no-lip-sync option remain available.
+- Four fixed backgrounds ship with the kit: Sisters Room, Living Room, Photo Zone, and Pure White. Sisters Room is the default. Every room uses the same camera and waist-up Shaz placement.
+- The runtime validates the plan, renders through one character renderer, inspects the finished media, and requires human review before delivery.
+
+## Registered, but not ready for automatic use
+
+These eight current recipes are runnable engineering material and still need a fresh complete visual review:
+
+- `shrug`
+- `key-point`
+- `excited-celebration`
+- `point-at-screen`
+- `look-at-phone`
+- `facepalm-frustrated`
+- `arms-crossed-skeptical`
+- `phone-use-sequence`
+
+**Registered means runnable, not creatively approved.** Do not use these actions as automatic choices in a user video.
+
+The historical `anatomy-v8-release` mechanically passed 173 frames and was accepted under delegated review at the time. The user later saw and rejected its visible poses. That direct rejection supersedes the earlier delegated acceptance. The old checks and hashes remain useful engineering history, but they are not current creative approval.
+
+## Next
+
+### 1. Review or repair the remaining actions
+
+Take one action at a time. Watch the full current recipe at normal speed, compare full-frame and close-up playback where useful, inspect every frame, and record human approval against the exact output checksum.
+
+A passing render or registry inspection is not enough. Move an action into the safe set only after its current recipe looks right.
+
+### 2. Add polished transitions
+
+Build reusable transitions that preserve silhouette, joints, paint order, anticipation, overshoot, settle, and living holds. Do not hide a bad cut with a generic crossfade or uniform interpolation.
+
+### 3. Direct performances from a script
+
+Use meaning, emotion, emphasis, and conversational beats to choose gestures. Neutral speech should stay restrained. Gestures should land on meaningful moments instead of running constantly.
+
+The current `shaz-body-language-performance-v1` mode schedules body language from measured audio duration, but it does not apply lip-sync.
+
+### 4. Broaden lip-sync review
+
+The packaged lip-sync path works for `shaz-sequence-input-v1`: initialization creates Cherry cues locally, the renderer maps them to five existing mouth drawings, and the body stays untouched. Broader real-dialogue review is still needed before calling lip-sync production-complete across every speaking style.
+
+Dialogue-text input and automatic transcription are later work.
+
+### 5. Activate the Photo Zone
+
+The map artwork has been removed from the Photo Zone background, but the empty area is not an active media slot. Define and validate a supporting-image and supporting-video contract before accepting an overlay. The bounds in `assets.json` are provenance only.
+
+### 6. Create poses from plain English
+
+Translate a semantic request into inspectable rig controls and drawing substitutions, using the approved action library as the movement vocabulary. Reject any new pose that fails silhouette, compositing, timing, continuity, or complete visual review.
 
 ## Build order
 
-### 1. Finish body-language reliability
-
-Bring every remaining registered action to the Shrug standard, one at a time:
-
-1. **Complete:** artist-authored `present`, `think`, `aha`, `point`, and `confident`.
-2. **Complete:** release proof `anatomy-v8-release` gives `facepalm-frustrated`, `arms-crossed-skeptical`, `excited-celebration`, and `phone-use-sequence` current exact-hash visual review, per-frame inspection, focused regressions, and no separator flashes. Three actions retain native limb topology throughout. Crossed Arms uses a checksum- and placement-locked arm-only drawing substitution with mutually exclusive native-arm visibility. `phone-use-sequence` is intentionally the prop-free gesture variant.
-3. **Pending:** renew exact-hash visual review for the current `point-at-screen` and `look-at-phone` recipes. Do not promote their legacy evidence as current certification.
-
-The next active work is the renewed review for `point-at-screen` and `look-at-phone`. Polished action transitions follow after those current hashes pass.
-
-Each action requires complete playback, synchronized full-frame and close-up comparison where relevant, automatic inspection, and checksum-bound human approval. A passing render alone is not certification.
-
-### 2. Blend actions with polished transitions
-
-Add reusable transition recipes that preserve silhouette, joint continuity, paint order, and the artist's anticipation, overshoot, settle, and hold language. Avoid a generic crossfade or automatic interpolation that ignores body mechanics.
-
-### 3. Accept dialogue or user audio
-
-**MVP complete for user audio:** audio-backed Lego sequences use measured local media duration and keep dialogue timing separate from body-language decisions. The `talk-to-camera` preset removes manual timing for default dialogue by deriving its neutral hold directly from the audio. Dialogue-text input and automatic transcription remain future work. The separate semantic performance mode also consumes measured audio for sparse body-language scheduling, but it is not lip-synced in Format 0.3.0.
-
-### 4. Perform lip-sync
-
-**Packaged MVP complete for `shaz-sequence-input-v1`:** initialization runs the bundled Cherry 0.1.0 WASI module locally when audio is supplied, then maps validated cues to five real rig mouth substitutions on an independent output-frame track. A supplied Cherry TSV remains supported, and `--lipsync=off` is the explicit opt-out. Body controls remain untouched and the final frame returns to rest. Semantic `shaz-body-language-performance-v1` output is still body-language-only; production-complete lip-sync still requires broader visual approval across real dialogue inputs.
-
-### 5. Select poses intelligently from a script
-
-Use line meaning, emotion, emphasis, and conversational beats to choose and schedule registered actions. Neutral speech should remain restrained; gestures should be attached to meaningful events rather than constant motion.
-
-### 6. Use selectable backgrounds — packaged MVP complete
-
-Format 0.3.0 checksum-registers four opaque 16:9 assets, names Sisters Room as the default, lets audio-backed sequences and semantic performances resolve registered IDs, and keeps background selection in input data without changing the character renderer. Character placement stays on the same fixed waist-up stage view.
-
-Future work: define and validate a supporting-media input contract for the cleared Photo Zone area before allowing an image or video overlay. The reserved bounds in `assets.json` are provenance metadata, not active rendering behavior.
-
-### 7. Generate a new pose reliably from plain English
-
-Translate a semantic request into inspectable rig controls and drawing substitutions, using the certified action library as the movement vocabulary. Reject new poses that fail silhouette, compositing, timing, continuity, or visual review.
-
-## Sequencing rule
-
-Body-language reliability comes before lip-sync. Plain-English pose generation comes last, after the authored library and transition grammar are proven. Do not skip ahead by weakening the current gates or adding a second renderer.
+Finish the body-language library and transition grammar before expanding plain-English pose generation. Keep lip-sync, background choice, and body performance as separate inputs behind the same renderer. Do not move faster by weakening a gate or adding a second render path.

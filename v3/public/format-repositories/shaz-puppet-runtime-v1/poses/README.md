@@ -1,10 +1,21 @@
-# Shaz pose recipes
+# Writing Shaz pose recipes
 
-A pose recipe is the only authoring surface above the recovered rig. It does not contain finished artist-animation frames, generic full-character sprites, or a private renderer. It names real PEG/READ controls, adds sparse keyframes, switches drawings when needed, and renders through `renderRigFrame`.
+A pose recipe tells the recovered rig what to do. It names real PEG and READ controls, adds a small set of keyframes, and changes drawings only when needed. Every recipe renders through `renderRigFrame`.
 
-Prefer compiled Xstage drawings and complete native limb chains. When bounded native attempts prove that the recovered vocabulary cannot form an essential destination, the skill permits one coherent part-specific registered pose drawing under an exact asset/transform/paint-layer contract. The corresponding native parts must all become invisible on the same frame, unrelated rig regions must remain runtime-rendered, and the replacement must pass independent inspection plus exact-hash normal-speed review. See `SKILL.md` and the playbook for the full exception; independently positioned limb fragments remain forbidden.
+A recipe does not contain finished artist-animation frames, a generic full-character sprite, or its own renderer.
 
-Before authoring or certifying an action, follow the author-and-learn loop in `../SKILL.md` and read `../references/rig-animation-playbook.md` completely. Work on one uncertified action at a time.
+## Before you animate
+
+Read the author-and-learn loop in `../SKILL.md` and all of `../references/rig-animation-playbook.md`. Work on one unapproved action at a time.
+
+Use compiled Xstage drawings and complete native limb chains whenever possible. If bounded native-rig attempts prove that the recovered controls cannot make an essential destination, one coherent part-specific drawing may replace the complete corresponding native parts under the strict rule in `../SKILL.md`:
+
+- lock the exact asset, transform, and paint layer;
+- hide all corresponding native parts on the same frame;
+- keep unrelated regions, including the head and body, rig-rendered;
+- pass independent inspection and complete exact-output review.
+
+Independently positioned limb fragments remain forbidden.
 
 ## Minimal recipe
 
@@ -29,11 +40,19 @@ Before authoring or certifying an action, follow the author-and-learn loop in `.
 }
 ```
 
-Each key inherits omitted values from the previous key; the first key inherits from `baseFrame`. Segments are `linear` by default. Set `"interpolation": "hold"` on the left key for a held segment. Overshoot is an ordinary explicit key, as shown at frame 8.
+Each key inherits omitted values from the previous key. The first key inherits from `baseFrame`. Segments are `linear` unless the left key sets `"interpolation": "hold"`. An overshoot is simply another explicit key, as shown at frame 8.
 
-Supported numeric controls are `position` (`[x,y,z]`), `rotation`, `scale` (`[x,y]`), `skew`, and `opacity`. `flipHorizontal` and `flipVertical` are step-held booleans. Drawing keys use a READ node name and `{ "frame": N, "drawing": "drawing-id" }`; `null` hides that drawing.
+Supported numeric controls are:
 
-## Render
+- `position`: `[x,y,z]`
+- `rotation`
+- `scale`: `[x,y]`
+- `skew`
+- `opacity`
+
+`flipHorizontal` and `flipVertical` are step-held booleans. Drawing keys name a READ node and use `{ "frame": N, "drawing": "drawing-id" }`; use `null` to hide that drawing.
+
+## Render one recipe
 
 ```sh
 node runtime/render-xstage-range.mjs \
@@ -45,11 +64,13 @@ node runtime/render-xstage-range.mjs \
   --receipt output-receipt.json
 ```
 
-The command rejects the wrong rig SHA, unknown control names, unknown drawings, invalid frames, unsupported interpolation modes, and recipes that do not explicitly exclude artist-rendered frames.
+The command rejects the wrong rig SHA, unknown controls, unknown drawings, invalid frames, unsupported interpolation, and any recipe that does not explicitly exclude artist-rendered frames.
 
-The dense recipes in `authored/` are lossless calibration goldens extracted from the supplied Xstage animation. New poses should be sparse and semantic; they should contain only controls and substitutions that actually change.
+## Preserve authored timing
 
-When a synchronized artist reference proves stepped presentation timing, pass local change frames to the extractor rather than smoothing the Xstage channels:
+The dense recipes under `authored/` are lossless calibration references extracted from the supplied Xstage animation. A new semantic pose should be sparse: include only controls and drawing substitutions that truly change.
+
+When a synchronized artist reference proves stepped timing, give the extractor the local change frames instead of smoothing the Xstage channels:
 
 ```sh
 node runtime/extract-pose-recipe.mjs \
@@ -62,6 +83,12 @@ node runtime/extract-pose-recipe.mjs \
   --output poses/authored/confident.json
 ```
 
-This writes hold-interpolated control keys, repeats matching deformation exposures, and records the measured cadence. Use only change frames proven from the reference; do not guess them from the control curves.
+This writes held control keys, repeats matching deformation exposures, and records the measured cadence. Use only change frames proven by the reference. Do not guess them from control curves.
 
-After authoring, run `runtime/inspect-pose.mjs` with the same manifest, asset, prop, and recipe paths. Do not add the recipe to `poses/index.json` until that inspection passes and the registry stores the exact file SHA-256. Once registered, all user-facing sequence renders must go through `runner.mjs`.
+## Inspect, review, then register
+
+Run `runtime/inspect-pose.mjs` with the same manifest, asset, prop, and recipe paths. Watch the exact output completely at normal speed as well; an automatic pass does not decide whether the pose looks right.
+
+Do not add a recipe to `poses/index.json` until inspection passes and the registry stores the exact file SHA-256. Once registered, all user-facing sequence renders must go through `runner.mjs`.
+
+Registration makes a recipe runnable. Creative approval still requires a fresh review of that exact current recipe and output.

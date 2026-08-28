@@ -2547,7 +2547,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     brand: "Shaz Animated",
     title: "Shaz performs a real talking scene",
     curatorNote:
-      "Real audio drives five recovered mouth drawings while Shaz moves through a locally rendered body-language sequence. Play with sound to hear the bundled Cherry lip-sync proof.",
+      "A real voice track drives five hand-drawn mouth shapes while Shaz moves through a 12-second body-language sequence. It passed the technical checks; creative review is still pending. Play it with sound.",
     goal: "entertain",
     media: {
       kind: "video",
@@ -2559,7 +2559,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
     format: {
       slug: "shaz-puppet-runtime",
-      name: "Shaz Puppet Runtime",
+      name: "Animate Shaz",
       version: "0.2.0",
       owner: "Shaz",
     },
@@ -2781,7 +2781,7 @@ const discoveryShelfDefinitions = [
   {
     id: "two-d-character-animation",
     title: "2D Character Animation",
-    description: "Reusable character performance built from recovered 2D rigs and verified semantic actions.",
+    description: "A reusable 2D character who can speak, react, and stay on-model from scene to scene.",
     formats: ["shaz-puppet-runtime"],
     layout: "landscape",
   },

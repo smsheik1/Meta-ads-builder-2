@@ -170,51 +170,51 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     idPrefix: "shaz-puppet-runtime",
     version: format.version,
     assembly: {
-      title: "The animation line",
-      path: "Talk to Camera or sequence + local cues → Validate → Rig render → Inspect → Approve",
+      title: "How a talking scene gets made",
+      path: "Choose the performance → Check the plan → Render Shaz → Watch the result → Deliver",
       ariaLabel:
-        "Five steps from default dialogue or an action sequence to approved Shaz animation",
-      commandsLabel: "What the coding agent runs",
-      commandsAriaLabel: "Exact Shaz Puppet Runtime commands",
+        "Five steps from a voice track to a reviewed Shaz talking scene",
+      commandsLabel: "Commands the agent runs",
+      commandsAriaLabel: "Exact Animate Shaz commands",
       steps: [
         {
-          title: "Dialogue mode + local cues",
+          title: "Choose the performance",
           cost: "Free",
           description:
-            "Uses Talk to Camera for ordinary speech or registered actions for emphasis, then runs bundled Cherry 0.1.0 through Node WASI.",
+            "Start with Talk to Camera, or place an artist-reviewed gesture where the line needs more expression. Cherry turns the audio into mouth cues locally.",
         },
         {
-          title: "Validate",
+          title: "Check the plan",
           cost: "Free",
           description:
-            "Locks the input, rig source, recipes, and provenance checksums.",
+            "Makes sure the audio, background, gesture IDs, timing, and rig files are ready before rendering.",
         },
         {
-          title: "Rig render",
+          title: "Render Shaz",
           cost: "Free",
           description:
-            "Renders body frames and cue-selected mouth drawings through the same recovered rig renderer.",
+            "Shaz’s original rig draws every body frame and mouth shape.",
         },
         {
-          title: "Inspect",
+          title: "Catch visual problems",
           cost: "Free",
           description:
-            "Checks joints, clipping, layers, props, faces, frame count, and codec.",
+            "Checks for broken joints, clipping, misplaced layers and props, facial glitches, wrong duration, and bad video settings.",
         },
         {
-          title: "Review and deliver",
+          title: "You approve it",
           cost: "Free",
           description:
-            "Binds a real visual review to the exact final-video checksum.",
-          waiting: "Waits for your review",
+            "A person watches the exact MP4 before the agent can deliver it.",
+          waiting: "Waits for you",
         },
       ],
       commands,
     },
     proof: { durationTimeLabel: "00:12", aspectRatio: "16:9" },
     proofCopy: {
-      eyebrow: "02 · Audio-backed talking proof",
-      title: "Real audio. Body language. Five lip-sync mouths. One renderer.",
+      eyebrow: "02 · First-draft talking scene",
+      title: "A real voice track, performed by Shaz.",
     },
     annotations: [
       {
@@ -222,7 +222,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         timeLabel: "00:00",
         title: "Audio becomes mouth motion",
         description:
-          "Bundled Cherry WASI generates 100 cues locally, then the rig selects among five authored mouth drawings.",
+          "Cherry turns the audio into 100 timing cues locally, then the existing rig picks from five hand-drawn mouth shapes.",
         color: "cyan",
       },
       {
@@ -267,30 +267,30 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       },
     ],
     quality: {
-      eyebrow: `03 · Format ${format.version} quality contract`,
-      title: "Body motion and lip-sync stay inside one renderer.",
+      eyebrow: "03 · What gets checked",
+      title: "The agent checks the render. You judge the performance.",
       summary: [
-        { value: format.version, label: "downloadable Format" },
-        { value: `${poseRegistry.poses.length}`, label: "registered actions" },
-        { value: `${showcasePoses.length}`, label: "trusted poses below" },
-        { value: "$0", label: "provider cost" },
+        { value: format.version, label: "kit version" },
+        { value: `${poseRegistry.poses.length}`, label: "runnable actions" },
+        { value: `${showcasePoses.length}`, label: "artist-reviewed gestures" },
+        { value: "$0", label: "service fees" },
       ],
-      noteTitle: "A real first-draft talking proof.",
-      note: `The download is Format ${format.version}; the exact playable talking proof remains historical Format ${currentProof.formatVersion}. That blind proof generated ${currentProof.cueCount} Cherry cues locally, used ${currentProof.usedMouthDrawings?.length} authored mouth drawings, and passed automatic audiovisual and rig inspection. The current Repo keeps Talk to Camera and adds four checksum-registered fixed backgrounds, with Sisters Room as the default. The future supporting-media zone is reserved but not active. Final checksum-bound creative certification remains pending.`,
-      criteriaTitle: "Automatic gates",
-      criteriaSubtitle: `${quality.automaticGates.length} checks plus ${quality.humanReview.questions.length} visual questions`,
+      noteTitle: "A strong first draft, not a finished performance.",
+      note: `The 12-second video above was made with an earlier ${currentProof.formatVersion} kit. It generated ${currentProof.cueCount} mouth-timing cues locally, used ${currentProof.usedMouthDrawings?.length} hand-drawn mouth shapes, and passed the audio, video, and rig checks in a fresh download. The current kit adds Talk to Camera and four built-in backgrounds, with Sisters Room as the default. Photo Zone is reserved for future supporting media but does not display it yet. Creative review of this exact video is still pending.`,
+      criteriaTitle: "Checks before review",
+      criteriaSubtitle: `${quality.automaticGates.length} automatic checks, then ${quality.humanReview.questions.length} questions for a person`,
       criteria: quality.automaticGates.map((label, index) => ({
         id: `gate-${index + 1}`,
         label,
         badge: "Required",
       })),
-      rule: "All automatic gates must pass, then the exact MP4 must receive an honest visual approval.",
+      rule: "Every automatic check must pass. Then a person must watch the exact MP4 before final delivery.",
     },
     commands,
     receipt: {
       rows: [
-        { label: "Download Format", value: format.version },
-        { label: "Proof Format", value: currentProof.formatVersion },
+        { label: "Kit version", value: format.version },
+        { label: "Demo made with", value: currentProof.formatVersion },
         { label: "Video SHA", value: currentProof.videoSha256.slice(0, 16) },
         { label: "Frames", value: String(currentProof.frames) },
         {
@@ -307,7 +307,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         },
         { label: "Artist frames", value: "Excluded" },
       ],
-      note: `This exact Format ${currentProof.formatVersion} talking-scene checksum passed validation, render, audiovisual inspection, and a fresh-package blind replay. Its stored human-review receipt remains pending, so the page calls it a working first draft rather than final creative certification. User feedback: ${currentProof.userVisualApproval}.`,
+      note: `This ${currentProof.formatVersion} proof rendered from a fresh download and passed validation plus the audio, video, and rig checks. The exact video checksum is recorded above. Human creative review is still pending, so this is a strong first draft—not a finished performance. User feedback: ${currentProof.userVisualApproval}.`,
     },
     files,
     includedAssets: {
@@ -317,11 +317,11 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         subtitle: "Default dialogue",
         internalPoseId: "neutral-listening",
         description:
-          "Shaz faces the audience with a calm, grounded body while Cherry changes only the Mouth drawing for the supplied audio.",
+          "Shaz faces the audience in a calm, grounded pose while the supplied audio changes only the mouth drawing.",
         rules: [
-          "Audio sets the exact duration",
-          "No sequence or frame math",
-          "No extra pose or second renderer",
+          "The audio decides the length",
+          "No manual frame math",
+          "The same body and renderer stay in place",
         ],
       },
       poses: poseRegistry.poses,

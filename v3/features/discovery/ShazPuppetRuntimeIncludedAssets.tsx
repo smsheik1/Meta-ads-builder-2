@@ -2,11 +2,11 @@ import Image from "next/image";
 import type { ShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server";
 
 const kindLabels: Record<string, string> = {
-  "authored-neutral-anchor": "Neutral anchor",
-  "authored-replay": "Artist-calibrated",
-  "authored-body-replay": "Body replay",
-  "heldout-authored-replay": "Held-out proof",
-  generated: "New rig action",
+  "authored-neutral-anchor": "Artist-reviewed",
+  "authored-replay": "Artist-reviewed",
+  "authored-body-replay": "Artist-reviewed",
+  "heldout-authored-replay": "Artist-reviewed",
+  generated: "Needs creative review",
 };
 
 const mouthShapes = [
@@ -61,6 +61,11 @@ export function ShazPuppetRuntimeIncludedAssets({
 }: {
   data: ShazPuppetRuntimeTrustData;
 }) {
+  const needsReviewActionCount =
+    data.includedAssets.poses.length -
+    data.includedAssets.showcasePoses.length -
+    1;
+
   return (
     <section
       id="included-assets"
@@ -76,16 +81,16 @@ export function ShazPuppetRuntimeIncludedAssets({
           id="included-assets-title"
           className="mt-3 max-w-[720px] text-[clamp(34px,5vw,54px)] font-black leading-[0.96] tracking-[-0.04em]"
         >
-          Format {data.version}. {data.includedAssets.showcasePoses.length}{" "}
-          trusted actions shown. Local lip-sync included.
+          Five reviewed gestures. Local lip-sync. Four rooms.
         </h2>
         <p className="mt-5 max-w-[760px] text-base font-bold leading-7 text-[#596176]">
-          The download bundles Cherry Lip Sync as a checksum-locked WASI cue
-          engine. It runs locally, then the existing Shaz rig renderer maps
-          those cues to five authored mouth drawings. The download currently
-          contains {data.includedAssets.poses.length} registered recipes; this
-          public showcase is intentionally limited to the five actions with
-          approval-grade evidence.
+          The five gestures shown below were recreated from artist animation and
+          reviewed as ready to use. The kit contains{" "}
+          {data.includedAssets.poses.length} runnable actions in all. One is the
+          calm body behind Talk to Camera; the remaining{" "}
+          {needsReviewActionCount} are engineering reference material and need a
+          fresh creative review before a finished video uses them. Cherry Lip
+          Sync runs locally and maps the audio to five hand-drawn mouth shapes.
         </p>
         <div className="mt-7">
           {data.includedAssets.bundledEngines.map((engine) => (
@@ -94,21 +99,22 @@ export function ShazPuppetRuntimeIncludedAssets({
               className="border-2 border-[#080817] bg-[#dff8ff] p-4 shadow-[3px_3px_0_#080817]"
             >
               <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
-                Bundled cue engine
+                Lip-sync included
               </p>
               <h3 className="mt-2 text-xl font-black">
-                Cherry Lip Sync {engine.version} · {engine.artifact}
+                Cherry Lip Sync {engine.version}
               </h3>
               <p className="mt-2 text-sm font-bold leading-6 text-[#596176]">
-                {engine.purpose}. Hosted by {engine.host}; no native executable,
-                network call, or second renderer.
+                Cherry listens to the audio and chooses the matching mouth
+                shape on your Mac. It works without a subscription, network
+                call, or second animation system.
               </p>
             </article>
           ))}
         </div>
         <div className="mt-10" data-testid="shaz-background-library">
           <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
-            Four checksum-registered environments
+            Four built-in backgrounds
           </p>
           <h3 className="mt-2 text-[clamp(28px,4vw,42px)] font-black leading-none tracking-[-0.035em]">
             Pick the room. Keep the camera fixed.
@@ -116,8 +122,8 @@ export function ShazPuppetRuntimeIncludedAssets({
           <p className="mt-3 max-w-[760px] text-sm font-bold leading-6 text-[#596176]">
             Sisters Room remains the main default. Living Room adds a warmer
             home setting, Photo Zone removes the old map artwork cleanly, and
-            Pure White gives agents a neutral stage. Every choice uses the same
-            renderer and is checksum-bound in the delivery receipt.
+            Pure White gives Shaz a neutral stage. The camera stays fixed in
+            every room.
           </p>
           <div className="mt-5 grid gap-4 min-[640px]:grid-cols-2">
             {data.includedAssets.backgrounds.map((background) => (
@@ -179,7 +185,7 @@ export function ShazPuppetRuntimeIncludedAssets({
               </h3>
               <p className="mt-4 max-w-[620px] text-base font-bold leading-7 text-[#445168]">
                 {data.includedAssets.defaultDialogue.description} Use it for
-                ordinary speech, then add Present, Point, Shrug, Ah-ha, or
+                ordinary speech, then add Present, Think, Ah-ha, Point, or
                 Confident only when the line earns a gesture.
               </p>
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center gap-2 border-2 border-[#080817] bg-white px-3 py-2 font-mono text-xs font-bold shadow-[2px_2px_0_#080817]">
@@ -191,7 +197,7 @@ export function ShazPuppetRuntimeIncludedAssets({
             </div>
             <div className="border-t-2 border-[#080817] bg-[#c9ff55] p-5 min-[760px]:border-l-2 min-[760px]:border-t-0 sm:p-7">
               <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
-                Reuses the approved body
+                Keeps the body steady
               </p>
               <p className="mt-2 font-mono text-lg font-black">
                 {data.includedAssets.defaultDialogue.internalPoseId}
@@ -215,12 +221,11 @@ export function ShazPuppetRuntimeIncludedAssets({
             The talking kit
           </p>
           <h3 className="mt-2 text-2xl font-black tracking-[-0.025em]">
-            Five authored mouths. Every sound has somewhere to go.
+            Five hand-drawn mouths. Every sound has somewhere to go.
           </h3>
           <p className="mt-2 max-w-[760px] text-sm font-bold leading-6 text-[#596176]">
-            Cherry chooses a cue from the audio; the existing Shaz renderer
-            swaps only the Mouth drawing. The body pose, hands, timing, and
-            background stay untouched.
+            Cherry listens to the audio; Shaz swaps between five mouth drawings
+            while the body, hands, timing, and room stay untouched.
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3 min-[760px]:grid-cols-5">
             {mouthShapes.map((mouth, index) => (
@@ -231,7 +236,7 @@ export function ShazPuppetRuntimeIncludedAssets({
                 <div className="flex aspect-[4/3] items-center justify-center rounded-sm bg-[#ffd9e9] p-3">
                   <Image
                     src={`${rigAssetRoot}/${mouth.asset}`}
-                    alt={`${mouth.label} authored Shaz mouth drawing`}
+                    alt={`${mouth.label} hand-drawn Shaz mouth shape`}
                     width={mouth.width}
                     height={mouth.height}
                     className="block max-h-full w-full object-contain"
@@ -250,17 +255,16 @@ export function ShazPuppetRuntimeIncludedAssets({
             ))}
           </div>
           <p className="mt-4 text-xs font-black uppercase tracking-[0.11em] text-[#9a315f]">
-            Mouth-only override · one recovered rig renderer · zero body drift
+            Only the mouth changes · the body stays put
           </p>
         </div>
         <p className="mt-8 text-xs font-black uppercase tracking-[0.15em] text-[#667087]">
-          Secondary trusted pose gallery · five artist-authored actions ·
-          generated experimental poses excluded
+          Five artist-reviewed gestures
         </p>
         <div className="mt-8 overflow-hidden border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]">
           <Image
             src={data.includedAssets.showcasePosterSrc}
-            alt="Present, Think, Ah-ha, Point, and Confident recreated through the Shaz rig runtime"
+            alt="Shaz performing the reviewed Present, Think, Ah-ha, Point, and Confident gestures"
             width={1300}
             height={556}
             className="block h-auto w-full"
@@ -283,7 +287,7 @@ export function ShazPuppetRuntimeIncludedAssets({
           ))}
         </div>
         <div className="mt-6 border-2 border-[#080817] bg-[#c9ff55] p-4">
-          <h3 className="text-lg font-black">Minimal extra drawings</h3>
+          <h3 className="text-lg font-black">Small supporting drawings</h3>
           <p className="mt-2 text-sm font-bold leading-6 text-[#334155]">
             {data.includedAssets.props
               .map((prop) => `${prop.id}: ${prop.usage}`)

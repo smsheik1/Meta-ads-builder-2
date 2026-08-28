@@ -1,10 +1,12 @@
 # Four reported anatomy repairs: structural release
 
+> **Current status: USER-REJECTED HISTORICAL PROOF.** The automatic checks and historical receipts below remain valid engineering evidence. After seeing these poses on the public page, the user rejected their visible result. Do not use this run as creative approval or select these actions automatically.
+
 The earlier `five-storyboard-sequences`, `five-storyboard-sequences-fixed`, and `five-storyboard-anatomy-repair` runs are rejected failure provenance. They allowed one or more of these defects: a front palm that touched the face while detached from its cuff, a flattened crossed-arm sticker, enlarged or unrelated celebration wrist states, a screen-space phone hand, and a literal phone that the user asked to remove.
 
-The accepted Format 0.1.2 proof is run `anatomy-v8-release` and is tracked for fresh Git checkouts under `goldens/anatomy-v8-release/`. The downloadable runtime kit intentionally excludes all golden proof media.
+The run was accepted under delegated review at the time. It is tracked as `anatomy-v8-release` under `goldens/anatomy-v8-release/`, but the user's later direct rejection supersedes that acceptance. The downloadable runtime kit intentionally excludes all golden proof media.
 
-## Accepted sequence
+## Sequence reviewed at the time
 
 1. `facepalm-frustrated`
 2. `arms-crossed-skeptical`
@@ -32,7 +34,7 @@ The accepted Format 0.1.2 proof is run `anatomy-v8-release` and is tracked for f
 
 The official inspector re-rendered and passed all 141 recipe frames with zero failures. A separate registry audit passed all 12 actions and all 433 registered recipe frames. The release is 173 frames, 1280×720, H.264/yuv420p, 24 fps, and 7.208008 seconds. Its exact output checksum was watched completely at normal speed through `ended=true` in the in-app browser and sampled throughout all four actions. The contact sheet was inspected separately.
 
-Codex performed and recorded the exact-hash review under the user's standing delegation; the receipt does not claim that the user personally watched or approved this release artifact.
+Codex performed and recorded the exact-hash review under the user's standing delegation; the receipt does not claim that the user personally watched or approved this release artifact. The user later saw the poses and rejected them, so this record is no longer a creative release gate.
 
 ## Learning-loop closure
 
