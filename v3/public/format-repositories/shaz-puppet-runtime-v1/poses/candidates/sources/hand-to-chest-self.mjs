@@ -222,13 +222,6 @@ async function buildHandToChestSelf(manifest) {
       artistRenderedFramesUsed: false,
       boundary: "hands-on-hips setup to held chest contact; no authored release in the selected clip",
     },
-    promotion: {
-      status: "blocked",
-      blockedAt: "mechanical-inspection",
-      attemptLimitReached: 3,
-      blocker: "The held native right-hand drawing measures a 0.594 hand-to-sleeve alpha-area ratio, above the fixed 0.56 on-model limit, on frames 3-27.",
-      resumeCondition: "Authorize a new bounded candidate that reduces both right-wrist scale axes by exactly 3% (multiply Candidate 3 values by 0.97), then rerun complete 27-frame inspection and normal-speed review without changing the proportion gate.",
-    },
   };
 }
 

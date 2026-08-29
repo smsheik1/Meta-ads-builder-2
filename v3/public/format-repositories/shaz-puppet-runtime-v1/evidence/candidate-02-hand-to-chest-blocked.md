@@ -47,11 +47,12 @@ The ceiling in `references/rig-animation-playbook.md` is therefore exhausted. No
 
 - Recipe: `poses/candidates/hand-to-chest-self.json`
 - Generator: `poses/candidates/sources/hand-to-chest-self.mjs`
-- Recipe file SHA-256: `3267363d573ddd4264f94814f4995cdd9df7e5c1fb7f027eecd646626149a0a1`
-- Semantic recipe SHA-256: `06ccfc1834b7978a9e2eef22be0397603f1af97d896c4a20b705e5882f370d64`
+- Recipe file SHA-256: `b7ac9906ce330e7f051bed16958014dbd30e64c3a3c28473a6ce16e974deab16`
+- Semantic recipe SHA-256: `524b5af675677a465c065b3989f009be59dc080a234b19384632a721cde34438`
+- Deterministic generator SHA-256: `6925cd1a0c1d8f43ac60c7db62a4359137ee3d2f45ee261b264ce7b6cd271a94`
 - Exact official-render output SHA-256: `9186268ba428714ae4796c11c7f903ac6c7a531d472c010ea4c119b883778a9e`
-- Render receipt SHA-256: `2659ff60c94a474929eb085747e9bc4147571e42175fe6246f779d1f6db13463`
-- Inspection receipt SHA-256: `9fde8ffc326c41a9a8a6ca358a7a723099ac3ecace32012600708540e90094e8`
+- Render receipt SHA-256: `03feaa94b03a062a0dcb6d287dde48add649c651cb5217ec0b0e9ae856243ca5`
+- Inspection receipt SHA-256: `945ed572c7c5c1b2a7442c7ead62f83bf3dece9b91a7ba402eac4cd01c31e2dd`
 - Inspection: 27/27 frames checked; 25 failures, all the same limb-proportion issue on frames 3–27.
 - Exact failure: right hand/sleeve alpha-area ratio `0.594`, above the unchanged native open-hand maximum `0.56`.
 - Other inspection gates: pass, including provenance, layer order, arm composite, scale stability, temporal continuity, attachment, hair/eye/collar/mouth ownership, clipping, joints, face stability, props, and motion.

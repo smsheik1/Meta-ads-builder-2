@@ -13,7 +13,7 @@ The recipe hashes below are an immutable lookup index. Current lifecycle status 
 
 | Candidate | Recipe | File SHA-256 | Semantic recipe SHA-256 |
 | --- | --- | --- | --- |
-| 02 — Hand to chest / self | `hand-to-chest-self.json` | `3267363d573ddd4264f94814f4995cdd9df7e5c1fb7f027eecd646626149a0a1` | `06ccfc1834b7978a9e2eef22be0397603f1af97d896c4a20b705e5882f370d64` |
+| 02 — Hand to chest / self | `hand-to-chest-self.json` | `b7ac9906ce330e7f051bed16958014dbd30e64c3a3c28473a6ce16e974deab16` | `524b5af675677a465c065b3989f009be59dc080a234b19384632a721cde34438` |
 | 04 — Open wide | `open-wide.json` | `e1e5554d834085e9b8164d666aaba7c0640b9c8949b1aec1823f95653e77bcfa` | `37fb2215cbcfa2280af4eb8b14488f707cac1f1c6499dc4533bd8e72f0224a6f` |
 | 06 — Present screen-left | `present-screen-left.json` | `0d1a2aa6a4c253db2bbb16d61f7b4070d87fe52b5feead92d661f35058e4b9c7` | `7d16a37dcb6e74d12532552a802eb29b0ddd6eb5570bcefb4f1772561751fae2` |
 | 08 — Heartfelt chest-clasp hold | `heartfelt-chest-clasp-hold.json` | `2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa` | `3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7` |

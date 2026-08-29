@@ -12,8 +12,10 @@ import { buildHandToChestSelf } from "../poses/candidates/sources/hand-to-chest-
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const recipePath = path.join(root, "poses", "candidates", "hand-to-chest-self.json");
-const fileSha256 = "3267363d573ddd4264f94814f4995cdd9df7e5c1fb7f027eecd646626149a0a1";
-const semanticSha256 = "06ccfc1834b7978a9e2eef22be0397603f1af97d896c4a20b705e5882f370d64";
+const sourcePath = path.join(root, "poses", "candidates", "sources", "hand-to-chest-self.mjs");
+const fileSha256 = "b7ac9906ce330e7f051bed16958014dbd30e64c3a3c28473a6ce16e974deab16";
+const semanticSha256 = "524b5af675677a465c065b3989f009be59dc080a234b19384632a721cde34438";
+const generatorSha256 = "6925cd1a0c1d8f43ac60c7db62a4359137ee3d2f45ee261b264ce7b6cd271a94";
 
 test("Candidate 02 is checksum-bound to the one-hand 0826 reference", async () => {
   const bytes = await fs.readFile(recipePath);
@@ -40,13 +42,15 @@ test("Candidate 02 is checksum-bound to the one-hand 0826 reference", async () =
 });
 
 test("Candidate 02 reproduces from locked native rig vocabulary without Heartfelt", async () => {
-  const [manifest, checkedIn, source] = await Promise.all([
+  const [manifest, checkedIn, sourceBytes] = await Promise.all([
     loadManifest(path.join(root, "rig-v2", "runtime.json")),
     fs.readFile(recipePath, "utf8").then(JSON.parse),
-    fs.readFile(path.join(root, "poses", "candidates", "sources", "hand-to-chest-self.mjs"), "utf8"),
+    fs.readFile(sourcePath),
   ]);
+  const source = sourceBytes.toString("utf8");
 
   assert.deepEqual(await buildHandToChestSelf(manifest), checkedIn);
+  assert.equal(crypto.createHash("sha256").update(sourceBytes).digest("hex"), generatorSha256);
   assert.doesNotMatch(source, /heartfelt/i);
   assert.deepEqual(checkedIn.sourceAction.selectedLocalFrames, [3, 4, 5]);
   assert.deepEqual(checkedIn.drawings.Right_Hand, [
@@ -64,27 +68,28 @@ test("Candidate 02 reproduces from locked native rig vocabulary without Heartfel
   assert.equal(checkedIn.quality.armGeometryLimits, undefined);
 });
 
-test("Candidate 02 stays blocked and unavailable to blind sequencing", async () => {
-  const [recipe, registry, packets, promotion] = await Promise.all([
+test("Candidate 02 keeps lifecycle state out of immutable recipe and generator bytes", async () => {
+  const [recipe, source, registry, packets, promotion, evidence] = await Promise.all([
     fs.readFile(recipePath, "utf8").then(JSON.parse),
+    fs.readFile(sourcePath, "utf8"),
     fs.readFile(path.join(root, "poses", "index.json"), "utf8").then(JSON.parse),
     fs.readFile(path.join(root, "motion-packets", "index.json"), "utf8").then(JSON.parse),
     fs.readFile(path.join(root, "POSE-PROMOTION.md"), "utf8"),
+    fs.readFile(path.join(root, "evidence", "candidate-02-hand-to-chest-blocked.md"), "utf8"),
   ]);
 
-  assert.deepEqual(recipe.promotion, {
-    status: "blocked",
-    blockedAt: "mechanical-inspection",
-    attemptLimitReached: 3,
-    blocker: "The held native right-hand drawing measures a 0.594 hand-to-sleeve alpha-area ratio, above the fixed 0.56 on-model limit, on frames 3-27.",
-    resumeCondition: "Authorize a new bounded candidate that reduces both right-wrist scale axes by exactly 3% (multiply Candidate 3 values by 0.97), then rerun complete 27-frame inspection and normal-speed review without changing the proportion gate.",
-  });
+  assert.equal(recipe.promotion, undefined);
+  assert.doesNotMatch(source, /promotion:|status:|blockedAt|attemptLimitReached|resumeCondition|creativeReview|safeListed|packetEligible|registered:/);
   assert.equal(registry.poses.some(({ id }) => id === "hand-to-chest-self"), false);
   assert.equal(
     packets.packets.some((packet) => packet.sources?.some(({ poseId }) => poseId === "hand-to-chest-self")),
     false,
   );
   assert.match(promotion, /02[\s\S]*three bounded candidates exhausted[\s\S]*blocked/);
+  assert.match(promotion, /0\.594 exceeds the fixed 0\.56 limit/);
+  assert.match(evidence, /Status: \*\*blocked at mechanical inspection\*\*/);
+  assert.match(evidence, /0\.594[\s\S]*maximum `0\.56`/);
+  assert.match(evidence, /Multiply both Candidate 3 right-wrist scale axes by exactly `0\.97`/);
 });
 
 test("Candidate 02 preserves its failed mechanical gate without weakening it", async () => {
