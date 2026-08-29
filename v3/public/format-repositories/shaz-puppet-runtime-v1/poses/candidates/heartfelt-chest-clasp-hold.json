@@ -446,15 +446,5 @@
     "facialMotionUsed": false,
     "artistRenderedFramesUsed": false,
     "boundary": "Local frames 8-96 provide the two-hand chest-clasp hold; frames 1-7 are inherited lead-in and frames 97-102 are a hard edit, so no authentic entry or release is claimed."
-  },
-  "promotion": {
-    "status": "recipe-candidate",
-    "attemptsUsed": 3,
-    "mechanicalInspection": "pass",
-    "creativeReview": "pending",
-    "registered": false,
-    "safeListed": false,
-    "packetEligible": false,
-    "blocker": "Exact-output normal-speed creative review is pending, and the frozen source supplies no authentic entry or release boundary."
   }
 }

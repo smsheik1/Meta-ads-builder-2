@@ -12,8 +12,8 @@ import { buildHeartfeltChestClaspHold } from "../poses/candidates/sources/heartf
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const recipePath = path.join(root, "poses", "candidates", "heartfelt-chest-clasp-hold.json");
-const fileSha256 = "41b5e2befdfd4c6ac47430503cc502cc9bf0c340edfddbc41d06fa1e283bbb8a";
-const semanticSha256 = "0291e18c3e7a848c0a5f6b8c432a470c7319f627451032958a289192d39d8dce";
+const fileSha256 = "2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa";
+const semanticSha256 = "3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7";
 
 test("Candidate 08 is checksum-bound to the frozen Heartfelt reference", async () => {
   const bytes = await fs.readFile(recipePath);
@@ -73,25 +73,29 @@ test("Candidate 08 reproduces as its own native bilateral clasp vocabulary", asy
   assert.equal(checkedIn.quality.armPaintOrder, "both-front-left-under-right");
 });
 
-test("Candidate 08 remains unapproved and unavailable to blind sequencing", async () => {
-  const [recipe, registry, packets, promotion, candidates] = await Promise.all([
+test("Candidate 08 keeps mutable lifecycle state outside immutable recipe bytes", async () => {
+  const [recipe, source, registry, packets, promotion, candidates, evidence] = await Promise.all([
     fs.readFile(recipePath, "utf8").then(JSON.parse),
+    fs.readFile(path.join(
+      root,
+      "poses",
+      "candidates",
+      "sources",
+      "heartfelt-chest-clasp-hold.mjs",
+    ), "utf8"),
     fs.readFile(path.join(root, "poses", "index.json"), "utf8").then(JSON.parse),
     fs.readFile(path.join(root, "motion-packets", "index.json"), "utf8").then(JSON.parse),
     fs.readFile(path.join(root, "POSE-PROMOTION.md"), "utf8"),
     fs.readFile(path.join(root, "poses", "candidates", "README.md"), "utf8"),
+    fs.readFile(path.join(
+      root,
+      "evidence",
+      "candidate-08-heartfelt-chest-clasp-hold.md",
+    ), "utf8"),
   ]);
 
-  assert.deepEqual(recipe.promotion, {
-    status: "recipe-candidate",
-    attemptsUsed: 3,
-    mechanicalInspection: "pass",
-    creativeReview: "pending",
-    registered: false,
-    safeListed: false,
-    packetEligible: false,
-    blocker: "Exact-output normal-speed creative review is pending, and the frozen source supplies no authentic entry or release boundary.",
-  });
+  assert.equal(recipe.promotion, undefined);
+  assert.doesNotMatch(source, /promotion:|creativeReview|safeListed|packetEligible|registered:/);
   assert.equal(registry.poses.some(({ id }) => id === recipe.id), false);
   assert.equal(
     packets.packets.some((packet) => packet.sources?.some(({ poseId }) => poseId === recipe.id)),
@@ -99,6 +103,7 @@ test("Candidate 08 remains unapproved and unavailable to blind sequencing", asyn
   );
   assert.match(promotion, /08[\s\S]*Heartfelt[\s\S]*recipe-candidate/);
   assert.match(candidates, /08 — Heartfelt chest-clasp hold[\s\S]*recipe-candidate/);
+  assert.match(evidence, /Status: \*\*`recipe-candidate`\*\*[\s\S]*not registered[\s\S]*packet-eligible/);
 });
 
 test("Candidate 08 passes every frame through the unchanged pose inspector", async () => {

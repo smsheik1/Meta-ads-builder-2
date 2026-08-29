@@ -37,24 +37,24 @@ There is no replacement arm art, prop, flattened character sprite, alternate ren
 | --- | --- | --- |
 | 1 | Rejected mechanically. The unscaled lower hand failed both fixed limb-proportion checks on all 48 frames: 96 failures total. No threshold changed. | Semantic recipe SHA `993d10d60424218cb49f0ca6c11c9d135b0224e54f46324bcb1716d38b87b60c`; inspection SHA `0fb49e6f89403061db3fc834e8df42f8df40f74c759700e7c27ab7d8b84d1404`. |
 | 2 | Passed all mechanical gates after the lower hand was scaled at its native wrist pivot. Preserved as engineering history rather than the final recipe because it still contained a diagnostic blink that belongs on the facial track. | Semantic recipe SHA `f84714a5b3c74e76e2c52c0471a21b5d2f8975cb5764dd5449f38d711696b571`; output SHA `9955524c9c7c158ef7f14da5f3bdcd43866dcf4fcddf2b288dd4c8fd4a7892cc`; inspection SHA `e946febefb1d520c6bb2a87159726096b9f6fd0ea3508da98a9438260e2bb1d0`. |
-| 3 | Selected unapproved review candidate. It preserves Attempt 2's native body mechanics, removes the blink, freezes provenance/promotion metadata, and passes every frame. | Recipe file SHA `41b5e2befdfd4c6ac47430503cc502cc9bf0c340edfddbc41d06fa1e283bbb8a`; semantic recipe SHA `0291e18c3e7a848c0a5f6b8c432a470c7319f627451032958a289192d39d8dce`. |
+| 3 | Selected unapproved review candidate. It preserves Attempt 2's native body mechanics, removes the blink, keeps immutable provenance in the recipe, and keeps mutable promotion lifecycle state outside the recipe checksum domain. All frames pass. | Recipe file SHA `2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa`; semantic recipe SHA `3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7`. |
 
-The three-attempt ceiling is exhausted. No fourth recipe was made.
+The three-attempt ceiling is exhausted. Removing lifecycle fields corrected the checksum domain without changing a control, drawing, deformation frame, or rendered-motion decision; it is not a fourth creative attempt. The superseded lifecycle-coupled bytes remain in the persistent pack as history.
 
 ## Selected exact output
 
 - Recipe: `poses/candidates/heartfelt-chest-clasp-hold.json`
 - Generator: `poses/candidates/sources/heartfelt-chest-clasp-hold.mjs`
-- Recipe file SHA-256: `41b5e2befdfd4c6ac47430503cc502cc9bf0c340edfddbc41d06fa1e283bbb8a`
-- Semantic recipe SHA-256: `0291e18c3e7a848c0a5f6b8c432a470c7319f627451032958a289192d39d8dce`
+- Recipe file SHA-256: `2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa`
+- Semantic recipe SHA-256: `3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7`
 - Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
 - Official-render output: 48 frames, 24 fps, 2.000 seconds, 1280×720, H.264
-- Output SHA-256: `f168e6f6a2907bdd980ea1e5b8fd33e0632fd914eb253a4b84a16e7676894136`
-- Inspection receipt SHA-256: `4956ab07a1695e30de31ba0566e869cc2717a0cecfe962032fd42376fec3a51e`
+- Output SHA-256: `772b69e15bace7255ca32a296493a65b62a753498f7418fd630d0e45df1cd021`
+- Inspection receipt SHA-256: `0b09c5ad37a237b106b32137c30be0f2b5456cf079636cd9f1713a48323cb3df`
 - Inspection: `pass`; 48/48 frames, 17 unchanged gates, zero failures, maximum identical-frame run 1, maximum observed native sleeve crossover 148 pixels
-- Segmented render provenance SHA-256: `d96b15a608629ef7e147bfb206b1593fdd37becbeaad10fe6cfd098a42a27ec7`
+- Canonical full-range render receipt SHA-256: `b044ecf2e616d8b3d8e3c50d7e2100536185f2a45e5174c4f6fcc1e4482f7022`
 
-The authoring volume could hold only one renderer scratch PNG at a time. Each of the 48 frames was therefore rendered independently by `runtime/render-xstage-range.mjs`, which calls the one official `runtime/rig-v2-renderer.mjs#renderRigFrame`, and retained its official receipt. The frame clips were assembled by FFmpeg stream copy; the ordered raw receipt aggregate SHA-256 is `df764bc167691d609e1e276bf84a60f166c6c673ee40cc15b9d45b1e0e48029c`.
+All 48 frames were freshly rendered in one range by `runtime/render-xstage-range.mjs`, which calls the one official `runtime/rig-v2-renderer.mjs#renderRigFrame`. The canonical receipt binds the new immutable semantic recipe checksum and records all 48 per-frame renderer receipts.
 
 ## Persistent unapproved audition bundle
 
@@ -62,11 +62,12 @@ The review pack is under `heartfelt-08-rig-native-review-candidate/` in the shar
 
 - exact frozen source: `reference/08-heartfelt-exact.mp4`
 - exact selected runtime output: `candidate/heartfelt-chest-clasp-hold.mp4`
-- normal-speed comparison: `candidate/side-by-side-normal-speed.mp4`, SHA-256 `8366b7797401817b8a174ec36aa3cfebf687b1e1f6ba7279c5e1c13fa0c02fec`
-- dense boundary sheet: `candidate/dense-boundary-sheet.jpg`, SHA-256 `4e0d5802e8b5d28ec77b74d4984a6107f5f92e5d81e5d2449d397052afc9d284`
+- three-pass normal-speed comparison: `candidate/side-by-side-normal-speed-three-passes.mp4`, SHA-256 `751244551d5cf00969e80784f20063a1ad8fbe3eb4e5eba710b518667058cb1e`
+- single-pass normal-speed comparison: `candidate/side-by-side-normal-speed.mp4`, SHA-256 `c38bdc98199595e4f83305e1d1654e6f12dc50ff8e4df721f31969e57b452efa`
+- dense boundary sheet: `candidate/dense-boundary-sheet.jpg`, SHA-256 `ba95ce7010a3c592ca257f61cd63eb9e58fc8dc77f26dedfed23066a201438ba`
 - complete candidate contact sheets: `candidate/contact-01-24.jpg` and `candidate/contact-25-48.jpg`
 - complete source contact sheets: five images under `reference/`
-- inspector, recipe, render provenance, all 48 official frame receipts, and rejected-attempt history
+- inspector, immutable recipe, canonical full-range render receipt, pending lifecycle manifest/review receipt, and rejected/superseded history
 
 The comparison places source on the left and runtime on the right. It uses source-local frames 8–67 and all 48 runtime frames for two synchronized seconds at normal speed; the 30 fps source is temporally sampled at 24 fps without retiming, and source audio is preserved.
 
