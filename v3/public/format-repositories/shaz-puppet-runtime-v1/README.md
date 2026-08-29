@@ -186,7 +186,7 @@ Shaz always uses one fixed waist-up composition. The hoodie must continue below 
 
 Sequencing an approved action is routine. Creating or repairing one is rig work.
 
-Read `poses/README.md` and `references/rig-animation-playbook.md` completely. Work on one action at a time. Use sparse named controls and existing drawing substitutions wherever possible, and keep each native shoulder-to-sleeve-to-hand chain intact.
+Start with `POSE-PROMOTION.md`. It is the canonical path from a selected reference clip to a sequence-ready action and, separately, a transition-ready motion packet. Then read `poses/README.md` and `references/rig-animation-playbook.md` completely. Work on one action at a time. Use sparse named controls and existing drawing substitutions wherever possible, and keep each native shoulder-to-sleeve-to-hand chain intact.
 
 If three bounded native-rig attempts prove that the recovered drawings and pivots cannot form an essential destination, the narrow replacement rule in `SKILL.md` allows one coherent part-specific drawing. Its exact bytes, transform, paint layer, and visibility swap must be fixed; the original head and body must remain rig-rendered; and the result still needs independent inspection and complete normal-speed review.
 

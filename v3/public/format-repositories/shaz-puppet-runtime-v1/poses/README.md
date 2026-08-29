@@ -6,7 +6,7 @@ A recipe does not contain finished artist-animation frames, a generic full-chara
 
 ## Before you animate
 
-Read the author-and-learn loop in `../SKILL.md` and all of `../references/rig-animation-playbook.md`. Work on one unapproved action at a time.
+Read the lifecycle in `../POSE-PROMOTION.md`, the author-and-learn loop in `../SKILL.md`, and all of `../references/rig-animation-playbook.md`. Work on one unapproved action at a time.
 
 Use compiled Xstage drawings and complete native limb chains whenever possible. If bounded native-rig attempts prove that the recovered controls cannot make an essential destination, one coherent part-specific drawing may replace the complete corresponding native parts under the strict rule in `../SKILL.md`:
 

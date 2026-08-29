@@ -13,7 +13,7 @@ Use this kit to turn a voice track into a Shaz talking scene or to build a short
 
 - **Talk to Camera:** the normal choice for direct-to-audience speech. `sequencePreset: "talk-to-camera"` measures the audio, holds `neutral-listening` for the full line, and lets Cherry change only the mouth. Do not invent a pose or calculate frames.
 - **Reviewed gesture sequence:** arrange the five artist-reviewed gestures listed below, then follow the complete run workflow.
-- **Action repair or authoring:** work on exactly one action. Read `references/rig-animation-playbook.md` completely and follow the author-and-learn loop. Do not repair several unapproved actions at once.
+- **Action repair or authoring:** work on exactly one action. Read `POSE-PROMOTION.md` and `references/rig-animation-playbook.md` completely, then follow the author-and-learn loop. Do not repair several unapproved actions at once.
 
 ## Which actions may be used
 
@@ -67,6 +67,8 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 9. Run `npm run finalize -- --run=my-run`. Delivery remains blocked unless validation, inspection, file checks, and human review all pass.
 
 ## Author-and-learn loop
+
+`POSE-PROMOTION.md` owns the full candidate lifecycle and its two finish lines. A sequence-approved action may be used as one complete recipe; it is not a transition-ready Lego block until its entry, hold, and release earn packet approval separately.
 
 1. Choose exactly one action. Record its reference segment, meaning, duration, and visible acceptance criteria. Check the surrounding frames before choosing the cut: include setup through release, or give a smaller gesture a smaller, honest name. A preexisting filename does not define the action.
 2. Watch the complete reference at normal speed. Then inspect dense decoded frames and consecutive-frame differences. When source controls exist, inspect their timing, hierarchy, drawing substitutions, deformation channels, and asymmetry. Find intentional stepped exposures and holds before deciding how to interpolate. Never infer motion from one destination frame.
