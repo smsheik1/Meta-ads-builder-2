@@ -9,11 +9,12 @@ import { include } from "../build-kit.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 test("the package exposes one honest reference-to-packet promotion path", async () => {
-  const [promotion, readme, skill, poseReadme] = await Promise.all([
+  const [promotion, readme, skill, poseReadme, candidateReadme] = await Promise.all([
     fs.readFile(path.join(root, "POSE-PROMOTION.md"), "utf8"),
     fs.readFile(path.join(root, "README.md"), "utf8"),
     fs.readFile(path.join(root, "SKILL.md"), "utf8"),
     fs.readFile(path.join(root, "poses", "README.md"), "utf8"),
+    fs.readFile(path.join(root, "poses", "candidates", "README.md"), "utf8"),
   ]);
 
   assert.match(promotion, /Sequence-ready/);
@@ -62,11 +63,31 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   }
 
   assert.match(promotion, /03[\s\S]*Reuse `confident`[\s\S]*mapped-to-reviewed-action/);
+  assert.match(promotion, /04[\s\S]*Review built rig-native candidate[\s\S]*recipe-candidate/);
+  assert.match(promotion, /poses\/candidates\/open-wide\.json/);
   assert.match(promotion, /05[\s\S]*Review `shrug`[\s\S]*registered-needs-review/);
+  assert.match(promotion, /06[\s\S]*Review built directional candidate[\s\S]*recipe-candidate/);
+  assert.match(promotion, /poses\/candidates\/present-screen-left\.json/);
   assert.match(promotion, /07[\s\S]*Review `key-point`[\s\S]*registered-needs-review/);
+  assert.match(promotion, /08[\s\S]*Promote built hold-only native candidate[\s\S]*recipe-candidate/);
+  assert.match(promotion, /poses\/candidates\/heartfelt-chest-clasp-hold\.json/);
   assert.match(promotion, /09[\s\S]*Promote recovered recipe[\s\S]*recipe-candidate/);
   assert.match(promotion, /poses\/candidates\/low-side-present\.json[\s\S]*fresh full inspection pass/);
   assert.match(promotion, /10[\s\S]*Big emphasis[\s\S]*The rejected `excited-celebration` is not a substitute/);
+  assert.match(promotion, /11[\s\S]*Review built directional candidate[\s\S]*recipe-candidate/);
+  assert.match(promotion, /poses\/candidates\/present-screen-right\.json/);
+
+  for (const candidateRecipe of [
+    "hand-to-chest-self.json",
+    "open-wide.json",
+    "present-screen-left.json",
+    "heartfelt-chest-clasp-hold.json",
+    "low-side-present.json",
+    "big-emphasis.json",
+    "present-screen-right.json",
+  ]) {
+    assert.ok(candidateReadme.includes(`\`${candidateRecipe}\``), `missing candidate recipe ${candidateRecipe}`);
+  }
 
   assert.match(readme, /Start with `POSE-PROMOTION\.md`/);
   assert.match(skill, /Read `POSE-PROMOTION\.md`/);
