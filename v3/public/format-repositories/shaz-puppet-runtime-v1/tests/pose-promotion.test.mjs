@@ -64,8 +64,8 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   assert.match(promotion, /03[\s\S]*Reuse `confident`[\s\S]*mapped-to-reviewed-action/);
   assert.match(promotion, /05[\s\S]*Review `shrug`[\s\S]*registered-needs-review/);
   assert.match(promotion, /07[\s\S]*Review `key-point`[\s\S]*registered-needs-review/);
-  assert.match(promotion, /09[\s\S]*Recover and audit the machine-local engineering lead[\s\S]*reference-only/);
-  assert.match(promotion, /low-side-present-candidate-v2[\s\S]*ignored local run, not durable package evidence/);
+  assert.match(promotion, /09[\s\S]*Promote recovered recipe[\s\S]*recipe-candidate/);
+  assert.match(promotion, /poses\/candidates\/low-side-present\.json[\s\S]*fresh full inspection pass/);
   assert.match(promotion, /10[\s\S]*Big emphasis[\s\S]*The rejected `excited-celebration` is not a substitute/);
 
   assert.match(readme, /Start with `POSE-PROMOTION\.md`/);

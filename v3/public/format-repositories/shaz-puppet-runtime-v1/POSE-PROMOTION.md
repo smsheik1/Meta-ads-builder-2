@@ -166,7 +166,7 @@ The unshipped source is `0826.mov`, SHA-256 `237715f71eed5bb9fc561d8c1766448ec61
 | 06 | Present screen-left | Build exact directional variant | `reference-only` | Approved `present` is useful comparison material, but its opposite hand rests on the hip. Preserve the reference's neutral opposite arm. |
 | 07 | Key point | Review `key-point`; reuse `aha` when the shorter beat is enough | `registered-needs-review` | Aha is already reviewed. The longer Key Point action still needs exact current-recipe review and separate release evidence. |
 | 08 | Heartfelt | Build | `reference-only` | Author the two-hand chest-clasp action and solve crossover/paint order without merging it with #02. |
-| 09 | Low side-present / explain | Recover and audit the machine-local engineering lead | `reference-only` | `low-side-present-candidate-v2` is an ignored local run, not durable package evidence. First recover its exact recipe and provenance into a tracked candidate; promote it only if those bytes verify, otherwise build from the reference. |
+| 09 | Low side-present / explain | Promote recovered recipe | `recipe-candidate` | The exact ignored-run recipe is now preserved at `poses/candidates/low-side-present.json`; its Xstage binding and fresh full inspection pass. It remains unregistered pending exact normal-speed creative review against the frozen 0826 clip. |
 | 10 | Big emphasis | Build | `reference-only` | Author the clean overhead V. The rejected `excited-celebration` is not a substitute. |
 | 11 | Present screen-right | Build exact directional variant | `reference-only` | Author the right-facing action. Do not mirror the whole asymmetrical character as a shortcut. |
 
