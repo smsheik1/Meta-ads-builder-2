@@ -35,7 +35,6 @@ const SOURCE_CONTROLS = Object.freeze([
   "Arms_Master-P",
   "Back_Hair-P",
   "Collar-P",
-  "Eyebrows",
   "Head_Movement-P",
   "Left_Arm_MOVE-P",
   "Left_Arm_Pivot-P",
@@ -116,15 +115,11 @@ function buildOpenWide(manifest) {
     drawings: {
       Left_Hand: drawingTimeline(manifest, "Left_Hand"),
       Right_Hand: drawingTimeline(manifest, "Right_Hand"),
-      Left_Eye: [{ frame: 1, drawing: sourceDrawing(manifest, "Left_Eye", 32) }],
-      Right_Eye: [{ frame: 1, drawing: sourceDrawing(manifest, "Right_Eye", 32) }],
-      Left_Pupil: [{ frame: 1, drawing: sourceDrawing(manifest, "Left_Pupil", 32) }],
-      Right_Pupil: [{ frame: 1, drawing: sourceDrawing(manifest, "Right_Pupil", 32) }],
-      Mouth: [{ frame: 1, drawing: sourceDrawing(manifest, "Mouth", 32) }],
     },
     learnedFrom: [
       "authored/shrug: complete bilateral native-rig entry, hold, afterbeat, and release",
       "Candidate 04 acceptance silhouette: straight open forearms, outward palms, centered torso",
+      "body/face separation: inherit the neutral face so expression and lip-sync remain independent tracks",
     ],
     deformationFrames: SOURCE_FRAMES,
     quality: {

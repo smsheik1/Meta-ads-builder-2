@@ -11,10 +11,10 @@ import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const recipePath = path.join(root, "poses", "candidates", "low-side-present.json");
-const fileSha256 = "53fd11c8850ec7514b01ecee6627adc2cd357e2d00132d6a95e3120bcfb77447";
-const semanticSha256 = "e0bbd203cddc26966e8555ee0c3ac3d36f4103c8e2797a1080195683ab5a339e";
+const fileSha256 = "661fc3138f63218f0131effdac83197dcc2502d04ce3753486caac4cf0f9fdc2";
+const semanticSha256 = "2ac1b39b00692303414f5407ca075529b096f45ed8dd8d4140c056c8687d2aca";
 
-test("Candidate 09 preserves the exact recovered recipe and Xstage provenance", async () => {
+test("Candidate 09 preserves the recovered motion with accurate crop provenance", async () => {
   const bytes = await fs.readFile(recipePath);
   const recipe = JSON.parse(bytes);
 
@@ -31,6 +31,12 @@ test("Candidate 09 preserves the exact recovered recipe and Xstage provenance", 
     endFrame: 43,
     generatedFrom: "xstage-control-channels-and-drawing-exposures",
   });
+  const [bottomEdge] = recipe.quality.sourceApprovedEdgeContacts;
+  assert.equal(
+    bottomEdge.reason,
+    "The source-authored opposite hand intentionally continues below the bottom edge in the fixed waist-up crop; its native cuff/wrist chain remains intact.",
+  );
+  assert.doesNotMatch(bottomEdge.reason, /restores? .*fingertips/i);
 });
 
 test("Candidate 09 remains review-only and cannot be selected by the runner", async () => {

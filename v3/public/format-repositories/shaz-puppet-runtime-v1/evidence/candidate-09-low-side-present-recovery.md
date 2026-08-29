@@ -4,18 +4,18 @@
 
 ## What was recovered
 
-The ignored machine-local run `agent-runs/low-side-present-candidate-v2` contained an exact `shaz-pose-recipe-v1` recipe whose Xstage source checksum still matches the packaged rig. Those recipe bytes were copied without modification to `poses/candidates/low-side-present.json`.
+The ignored machine-local run `agent-runs/low-side-present-candidate-v2` contained a `shaz-pose-recipe-v1` recipe whose Xstage source checksum still matches the packaged rig. Its controls, drawings, source range, and timing are preserved at `poses/candidates/low-side-present.json`. One false metadata claim—that the performance crop restored the opposite fingertips—was replaced with the accurate fixed-waist-up-crop description. No motion data changed.
 
-- recipe file SHA-256: `53fd11c8850ec7514b01ecee6627adc2cd357e2d00132d6a95e3120bcfb77447`
-- canonical semantic recipe SHA-256: `e0bbd203cddc26966e8555ee0c3ac3d36f4103c8e2797a1080195683ab5a339e`
+- recipe file SHA-256: `661fc3138f63218f0131effdac83197dcc2502d04ce3753486caac4cf0f9fdc2`
+- canonical semantic recipe SHA-256: `2ac1b39b00692303414f5407ca075529b096f45ed8dd8d4140c056c8687d2aca`
 - source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
 - recipe source range: Xstage frames 37–43, based at frame 32
 - recipe duration: 7 frames at 24 fps
 - artist-rendered runtime pixels used: false
 
-Fresh rendering through `runtime/rig-v2-renderer.mjs#renderRigFrame` reproduced the old inspection report byte-for-byte: inspection SHA-256 `8d6189dea87afdf553bfc088e5ec14a86ee5b6a47dfabae92aa9ec60d8a7418a`, status `pass`, 17 gates, zero failures, and a maximum identical-frame run of 1.
+Fresh rendering through `runtime/rig-v2-renderer.mjs#renderRigFrame` produced inspection SHA-256 `b33880252dfda9e53553ac02f3f246fe65f38c5beff6c61f902d904c39691681`, status `pass`, 17 gates, zero failures, and a maximum identical-frame run of 1.
 
-One recovered metadata sentence is stale: its bottom-edge exception says the performance stage restores the neutral fingertips, while the current close performance crop intentionally leaves those fingertips below frame, just as the 0826 reference does during its neutral setup. The edge contact is visually intentional, but the sentence must be corrected before registration. Because quality metadata participates in the semantic recipe checksum, that correction requires a new exact render, inspection, and review receipt rather than an in-place approval of this checksum.
+The corrected exception says exactly what the output shows: the source-authored opposite hand intentionally continues below the bottom edge in the fixed waist-up crop, while its native cuff/wrist chain remains intact. The new semantic checksum, render receipts, inspection, videos, comparisons, sheets, and pending-review binding were regenerated together. This correction does not register or approve the action.
 
 ## Why the old videos are not evidence
 
@@ -39,9 +39,9 @@ The artist motion contains neutral setup, a quick screen-left open-palm entry, a
 The authoring review bundle is at `shaz-primary-pose-promotion-2026-08-29/09-low-side-present-explain` in the persistent visualization workspace.
 
 - unmodified official range render: `runtime-exact-entry.mp4`, SHA-256 `4a8cbd0ac5c6dd7baf9566a2014f8f38a77677e869e34d56c486c2eb39088ad3`
-- exact recipe under the official performance stage and Sisters Room compositor: `runtime-performance-stage-entry.mp4`, SHA-256 `8f2bdd7c796d3ef8311ca09289bae5e73c7c475e8a38f35e75ea0e56f5e6ce6a`
-- normal-speed three-pass comparison: `source-vs-runtime-1x-three-passes.mp4`, SHA-256 `41f75e5266a88363010689fa4b506a34d3dfde8991e524fdba7074630c6ff2c2`
-- dense source-versus-runtime boundary sheet: `dense-boundary-sheet.jpg`, SHA-256 `723cd3d7570f06864ad5c16e965e53198ff9157ca08b126ceb213f51cbe7648c`
+- exact recipe under the official performance stage and Sisters Room compositor: `runtime-performance-stage-entry.mp4`, SHA-256 `1037775c1c198f1ef1117e9cc0fa0de02cab41411fdfd65b693611593ad6c1df`
+- normal-speed three-pass comparison: `source-vs-runtime-1x-three-passes.mp4`, SHA-256 `4b32ee6d7de48f951f4f627bc94b2ad5d9f2663a62e25904b1c3e35cda58f148`
+- dense source-versus-runtime boundary sheet: `dense-boundary-sheet.jpg`, SHA-256 `a93768019eda0d8da6317dd72c9fb77531c81899c0b4d58e63447fb73ef7b9b1`
 
 The comparison pads the candidate with frozen first and last frames only to align its 7-frame entry with the 100-frame source. That padding is review presentation, not recipe motion.
 

@@ -62,7 +62,7 @@ test("the package exposes one honest reference-to-packet promotion path", async 
     assert.ok(promotion.includes(clipSha256), `missing reference clip SHA ${clipSha256}`);
   }
 
-  assert.match(promotion, /03[\s\S]*Reuse `confident`[\s\S]*mapped-to-reviewed-action/);
+  assert.match(promotion, /03[\s\S]*Review proposed reuse of `confident`[\s\S]*reference-only/);
   assert.match(promotion, /04[\s\S]*Review built rig-native candidate[\s\S]*recipe-candidate/);
   assert.match(promotion, /poses\/candidates\/open-wide\.json/);
   assert.match(promotion, /05[\s\S]*Review `shrug`[\s\S]*registered-needs-review/);
@@ -87,7 +87,14 @@ test("the package exposes one honest reference-to-packet promotion path", async 
     "present-screen-right.json",
   ]) {
     assert.ok(candidateReadme.includes(`\`${candidateRecipe}\``), `missing candidate recipe ${candidateRecipe}`);
+    const recipe = JSON.parse(await fs.readFile(path.join(root, "poses", "candidates", candidateRecipe), "utf8"));
+    for (const mutableField of ["creativeReview", "registered", "safeListed", "packetEligible"]) {
+      assert.equal(recipe.promotion?.[mutableField], undefined, `${candidateRecipe} embeds mutable approval field ${mutableField}`);
+    }
   }
+
+  assert.match(candidateReadme, /Current lifecycle status and the next required gate live only in `\.\.\/\.\.\/POSE-PROMOTION\.md`/);
+  assert.doesNotMatch(candidateReadme, /\| Status \|/);
 
   assert.match(readme, /Start with `POSE-PROMOTION\.md`/);
   assert.match(skill, /Read `POSE-PROMOTION\.md`/);

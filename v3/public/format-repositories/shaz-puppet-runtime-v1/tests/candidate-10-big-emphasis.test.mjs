@@ -12,8 +12,8 @@ import { buildBigEmphasis } from "../poses/candidates/sources/big-emphasis.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const recipePath = path.join(root, "poses", "candidates", "big-emphasis.json");
-const fileSha256 = "215ee59e14b13489846f0905e9fa214409174ac8ecec52f325232a7c93cbc23f";
-const semanticSha256 = "24032ac06b54cedc3f7790ebdf1c09a5e4bd1480cbcab38a8af420b2899a7520";
+const fileSha256 = "9eba7c8a70f1dc05f1d73cba8de9977c6664cf9fcedb42cc573e89c56f6aaa8d";
+const semanticSha256 = "ee877349c1d4306ea2a9a7f737716ec878becb1177bd62376aa14cbbe30c2c0b";
 
 test("Candidate 10 is checksum-bound to the frozen 0826 reference", async () => {
   const bytes = await fs.readFile(recipePath);
@@ -54,13 +54,26 @@ test("Candidate 10 reproduces from the locked Shrug grammar without the rejected
     frame: 3,
     drawing: "2",
   });
-  assert.equal(checkedIn.drawings.Left_Eye, undefined);
-  assert.equal(checkedIn.drawings.Right_Eye, undefined);
-  assert.deepEqual(checkedIn.drawings.Mouth, [
-    { frame: 1, drawing: "1" },
-    { frame: 4, drawing: "2" },
-    { frame: 29, drawing: "1" },
-  ]);
+  for (const nodeName of [
+    "Eyebrows",
+    "Eyebrows-P",
+    "Eyes-P",
+    "Left_Eye-P",
+    "Mouth-P",
+    "Right_Eye-P",
+  ]) {
+    assert.equal(checkedIn.controls[nodeName], undefined, `${nodeName} must stay on the face track`);
+  }
+  for (const nodeName of [
+    "Eyebrows",
+    "Left_Eye",
+    "Left_Pupil",
+    "Mouth",
+    "Right_Eye",
+    "Right_Pupil",
+  ]) {
+    assert.equal(checkedIn.drawings[nodeName], undefined, `${nodeName} must inherit the neutral face`);
+  }
 });
 
 test("Candidate 10 remains review-only and cannot be selected by the runner", async () => {

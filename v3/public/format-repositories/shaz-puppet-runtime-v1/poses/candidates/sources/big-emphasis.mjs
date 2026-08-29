@@ -10,7 +10,6 @@ import {
   adjustedState,
   controlKey,
   generatedRecipe,
-  sourceDrawing,
   writePoseRecipe,
 } from "../../../runtime/pose-authoring.mjs";
 import { loadManifest } from "../../../runtime/rig-v2-renderer.mjs";
@@ -39,6 +38,22 @@ const ROTATION_DELTAS = Object.freeze({
   "Left_Hand-P": -5,
   "Right_Hand-P": 5,
 });
+const FACE_CONTROLS = new Set([
+  "Eyebrows",
+  "Eyebrows-P",
+  "Eyes-P",
+  "Left_Eye-P",
+  "Mouth-P",
+  "Right_Eye-P",
+]);
+const FACE_DRAWINGS = Object.freeze([
+  "Eyebrows",
+  "Left_Eye",
+  "Left_Pupil",
+  "Mouth",
+  "Right_Eye",
+  "Right_Pupil",
+]);
 
 async function loadLockedShrug() {
   const bytes = await fs.readFile(SHRUG_RECIPE_PATH);
@@ -67,24 +82,17 @@ async function buildBigEmphasis(manifest) {
   if (shrug.durationFrames !== EMPHASIS_WEIGHT.length) {
     throw new Error(`locked Shrug duration changed: ${shrug.durationFrames}`);
   }
-  const controls = Object.fromEntries(Object.entries(shrug.controls).map(([nodeName, keys]) => [
-    nodeName,
-    adjustedKeys(nodeName, keys),
-  ]));
+  const controls = Object.fromEntries(Object.entries(shrug.controls)
+    .filter(([nodeName]) => !FACE_CONTROLS.has(nodeName))
+    .map(([nodeName, keys]) => [
+      nodeName,
+      adjustedKeys(nodeName, keys),
+    ]));
   const drawings = structuredClone(shrug.drawings);
 
-  // Big Emphasis faces the audience. Mouth motion remains replaceable by the
-  // separate lip-sync track, but the review-only body candidate must not read
-  // as the Shrug's side-eye expression when rendered without audio.
-  delete drawings.Left_Eye;
-  delete drawings.Left_Pupil;
-  delete drawings.Right_Eye;
-  delete drawings.Right_Pupil;
-  drawings.Mouth = [
-    { frame: 1, drawing: sourceDrawing(manifest, "Mouth", 1) },
-    { frame: 4, drawing: sourceDrawing(manifest, "Mouth", 193) },
-    { frame: 29, drawing: sourceDrawing(manifest, "Mouth", 1) },
-  ];
+  // This candidate owns only body language. The official neutral face is
+  // inherited so expression, gaze, and lip-sync remain independent tracks.
+  for (const nodeName of FACE_DRAWINGS) delete drawings[nodeName];
 
   const recipe = generatedRecipe(manifest, {
     id: "big-emphasis",
@@ -93,6 +101,7 @@ async function buildBigEmphasis(manifest) {
       `authored/shrug@${SHRUG_RECIPE_SHA256}: complete native bilateral entry, living hold, open-palm drawings, and neutral release`,
       "0826 Candidate 10: fast anticipation into a clean overhead open-palm V with a long readable hold",
       "three bounded native-rig silhouette passes: candidate 3 retained the wide V without the rejected behind-the-head celebration mechanics",
+      "body/face separation: inherit the neutral face so expression, gaze, and lip-sync remain independent tracks",
     ],
     controls,
     drawings,

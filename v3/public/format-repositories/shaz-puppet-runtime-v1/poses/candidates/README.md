@@ -9,12 +9,14 @@ That distinction is a gate, not bookkeeping:
 - it is not sequence-approved merely because inspection passes; and
 - it cannot become a motion packet until its entry, hold, and release pass their own exact-output review.
 
-| Candidate | Recipe | File SHA-256 | Semantic recipe SHA-256 | Status |
-| --- | --- | --- | --- | --- |
-| 02 — Hand to chest / self | `hand-to-chest-self.json` | `3267363d573ddd4264f94814f4995cdd9df7e5c1fb7f027eecd646626149a0a1` | `06ccfc1834b7978a9e2eef22be0397603f1af97d896c4a20b705e5882f370d64` | `blocked`; three-candidate ceiling reached, frames 3–27 fail the unchanged 0.56 hand/sleeve proportion gate; resume with an authorized exact 3% right-wrist scale reduction |
-| 04 — Open wide | `open-wide.json` | `b75de5d2367198174dd0dc035a1fd1777fd8717a05edd889a02447163a9231d7` | `750990adc52d4bcf8300610b9d613f1f9d70d6f841a3013c6f4d5e621091f63f` | `recipe-candidate`; mechanically clean, creative review pending; setup/release are not exact neutral boundaries |
-| 06 — Present screen-left | `present-screen-left.json` | `b01a461b0b292533e3f02c9ecb60fce936ac279b8d82d71a1b417522f9df8635` | `eabcb4284ef53ef747bbcd33fab6d5c6e24ede69ddd7a4eda59fc1ba70072098` | `recipe-candidate`; neutral stage registration, native left-arm source action, mechanically clean, creative review pending; no authored release |
-| 08 — Heartfelt chest-clasp hold | `heartfelt-chest-clasp-hold.json` | `2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa` | `3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7` | `recipe-candidate`; third bounded native-rig pass, mechanically clean, exact-output creative review pending; hold-only with no authored entry or release |
-| 09 — Low side-present / explain | `low-side-present.json` | `53fd11c8850ec7514b01ecee6627adc2cd357e2d00132d6a95e3120bcfb77447` | `e0bbd203cddc26966e8555ee0c3ac3d36f4103c8e2797a1080195683ab5a339e` | `recipe-candidate`; mechanically clean, creative review pending |
-| 10 — Big emphasis | `big-emphasis.json` | `215ee59e14b13489846f0905e9fa214409174ac8ecec52f325232a7c93cbc23f` | `24032ac06b54cedc3f7790ebdf1c09a5e4bd1480cbcab38a8af420b2899a7520` | `recipe-candidate`; third bounded native-rig silhouette pass, mechanically clean, creative review pending |
-| 11 — Present screen-right | `present-screen-right.json` | `76f99ac7e90d678df5c87a2b0126a93b2d1a18934315f600cf42c96c5ac55525` | `8d6d883074e9d1f0da720ba1b6fc658c482a6afe18880e69c757a7793b948cbf` | `recipe-candidate`; native right-arm entry/hold/release, mechanically clean, creative review pending |
+The recipe hashes below are an immutable lookup index. Current lifecycle status and the next required gate live only in `../../POSE-PROMOTION.md`; do not duplicate mutable approval state here or inside recipe bytes.
+
+| Candidate | Recipe | File SHA-256 | Semantic recipe SHA-256 |
+| --- | --- | --- | --- |
+| 02 — Hand to chest / self | `hand-to-chest-self.json` | `3267363d573ddd4264f94814f4995cdd9df7e5c1fb7f027eecd646626149a0a1` | `06ccfc1834b7978a9e2eef22be0397603f1af97d896c4a20b705e5882f370d64` |
+| 04 — Open wide | `open-wide.json` | `e1e5554d834085e9b8164d666aaba7c0640b9c8949b1aec1823f95653e77bcfa` | `37fb2215cbcfa2280af4eb8b14488f707cac1f1c6499dc4533bd8e72f0224a6f` |
+| 06 — Present screen-left | `present-screen-left.json` | `0d1a2aa6a4c253db2bbb16d61f7b4070d87fe52b5feead92d661f35058e4b9c7` | `7d16a37dcb6e74d12532552a802eb29b0ddd6eb5570bcefb4f1772561751fae2` |
+| 08 — Heartfelt chest-clasp hold | `heartfelt-chest-clasp-hold.json` | `2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa` | `3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7` |
+| 09 — Low side-present / explain | `low-side-present.json` | `661fc3138f63218f0131effdac83197dcc2502d04ce3753486caac4cf0f9fdc2` | `2ac1b39b00692303414f5407ca075529b096f45ed8dd8d4140c056c8687d2aca` |
+| 10 — Big emphasis | `big-emphasis.json` | `9eba7c8a70f1dc05f1d73cba8de9977c6664cf9fcedb42cc573e89c56f6aaa8d` | `ee877349c1d4306ea2a9a7f737716ec878becb1177bd62376aa14cbbe30c2c0b` |
+| 11 — Present screen-right | `present-screen-right.json` | `76f99ac7e90d678df5c87a2b0126a93b2d1a18934315f600cf42c96c5ac55525` | `8d6d883074e9d1f0da720ba1b6fc658c482a6afe18880e69c757a7793b948cbf` |

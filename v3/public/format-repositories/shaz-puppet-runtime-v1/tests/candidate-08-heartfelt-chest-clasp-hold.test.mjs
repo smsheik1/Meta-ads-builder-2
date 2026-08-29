@@ -102,7 +102,9 @@ test("Candidate 08 keeps mutable lifecycle state outside immutable recipe bytes"
     false,
   );
   assert.match(promotion, /08[\s\S]*Heartfelt[\s\S]*recipe-candidate/);
-  assert.match(candidates, /08 — Heartfelt chest-clasp hold[\s\S]*recipe-candidate/);
+  assert.match(candidates, /08 — Heartfelt chest-clasp hold[\s\S]*2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa/);
+  assert.match(candidates, /Current lifecycle status and the next required gate live only in/);
+  assert.doesNotMatch(candidates, /\| Status \|/);
   assert.match(evidence, /Status: \*\*`recipe-candidate`\*\*[\s\S]*not registered[\s\S]*packet-eligible/);
 });
 

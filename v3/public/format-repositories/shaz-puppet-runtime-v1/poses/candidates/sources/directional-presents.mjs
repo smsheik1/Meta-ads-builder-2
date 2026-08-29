@@ -135,7 +135,7 @@ function buildPresentScreenLeft(manifest) {
     sourceApprovedEdgeContacts: [{
       edge: "bottom",
       frames: [1, 19],
-      reason: "The untouched opposite-side neutral hand from source frame 32 continues beyond the calibration canvas; the fixed performance stage view restores the full fingertips",
+      reason: "The source-authored opposite hand intentionally continues below the bottom edge in the fixed waist-up crop; its native cuff/wrist chain remains intact.",
     }],
   });
 }
