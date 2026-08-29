@@ -374,11 +374,12 @@ function validatePerformancePlan(input, {
   packetRegistry,
   audioDurationSeconds,
   defaultBackgroundId = null,
+  transcript = null,
 }) {
   object(input, "performance input");
   exactKeys(
     input,
-    ["schemaVersion", "title", "fps", "audioFile", "backgroundId", "durationFrames", "events"],
+    ["schemaVersion", "title", "fps", "audioFile", "backgroundId", "durationFrames", "events", "transcript", "planningTranscriptSha256"],
     "performance input",
   );
   if (input.schemaVersion !== PERFORMANCE_SCHEMA) {
@@ -391,6 +392,9 @@ function validatePerformancePlan(input, {
     throw new Error("performance input and motion packets must use fixed 24fps timing");
   }
   const title = boundedString(input.title, 1, 120, "performance input.title");
+  if (!transcript || input.planningTranscriptSha256 !== input.transcript?.sha256) {
+    throw new Error("performance input is stale or missing planningTranscriptSha256");
+  }
   const audioFile = safeRelativePath(input.audioFile, "performance input.audioFile");
   const backgroundId = input.backgroundId ?? defaultBackgroundId;
   if (backgroundId !== null && !PACKET_ID.test(backgroundId)) {
@@ -444,12 +448,18 @@ function validatePerformancePlan(input, {
     const intent = boundedString(event.intent, 2, 80, `${context}.intent`);
     const rationale = boundedString(event.rationale, 8, 240, `${context}.rationale`);
     object(event.anchor, `${context}.anchor`);
-    exactKeys(event.anchor, ["kind", "label", "frame"], `${context}.anchor`);
+    exactKeys(event.anchor, ["kind", "label", "frame", "wordId"], `${context}.anchor`);
     if (!ANCHOR_KINDS.has(event.anchor.kind)) {
       throw new Error(`${context}.anchor.kind must be phrase, beat, or pause`);
     }
     const anchorLabel = boundedString(event.anchor.label, 1, 120, `${context}.anchor.label`);
     const anchorFrame = integer(event.anchor.frame, 0, durationFrames - 1, `${context}.anchor.frame`);
+    const anchorWord = transcript.words.find(({ id }) => id === event.anchor.wordId);
+    if (!anchorWord) throw new Error(`${context}.anchor references unknown transcript word ${event.anchor.wordId}`);
+    const wordFrame = Math.round((anchorWord.startMs / 1000) * 24);
+    if (anchorFrame !== wordFrame || !anchorLabel.toLocaleLowerCase("en-US").includes(anchorWord.normalized)) {
+      throw new Error(`${context}.anchor must match transcript word ${anchorWord.id} at frame ${wordFrame}`);
+    }
     const holdStartFrame = startFrame + packet.path.entry.length;
     if (anchorFrame !== holdStartFrame) {
       throw new Error(`${context}.anchor.frame must equal the packet apex frame ${holdStartFrame}`);
@@ -479,7 +489,12 @@ function validatePerformancePlan(input, {
       endFrameExclusive,
       outputFrames,
       intent,
-      anchor: { kind: event.anchor.kind, label: anchorLabel, frame: anchorFrame },
+      anchor: {
+        kind: event.anchor.kind,
+        label: anchorLabel,
+        frame: anchorFrame,
+        wordId: anchorWord.id,
+      },
       rationale,
     };
   });
@@ -495,6 +510,8 @@ function validatePerformancePlan(input, {
     fps: 24,
     audioFile,
     backgroundId,
+    transcript: input.transcript ?? null,
+    planningTranscriptSha256: input.planningTranscriptSha256,
     audioDurationSeconds,
     durationFrames,
     durationSeconds: durationFrames / 24,

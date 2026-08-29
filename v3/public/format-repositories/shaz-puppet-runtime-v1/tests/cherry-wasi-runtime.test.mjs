@@ -8,11 +8,22 @@ import { fileURLToPath } from "node:url";
 
 import { generateCherryCues, loadCherryEngine, verifyCherryEngine } from "../runtime/cherry.mjs";
 import { readJson, sha256, validateRun } from "../runtime/run-common.mjs";
+import { generateTranscript } from "../runtime/transcription.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const vendor = path.join(root, "vendor", "cherry-lip-sync", "v0.1.0");
 const hello = path.join(vendor, "fixtures", "hello.ogg");
 const expected = path.join(vendor, "fixtures", "hello.filtered.fps24.tsv");
+
+async function preflightTranscriptSha256(scratch, name) {
+  const result = await generateTranscript({
+    root,
+    audioPath: hello,
+    outputPath: path.join(scratch, `${name}-transcript.json`),
+    receiptPath: path.join(scratch, `${name}-transcription-receipt.json`),
+  });
+  return result.transcriptSha256;
+}
 
 test("bundled Cherry WASI identifies as v0.1.0 and reproduces the upstream fixture exactly", async (t) => {
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-cherry-parity-"));
@@ -61,10 +72,12 @@ test("runner init auto-generates checksum-bound Cherry cues for an audio Lego se
     await fs.rm(runDirectory, { recursive: true, force: true });
   });
   const inputPath = path.join(scratch, "input.json");
+  const planningTranscriptSha256 = await preflightTranscriptSha256(scratch, "auto");
   await fs.writeFile(inputPath, `${JSON.stringify({
     schemaVersion: "shaz-sequence-input-v1",
     title: "Bundled Cherry automatic init proof",
     backgroundId: "sisters-room",
+    planningTranscriptSha256,
     sequence: [{ poseId: "neutral-listening", holdFrames: 67, gapFrames: 0 }],
   }, null, 2)}\n`);
   execFileSync(process.execPath, [
@@ -100,10 +113,12 @@ test("runner init supports an explicit lipsync opt-out", async (t) => {
     await fs.rm(runDirectory, { recursive: true, force: true });
   });
   const inputPath = path.join(scratch, "input.json");
+  const planningTranscriptSha256 = await preflightTranscriptSha256(scratch, "off");
   await fs.writeFile(inputPath, `${JSON.stringify({
     schemaVersion: "shaz-sequence-input-v1",
     title: "Explicit body-only audio proof",
     backgroundId: "sisters-room",
+    planningTranscriptSha256,
     sequence: [{ poseId: "neutral-listening", holdFrames: 67, gapFrames: 0 }],
   }, null, 2)}\n`);
   execFileSync(process.execPath, [
@@ -128,10 +143,12 @@ test("runner init preserves supplied Cherry cues without claiming bundled genera
     await fs.rm(runDirectory, { recursive: true, force: true });
   });
   const inputPath = path.join(scratch, "input.json");
+  const planningTranscriptSha256 = await preflightTranscriptSha256(scratch, "supplied");
   await fs.writeFile(inputPath, `${JSON.stringify({
     schemaVersion: "shaz-sequence-input-v1",
     title: "Supplied Cherry cue provenance proof",
     backgroundId: "sisters-room",
+    planningTranscriptSha256,
     sequence: [{ poseId: "neutral-listening", holdFrames: 67, gapFrames: 0 }],
   }, null, 2)}\n`);
   execFileSync(process.execPath, [

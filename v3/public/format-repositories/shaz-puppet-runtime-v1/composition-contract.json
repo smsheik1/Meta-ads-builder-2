@@ -9,11 +9,12 @@
   "renderer": "runtime/rig-v2-renderer.mjs",
   "previewExportParity": "Smoke, proof, and final rendering all call the same renderRigFrame implementation.",
   "audio": "Optional user audio is staged locally and muxed as AAC. Its measured duration owns the audio-backed sequence length.",
+  "transcription": "Before body-language planning, npm run transcribe turns the audio into local English text with word timestamps. Every audio-backed init regenerates transcript evidence. Expressive plans must name that preflight transcript SHA and anchor gestures to its exact words and frames. The transcript guides the agent but never renders, changes rig state, or replaces the audio.",
   "lipSync": "For audio-backed shaz-sequence-input-v1 runs, init generates Cherry 0.1.0 A-K/X cues with the bundled WASI module unless supplied cues or --lipsync=off are explicit. Cues map to five existing Shaz mouth drawings through the same renderRigFrame call. Body controls, deformations, props, and pose timing remain unchanged.",
   "talkToCameraPreset": "sequencePreset talk-to-camera resolves the entire measured audio duration to one gap-free hold of the registered neutral-listening body. Cherry controls only Mouth; the preset adds no body keys, props, camera motion, or second renderer.",
-  "semanticPerformanceLipSync": "shaz-body-language-performance-v1 remains body-language-only in Format 0.3.1; its audio drives measured duration and gesture scheduling, not mouth drawings.",
+  "semanticPerformanceLipSync": "shaz-body-language-performance-v1 remains body-language-only; its audio drives measured duration and gesture scheduling, not mouth drawings. It receives the same local transcript evidence as other audio-backed runs.",
   "backgroundSelection": "Audio-backed sequences resolve their explicit backgroundId from assets.json. Semantic performance inputs may select the same registered IDs and default to assets.defaultBackgroundId when omitted. Background changes are input data rendered through the same character renderer and fixed stage view.",
-  "supportingMediaZone": "map-photo-zone contains a clean empty wall area reserved in metadata for a future supporting-media feature. Format 0.3.1 does not accept, crop, place, or render supporting media there.",
+  "supportingMediaZone": "map-photo-zone contains a clean empty wall area reserved in metadata for a future supporting-media feature. This Format does not accept, crop, place, or render supporting media there.",
   "camera": "Fixed; no zoom, pan, slide, or Ken Burns motion.",
   "characterFraming": "Shaz is a waist-up rig. In audio-backed compositions the hoodie must continue below the bottom canvas edge in every frame, so its rounded lower boundary never reveals the missing legs. The same fixed stage view must also preserve clear left and right margins across every used action."
 }

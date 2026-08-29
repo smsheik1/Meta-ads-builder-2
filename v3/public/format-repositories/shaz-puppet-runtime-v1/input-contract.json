@@ -21,6 +21,27 @@
       "createdBy": "runner init only when sequencePreset is talk-to-camera",
       "userSupplied": false
     },
+    "planningTranscriptSha256": {
+      "type": "string",
+      "format": "sha256",
+      "requiredWhen": "audio-backed gesture sequence or shaz-body-language-performance-v1",
+      "description": "SHA-256 printed by the preflight npm run transcribe command. Init regenerates the transcript and rejects stale choreography. Talk to Camera does not require a planning hash."
+    },
+    "transcript": {
+      "type": "object",
+      "requires": ["audioFile"],
+      "createdBy": "runner init from the bundled whisper.cpp source and English base Q5_1 model",
+      "properties": {
+        "file": { "const": "transcript.json" },
+        "sha256": { "type": "string", "format": "sha256" },
+        "receiptFile": { "const": "transcription-receipt.json" },
+        "receiptSha256": { "type": "string", "format": "sha256" },
+        "sourceAudioSha256": { "type": "string", "format": "sha256" },
+        "language": { "const": "en" },
+        "segmentCount": { "type": "integer", "minimum": 0 },
+        "wordCount": { "type": "integer", "minimum": 0 }
+      }
+    },
     "lipSync": {
       "type": "object",
       "requires": ["audioFile", "backgroundId"],
@@ -48,17 +69,28 @@
         "properties": {
           "poseId": { "type": "string", "source": "poses/index.json" },
           "holdFrames": { "type": "integer", "minimum": 0, "maximum": 120, "default": 12 },
-          "gapFrames": { "type": "integer", "minimum": 0, "maximum": 24, "default": 0 }
+          "gapFrames": { "type": "integer", "minimum": 0, "maximum": 24, "default": 0 },
+          "anchor": {
+            "type": "object",
+            "requiredWhen": "audio-backed entry whose poseId is not neutral-listening",
+            "properties": {
+              "wordId": { "type": "string", "description": "Exact word ID from the planning transcript" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "frame": { "type": "integer", "minimum": 0, "description": "Entry start frame and round(word.startMs × 24 / 1000)" }
+            }
+          }
         }
       }
     }
   },
   "initialization": {
+    "semanticPreflight": "Before writing a gesture sequence, run npm run transcribe -- --audio=/absolute/path/audio --output=/absolute/path/transcript.json, read its text plus word timestamps, and copy its printed transcriptSha256 into planningTranscriptSha256. This preflight makes no provider call.",
+    "transcriptDefault": "Every audio-backed runner init regenerates transcript.json and transcription-receipt.json locally, binds both to the staged audio, and adds transcript to the staged input. Source inputs must not supply their own transcript object.",
     "audioDefault": "When --audio is supplied for a shaz-sequence-input-v1 input with backgroundId, init generates Cherry cues locally with the bundled 0.1.0 WASI engine and adds lipSync to the staged input.",
     "suppliedCueOverride": "--lipsync-cues=/absolute/path/cherry.tsv stages and validates that exact cue file instead of generating one.",
     "explicitOptOut": "--lipsync=off stages audio without creating lipSync.",
     "talkToCameraPreset": "With sequencePreset talk-to-camera, init derives durationFrames from the measured audio and resolves one gap-free neutral-listening body hold. The user supplies no sequence or frame math, and lip-sync cannot be disabled.",
-    "unsupportedMode": "Automatic cue generation and application do not apply to shaz-body-language-performance-v1 in Format 0.3.1.",
+    "unsupportedMode": "Automatic Cherry cue generation and application do not apply to shaz-body-language-performance-v1. Local transcription applies to every audio-backed init, including performance inputs.",
     "performanceBackgroundDefault": "shaz-body-language-performance-v1 accepts an optional backgroundId from the same registry and resolves an omitted value to assets.defaultBackgroundId."
   },
   "maximumOutputFrames": 1800,
@@ -70,6 +102,8 @@
     "Talk to Camera is a composition preset, not a fifteenth pose. It reuses the checksum-bound neutral-listening body and changes only the Mouth drawing through the validated Cherry track.",
     "An audio-backed sequence must contain exactly round(audio duration × 24) frames and use a checksum-registered background.",
     "Lip-sync changes only the Mouth drawing. Init generates cues locally by default for an audio-backed sequence, accepts a supplied exact-audio TSV, or disables mouth animation only when --lipsync=off is explicit.",
+    "The transcript is planning evidence, not animation data. It may inform pose choice and timing, but it cannot change rig controls, drawings, camera, audio, or rendering by itself.",
+    "Every expressive entry in an audio-backed sequence is tied to one exact transcript word and frame. Init rejects the complete plan when the regenerated transcript SHA does not match planningTranscriptSha256.",
     "The Photo Zone background is a fixed clean background in this release. Its reserved supporting-media bounds are metadata only; no overlay input is accepted or rendered."
   ]
 }

@@ -3,6 +3,12 @@
   "finalVideo": "final.mp4",
   "video": { "codec": "h264", "pixelFormat": "yuv420p", "width": 1280, "height": 720, "fps": 24 },
   "audioBackedVideo": { "audioCodec": "aac", "durationTolerance": "one video frame plus 0.01 seconds" },
+  "audioTranscriptEvidence": [
+    "transcript.json with English text, segments, and ordered word timestamps",
+    "transcription-receipt.json bound to the source audio, canonical PCM, whisper.cpp source, build plan, locally compiled binary, and model",
+    "matching transcript receipt in validation-receipt.json, render-report.json, quality-report.json, and delivery.json",
+    "planningTranscriptSha256 plus exact word/frame anchors for an audio-backed gesture plan"
+  ],
   "optionalLipSyncEvidence": [
     "engine",
     "engineVersion",
@@ -26,5 +32,5 @@
     "human-review.json",
     "delivery.json"
   ],
-  "finalization": "Blocked unless validation and inspection pass and human-review.json approves the exact final-video checksum."
+  "finalization": "Blocked unless transcript, audio, gesture anchors, validation, and inspection all agree and human-review.json approves the exact final-video checksum."
 }

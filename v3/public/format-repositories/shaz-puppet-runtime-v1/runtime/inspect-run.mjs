@@ -73,6 +73,10 @@ async function inspectRun({ root, runDirectory }) {
     if (renderReport.background?.sha256 !== validated.receipt.background.sha256) {
       failures.push("render report background checksum is stale");
     }
+    if (validated.receipt.transcript
+      && JSON.stringify(renderReport.transcript) !== JSON.stringify(validated.receipt.transcript)) {
+      failures.push("render report transcription receipt is stale");
+    }
     if (renderReport.cameraMotion !== false) failures.push("audiovisual render introduced camera motion");
     if (JSON.stringify(renderReport.stageView) !== JSON.stringify(PERFORMANCE_STAGE_VIEW)) {
       failures.push("performance render did not use the fixed canonical stage view");
@@ -208,6 +212,7 @@ async function inspectRun({ root, runDirectory }) {
     ...(validated.timeline.sequencePreset
       ? { sequencePreset: validated.timeline.sequencePreset }
       : {}),
+    ...(validated.receipt.transcript ? { transcript: validated.receipt.transcript } : {}),
     contactSheet: "contact-sheet.jpg",
     contactSheetSampleFrames: sampleFrames,
     humanReview: "human-review.json",

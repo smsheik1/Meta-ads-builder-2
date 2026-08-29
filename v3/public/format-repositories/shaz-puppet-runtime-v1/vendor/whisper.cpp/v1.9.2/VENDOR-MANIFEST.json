@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "engine": "whisper.cpp",
+  "version": "1.9.2",
+  "supportedPlatform": "darwin",
+  "supportedArchitecture": "arm64",
+  "nativeExecutableIncluded": false,
+  "source": {
+    "path": "whisper.cpp-v1.9.2.tar.gz",
+    "bytes": 9622263,
+    "sha256": "a6abd064fcca8b85e794d205abf328c522e9451db43a3eadc178b883b7d0e9cd",
+    "tag": "v1.9.2",
+    "commit": "306c88f4d1286aec1bf96e544632897886af5501",
+    "url": "https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v1.9.2.tar.gz"
+  },
+  "model": {
+    "id": "base.en-q5_1",
+    "path": "ggml-base.en-q5_1.bin",
+    "bytes": 59721011,
+    "sha256": "4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f",
+    "repositoryCommit": "5359861c739e955e79d9a303bcbc70fb988958b1",
+    "language": "en",
+    "quantization": "Q5_1",
+    "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base.en-q5_1.bin"
+  },
+  "build": {
+    "planPath": "BUILD-PLAN.json",
+    "planSha256": "6e4232dddec821a790da768675e3918b7a458aaed772d050f27ff2a2f0dc48ce",
+    "compiler": "Apple Clang from Xcode Command Line Tools",
+    "acceleration": "Accelerate",
+    "output": "locally compiled arm64 Mach-O cache",
+    "minimumMacosVersion": "13.0"
+  },
+  "licenses": [
+    {
+      "path": "LICENSE-WHISPER.CPP",
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+    },
+    {
+      "path": "LICENSE-OPENAI-WHISPER",
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d"
+    }
+  ]
+}

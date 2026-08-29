@@ -65,6 +65,12 @@ export function ShazPuppetRuntimeIncludedAssets({
     data.includedAssets.poses.length -
     data.includedAssets.showcasePoses.length -
     1;
+  const cherry = data.includedAssets.bundledEngines.find(
+    (engine) => engine.name === "cherry-lip-sync",
+  );
+  const whisper = data.includedAssets.bundledEngines.find(
+    (engine) => engine.name === "whisper.cpp",
+  );
 
   return (
     <section
@@ -81,7 +87,7 @@ export function ShazPuppetRuntimeIncludedAssets({
           id="included-assets-title"
           className="mt-3 max-w-[720px] text-[clamp(34px,5vw,54px)] font-black leading-[0.96] tracking-[-0.04em]"
         >
-          Five reviewed gestures. Local lip-sync. Four rooms.
+          Five reviewed gestures. Local transcription and lip-sync. Four rooms.
         </h2>
         <p className="mt-5 max-w-[760px] text-base font-bold leading-7 text-[#596176]">
           The five gestures shown below were recreated from artist animation and
@@ -89,28 +95,37 @@ export function ShazPuppetRuntimeIncludedAssets({
           {data.includedAssets.poses.length} runnable actions in all. One is the
           calm body behind Talk to Camera; the remaining{" "}
           {needsReviewActionCount} are engineering reference material and need a
-          fresh creative review before a finished video uses them. Cherry Lip
-          Sync runs locally and maps the audio to five hand-drawn mouth shapes.
+          fresh creative review before a finished video uses them. The kit
+          reads the spoken words locally, then Cherry maps the audio to five
+          hand-drawn mouth shapes.
         </p>
-        <div className="mt-7">
-          {data.includedAssets.bundledEngines.map((engine) => (
-            <article
-              key={engine.name}
-              className="border-2 border-[#080817] bg-[#dff8ff] p-4 shadow-[3px_3px_0_#080817]"
-            >
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
-                Lip-sync included
-              </p>
-              <h3 className="mt-2 text-xl font-black">
-                Cherry Lip Sync {engine.version}
-              </h3>
-              <p className="mt-2 text-sm font-bold leading-6 text-[#596176]">
-                Cherry listens to the audio and chooses the matching mouth
-                shape on your Mac. It works without a subscription, network
-                call, or second animation system.
-              </p>
-            </article>
-          ))}
+        <div className="mt-7 grid gap-4 min-[700px]:grid-cols-2">
+          <article className="border-2 border-[#080817] bg-[#dff8ff] p-4 shadow-[3px_3px_0_#080817]">
+            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
+              Understands the dialogue
+            </p>
+            <h3 className="mt-2 text-xl font-black">
+              Local English transcript
+            </h3>
+            <p className="mt-2 text-sm font-bold leading-6 text-[#596176]">
+              Whisper {whisper?.version ?? "1.9.2"} writes the words and their
+              timing on your Mac, so gestures can land on what Shaz is actually
+              saying. No upload or API key.
+            </p>
+          </article>
+          <article className="border-2 border-[#080817] bg-[#dff8ff] p-4 shadow-[3px_3px_0_#080817]">
+            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">
+              Lip-sync included
+            </p>
+            <h3 className="mt-2 text-xl font-black">
+              Cherry Lip Sync {cherry?.version ?? "0.1.0"}
+            </h3>
+            <p className="mt-2 text-sm font-bold leading-6 text-[#596176]">
+              Cherry listens to the audio and chooses the matching mouth shape
+              on your Mac. It works without a subscription, network call, or
+              second animation system.
+            </p>
+          </article>
         </div>
         <div className="mt-10" data-testid="shaz-background-library">
           <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#31566e]">

@@ -10,6 +10,9 @@ export function ShazPuppetRuntimeConnections({
   const cherry = data.includedAssets.bundledEngines.find(
     (engine) => engine.name === "cherry-lip-sync",
   );
+  const whisper = data.includedAssets.bundledEngines.find(
+    (engine) => engine.name === "whisper.cpp",
+  );
 
   return (
     <section
@@ -25,15 +28,16 @@ export function ShazPuppetRuntimeConnections({
           id="accounts-youll-connect-title"
           className="mt-2 text-4xl font-black leading-none sm:text-5xl"
         >
-          No subscriptions. No API keys. It runs on your Mac.
+          No subscriptions. No API keys. It runs on Apple silicon.
         </h2>
         <div className="mt-6 grid border-2 border-[#080817] bg-white min-[701px]:grid-cols-3">
           <Fact
             icon={<Laptop aria-hidden="true" />}
             title="Everything stays local"
           >
-            The rig, lip-sync, and video tools are all included in the download.
-            Your audio never has to leave your machine.
+            The rig, transcript, lip-sync, and video tools are all included in
+            the download. Your audio never has to leave your machine. Node,
+            FFmpeg, and Apple’s command-line tools are required.
           </Fact>
           <Fact
             icon={<CircleDollarSign aria-hidden="true" />}
@@ -44,10 +48,11 @@ export function ShazPuppetRuntimeConnections({
           </Fact>
           <Fact
             icon={<ShieldCheck aria-hidden="true" />}
-            title="Lip-sync is built in"
+            title="It hears the words, too"
           >
-            Cherry {cherry?.version ?? "0.1.0"} listens to the audio and picks
-            the mouth shapes. The same Shaz rig draws them.
+            Whisper {whisper?.version ?? "1.9.2"} writes the transcript and
+            word timing. Cherry {cherry?.version ?? "0.1.0"} picks the mouth
+            shapes. The same Shaz rig draws the scene.
           </Fact>
         </div>
       </div>

@@ -108,6 +108,7 @@ async function renderPerformance({ root, runDirectory, validated }) {
       inputSha256: validated.receipt.inputSha256,
       audioSha256: validated.receipt.audio.sha256,
       background: validated.receipt.background,
+      ...(validated.receipt.transcript ? { transcript: validated.receipt.transcript } : {}),
       sourceXstageSha256: validated.receipt.sourceXstageSha256,
       artistRenderedFramesUsed: false,
       renderer: "runtime/rig-v2-renderer.mjs#renderRigFrame",
@@ -300,6 +301,7 @@ async function renderSequence({ root, runDirectory }) {
       ...(isAudioSequence ? {
         audioSha256: validated.receipt.audio.sha256,
         background: validated.receipt.background,
+        ...(validated.receipt.transcript ? { transcript: validated.receipt.transcript } : {}),
         cameraMotion: false,
         stageView: PERFORMANCE_STAGE_VIEW,
         mouthMode: "source-pose-drawings; lip-sync not attempted",

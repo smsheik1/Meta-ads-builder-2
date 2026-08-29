@@ -10,7 +10,7 @@ const archiveName = "wiggly-shaz-puppet-runtime-format-kit";
 const downloads = path.join(root, "downloads");
 const output = path.join(downloads, `${archiveName}.zip`);
 const checksumOutput = `${output}.sha256`;
-const excludedNames = new Set(["node_modules", ".DS_Store", ".git"]);
+const excludedNames = new Set(["node_modules", ".runtime-cache", ".DS_Store", ".git"]);
 const packagedPropFiles = new Set(["phone.svg", "crossed-arms-pose.png"]);
 const packagedBackgroundFiles = new Set([
   "living-room.png",
@@ -18,6 +18,22 @@ const packagedBackgroundFiles = new Set([
   "pure-white.png",
   "sisters-room.png",
 ]);
+const archiveTimestamp = new Date("2000-01-01T00:00:00.000Z");
+
+async function listFiles(directory) {
+  const files = [];
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listFiles(absolute)));
+    } else if (entry.isFile()) {
+      files.push(absolute);
+    } else {
+      throw new Error(`unsupported package entry: ${absolute}`);
+    }
+  }
+  return files;
+}
 
 export function include(source) {
   const relative = path.relative(root, source);
@@ -44,6 +60,7 @@ export function include(source) {
     return false;
   }
   if (relative === "evidence/blind-kit-operation.md") return false;
+  if (relative === "evidence/local-transcription-sealed-receipt.md") return false;
   if (relative === "runtime/build-crossed-arms-assembly.mjs") return false;
   if (relative === "runtime/compile-tvg-assets.mjs") return false;
   return true;
@@ -62,12 +79,17 @@ export async function buildKit() {
       id: "shaz-puppet-runtime",
       version: (await import("./format.json", { with: { type: "json" } })).default.version,
       officialRuntime: "runner.mjs",
-      commands: ["check", "inspect:registry", "smoke", "lipsync", "init", "validate", "render", "inspect", "finalize"],
+      commands: ["check", "inspect:registry", "smoke", "transcribe", "lipsync", "init", "validate", "render", "inspect", "finalize"],
       networkRequired: false,
       providerCost: "$0",
       artistRenderedFramesUsed: false,
     });
-    execute("zip", ["-q", "-r", output, archiveName], { cwd: scratch });
+    const stagedFiles = (await listFiles(staged)).sort((left, right) => left.localeCompare(right));
+    for (const file of stagedFiles) {
+      await fs.utimes(file, archiveTimestamp, archiveTimestamp);
+    }
+    const archiveEntries = stagedFiles.map((file) => path.relative(scratch, file));
+    execute("zip", ["-q", "-X", output, ...archiveEntries], { cwd: scratch });
     const digest = await sha256(output);
     await fs.writeFile(checksumOutput, `${digest}  ${path.basename(output)}\n`);
     console.log(JSON.stringify({ status: "built", output, sha256: digest }, null, 2));

@@ -1,8 +1,8 @@
 # Animate Shaz: proof report
 
-Proof baseline: Format 0.3.1
+Proof baseline: Format 0.4.0
 
-The package can turn local audio into a complete Shaz talking scene, animate the mouth with five real rig drawings, place Shaz over four built-in rooms, and deliver an inspected 1280×720 video. The 12-second showcase is a strong first draft, not a claim of final creative approval.
+The package can transcribe local English audio with word timing, turn that audio into a complete Shaz talking scene, animate the mouth with five real rig drawings, place Shaz over four built-in rooms, and deliver an inspected 1280×720 video. The 12-second showcase is a strong first draft, not a claim of final creative approval.
 
 ## What is safe to use
 
@@ -17,7 +17,7 @@ Registry checks prove that a recipe can run and pass mechanical rules. They do n
 - Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
 - Compiled rig assets verified: 210
 - Registered pose recipes: 14
-- Automated tests: 112 passing, including bundled-engine parity, cue provenance, tamper rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, the exact four-background registry, and a smoke-fixture guard that excludes needs-review poses
+- Automated tests: 125 passing, including reproducible package bytes, bundled-engine parity, transcript and cue provenance, tamper rejection, transcript-anchored choreography, local-only audio ingress, cache-link rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, the exact four-background registry, and a smoke-fixture guard that excludes needs-review poses
 - Registry inspection: all 14 registered actions, 461 recipe frames, zero mechanical failures
 - Official smoke: Present and Confident only, 40 frames over 1.666667 seconds; validation, rendering, inspection, and finalization pass without using a needs-review action
 - Provider calls: 0
@@ -36,6 +36,14 @@ Registry checks prove that a recipe can run and pass mechanical rules. They do n
 - The run used Sisters Room, no camera movement, and no provider calls
 
 The user chose this exact 12-second result for the main Repo video after calling it very good for a first draft. Its saved `human-review.json` is still `pending`, so it remains a working proof rather than a final creative certification.
+
+## Local transcription status
+
+Development calibration is green: the bundled whisper.cpp source and English model compiled a roughly 2.3 MB arm64 helper locally, without downloading or running a prebuilt native executable. A 30-second Shaz dialogue clip produced 104 timed words and 12 segments in about 1.5 seconds on this Mac. Repeating the transcription produced byte-identical canonical JSON, SHA-256 `35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b`.
+
+The sealed-package proof is also green. A fresh blind operator received only the Format ZIP and two different 30-second WAV files. It read each transcript, chose three sparse gestures from the actual words, bound those gestures to six exact word IDs and frames, generated Cherry mouth cues, and completed `init → validate → render → inspect` twice. Both 720-frame H.264 + AAC videos passed with zero failures and decoded completely. One plan used Think, Point, and Confident for a reflective puppy story; the other used Present, Point, and Ah-ha for a family story. The different choices came from different transcript meanings, not volume peaks.
+
+The quarantined extraction compiled its own arm64 helper without a Gatekeeper prompt or quarantine removal. No Whisper executable or model was downloaded, and every transcription/render step reported zero provider calls and $0 cost. A one-time lockfile-pinned `npm ci` still needed network access for Sharp; operation after installation stayed local. Exact transcripts, plans, word anchors, engine receipts, media hashes, and the no-approval boundary are recorded in `evidence/local-transcription-proof.md`. Human review of the two videos remains pending.
 
 ## Body-language proof history
 
@@ -83,4 +91,4 @@ For the historical Format 0.2.0 package proof, a sealed extraction installed, pa
 
 The rich Repo page is testable, but the Format stays off the main Discovery shelf until the exact talking-proof checksum receives final creative approval.
 
-The downloadable ZIP does not contain the source archive, finished artist renders, agent runs, downloads, or `node_modules`.
+The downloadable ZIP intentionally contains the pinned whisper.cpp source archive and English model. It does not contain the original Toon Boom archive, source PSDs, finished artist renders, agent runs, downloads, `node_modules`, or a downloaded native Whisper executable.

@@ -9,6 +9,7 @@ This is the working order for the Shaz Wiggly Repo. Read it before adding a capa
 - An explicit sequence can arrange approved actions with chosen holds and gaps. Actions are contiguous by default. This is sequencing, not polished inter-action blending.
 - Six building blocks are safe defaults: `neutral-listening`, `present`, `think`, `aha`, `point`, and `confident`.
 - Audio-backed sequences can use five real rig mouth shapes generated locally by the bundled Cherry 0.1.0 engine. A supplied exact-audio Cherry TSV and an explicit no-lip-sync option remain available.
+- Every audio-backed run creates a local English transcript with word timestamps before planning. The package includes the pinned whisper.cpp source and model, compiles its small Apple-silicon helper locally, and uploads nothing.
 - Four fixed backgrounds ship with the kit: Sisters Room, Living Room, Photo Zone, and Pure White. Sisters Room is the default. Every room uses the same camera and waist-up Shaz placement.
 - The runtime validates the plan, renders through one character renderer, inspects the finished media, and requires human review before delivery.
 
@@ -41,9 +42,9 @@ A passing render or registry inspection is not enough. Move an action into the s
 
 Build reusable transitions that preserve silhouette, joints, paint order, anticipation, overshoot, settle, and living holds. Do not hide a bad cut with a generic crossfade or uniform interpolation.
 
-### 3. Direct performances from a script
+### 3. Turn transcripts into semantic performance plans
 
-Use meaning, emotion, emphasis, and conversational beats to choose gestures. Neutral speech should stay restrained. Gestures should land on meaningful moments instead of running constantly.
+The transcript and word timing are available now. The next step is a conservative planner that uses meaning, emotion, emphasis, and conversational beats to propose gestures. Neutral speech should stay restrained. Gestures should land on meaningful moments instead of running constantly, and the plan must remain inspectable before rendering.
 
 The current `shaz-body-language-performance-v1` mode schedules body language from measured audio duration, but it does not apply lip-sync.
 
@@ -51,7 +52,7 @@ The current `shaz-body-language-performance-v1` mode schedules body language fro
 
 The packaged lip-sync path works for `shaz-sequence-input-v1`: initialization creates Cherry cues locally, the renderer maps them to five existing mouth drawings, and the body stays untouched. Broader real-dialogue review is still needed before calling lip-sync production-complete across every speaking style.
 
-Dialogue-text input and automatic transcription are later work.
+Broader language support and automatic transcript-to-pose planning are later work. English transcription itself is available now.
 
 ### 5. Activate the Photo Zone
 
@@ -63,4 +64,4 @@ Translate a semantic request into inspectable rig controls and drawing substitut
 
 ## Build order
 
-Finish the body-language library and transition grammar before expanding plain-English pose generation. Keep lip-sync, background choice, and body performance as separate inputs behind the same renderer. Do not move faster by weakening a gate or adding a second render path.
+Finish the body-language library and transition grammar before automating transcript-to-pose decisions. Keep transcription, lip-sync, background choice, and body performance as separate inputs behind the same renderer. Do not move faster by weakening a gate or adding a second render path.

@@ -49,6 +49,9 @@ test("talk-to-camera derives its complete neutral-body timeline from the supplie
   assert.equal(staged.durationFrames, 68);
   assert.equal(staged.sequence, undefined, "the preset must not invent a second authored sequence");
   assert.equal(staged.lipSync.cueSource, "bundled-wasi-engine");
+  assert.equal(staged.transcript.language, "en");
+  assert.equal(staged.transcript.wordCount, 2);
+  assert.equal((await readJson(path.join(runDirectory, "transcript.json"))).text, "Hello, Cherry.");
 
   const validated = await validateRun({ root, runDirectory });
   assert.equal(validated.timeline.sequencePreset, "talk-to-camera");
@@ -63,6 +66,8 @@ test("talk-to-camera derives its complete neutral-body timeline from the supplie
     [{ poseId: "neutral-listening", recipeFrames: 1, holdFrames: 67, gapFrames: 0 }],
   );
   assert.equal(validated.receipt.sequencePreset, "talk-to-camera");
+  assert.equal(validated.receipt.transcript.sha256, staged.transcript.sha256);
+  assert.equal(validated.receipt.transcript.engine.version, "1.9.2");
   assert.ok(validated.receipt.lipSync.usedMouthDrawings.length > 1);
 
   const rendered = await renderSequence({ root, runDirectory });
@@ -70,12 +75,14 @@ test("talk-to-camera derives its complete neutral-body timeline from the supplie
   assert.equal(rendered.report.segments.length, 1);
   assert.equal(rendered.report.segments[0].poseId, "neutral-listening");
   assert.equal(rendered.report.totalFrames, 68);
+  assert.equal(rendered.report.transcript.sha256, staged.transcript.sha256);
 
   const quality = await inspectRun({ root, runDirectory });
   assert.equal(quality.status, "pass", JSON.stringify(quality.failures, null, 2));
   assert.equal(quality.sequencePreset, "talk-to-camera");
   assert.equal(quality.measured.frames, 68);
   assert.equal(quality.measured.audioCodec, "aac");
+  assert.equal(quality.transcript.sha256, staged.transcript.sha256);
   assert.ok(
     quality.contactSheetSampleFrames.length > 1,
     "the contact sheet must show multiple mouth states, not one neutral midpoint",
@@ -101,6 +108,7 @@ test("talk-to-camera derives its complete neutral-body timeline from the supplie
   ], { cwd: root, stdio: "pipe" });
   const delivery = await readJson(path.join(runDirectory, "delivery.json"));
   assert.equal(delivery.sequencePreset, "talk-to-camera");
+  assert.equal(delivery.transcript.sha256, staged.transcript.sha256);
   assert.equal(delivery.poses.length, 1);
   assert.equal(delivery.poses[0].poseId, "neutral-listening");
   assert.equal(delivery.outputSha256, outputSha256);
@@ -158,6 +166,10 @@ test("talk-to-camera cannot be downgraded by null preset or lip-sync values", ()
     );
   }
   assert.throws(
+    () => validateInput({ ...staged, lipSync: {} }, registry),
+    /requires generated transcript evidence/,
+  );
+  assert.throws(
     () => validateInput({
       schemaVersion: "shaz-sequence-input-v1",
       title: "Null preset bypass",
@@ -189,6 +201,6 @@ test("talk-to-camera rejects audio beyond the package duration ceiling before cu
     `--run=${id}`,
     `--input=${fixture}`,
     `--audio=${audio}`,
-  ], { cwd: root, stdio: "pipe" }), /audio requires 1824 frames; maximum is 1800/);
+  ], { cwd: root, stdio: "pipe" }), /transcription audio exceeds the 75-second Format limit/);
   await assert.rejects(fs.access(runDirectory));
 });

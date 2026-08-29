@@ -14,6 +14,19 @@ import { loadPoseRegistry } from "../runtime/run-common.mjs";
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const testTranscriptSha256 = crypto
+  .createHash("sha256")
+  .update("motion-packet-validator-transcript")
+  .digest("hex");
+const testTranscript = {
+  sha256: testTranscriptSha256,
+  words: [
+    { id: "w0001", normalized: "coverage", startMs: 125 },
+    { id: "w0002", normalized: "first", startMs: 1125 },
+    { id: "w0003", normalized: "key", startMs: 2125 },
+    { id: "w0004", normalized: "misplaced", startMs: 2167 },
+  ],
+};
 
 async function loadRegistries() {
   const manifest = await loadManifest(path.join(root, "rig-v2", "runtime.json"));
@@ -54,6 +67,8 @@ function validPlan(overrides = {}) {
     title: "One audio-bound body-language proof",
     fps: 24,
     audioFile: "user-audio.wav",
+    transcript: { sha256: testTranscriptSha256 },
+    planningTranscriptSha256: testTranscriptSha256,
     durationFrames: 240,
     events: [
       {
@@ -61,12 +76,16 @@ function validPlan(overrides = {}) {
         startFrame: 48,
         holdFrames: 12,
         intent: "Land one important idea",
-        anchor: { kind: "phrase", label: "the key phrase", frame: 51 },
+        anchor: { kind: "phrase", label: "the key phrase", frame: 51, wordId: "w0003" },
         rationale: "The gesture peaks once on the sentence's semantic emphasis.",
       },
     ],
     ...overrides,
   };
+}
+
+function validatePlan(input, options) {
+  return validatePerformancePlan(input, { ...options, transcript: testTranscript });
 }
 
 test("motion registry checksum-binds the neutral anchor and refuses to certify legacy Aha", async () => {
@@ -212,7 +231,7 @@ test("eligible non-neutral packets require a checksum-bound review and real neut
 test("performance plan is audio-derived, sparse, anchored at the apex, and neutral by default", async () => {
   const { packetRegistry: loaded } = await loadRegistries();
   const packetRegistry = withCertifiedTestPacket(loaded);
-  const timeline = validatePerformancePlan(validPlan(), {
+  const timeline = validatePlan(validPlan(), {
     packetRegistry,
     audioDurationSeconds: 10,
   });
@@ -225,28 +244,28 @@ test("performance plan is audio-derived, sparse, anchored at the apex, and neutr
   assert.equal(timeline.coveredFrames, 18);
   assert.equal(timeline.coverageRatio, 18 / 240);
 
-  const allNeutral = validatePerformancePlan(validPlan({ events: [] }), {
+  const allNeutral = validatePlan(validPlan({ events: [] }), {
     packetRegistry,
     audioDurationSeconds: 10,
   });
   assert.equal(allNeutral.coveredFrames, 0);
   assert.deepEqual(allNeutral.events, []);
 
-  const selectedBackground = validatePerformancePlan(validPlan({ backgroundId: "living-room" }), {
+  const selectedBackground = validatePlan(validPlan({ backgroundId: "living-room" }), {
     packetRegistry,
     audioDurationSeconds: 10,
     defaultBackgroundId: "sisters-room",
   });
   assert.equal(selectedBackground.backgroundId, "living-room");
 
-  const defaultBackground = validatePerformancePlan(validPlan({ events: [] }), {
+  const defaultBackground = validatePlan(validPlan({ events: [] }), {
     packetRegistry,
     audioDurationSeconds: 10,
     defaultBackgroundId: "sisters-room",
   });
   assert.equal(defaultBackground.backgroundId, "sisters-room");
   assert.throws(
-    () => validatePerformancePlan(validPlan({ backgroundId: "../escape" }), {
+    () => validatePlan(validPlan({ backgroundId: "../escape" }), {
       packetRegistry,
       audioDurationSeconds: 10,
       defaultBackgroundId: "sisters-room",
@@ -260,7 +279,7 @@ test("performance plan rejects unsafe packets, explicit neutral, and timing not 
   const packetRegistry = withCertifiedTestPacket(loaded);
 
   assert.throws(
-    () => validatePerformancePlan(validPlan({
+    () => validatePlan(validPlan({
       events: [{
         ...validPlan().events[0],
         packetId: "key-point-aha-candidate",
@@ -269,7 +288,7 @@ test("performance plan rejects unsafe packets, explicit neutral, and timing not 
     /ineligible packet/,
   );
   assert.throws(
-    () => validatePerformancePlan(validPlan({
+    () => validatePlan(validPlan({
       events: [{
         ...validPlan().events[0],
         packetId: "neutral-listening",
@@ -278,14 +297,14 @@ test("performance plan rejects unsafe packets, explicit neutral, and timing not 
     /must not schedule neutral explicitly/,
   );
   assert.throws(
-    () => validatePerformancePlan(validPlan({ durationFrames: 239 }), {
+    () => validatePlan(validPlan({ durationFrames: 239 }), {
       packetRegistry,
       audioDurationSeconds: 10,
     }),
     /must be 240, derived from the measured audio duration/,
   );
   assert.throws(
-    () => validatePerformancePlan(validPlan({ fps: 30 }), {
+    () => validatePlan(validPlan({ fps: 30 }), {
       packetRegistry,
       audioDurationSeconds: 10,
     }),
@@ -299,19 +318,28 @@ test("performance plan rejects a misplaced apex anchor, tight cooldown, and exce
   const baseEvent = validPlan().events[0];
 
   assert.throws(
-    () => validatePerformancePlan(validPlan({
+    () => validatePlan(validPlan({
       events: [{
         ...baseEvent,
-        anchor: { ...baseEvent.anchor, frame: 52 },
+        anchor: {
+          ...baseEvent.anchor,
+          label: "the misplaced phrase",
+          frame: 52,
+          wordId: "w0004",
+        },
       }],
     }), { packetRegistry, audioDurationSeconds: 10 }),
     /anchor.frame must equal the packet apex frame 51/,
   );
 
-  const first = { ...baseEvent, startFrame: 24, anchor: { ...baseEvent.anchor, frame: 27 } };
+  const first = {
+    ...baseEvent,
+    startFrame: 24,
+    anchor: { ...baseEvent.anchor, label: "the first phrase", frame: 27, wordId: "w0002" },
+  };
   const second = { ...baseEvent, startFrame: 48, anchor: { ...baseEvent.anchor, frame: 51 } };
   assert.throws(
-    () => validatePerformancePlan(validPlan({ events: [first, second] }), {
+    () => validatePlan(validPlan({ events: [first, second] }), {
       packetRegistry,
       audioDurationSeconds: 10,
     }),
@@ -319,12 +347,17 @@ test("performance plan rejects a misplaced apex anchor, tight cooldown, and exce
   );
 
   assert.throws(
-    () => validatePerformancePlan(validPlan({
+    () => validatePlan(validPlan({
       events: [{
         ...baseEvent,
         startFrame: 0,
         holdFrames: 24,
-        anchor: { ...baseEvent.anchor, frame: 3 },
+        anchor: {
+          ...baseEvent.anchor,
+          label: "the coverage phrase",
+          frame: 3,
+          wordId: "w0001",
+        },
       }],
       durationFrames: 48,
     }), { packetRegistry, audioDurationSeconds: 2 }),

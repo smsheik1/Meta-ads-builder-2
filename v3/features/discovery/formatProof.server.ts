@@ -424,7 +424,7 @@ const formatConfigs: FormatProfileConfig[] = [
   },
   {
     slug: "shaz-puppet-runtime",
-    promise: "Give Shaz a voice track, pick a room, and render a talking scene locally. Talk to Camera handles everyday speech; five artist-reviewed gestures are ready when the line needs more expression.",
+    promise: "Give Shaz a voice track and pick a room. The kit reads the words locally, lip-syncs the mouth, and gives a fresh agent five artist-reviewed gestures for the moments that matter.",
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
@@ -432,6 +432,7 @@ const formatConfigs: FormatProfileConfig[] = [
     whatStays: [
       "Shaz stays on-model throughout the scene",
       "Shaz’s original rig draws the body, mouth shapes, effects, preview, and final video",
+      "The audio is transcribed locally with word timing before gestures are planned",
       "Cherry Lip Sync 0.1.0 turns the audio into mouth cues locally",
       "Five artist-reviewed gestures with timing you control",
       "Every frame is checked for broken joints, clipping, facial glitches, and misplaced props",
@@ -454,6 +455,7 @@ const formatConfigs: FormatProfileConfig[] = [
       ],
       deliverables: [
         "One checked scene plan",
+        "One local transcript with word timing",
         "One 1280 × 720 H.264 MP4, with AAC when audio is supplied",
         "A record of the Cherry version, source audio, and lip-sync cues used",
         "One contact sheet and quality report",
@@ -462,6 +464,7 @@ const formatConfigs: FormatProfileConfig[] = [
       instructions: [
         "Download the Repo, report the version in KIT-MANIFEST.json, then run npm install, npm test, npm run check, npm run inspect:registry, and npm run smoke",
         "For direct-to-audience speech, set sequencePreset to talk-to-camera; supply the audio but no sequence, durationFrames, or frame math",
+        "Before choosing gestures, run npm run transcribe and read the words plus their timing; do not upload the audio to a transcription service",
         "For expressive beats, use only the artist-reviewed present, think, aha, point, and confident action IDs with explicit holdFrames and gapFrames",
         "Outside those five gestures and the neutral-listening body used by Talk to Camera, the registered recipes are technically runnable reference material; give them a fresh visual review before use",
         "For an audio-backed gesture sequence, pass --audio during init; bundled Cherry Lip Sync 0.1.0 generates the cues locally",
@@ -480,7 +483,7 @@ const formatConfigs: FormatProfileConfig[] = [
       ],
       totalEstimate: "$0 in service fees, usually 2-8 min",
       output: "One 1280 × 720 talking-scene MP4 in the room you chose, plus the checks and review record used to deliver it",
-      firstQuestion: "Send the dialogue audio and choose Sisters Room, Living Room, Photo Zone, or Pure White. I’ll start with Talk to Camera unless the line calls for one of the five reviewed gestures.",
+      firstQuestion: "Send the dialogue audio and choose Sisters Room, Living Room, Photo Zone, or Pure White. I’ll read the words locally, start with Talk to Camera, and add a reviewed gesture only where the line earns one.",
     },
   },
   {

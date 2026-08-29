@@ -33,9 +33,12 @@ type RequirementsManifest = {
     version: string;
     artifact: string;
     host: string;
-    nativeExecutable: boolean;
+    nativeExecutable?: boolean;
+    nativeExecutableIncluded?: boolean;
+    nativeExecutableBuiltLocally?: boolean;
     networkRequired: boolean;
     purpose: string;
+    supportedPlatform?: string;
   }>;
 };
 type GoldenRelease = {
@@ -118,6 +121,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
     "check",
     "inspect:registry",
     "smoke",
+    "transcribe",
     "lipsync",
     "init",
     "validate",
@@ -133,6 +137,9 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
       }
       if (command === "lipsync") {
         return "npm run lipsync -- --audio=/absolute/path/audio.wav --output=/absolute/path/cherry.tsv";
+      }
+      if (command === "transcribe") {
+        return "npm run transcribe -- --audio=/absolute/path/audio.wav --output=/absolute/path/transcript.json";
       }
       if (["validate", "render", "inspect", "finalize"].includes(command)) {
         return `npm run ${command} -- --run=episode-01`;
@@ -181,7 +188,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
           title: "Choose the performance",
           cost: "Free",
           description:
-            "Start with Talk to Camera, or place an artist-reviewed gesture where the line needs more expression. Cherry turns the audio into mouth cues locally.",
+            "The kit reads the words and their timing locally. Start with Talk to Camera, then place an artist-reviewed gesture where the line needs more expression.",
         },
         {
           title: "Check the plan",
@@ -276,7 +283,7 @@ export async function getShazPuppetRuntimeTrustData(): Promise<ShazPuppetRuntime
         { value: "$0", label: "service fees" },
       ],
       noteTitle: "A strong first draft, not a finished performance.",
-      note: `The 12-second video above was made with an earlier ${currentProof.formatVersion} kit. It generated ${currentProof.cueCount} mouth-timing cues locally, used ${currentProof.usedMouthDrawings?.length} hand-drawn mouth shapes, and passed the audio, video, and rig checks in a fresh download. The current kit adds Talk to Camera and four built-in backgrounds, with Sisters Room as the default. Photo Zone is reserved for future supporting media but does not display it yet. Creative review of this exact video is still pending.`,
+      note: `The 12-second video above was made with an earlier ${currentProof.formatVersion} kit. It generated ${currentProof.cueCount} mouth-timing cues locally, used ${currentProof.usedMouthDrawings?.length} hand-drawn mouth shapes, and passed the audio, video, and rig checks in a fresh download. The current kit can also read English dialogue with word timing before it plans gestures, and includes Talk to Camera plus four built-in backgrounds. Creative review of this exact video is still pending.`,
       criteriaTitle: "Checks before review",
       criteriaSubtitle: `${quality.automaticGates.length} automatic checks, then ${quality.humanReview.questions.length} questions for a person`,
       criteria: quality.automaticGates.map((label, index) => ({
