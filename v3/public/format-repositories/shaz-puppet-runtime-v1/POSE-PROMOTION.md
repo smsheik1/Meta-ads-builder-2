@@ -159,7 +159,7 @@ The unshipped source is `0826.mov`, SHA-256 `237715f71eed5bb9fc561d8c1766448ec61
 
 | # | Reference | Current route | Current honest status | Promotion work |
 | --- | --- | --- | --- | --- |
-| 02 | Hand to chest / self | Build | `reference-only` | Distinguish the one-hand self gesture from two-hand Heartfelt, then author and review it. |
+| 02 | Hand to chest / self | Build; three bounded candidates exhausted | `blocked` | Candidate 3 preserves the correct screen-right-origin one-hand self gesture, but full inspection rejects frames 3–27: right hand/sleeve area ratio 0.594 exceeds the fixed 0.56 limit. Resume only with authorization for a new bounded candidate that scales both right-wrist axes to exactly 97% of Candidate 3, then rerun all 27 frames and normal-speed review. Do not conflate it with two-hand Heartfelt. |
 | 03 | Hands on hips / confident | Reuse `confident` | `mapped-to-reviewed-action` | Use the existing reviewed Confident action; do not add a duplicate candidate ID. |
 | 04 | Open wide | Build | `reference-only` | Author the true wide bilateral silhouette. Do not relabel Shrug or the rejected celebration. |
 | 05 | Shrug question | Review `shrug` | `registered-needs-review` | The right rig-native family exists. Render the exact current recipe and complete visual review before safe-listing it. |
