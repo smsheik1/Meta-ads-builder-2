@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "generatedAt": "2026-08-29T00:26:43.860Z",
+  "transcript": {
+    "file": "transcript.json",
+    "sha256": "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
+    "schemaVersion": "shaz-word-transcript-v1",
+    "language": "en",
+    "segmentCount": 12,
+    "wordCount": 104
+  },
+  "audio": {
+    "sourceSha256": "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
+    "canonicalPcmSha256": "6a427c39fbe35ac7d593c579310142148b9235df77b44200079abc3e7771d333",
+    "durationMs": 30000
+  },
+  "engine": {
+    "name": "whisper.cpp",
+    "version": "1.9.2",
+    "execution": "locally-compiled-darwin-arm64",
+    "vendorManifestSha256": "ab781778440de86237e7fefc5848e45b3f55472b43f2355258c5734086adc018",
+    "sourceArchiveSha256": "a6abd064fcca8b85e794d205abf328c522e9451db43a3eadc178b883b7d0e9cd",
+    "buildPlanSha256": "6e4232dddec821a790da768675e3918b7a458aaed772d050f27ff2a2f0dc48ce",
+    "binarySha256": "d23c9ae59cfe41bcc392102c112da6c97bc5b6bdf3f504a41cd4c3705a2dfbde",
+    "compilerVersion": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+    "modelId": "base.en-q5_1",
+    "modelSha256": "4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f"
+  },
+  "providerCalls": 0,
+  "cost": "$0"
+}

@@ -14,7 +14,7 @@ type FormatProfileConfig = {
   technicalHref?: string;
   repositoryHref?: string;
   manifestPath?: string;
-  historicalProofVersion?: string;
+  historicalProofVersions?: string[];
   whatStays: string[];
   whatChanges: string[];
   characterOptions?: DiscoveryCharacterOption[];
@@ -428,7 +428,7 @@ const formatConfigs: FormatProfileConfig[] = [
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
-    historicalProofVersion: "0.2.0",
+    historicalProofVersions: ["0.2.0"],
     whatStays: [
       "Shaz stays on-model throughout the scene",
       "Shaz’s original rig draws the body, mouth shapes, effects, preview, and final video",
@@ -2272,17 +2272,20 @@ export function getDiscoveryFormatProfile(slug: string): DiscoveryFormatProfile 
   if (!identity) return null;
 
   const manifest = config.manifestPath ? readFormatManifest(config.manifestPath) : null;
-  const expectedProofVersion = config.historicalProofVersion ?? manifest?.version;
+  const allowedProofVersions = new Set(
+    manifest
+      ? [manifest.version, ...(config.historicalProofVersions ?? [])]
+      : config.historicalProofVersions ?? [identity.version],
+  );
   if (
     (manifest && manifest.id !== slug) ||
-    (expectedProofVersion && identity.version !== expectedProofVersion)
+    proofEntries.some((entry) => !allowedProofVersions.has(entry.format.version))
   ) {
     throw new Error(`Discovery Format metadata does not match ${config.manifestPath}.`);
   }
 
   if (proofEntries.some((entry) => (
     entry.format.name !== identity.name ||
-    entry.format.version !== identity.version ||
     entry.format.owner !== identity.owner
   ))) {
     throw new Error(`Discovery entries disagree about Format ${slug}.`);

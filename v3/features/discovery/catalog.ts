@@ -2565,6 +2565,31 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "shaz-puppet-runtime-transcript-guided-story",
+    status: "published",
+    showInDiscovery: false,
+    order: 11.73,
+    brand: "Shaz Animated",
+    title: "Leo: what puppy parenting taught us",
+    curatorNote:
+      "A 30-second voice track becomes a full Shaz performance. Think lands on “idea,” Point on “least,” and Confident on “best,” while the mouth stays in sync. Selected for Examples; final review is still pending.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/shaz-puppet-runtime-v1/goldens/transcript-guided-story-v1/final.mp4",
+      poster:
+        "/format-repositories/shaz-puppet-runtime-v1/goldens/transcript-guided-story-v1/poster.jpg",
+      durationLabel: "30 sec",
+      aspectRatio: "16:9",
+    },
+    format: {
+      slug: "shaz-puppet-runtime",
+      name: "Animate Shaz",
+      version: "0.4.0",
+      owner: "Shaz",
+    },
+  },
+  {
     id: "davids-cookies-this-is-fine",
     status: "published",
     order: 12,

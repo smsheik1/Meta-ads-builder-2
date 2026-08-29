@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Leo: what puppy parenting taught us",
+  "backgroundId": "living-room",
+  "planningTranscriptSha256": "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
+  "sequence": [
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 120,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 9,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "think",
+      "holdFrames": 0,
+      "gapFrames": 0,
+      "anchor": {
+        "wordId": "w0023",
+        "label": "No idea what we were doing",
+        "frame": 131
+      }
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 120,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 102,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "point",
+      "holdFrames": 0,
+      "gapFrames": 0,
+      "anchor": {
+        "wordId": "w0064",
+        "label": "The least disciplined person sets the training",
+        "frame": 404
+      }
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 120,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 87,
+      "gapFrames": 0
+    },
+    {
+      "poseId": "confident",
+      "holdFrames": 0,
+      "gapFrames": 0,
+      "anchor": {
+        "wordId": "w0103",
+        "label": "Leo was the best son/dog",
+        "frame": 689
+      }
+    },
+    {
+      "poseId": "neutral-listening",
+      "holdFrames": 17,
+      "gapFrames": 0
+    }
+  ],
+  "audioFile": "user-audio.wav",
+  "transcript": {
+    "file": "transcript.json",
+    "sha256": "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
+    "receiptFile": "transcription-receipt.json",
+    "receiptSha256": "da59ca9a5c9d4e54b0d07a6a6b1c0c073444b6fa55a2958f5aee1e5647682ef1",
+    "sourceAudioSha256": "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
+    "language": "en",
+    "segmentCount": 12,
+    "wordCount": 104
+  },
+  "lipSync": {
+    "engine": "cherry-lip-sync",
+    "engineVersion": "0.1.0",
+    "execution": "node-wasi-preview1",
+    "cueSource": "bundled-wasi-engine",
+    "cueFile": "cherry-lipsync.tsv",
+    "cueSha256": "1f8ba17f5f2ec57eef1468634133b1308ad99c9af00b1cc7860d99d497dd556d",
+    "sourceAudioSha256": "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
+    "fps": 24,
+    "filterSingleFrames": true,
+    "engineManifestSha256": "38cfe1aab3009643a2758e426344919d887f3e0f4d402fa51db8266c0366e1cd",
+    "engineModuleSha256": "1bf5730acc7a81b1f0b6c818a9068001b9e9a797a7eb990ae091eb1b01603382"
+  }
+}

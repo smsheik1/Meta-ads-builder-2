@@ -1,0 +1,963 @@
+{
+  "schemaVersion": "shaz-word-transcript-v1",
+  "language": "en",
+  "text": "But if I just brought my friends over, she would happily greet them and make free food for us. We had no idea what we were doing. It turns out having a puppy is way harder than it looks. Each of our parenting styles was different. And you see, the thing about dogs is a dog is only as well trained as the least disciplined person in the house. I guess the only one that was getting anything out of this? That dog was so confused. He didn't know what to do or who sighed to pick. Thanks, Leo. You were the best son/dog.",
+  "audio": {
+    "sourceSha256": "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
+    "canonicalPcmSha256": "6a427c39fbe35ac7d593c579310142148b9235df77b44200079abc3e7771d333",
+    "durationMs": 30000,
+    "sampleRateHz": 16000,
+    "channels": 1,
+    "sampleFormat": "pcm_s16le"
+  },
+  "engine": {
+    "name": "whisper.cpp",
+    "version": "1.9.2",
+    "sourceArchiveSha256": "a6abd064fcca8b85e794d205abf328c522e9451db43a3eadc178b883b7d0e9cd",
+    "buildPlanSha256": "6e4232dddec821a790da768675e3918b7a458aaed772d050f27ff2a2f0dc48ce",
+    "model": {
+      "id": "base.en-q5_1",
+      "sha256": "4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f",
+      "language": "en",
+      "quantization": "Q5_1"
+    },
+    "decoding": {
+      "language": "en",
+      "threads": 4,
+      "splitOnWord": true,
+      "output": "json-full"
+    }
+  },
+  "segments": [
+    {
+      "id": "s001",
+      "startMs": 0,
+      "endMs": 4000,
+      "text": "But if I just brought my friends over, she would happily greet them and make free food",
+      "firstWordId": "w0001",
+      "lastWordId": "w0017"
+    },
+    {
+      "id": "s002",
+      "startMs": 4000,
+      "endMs": 5000,
+      "text": "for us.",
+      "firstWordId": "w0018",
+      "lastWordId": "w0019"
+    },
+    {
+      "id": "s003",
+      "startMs": 5000,
+      "endMs": 6960,
+      "text": "We had no idea what we were doing.",
+      "firstWordId": "w0020",
+      "lastWordId": "w0027"
+    },
+    {
+      "id": "s004",
+      "startMs": 6960,
+      "endMs": 10360,
+      "text": "It turns out having a puppy is way harder than it looks.",
+      "firstWordId": "w0028",
+      "lastWordId": "w0039"
+    },
+    {
+      "id": "s005",
+      "startMs": 10360,
+      "endMs": 12200,
+      "text": "Each of our parenting styles was different.",
+      "firstWordId": "w0040",
+      "lastWordId": "w0046"
+    },
+    {
+      "id": "s006",
+      "startMs": 12200,
+      "endMs": 18200,
+      "text": "And you see, the thing about dogs is a dog is only as well trained as the least disciplined",
+      "firstWordId": "w0047",
+      "lastWordId": "w0065"
+    },
+    {
+      "id": "s007",
+      "startMs": 18200,
+      "endMs": 19200,
+      "text": "person in the house.",
+      "firstWordId": "w0066",
+      "lastWordId": "w0069"
+    },
+    {
+      "id": "s008",
+      "startMs": 19200,
+      "endMs": 22080,
+      "text": "I guess the only one that was getting anything out of this?",
+      "firstWordId": "w0070",
+      "lastWordId": "w0081"
+    },
+    {
+      "id": "s009",
+      "startMs": 22080,
+      "endMs": 24160,
+      "text": "That dog was so confused.",
+      "firstWordId": "w0082",
+      "lastWordId": "w0086"
+    },
+    {
+      "id": "s010",
+      "startMs": 24160,
+      "endMs": 26880,
+      "text": "He didn't know what to do or who sighed to pick.",
+      "firstWordId": "w0087",
+      "lastWordId": "w0097"
+    },
+    {
+      "id": "s011",
+      "startMs": 26880,
+      "endMs": 27880,
+      "text": "Thanks, Leo.",
+      "firstWordId": "w0098",
+      "lastWordId": "w0099"
+    },
+    {
+      "id": "s012",
+      "startMs": 27880,
+      "endMs": 29880,
+      "text": "You were the best son/dog.",
+      "firstWordId": "w0100",
+      "lastWordId": "w0104"
+    }
+  ],
+  "words": [
+    {
+      "id": "w0001",
+      "text": "But",
+      "normalized": "but",
+      "startMs": 0,
+      "endMs": 190,
+      "confidence": 0.448124
+    },
+    {
+      "id": "w0002",
+      "text": "if",
+      "normalized": "if",
+      "startMs": 260,
+      "endMs": 330,
+      "confidence": 0.954107
+    },
+    {
+      "id": "w0003",
+      "text": "I",
+      "normalized": "i",
+      "startMs": 330,
+      "endMs": 390,
+      "confidence": 0.942212
+    },
+    {
+      "id": "w0004",
+      "text": "just",
+      "normalized": "just",
+      "startMs": 390,
+      "endMs": 610,
+      "confidence": 0.866102
+    },
+    {
+      "id": "w0005",
+      "text": "brought",
+      "normalized": "brought",
+      "startMs": 720,
+      "endMs": 1110,
+      "confidence": 0.975331
+    },
+    {
+      "id": "w0006",
+      "text": "my",
+      "normalized": "my",
+      "startMs": 1110,
+      "endMs": 1200,
+      "confidence": 0.985799
+    },
+    {
+      "id": "w0007",
+      "text": "friends",
+      "normalized": "friends",
+      "startMs": 1290,
+      "endMs": 1700,
+      "confidence": 0.975424
+    },
+    {
+      "id": "w0008",
+      "text": "over,",
+      "normalized": "over",
+      "startMs": 1700,
+      "endMs": 2090,
+      "confidence": 0.989345
+    },
+    {
+      "id": "w0009",
+      "text": "she",
+      "normalized": "she",
+      "startMs": 2090,
+      "endMs": 2220,
+      "confidence": 0.921396
+    },
+    {
+      "id": "w0010",
+      "text": "would",
+      "normalized": "would",
+      "startMs": 2220,
+      "endMs": 2400,
+      "confidence": 0.988022
+    },
+    {
+      "id": "w0011",
+      "text": "happily",
+      "normalized": "happily",
+      "startMs": 2480,
+      "endMs": 2740,
+      "confidence": 0.994516
+    },
+    {
+      "id": "w0012",
+      "text": "greet",
+      "normalized": "greet",
+      "startMs": 2750,
+      "endMs": 2880,
+      "confidence": 0.993253
+    },
+    {
+      "id": "w0013",
+      "text": "them",
+      "normalized": "them",
+      "startMs": 2990,
+      "endMs": 3130,
+      "confidence": 0.977862
+    },
+    {
+      "id": "w0014",
+      "text": "and",
+      "normalized": "and",
+      "startMs": 3210,
+      "endMs": 3360,
+      "confidence": 0.96145
+    },
+    {
+      "id": "w0015",
+      "text": "make",
+      "normalized": "make",
+      "startMs": 3360,
+      "endMs": 3500,
+      "confidence": 0.973966
+    },
+    {
+      "id": "w0016",
+      "text": "free",
+      "normalized": "free",
+      "startMs": 3590,
+      "endMs": 3780,
+      "confidence": 0.978515
+    },
+    {
+      "id": "w0017",
+      "text": "food",
+      "normalized": "food",
+      "startMs": 3780,
+      "endMs": 4000,
+      "confidence": 0.989861
+    },
+    {
+      "id": "w0018",
+      "text": "for",
+      "normalized": "for",
+      "startMs": 4000,
+      "endMs": 4370,
+      "confidence": 0.995788
+    },
+    {
+      "id": "w0019",
+      "text": "us.",
+      "normalized": "us",
+      "startMs": 4370,
+      "endMs": 4980,
+      "confidence": 0.997813
+    },
+    {
+      "id": "w0020",
+      "text": "We",
+      "normalized": "we",
+      "startMs": 5000,
+      "endMs": 5130,
+      "confidence": 0.97023
+    },
+    {
+      "id": "w0021",
+      "text": "had",
+      "normalized": "had",
+      "startMs": 5130,
+      "endMs": 5330,
+      "confidence": 0.990297
+    },
+    {
+      "id": "w0022",
+      "text": "no",
+      "normalized": "no",
+      "startMs": 5330,
+      "endMs": 5460,
+      "confidence": 0.973314
+    },
+    {
+      "id": "w0023",
+      "text": "idea",
+      "normalized": "idea",
+      "startMs": 5460,
+      "endMs": 5730,
+      "confidence": 0.997895
+    },
+    {
+      "id": "w0024",
+      "text": "what",
+      "normalized": "what",
+      "startMs": 5730,
+      "endMs": 5980,
+      "confidence": 0.904678
+    },
+    {
+      "id": "w0025",
+      "text": "we",
+      "normalized": "we",
+      "startMs": 6030,
+      "endMs": 6130,
+      "confidence": 0.99257
+    },
+    {
+      "id": "w0026",
+      "text": "were",
+      "normalized": "were",
+      "startMs": 6130,
+      "endMs": 6400,
+      "confidence": 0.980365
+    },
+    {
+      "id": "w0027",
+      "text": "doing.",
+      "normalized": "doing",
+      "startMs": 6400,
+      "endMs": 6960,
+      "confidence": 0.99254
+    },
+    {
+      "id": "w0028",
+      "text": "It",
+      "normalized": "it",
+      "startMs": 6960,
+      "endMs": 7100,
+      "confidence": 0.984361
+    },
+    {
+      "id": "w0029",
+      "text": "turns",
+      "normalized": "turns",
+      "startMs": 7100,
+      "endMs": 7460,
+      "confidence": 0.980236
+    },
+    {
+      "id": "w0030",
+      "text": "out",
+      "normalized": "out",
+      "startMs": 7460,
+      "endMs": 7600,
+      "confidence": 0.998437
+    },
+    {
+      "id": "w0031",
+      "text": "having",
+      "normalized": "having",
+      "startMs": 7680,
+      "endMs": 8100,
+      "confidence": 0.542122
+    },
+    {
+      "id": "w0032",
+      "text": "a",
+      "normalized": "a",
+      "startMs": 8100,
+      "endMs": 8160,
+      "confidence": 0.97614
+    },
+    {
+      "id": "w0033",
+      "text": "puppy",
+      "normalized": "puppy",
+      "startMs": 8250,
+      "endMs": 8530,
+      "confidence": 0.991536
+    },
+    {
+      "id": "w0034",
+      "text": "is",
+      "normalized": "is",
+      "startMs": 8530,
+      "endMs": 8670,
+      "confidence": 0.993703
+    },
+    {
+      "id": "w0035",
+      "text": "way",
+      "normalized": "way",
+      "startMs": 8670,
+      "endMs": 8810,
+      "confidence": 0.980905
+    },
+    {
+      "id": "w0036",
+      "text": "harder",
+      "normalized": "harder",
+      "startMs": 8910,
+      "endMs": 9310,
+      "confidence": 0.990038
+    },
+    {
+      "id": "w0037",
+      "text": "than",
+      "normalized": "than",
+      "startMs": 9310,
+      "endMs": 9590,
+      "confidence": 0.973322
+    },
+    {
+      "id": "w0038",
+      "text": "it",
+      "normalized": "it",
+      "startMs": 9590,
+      "endMs": 9730,
+      "confidence": 0.9888
+    },
+    {
+      "id": "w0039",
+      "text": "looks.",
+      "normalized": "looks",
+      "startMs": 9730,
+      "endMs": 10360,
+      "confidence": 0.987334
+    },
+    {
+      "id": "w0040",
+      "text": "Each",
+      "normalized": "each",
+      "startMs": 10360,
+      "endMs": 10540,
+      "confidence": 0.99059
+    },
+    {
+      "id": "w0041",
+      "text": "of",
+      "normalized": "of",
+      "startMs": 10540,
+      "endMs": 10630,
+      "confidence": 0.99279
+    },
+    {
+      "id": "w0042",
+      "text": "our",
+      "normalized": "our",
+      "startMs": 10630,
+      "endMs": 10770,
+      "confidence": 0.986517
+    },
+    {
+      "id": "w0043",
+      "text": "parenting",
+      "normalized": "parenting",
+      "startMs": 10770,
+      "endMs": 11190,
+      "confidence": 0.956928
+    },
+    {
+      "id": "w0044",
+      "text": "styles",
+      "normalized": "styles",
+      "startMs": 11190,
+      "endMs": 11470,
+      "confidence": 0.983612
+    },
+    {
+      "id": "w0045",
+      "text": "was",
+      "normalized": "was",
+      "startMs": 11470,
+      "endMs": 11560,
+      "confidence": 0.960935
+    },
+    {
+      "id": "w0046",
+      "text": "different.",
+      "normalized": "different",
+      "startMs": 11650,
+      "endMs": 12200,
+      "confidence": 0.994127
+    },
+    {
+      "id": "w0047",
+      "text": "And",
+      "normalized": "and",
+      "startMs": 12200,
+      "endMs": 12410,
+      "confidence": 0.689401
+    },
+    {
+      "id": "w0048",
+      "text": "you",
+      "normalized": "you",
+      "startMs": 12460,
+      "endMs": 12660,
+      "confidence": 0.904494
+    },
+    {
+      "id": "w0049",
+      "text": "see,",
+      "normalized": "see",
+      "startMs": 12680,
+      "endMs": 13080,
+      "confidence": 0.989072
+    },
+    {
+      "id": "w0050",
+      "text": "the",
+      "normalized": "the",
+      "startMs": 13080,
+      "endMs": 13320,
+      "confidence": 0.975197
+    },
+    {
+      "id": "w0051",
+      "text": "thing",
+      "normalized": "thing",
+      "startMs": 13320,
+      "endMs": 13720,
+      "confidence": 0.985329
+    },
+    {
+      "id": "w0052",
+      "text": "about",
+      "normalized": "about",
+      "startMs": 13720,
+      "endMs": 14050,
+      "confidence": 0.990299
+    },
+    {
+      "id": "w0053",
+      "text": "dogs",
+      "normalized": "dogs",
+      "startMs": 14150,
+      "endMs": 14440,
+      "confidence": 0.956939
+    },
+    {
+      "id": "w0054",
+      "text": "is",
+      "normalized": "is",
+      "startMs": 14440,
+      "endMs": 14600,
+      "confidence": 0.973781
+    },
+    {
+      "id": "w0055",
+      "text": "a",
+      "normalized": "a",
+      "startMs": 14600,
+      "endMs": 14610,
+      "confidence": 0.548882
+    },
+    {
+      "id": "w0056",
+      "text": "dog",
+      "normalized": "dog",
+      "startMs": 14680,
+      "endMs": 14900,
+      "confidence": 0.977036
+    },
+    {
+      "id": "w0057",
+      "text": "is",
+      "normalized": "is",
+      "startMs": 14910,
+      "endMs": 15080,
+      "confidence": 0.981049
+    },
+    {
+      "id": "w0058",
+      "text": "only",
+      "normalized": "only",
+      "startMs": 15080,
+      "endMs": 15330,
+      "confidence": 0.984369
+    },
+    {
+      "id": "w0059",
+      "text": "as",
+      "normalized": "as",
+      "startMs": 15410,
+      "endMs": 15560,
+      "confidence": 0.969636
+    },
+    {
+      "id": "w0060",
+      "text": "well",
+      "normalized": "well",
+      "startMs": 15560,
+      "endMs": 15820,
+      "confidence": 0.996841
+    },
+    {
+      "id": "w0061",
+      "text": "trained",
+      "normalized": "trained",
+      "startMs": 15880,
+      "endMs": 16440,
+      "confidence": 0.694721
+    },
+    {
+      "id": "w0062",
+      "text": "as",
+      "normalized": "as",
+      "startMs": 16440,
+      "endMs": 16570,
+      "confidence": 0.979867
+    },
+    {
+      "id": "w0063",
+      "text": "the",
+      "normalized": "the",
+      "startMs": 16600,
+      "endMs": 16800,
+      "confidence": 0.982403
+    },
+    {
+      "id": "w0064",
+      "text": "least",
+      "normalized": "least",
+      "startMs": 16850,
+      "endMs": 17230,
+      "confidence": 0.976802
+    },
+    {
+      "id": "w0065",
+      "text": "disciplined",
+      "normalized": "disciplined",
+      "startMs": 17240,
+      "endMs": 18200,
+      "confidence": 0.904616
+    },
+    {
+      "id": "w0066",
+      "text": "person",
+      "normalized": "person",
+      "startMs": 18200,
+      "endMs": 18510,
+      "confidence": 0.998395
+    },
+    {
+      "id": "w0067",
+      "text": "in",
+      "normalized": "in",
+      "startMs": 18510,
+      "endMs": 18610,
+      "confidence": 0.990767
+    },
+    {
+      "id": "w0068",
+      "text": "the",
+      "normalized": "the",
+      "startMs": 18610,
+      "endMs": 18760,
+      "confidence": 0.96849
+    },
+    {
+      "id": "w0069",
+      "text": "house.",
+      "normalized": "house",
+      "startMs": 18760,
+      "endMs": 19180,
+      "confidence": 0.998306
+    },
+    {
+      "id": "w0070",
+      "text": "I",
+      "normalized": "i",
+      "startMs": 19200,
+      "endMs": 19200,
+      "confidence": 0.957651
+    },
+    {
+      "id": "w0071",
+      "text": "guess",
+      "normalized": "guess",
+      "startMs": 19290,
+      "endMs": 19530,
+      "confidence": 0.986566
+    },
+    {
+      "id": "w0072",
+      "text": "the",
+      "normalized": "the",
+      "startMs": 19530,
+      "endMs": 19700,
+      "confidence": 0.951508
+    },
+    {
+      "id": "w0073",
+      "text": "only",
+      "normalized": "only",
+      "startMs": 19700,
+      "endMs": 19930,
+      "confidence": 0.996687
+    },
+    {
+      "id": "w0074",
+      "text": "one",
+      "normalized": "one",
+      "startMs": 19930,
+      "endMs": 20100,
+      "confidence": 0.981255
+    },
+    {
+      "id": "w0075",
+      "text": "that",
+      "normalized": "that",
+      "startMs": 20100,
+      "endMs": 20330,
+      "confidence": 0.919309
+    },
+    {
+      "id": "w0076",
+      "text": "was",
+      "normalized": "was",
+      "startMs": 20330,
+      "endMs": 20500,
+      "confidence": 0.981384
+    },
+    {
+      "id": "w0077",
+      "text": "getting",
+      "normalized": "getting",
+      "startMs": 20500,
+      "endMs": 20900,
+      "confidence": 0.993847
+    },
+    {
+      "id": "w0078",
+      "text": "anything",
+      "normalized": "anything",
+      "startMs": 20900,
+      "endMs": 21360,
+      "confidence": 0.975238
+    },
+    {
+      "id": "w0079",
+      "text": "out",
+      "normalized": "out",
+      "startMs": 21360,
+      "endMs": 21530,
+      "confidence": 0.99861
+    },
+    {
+      "id": "w0080",
+      "text": "of",
+      "normalized": "of",
+      "startMs": 21530,
+      "endMs": 21610,
+      "confidence": 0.983125
+    },
+    {
+      "id": "w0081",
+      "text": "this?",
+      "normalized": "this",
+      "startMs": 21680,
+      "endMs": 22080,
+      "confidence": 0.931806
+    },
+    {
+      "id": "w0082",
+      "text": "That",
+      "normalized": "that",
+      "startMs": 22080,
+      "endMs": 22440,
+      "confidence": 0.985988
+    },
+    {
+      "id": "w0083",
+      "text": "dog",
+      "normalized": "dog",
+      "startMs": 22440,
+      "endMs": 22690,
+      "confidence": 0.990784
+    },
+    {
+      "id": "w0084",
+      "text": "was",
+      "normalized": "was",
+      "startMs": 22700,
+      "endMs": 22980,
+      "confidence": 0.990747
+    },
+    {
+      "id": "w0085",
+      "text": "so",
+      "normalized": "so",
+      "startMs": 22980,
+      "endMs": 23160,
+      "confidence": 0.838937
+    },
+    {
+      "id": "w0086",
+      "text": "confused.",
+      "normalized": "confused",
+      "startMs": 23160,
+      "endMs": 24160,
+      "confidence": 0.996616
+    },
+    {
+      "id": "w0087",
+      "text": "He",
+      "normalized": "he",
+      "startMs": 24160,
+      "endMs": 24290,
+      "confidence": 0.908086
+    },
+    {
+      "id": "w0088",
+      "text": "didn't",
+      "normalized": "didn't",
+      "startMs": 24290,
+      "endMs": 24690,
+      "confidence": 0.988604
+    },
+    {
+      "id": "w0089",
+      "text": "know",
+      "normalized": "know",
+      "startMs": 24690,
+      "endMs": 24950,
+      "confidence": 0.99456
+    },
+    {
+      "id": "w0090",
+      "text": "what",
+      "normalized": "what",
+      "startMs": 24980,
+      "endMs": 25230,
+      "confidence": 0.995342
+    },
+    {
+      "id": "w0091",
+      "text": "to",
+      "normalized": "to",
+      "startMs": 25230,
+      "endMs": 25360,
+      "confidence": 0.997451
+    },
+    {
+      "id": "w0092",
+      "text": "do",
+      "normalized": "do",
+      "startMs": 25360,
+      "endMs": 25490,
+      "confidence": 0.99891
+    },
+    {
+      "id": "w0093",
+      "text": "or",
+      "normalized": "or",
+      "startMs": 25490,
+      "endMs": 25610,
+      "confidence": 0.735279
+    },
+    {
+      "id": "w0094",
+      "text": "who",
+      "normalized": "who",
+      "startMs": 25620,
+      "endMs": 25800,
+      "confidence": 0.976684
+    },
+    {
+      "id": "w0095",
+      "text": "sighed",
+      "normalized": "sighed",
+      "startMs": 25840,
+      "endMs": 26220,
+      "confidence": 0.182179
+    },
+    {
+      "id": "w0096",
+      "text": "to",
+      "normalized": "to",
+      "startMs": 26220,
+      "endMs": 26350,
+      "confidence": 0.995049
+    },
+    {
+      "id": "w0097",
+      "text": "pick.",
+      "normalized": "pick",
+      "startMs": 26350,
+      "endMs": 26860,
+      "confidence": 0.985144
+    },
+    {
+      "id": "w0098",
+      "text": "Thanks,",
+      "normalized": "thanks",
+      "startMs": 26880,
+      "endMs": 27440,
+      "confidence": 0.774449
+    },
+    {
+      "id": "w0099",
+      "text": "Leo.",
+      "normalized": "leo",
+      "startMs": 27440,
+      "endMs": 27860,
+      "confidence": 0.800159
+    },
+    {
+      "id": "w0100",
+      "text": "You",
+      "normalized": "you",
+      "startMs": 27880,
+      "endMs": 28070,
+      "confidence": 0.981444
+    },
+    {
+      "id": "w0101",
+      "text": "were",
+      "normalized": "were",
+      "startMs": 28140,
+      "endMs": 28460,
+      "confidence": 0.747892
+    },
+    {
+      "id": "w0102",
+      "text": "the",
+      "normalized": "the",
+      "startMs": 28460,
+      "endMs": 28710,
+      "confidence": 0.989079
+    },
+    {
+      "id": "w0103",
+      "text": "best",
+      "normalized": "best",
+      "startMs": 28710,
+      "endMs": 29040,
+      "confidence": 0.984795
+    },
+    {
+      "id": "w0104",
+      "text": "son/dog.",
+      "normalized": "son/dog",
+      "startMs": 29040,
+      "endMs": 29880,
+      "confidence": 0.901876
+    }
+  ]
+}
