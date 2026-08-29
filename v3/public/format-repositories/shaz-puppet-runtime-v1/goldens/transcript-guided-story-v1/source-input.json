@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "shaz-sequence-input-v1",
+  "title": "Leo: what puppy parenting taught us",
+  "backgroundId": "living-room",
+  "planningTranscriptSha256": "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
+  "sequence": [
+    { "poseId": "neutral-listening", "holdFrames": 120, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 9, "gapFrames": 0 },
+    {
+      "poseId": "think",
+      "holdFrames": 0,
+      "gapFrames": 0,
+      "anchor": { "wordId": "w0023", "label": "No idea what we were doing", "frame": 131 }
+    },
+    { "poseId": "neutral-listening", "holdFrames": 120, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 102, "gapFrames": 0 },
+    {
+      "poseId": "point",
+      "holdFrames": 0,
+      "gapFrames": 0,
+      "anchor": { "wordId": "w0064", "label": "The least disciplined person sets the training", "frame": 404 }
+    },
+    { "poseId": "neutral-listening", "holdFrames": 120, "gapFrames": 0 },
+    { "poseId": "neutral-listening", "holdFrames": 87, "gapFrames": 0 },
+    {
+      "poseId": "confident",
+      "holdFrames": 0,
+      "gapFrames": 0,
+      "anchor": { "wordId": "w0103", "label": "Leo was the best son/dog", "frame": 689 }
+    },
+    { "poseId": "neutral-listening", "holdFrames": 17, "gapFrames": 0 }
+  ]
+}

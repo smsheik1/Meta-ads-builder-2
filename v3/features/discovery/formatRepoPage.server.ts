@@ -136,9 +136,9 @@ export async function getFormatRepoPagePresentation(
           "Add a voice track and pick a room. The kit reads what Shaz is saying on your Mac, lip-syncs the mouth, and helps place an artist-reviewed gesture on the words that deserve one.",
         provided: "One voice track + room choice",
         ready: "2–8 minutes",
-        examplesTitle: "Hear Shaz perform it.",
+        examplesTitle: "Examples",
         examplesDescription:
-          "This 12-second first draft uses a real voice track, five hand-drawn mouth shapes, and a handful of body-language beats. It passed the technical checks; creative review is still pending. Play it with sound.",
+          "The first video proved Shaz could talk and gesture. In the new 30-second story, a fresh agent uses the transcript to land Think on “idea,” Point on “least,” and Confident on “best.” Play both with sound.",
       },
       detailedProofId: "shaz-puppet-runtime-talking-scene",
     };

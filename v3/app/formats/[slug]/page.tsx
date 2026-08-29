@@ -261,9 +261,11 @@ export default async function FormatPage({
           <div className="mx-auto max-w-[980px]">
             <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-                  Examples
-                </p>
+                {repoPageCopy.examplesTitle === "Examples" ? null : (
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
+                    Examples
+                  </p>
+                )}
                 <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">
                   {repoPageCopy.examplesTitle}
                 </h2>

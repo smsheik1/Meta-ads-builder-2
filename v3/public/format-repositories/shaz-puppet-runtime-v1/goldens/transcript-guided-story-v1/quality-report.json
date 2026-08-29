@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "inspectedAt": "2026-08-29T00:29:15.559Z",
+  "inputSha256": "d83e08e257edd403cab94eba41dfe264427949df17dab4fc936e7750b0e55b5d",
+  "outputSha256": "a1df5e2f89afc2e38589629efef81858d68887cf79f87c52e379c9d03332f212",
+  "artistRenderedFramesUsed": false,
+  "measured": {
+    "width": 1280,
+    "height": 720,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "fps": "24/1",
+    "frames": 720,
+    "durationSeconds": 30,
+    "audioCodec": "aac",
+    "meanVolumeDb": -15.6
+  },
+  "poseReports": [
+    {
+      "poseId": "neutral-listening",
+      "status": "pass",
+      "poseRecipeSha256": "d08700a524741bb60c18af329afd80f73d35c5782b5cc75d39c6edfb64481c94",
+      "framesInspected": 1,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "think",
+      "status": "pass",
+      "poseRecipeSha256": "8f260f187de082b1cf0ce4f0b0b8cb78dcb808e9f04662ba0630298e503e800f",
+      "framesInspected": 49,
+      "maximumIdenticalFrames": 1,
+      "failures": []
+    },
+    {
+      "poseId": "point",
+      "status": "pass",
+      "poseRecipeSha256": "82dde0723d1d283dba4470f0a1874f8e3f57048197f6b82c76774e1effae4f02",
+      "framesInspected": 76,
+      "maximumIdenticalFrames": 26,
+      "failures": []
+    },
+    {
+      "poseId": "confident",
+      "status": "pass",
+      "poseRecipeSha256": "8d64e77ca4ae2239ddb02bb66dc28d77584327940c45a188bc060c1e25baeedf",
+      "framesInspected": 13,
+      "maximumIdenticalFrames": 2,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "transcript": {
+    "file": "transcript.json",
+    "sha256": "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
+    "receiptFile": "transcription-receipt.json",
+    "receiptSha256": "da59ca9a5c9d4e54b0d07a6a6b1c0c073444b6fa55a2958f5aee1e5647682ef1",
+    "sourceAudioSha256": "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
+    "language": "en",
+    "segmentCount": 12,
+    "wordCount": 104,
+    "engine": {
+      "name": "whisper.cpp",
+      "version": "1.9.2",
+      "execution": "locally-compiled-darwin-arm64",
+      "vendorManifestSha256": "ab781778440de86237e7fefc5848e45b3f55472b43f2355258c5734086adc018",
+      "sourceArchiveSha256": "a6abd064fcca8b85e794d205abf328c522e9451db43a3eadc178b883b7d0e9cd",
+      "buildPlanSha256": "6e4232dddec821a790da768675e3918b7a458aaed772d050f27ff2a2f0dc48ce",
+      "binarySha256": "d23c9ae59cfe41bcc392102c112da6c97bc5b6bdf3f504a41cd4c3705a2dfbde",
+      "compilerVersion": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+      "modelId": "base.en-q5_1",
+      "modelSha256": "4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f"
+    }
+  },
+  "contactSheet": "contact-sheet.jpg",
+  "contactSheetSampleFrames": [
+    60,
+    125,
+    155,
+    240,
+    352,
+    441,
+    540,
+    644,
+    695,
+    710
+  ],
+  "humanReview": "human-review.json",
+  "slowReview": "review-slow.mp4"
+}
