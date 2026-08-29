@@ -17,6 +17,14 @@ Use compiled Xstage drawings and complete native limb chains whenever possible. 
 
 Independently positioned limb fragments remain forbidden.
 
+## Reconstructing a pose from video
+
+Do not begin by copying a vaguely similar action. First split the reference into setup, each distinct hold, any edit or counter-shift, and release. Pick one stable gold frame for one destination silhouette.
+
+Build that destination as a one-frame, body-only candidate through the official renderer. Normalize reference and runtime character scale, then fit the complete native chain in joint order: shoulder, elbow, wrist, palm center, palm angle, and torso line. Store the target measurements and tolerances in a focused regression. Keep eyes, eyebrows, pupils, and Mouth out of the recipe unless they are truly part of the body-language contract.
+
+A correct hold is not yet a reusable action. Review it first, then author and review neutral entry and release connectors separately. If the source has no release, say so; never borrow a generic reverse or another action's exit.
+
 ## Minimal recipe
 
 ```json

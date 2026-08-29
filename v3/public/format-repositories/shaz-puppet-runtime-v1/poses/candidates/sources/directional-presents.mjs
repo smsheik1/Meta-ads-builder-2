@@ -5,6 +5,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import {
+  adjustedState,
   controlKey,
   generatedRecipe,
   sourceControlState,
@@ -30,6 +31,9 @@ const DIRECTIONAL_PRESENT_REFERENCES = Object.freeze({
     sourceStartSeconds: 118.35,
     sourceEndSeconds: 121.85,
     clipSha256: "dc531adc7c95039cf21339427d3b6b1a42109555cac6bb51b65e5a19ae4bf3e1",
+    targetClipFrame: 80,
+    targetHoldRange: [71, 103],
+    targetDescription: "settled audience-facing screen-right presentation hold after the clip's counter-shift",
   }),
 });
 
@@ -141,25 +145,48 @@ function buildPresentScreenLeft(manifest) {
 }
 
 function buildPresentScreenRight(manifest) {
-  return buildDirectionalPresent(manifest, {
+  const holdSourceFrame = 82;
+  const controlNames = [
+    "Right_Arm-P",
+    "Right_Arm_MOVE-P",
+    "Right_Arm_Pivot-P",
+    "Right_Forearm-P",
+    "Right_Forearm_Pivot-P",
+    "Right_Hand-P",
+  ];
+  const controls = Object.fromEntries(controlNames.map((nodeName) => {
+    const source = sourceControlState(manifest, nodeName, holdSourceFrame);
+    let fitted = source;
+    if (nodeName === "Right_Arm_MOVE-P") {
+      fitted = adjustedState(source, { positionDelta: [0.10, -0.51, 0] });
+    } else if (nodeName === "Right_Forearm_Pivot-P") {
+      fitted = adjustedState(source, { rotationDelta: -14 });
+    } else if (nodeName === "Right_Hand-P") {
+      fitted = adjustedState(source, { rotationDelta: 18 });
+    }
+    return [nodeName, [controlKey(1, fitted)]];
+  }));
+  const recipe = generatedRecipe(manifest, {
     id: "present-screen-right",
-    sourceFrames: Array.from({ length: 31 }, (_, index) => 67 + index),
-    controlNames: [
-      "Right_Arm-P",
-      "Right_Arm_MOVE-P",
-      "Right_Arm_Pivot-P",
-      "Right_Forearm-P",
-      "Right_Forearm_Pivot-P",
-      "Right_Hand-P",
-    ],
-    drawingNames: ["Right_Forearm", "Right_Hand"],
+    durationFrames: 1,
+    controls,
+    drawings: {
+      Right_Forearm: [{ frame: 1, drawing: sourceDrawing(manifest, "Right_Forearm", holdSourceFrame) }],
+      Right_Hand: [{ frame: 1, drawing: sourceDrawing(manifest, "Right_Hand", holdSourceFrame) }],
+    },
     learnedFrom: [
-      "authored/shrug source frames 67-97: complete right open-palm entry, hold, and release",
-      "Candidate 11 acceptance silhouette: rightward offer with the opposite arm relaxed",
+      "Candidate 11 clip frame 80: settled screen-right open-palm destination after the clip's counter-shift",
+      "authored/shrug source frame 82: native right sleeve, wrist, and open-hand vocabulary only",
+      "reference-fit target: solve shoulder, elbow, wrist, and palm independently without importing Shrug body deformation, face, timing, or release",
     ],
-    authoredOpenHandCuffs: ["Right"],
-    maximumIdenticalFrames: 10,
+    quality: {
+      maximumIdenticalFrames: 1,
+      armCompositeMode: "native-rig",
+      authoredOpenHandCuffs: ["Right"],
+    },
   });
+  recipe.baseFrame = 32;
+  return recipe;
 }
 
 async function main() {

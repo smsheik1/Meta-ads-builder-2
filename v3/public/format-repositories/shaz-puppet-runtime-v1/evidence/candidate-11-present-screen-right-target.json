@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "shaz-reference-pose-target-v1",
+  "candidateNumber": "11",
+  "poseId": "present-screen-right",
+  "source": {
+    "name": "0826.mov",
+    "sha256": "237715f71eed5bb9fc561d8c1766448ec61ff727671ada4324d8dc1ae77f8127",
+    "clipStartSeconds": 118.35,
+    "clipEndSeconds": 121.85,
+    "clipSha256": "dc531adc7c95039cf21339427d3b6b1a42109555cac6bb51b65e5a19ae4bf3e1",
+    "clipFps": 30,
+    "clipFrameCount": 104
+  },
+  "segmentation": {
+    "entryFrames": [0, 5],
+    "holdAFrames": [6, 60],
+    "counterShiftFrames": [61, 70],
+    "holdBFrames": [71, 103],
+    "releasePresent": false,
+    "note": "The clip contains two distinct destination silhouettes separated by a visible counter-shift. This target deliberately selects settled Hold B. Hold A is a separate future lean-in variant, not a phase of this static pose."
+  },
+  "goldFrameZeroBased": 80,
+  "goldFramePngSha256": "318ce0e8a7f548029a2e0d3a36fcfd91ed12360fad1e58451ac4681b443d6a81",
+  "normalization": {
+    "canvas": [1280, 720],
+    "method": "resize the 3840x2160 source frame to 1280x720; apply the locked uniform head-width scale 137/181; then translate the scaled artist face centroid onto the runtime face centroid. For every point, normalized = source * scale + translation. Angles are unchanged.",
+    "sourceHairWidthPixels": 362,
+    "runtimeHairWidthPixels": 274,
+    "scaleFraction": [137, 181],
+    "scale": 0.7569060773480663,
+    "sourceFaceCentroid": { "x": 649.3868589836608, "y": 297.20587979220477 },
+    "runtimeFaceCentroid": { "x": 632.5541559214441, "y": 242.9319579448522 },
+    "translation": [141.02929580673958, 17.97502130655357]
+  },
+  "sourceFrameGeometry": {
+    "shoulder": { "x": 744.416149068323, "y": 424.54658385093165 },
+    "elbow": { "x": 861.1026785714286, "y": 602.6294642857143 },
+    "upperWristAnchor": {
+      "x": 897,
+      "y": 379,
+      "definition": "palette-measurable upper cuff-envelope proxy: presenting-hand minimum x paired with presenting-sleeve minimum y; topology remains the inspector's responsibility"
+    },
+    "palmCentroid": { "x": 984.5073338564616, "y": 391.4861471600169 },
+    "palmAxisDegrees": 27.560244361579986,
+    "sleeveCentroid": { "x": 861.074372001129, "y": 492.20725373976853 },
+    "torsoBandAxisDegrees": -4.294348596751657
+  },
+  "geometry": {
+    "shoulder": { "x": 704.4824031125972, "y": 339.31691074068414, "tolerancePixels": 4 },
+    "elbow": { "x": 792.8031464381523, "y": 474.1089252134202, "tolerancePixels": 5 },
+    "upperWristAnchor": { "x": 819.974047187955, "y": 304.8424246214707, "tolerancePixels": 5 },
+    "palmCentroid": { "x": 886.208879996437, "y": 314.29326528954977, "tolerancePixels": 4 },
+    "palmAxisDegrees": { "value": 27.560244361579986, "toleranceDegrees": 2 },
+    "sleeveCentroid": { "x": 792.7817210230637, "y": 390.52968297698607, "tolerancePixels": 10 },
+    "torsoBandAxisDegrees": { "value": -4.294348596751657, "toleranceDegrees": 2 }
+  },
+  "ownership": {
+    "bodyLanguageOnly": true,
+    "faceTrackOwned": false,
+    "mouthTrackOwned": false,
+    "entryAuthored": false,
+    "releaseAuthored": false,
+    "neutralConnectorRequiredBeforeRegistration": true
+  }
+}

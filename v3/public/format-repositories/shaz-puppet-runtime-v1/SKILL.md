@@ -5,7 +5,7 @@ description: Animate the supplied Shaz puppet locally. Use Talk to Camera for di
 
 # Animate Shaz
 
-Skill version: **2.0**.
+Skill version: **2.1**.
 
 Use this kit to turn a voice track into a Shaz talking scene or to build a short performance from the recovered rig. Everything runs locally, makes no provider calls, and costs $0.
 
@@ -72,14 +72,17 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 
 1. Choose exactly one action. Record its reference segment, meaning, duration, and visible acceptance criteria. Check the surrounding frames before choosing the cut: include setup through release, or give a smaller gesture a smaller, honest name. A preexisting filename does not define the action.
 2. Watch the complete reference at normal speed. Then inspect dense decoded frames and consecutive-frame differences. When source controls exist, inspect their timing, hierarchy, drawing substitutions, deformation channels, and asymmetry. Find intentional stepped exposures and holds before deciding how to interpolate. Never infer motion from one destination frame.
-3. Render the authored calibration through the official runtime before changing its meaning. Fix renderer-wide silhouette, deformation, masking, fill, and paint-order defects before tuning timing.
-4. Animate through real rig controls and existing drawing substitutions. Preserve secondary controls and living holds. Make the smallest semantic change that produces the intended action.
-5. Run focused tests and independent per-frame pose inspection. Where a reference exists, compare synchronized full-frame and close-up playback.
-6. Watch the exact candidate completely at normal speed. Slow motion is useful for diagnosis, but it cannot be the only approval view. A successful command, contact sheet, or handful of frames is not visual approval.
-7. Allow at most three candidate attempts. Fix only observed causes. Stop and report the blocker instead of weakening a gate.
-8. After genuine approval, ask exactly: **“What did this teach us, and does the skill, runtime, or test suite need updating?”**
-9. Record the behavior, root cause, smallest reusable correction, and evidence. Follow the promotion rules in `references/rig-animation-playbook.md`. Update a recipe checksum only after the accepted file is final.
-10. Register and sequence the action only after inspection and checksum-bound human approval pass. Registration alone does not grant creative approval.
+3. For video-guided reconstruction without an exact Xstage action, segment every edit, counter-shift, and distinct hold. Choose one stable gold frame for one destination silhouette. Do not average two poses or borrow a similar action's full body deformation, face, cadence, and release.
+4. Build the destination first as a one-frame body-only native-rig hold. Normalize artist and runtime character scale, fit the complete chain in order—shoulder, elbow, wrist, palm center and angle, then torso relationship—and lock those targets in a focused regression.
+5. Render the authored calibration through the official runtime before changing its meaning. Fix renderer-wide silhouette, deformation, masking, fill, and paint-order defects before tuning timing.
+6. Review the exact destination hold. Only after it passes, author neutral entry and release as separate connectors. A reference with no release gives no permission to invent one or reverse the entry.
+7. Animate through real rig controls and existing drawing substitutions. Preserve secondary controls and living holds. Make the smallest semantic change that produces the intended action.
+8. Run focused tests and independent per-frame pose inspection. Where a reference exists, compare synchronized full-frame and close-up playback.
+9. Watch the exact candidate completely at normal speed. Slow motion is useful for diagnosis, but it cannot be the only approval view. A successful command, contact sheet, or handful of frames is not visual approval.
+10. Allow at most three candidate attempts. Fix only observed causes. Stop and report the blocker instead of weakening a gate.
+11. After genuine approval, ask exactly: **“What did this teach us, and does the skill, runtime, or test suite need updating?”**
+12. Record the behavior, root cause, smallest reusable correction, and evidence. Follow the promotion rules in `references/rig-animation-playbook.md`. Update a recipe checksum only after the accepted file is final.
+13. Register and sequence the action only after inspection and checksum-bound human approval pass. Registration alone does not grant creative approval.
 
 ## Rules that keep Shaz on-model
 

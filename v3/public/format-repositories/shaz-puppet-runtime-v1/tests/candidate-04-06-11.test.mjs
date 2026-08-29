@@ -11,7 +11,6 @@ import { poseRecipeSha256 } from "../runtime/pose-recipe.mjs";
 import { loadManifest } from "../runtime/rig-v2-renderer.mjs";
 import {
   buildPresentScreenLeft,
-  buildPresentScreenRight,
   DIRECTIONAL_PRESENT_REFERENCES,
 } from "../poses/candidates/sources/directional-presents.mjs";
 import {
@@ -37,17 +36,9 @@ const records = Object.freeze([
     maximumIdenticalFrames: 1,
     build: buildPresentScreenLeft,
   },
-  {
-    id: "present-screen-right",
-    fileSha256: "76f99ac7e90d678df5c87a2b0126a93b2d1a18934315f600cf42c96c5ac55525",
-    semanticSha256: "8d6d883074e9d1f0da720ba1b6fc658c482a6afe18880e69c757a7793b948cbf",
-    durationFrames: 31,
-    maximumIdenticalFrames: 10,
-    build: buildPresentScreenRight,
-  },
 ]);
 
-test("Candidates 04, 06, and 11 reproduce from native rig vocabulary", async () => {
+test("Candidates 04 and 06 reproduce from native rig vocabulary", async () => {
   const manifest = await loadManifest(path.join(root, "rig-v2", "runtime.json"));
   for (const record of records) {
     const recipePath = path.join(root, "poses", "candidates", `${record.id}.json`);
@@ -106,7 +97,7 @@ test("Candidate 06 describes its fixed waist-up crop without promising hidden fi
   assert.doesNotMatch(bottomEdge.reason, /restores? .*fingertips/i);
 });
 
-test("Candidates 04, 06, and 11 remain unavailable to blind runs", async () => {
+test("Candidates 04 and 06 remain unavailable to blind runs", async () => {
   const [registry, packets] = await Promise.all([
     fs.readFile(path.join(root, "poses", "index.json"), "utf8").then(JSON.parse),
     fs.readFile(path.join(root, "motion-packets", "index.json"), "utf8").then(JSON.parse),
@@ -121,7 +112,7 @@ test("Candidates 04, 06, and 11 remain unavailable to blind runs", async () => {
   }
 });
 
-test("Candidates 04, 06, and 11 pass the unmodified full pose inspector", async () => {
+test("Candidates 04 and 06 pass the unmodified full pose inspector", async () => {
   const manifest = await loadManifest(path.join(root, "rig-v2", "runtime.json"));
   for (const record of records) {
     const recipe = await fs.readFile(

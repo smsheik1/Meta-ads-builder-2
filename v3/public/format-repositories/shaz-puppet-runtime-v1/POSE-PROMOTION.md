@@ -61,6 +61,8 @@ Before touching controls, write down:
 
 If the source supplies only a hold or only half an action, say so. Either give the smaller action an honest name or plan a separately reviewed connector. Do not fabricate missing motion with a generic tween.
 
+When the reference comes from edited video, segment it before choosing the target. A single clip may contain two different holds separated by a cut or counter-shift. Lock one gold frame and one phase range per destination silhouette; do not average distinct poses into one recipe.
+
 ## 3. Build through the recovered rig
 
 Use `runtime/rig-v2-renderer.mjs#renderRigFrame`, the registered rig hierarchy, and existing drawing substitutions. Keep the body independent from lip-sync and keep the camera/background fixed.
@@ -68,6 +70,16 @@ Use `runtime/rig-v2-renderer.mjs#renderRigFrame`, the registered rig hierarchy, 
 Never use finished artist-video frames as runtime sprites. Never add a second renderer or pose-specific rendering branch. Follow `poses/README.md` and `references/rig-animation-playbook.md`; they define the narrow part-substitution exception and the three-attempt limit.
 
 Work on one unapproved action at a time. Preserve the authored stepped cadence instead of smoothing every output frame.
+
+For a new video-guided pose, solve the destination before its connectors:
+
+1. render the closest complete native limb chain as a one-frame hold;
+2. normalize the reference and runtime to the same character scale;
+3. fit shoulder, elbow, wrist, palm centroid, palm angle, and torso line independently;
+4. lock those targets in a focused regression; and
+5. only after the hold passes review, author neutral entry and release as separate connector work.
+
+Borrow native drawings and joint vocabulary, not an unrelated action's body deformation, facial track, timing, or release.
 
 ## 4. Pass mechanical inspection
 
@@ -168,6 +180,6 @@ The unshipped source is `0826.mov`, SHA-256 `237715f71eed5bb9fc561d8c1766448ec61
 | 08 | Heartfelt | Promote built hold-only native candidate | `recipe-candidate` | The third bounded pass is preserved at `poses/candidates/heartfelt-chest-clasp-hold.json`; all 48 frames pass unchanged mechanical inspection. It remains unregistered pending exact-output normal-speed creative review. The recipe honestly covers only the two-hand clasp hold: it has no authored entry or release and is not #02's one-hand self-reference. |
 | 09 | Low side-present / explain | Promote recovered recipe | `recipe-candidate` | The recovered motion is preserved at `poses/candidates/low-side-present.json`; its false crop-restoration claim is corrected without changing any control, drawing, or timing data. Its Xstage binding and fresh full inspection pass. The source-authored opposite hand intentionally continues below the fixed waist-up crop with its native cuff/wrist chain intact. It remains unregistered pending exact normal-speed creative review against the frozen 0826 clip. |
 | 10 | Big emphasis | Review built rig-native candidate | `recipe-candidate` | The mechanically corrected third bounded native-rig pass is preserved at `poses/candidates/big-emphasis.json`; it now owns only body language and inherits the neutral eyebrow, eye, pupil, and mouth tracks. Its clean overhead open-palm V and full 31-frame inspection pass remain unregistered, unapproved, and packet-ineligible pending exact normal-speed review. The rejected `excited-celebration` is not a substitute. |
-| 11 | Present screen-right | Review built directional candidate | `recipe-candidate` | The 31-frame native right-arm action is preserved at `poses/candidates/present-screen-right.json`; it uses authored Shrug vocabulary without mirroring Shaz, passes the unchanged inspector, and includes its native release. Exact-output creative review is pending. |
+| 11 | Present screen-right | Review pose-first directional hold | `recipe-candidate` | The artist clip contains two destination silhouettes. `poses/candidates/present-screen-right.json` now locks the final settled hold (clip frame 80) as a one-frame body-only native-rig pose. Its shoulder, elbow, upper wrist envelope, sleeve, palm center, palm angle, and torso line are regression-checked against the reproducible normalization in `evidence/candidate-11-present-screen-right-target.json`, and it passes the unchanged inspector. It deliberately owns no face, entry, or release. Exact-output creative review and separately authored neutral connectors are still required before registration or packet use. |
 
-The engineering pass is complete enough for one review session: #03 has a proposed Confident reuse to decide; #05 and #07 review registered actions; #04, #06, #08, #09, #10, and #11 have exact review candidates; and #02 is blocked at its unchanged hand-proportion gate. Review each complete normal-speed artifact before any mapping, registration, or safe-list change.
+The engineering pass is complete enough for one review session: #03 has a proposed Confident reuse to decide; #05 and #07 review registered actions; #04, #06, #08, #09, and #10 have action or hold candidates; #11 has a geometry-locked destination hold awaiting review and connectors; and #02 is blocked at its unchanged hand-proportion gate. Review each exact artifact before any mapping, registration, or safe-list change.

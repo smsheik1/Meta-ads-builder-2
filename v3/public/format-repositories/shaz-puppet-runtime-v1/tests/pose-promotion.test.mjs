@@ -23,6 +23,8 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   assert.match(promotion, /registered means runnable/i);
   assert.match(promotion, /Do not reverse-scrub entry frames and call that a release/);
   assert.match(promotion, /Do not claim that the user watched something while they were away/);
+  assert.match(promotion, /solve the destination before its connectors/);
+  assert.match(promotion, /fit shoulder, elbow, wrist, palm centroid, palm angle, and torso line independently/);
   assert.match(promotion, /two materially different unseen audio inputs/);
   assert.match(promotion, /Listing them here does not approve them/);
   assert.match(promotion, /237715f71eed5bb9fc561d8c1766448ec61ff727671ada4324d8dc1ae77f8127/);
@@ -74,8 +76,10 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   assert.match(promotion, /09[\s\S]*Promote recovered recipe[\s\S]*recipe-candidate/);
   assert.match(promotion, /poses\/candidates\/low-side-present\.json[\s\S]*fresh full inspection pass/);
   assert.match(promotion, /10[\s\S]*Big emphasis[\s\S]*The rejected `excited-celebration` is not a substitute/);
-  assert.match(promotion, /11[\s\S]*Review built directional candidate[\s\S]*recipe-candidate/);
+  assert.match(promotion, /11[\s\S]*Review pose-first directional hold[\s\S]*recipe-candidate/);
   assert.match(promotion, /poses\/candidates\/present-screen-right\.json/);
+  assert.match(promotion, /candidate-11-present-screen-right-target\.json/);
+  assert.match(promotion, /owns no face, entry, or release/);
 
   for (const candidateRecipe of [
     "hand-to-chest-self.json",
@@ -96,6 +100,11 @@ test("the package exposes one honest reference-to-packet promotion path", async 
 
   assert.match(readme, /Start with `POSE-PROMOTION\.md`/);
   assert.match(skill, /Read `POSE-PROMOTION\.md`/);
+  assert.match(skill, /segment every edit, counter-shift, and distinct hold/);
+  assert.match(skill, /Build the destination first as a one-frame body-only native-rig hold/);
+  assert.match(skill, /author neutral entry and release as separate connectors/);
   assert.match(poseReadme, /Read the lifecycle in `\.\.\/POSE-PROMOTION\.md`/);
+  assert.match(poseReadme, /Build that destination as a one-frame, body-only candidate/);
+  assert.match(poseReadme, /author and review neutral entry and release connectors separately/);
   assert.equal(include(path.join(root, "POSE-PROMOTION.md")), true);
 });

@@ -22,16 +22,19 @@ Use the smallest combination that answers the current uncertainty:
 
 1. Watch the complete reference and candidate at normal speed to judge rhythm, weight, and readability. Normal speed is the certification view; slow motion is diagnostic only because it can conceal a low-speed crawl.
 2. Decode every frame or create a dense chronological sheet to find one-frame accents, holds, pops, and substitution changes.
-3. Inspect contextual frames before and after every proposed action boundary. A complete action normally includes setup, accent, settle, and release; if only one readable subgesture is intended, register it under that narrower meaning instead of borrowing the full action's label.
-4. Align reference and candidate by action phase, not merely by equal timestamps.
-5. Inspect close crops of shoulders, elbows, hands, face, mouth, hairline, collar, and any changing silhouette.
-6. Measure consecutive-frame differences, exposure-change frames, and longest identical-frame runs to distinguish deliberate stepped timing or a living hold from an accidental freeze.
-7. Inspect alpha bounds and connected components for detached fragments, missing fill, or clipping.
-8. Inspect the Xstage hierarchy, PEG controls, deformation channels, drawings, and source substitutions when visual evidence does not identify the cause.
+3. Segment edited references before choosing a target. Treat distinct holds separated by a cut or counter-shift as separate destination silhouettes; lock one gold frame and phase range for each.
+4. Inspect contextual frames before and after every proposed action boundary. A complete action normally includes setup, accent, settle, and release; if only one readable subgesture is intended, register it under that narrower meaning instead of borrowing the full action's label.
+5. Align reference and candidate by action phase, not merely by equal timestamps.
+6. Inspect close crops of shoulders, elbows, hands, face, mouth, hairline, collar, and any changing silhouette.
+7. Measure consecutive-frame differences, exposure-change frames, and longest identical-frame runs to distinguish deliberate stepped timing or a living hold from an accidental freeze.
+8. Inspect alpha bounds and connected components for detached fragments, missing fill, or clipping.
+9. Inspect the Xstage hierarchy, PEG controls, deformation channels, drawings, and source substitutions when visual evidence does not identify the cause.
 
 Rendered artist animation frames may be used to identify phases, presentation cadence, and acceptance criteria. Never copy, resample, or embed those animation frames as runtime sprites, deformation data, or generated pose artwork. A user-supplied pose-design drawing is different: it may be registered transparently as destination artwork only under the bounded substitution rules below.
 
 ## Author in the right order
+
+For video-guided reconstruction, use a pose-first, connector-second pass before the stages below. Render one native destination hold, normalize it to the artist frame, and solve the complete chain in order: shoulder, elbow, wrist, palm center and angle, then torso relationship. Lock those measurements in a focused test. Do not import the donor action's deformation, face, cadence, or release merely because its hand drawing is useful. After the exact hold passes review, author entry and release as separate boundary work.
 
 ### 1. Assembly and silhouette
 
@@ -148,7 +151,7 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 
 ## Things to avoid
 
-- Do not start with a polished destination pose and fill the gap with generic interpolation.
+- Do not turn a polished destination hold into a fake full action with generic interpolation. Preserve it honestly as a hold and build reviewed connectors separately.
 - Do not sample a few source frames and assume linear in-betweens preserve the artist's cadence.
 - Do not approve from slow motion alone or replace intentional stepped timing with generic smoothing.
 - Do not copy only the largest PEG controls.
