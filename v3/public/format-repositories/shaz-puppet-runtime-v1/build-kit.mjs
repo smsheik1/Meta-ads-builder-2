@@ -8,9 +8,12 @@ import { execute, sha256, writeJson } from "./runtime/run-common.mjs";
 const root = path.dirname(fileURLToPath(import.meta.url));
 const archiveName = "wiggly-shaz-puppet-runtime-format-kit";
 const downloads = path.join(root, "downloads");
-const output = path.join(downloads, `${archiveName}.zip`);
-const checksumOutput = `${output}.sha256`;
 const excludedNames = new Set(["node_modules", ".runtime-cache", ".DS_Store", ".git"]);
+const historicalFixtureFiles = new Set([
+  "fixtures/final-unlabeled-input.json",
+  "fixtures/lego-body-language-sample-input.json",
+  "fixtures/proof-alternate-input.json",
+]);
 const packagedPropFiles = new Set(["phone.svg", "crossed-arms-pose.png"]);
 const packagedBackgroundFiles = new Set([
   "living-room.png",
@@ -41,6 +44,7 @@ export function include(source) {
   const parts = relative.split(path.sep);
   if (parts.some((part) => excludedNames.has(part))) return false;
   if (parts[0] === "downloads") return false;
+  if (historicalFixtureFiles.has(relative)) return false;
   if (parts[0] === "agent-runs" && parts.length > 1 && parts.at(-1) !== ".gitkeep") return false;
   if (parts[0] === "goldens" || relative === "goldens.json") return false;
   if (
@@ -66,8 +70,10 @@ export function include(source) {
   return true;
 }
 
-export async function buildKit() {
-  await fs.mkdir(downloads, { recursive: true });
+export async function buildKit({ outputDirectory = downloads } = {}) {
+  const output = path.join(outputDirectory, `${archiveName}.zip`);
+  const checksumOutput = `${output}.sha256`;
+  await fs.mkdir(outputDirectory, { recursive: true });
   await fs.rm(output, { force: true });
   await fs.rm(checksumOutput, { force: true });
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-format-kit-"));
@@ -93,6 +99,7 @@ export async function buildKit() {
     const digest = await sha256(output);
     await fs.writeFile(checksumOutput, `${digest}  ${path.basename(output)}\n`);
     console.log(JSON.stringify({ status: "built", output, sha256: digest }, null, 2));
+    return { output, checksumOutput, sha256: digest };
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
   }

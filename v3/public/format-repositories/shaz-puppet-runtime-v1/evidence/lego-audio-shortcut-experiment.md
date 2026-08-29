@@ -18,7 +18,7 @@ An agent can build a useful Shaz body-language performance by scheduling complet
 - No manual rig-control, drawing, or pose-recipe changes were made for this performance.
 - No lip-sync or camera motion was attempted.
 
-The exact input is `fixtures/lego-body-language-sample-input.json`. The official run is `agent-runs/lego-audio-proof-v1`.
+The exact historical input is `fixtures/lego-body-language-sample-input.json`. It includes the still-unreviewed Shrug engineering recipe, so the source fixture is deliberately excluded from the downloadable kit. The official historical run is `agent-runs/lego-audio-proof-v1`.
 
 ## Result
 
