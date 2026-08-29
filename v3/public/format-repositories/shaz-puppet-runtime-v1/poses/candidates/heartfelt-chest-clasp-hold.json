@@ -1,0 +1,460 @@
+{
+  "schemaVersion": "shaz-pose-recipe-v1",
+  "id": "heartfelt-chest-clasp-hold",
+  "fps": 24,
+  "durationFrames": 48,
+  "baseFrame": 95,
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "authorship": {
+    "method": "semantic-native-rig-control-composition",
+    "learnedFrom": [
+      "0826 Candidate 08 clip@20056ed75665b64ef628bff8522f3fe17d3e1b2d6a4b03fa884881bf4dc6506d: bilateral elbow-out chest contact and a warm held beat; artist pixels are comparison-only",
+      "recovered Xstage frame 95: native bilateral sleeve, cuff, and open-hand vocabulary",
+      "three bounded native-rig attempts: the final pass keeps the mechanically clean scaled lower hand and removes the diagnostic blink from the body recipe",
+      "honest scope is the clasp hold only; the frozen source contains neither an authentic entry from neutral nor a release"
+    ],
+    "artistRenderedFramesUsed": false
+  },
+  "bodyLanguageIsolation": {
+    "mouth": "neutral-base-frame",
+    "eyes": "neutral-base-frame",
+    "reason": "Dialogue mouth shapes, blinks, camera motion, and background motion remain separate from the body-language recipe"
+  },
+  "controls": {
+    "Left_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.011494394440129119,
+          -0.007401370275853969,
+          0
+        ],
+        "rotation": 162.54304753244372,
+        "scale": [
+          1.0002611370843573,
+          0.999739665538956
+        ],
+        "skew": 0.0016582061440750342,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 48,
+        "position": [
+          -0.011494394440129119,
+          -0.007401370275853969,
+          0
+        ],
+        "rotation": 162.54304753244372,
+        "scale": [
+          1.0002611370843573,
+          0.999739665538956
+        ],
+        "skew": 0.0016582061440750342,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Right_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.0479787847699962,
+          0.01977639190548819,
+          0
+        ],
+        "rotation": -157.44825379228485,
+        "scale": [
+          0.9999103937787077,
+          1.0000896713579686
+        ],
+        "skew": -0.012662715311064362,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 48,
+        "position": [
+          -0.0479787847699962,
+          0.01977639190548819,
+          0
+        ],
+        "rotation": -157.44825379228485,
+        "scale": [
+          0.9999103937787077,
+          1.0000896713579686
+        ],
+        "skew": -0.012662715311064362,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Left_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.25512183830371893,
+          -0.136488307975557,
+          -0.05733489990234375
+        ],
+        "rotation": -134.42571124743816,
+        "scale": [
+          0.911158923262414,
+          0.6595558719813729
+        ],
+        "skew": -3.992977944861586,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 48,
+        "position": [
+          0.25512183830371893,
+          -0.136488307975557,
+          -0.05733489990234375
+        ],
+        "rotation": -134.42571124743816,
+        "scale": [
+          0.911158923262414,
+          0.6595558719813729
+        ],
+        "skew": -3.992977944861586,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Right_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.9277951849255568,
+          -0.0976321233794599,
+          -0.130462646484375
+        ],
+        "rotation": 29.063011806068857,
+        "scale": [
+          1.1993955071007092,
+          0.9785502992131412
+        ],
+        "skew": -3.632656584101046,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      },
+      {
+        "frame": 48,
+        "position": [
+          -0.9277951849255568,
+          -0.0976321233794599,
+          -0.130462646484375
+        ],
+        "rotation": 29.063011806068857,
+        "scale": [
+          1.1993955071007092,
+          0.9785502992131412
+        ],
+        "skew": -3.632656584101046,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false,
+        "interpolation": "hold"
+      }
+    ],
+    "Shaz_Master-P": [
+      {
+        "frame": 1,
+        "position": [
+          2.4265709820509257e-15,
+          -0.0034986326741199,
+          0
+        ],
+        "rotation": 2.814694663596729,
+        "scale": [
+          0.9999754543906794,
+          1.0000253483028736
+        ],
+        "skew": -0.020858876584435915,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 13,
+        "position": [
+          0.005000000000002427,
+          0.0045013673258801,
+          0
+        ],
+        "rotation": 3.034694663596729,
+        "scale": [
+          0.9999754543906794,
+          1.0000253483028736
+        ],
+        "skew": -0.020858876584435915,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 25,
+        "position": [
+          -0.003999999999997573,
+          0.0005013673258801002,
+          0
+        ],
+        "rotation": 2.664694663596729,
+        "scale": [
+          0.9999754543906794,
+          1.0000253483028736
+        ],
+        "skew": -0.020858876584435915,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.0030000000000024265,
+          0.005501367325880099,
+          0
+        ],
+        "rotation": 2.994694663596729,
+        "scale": [
+          0.9999754543906794,
+          1.0000253483028736
+        ],
+        "skew": -0.020858876584435915,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 48,
+        "position": [
+          2.4265709820509257e-15,
+          -0.0034986326741199,
+          0
+        ],
+        "rotation": 2.814694663596729,
+        "scale": [
+          0.9999754543906794,
+          1.0000253483028736
+        ],
+        "skew": -0.020858876584435915,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Head_Movement-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.017175736554757324,
+          -0.04513428160549781,
+          0
+        ],
+        "rotation": 2.6901597349806083,
+        "scale": [
+          1.0000158764190101,
+          0.9999841255295548
+        ],
+        "skew": -0.0008088845534971066,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 13,
+        "position": [
+          0.017175736554757324,
+          -0.04513428160549781,
+          0
+        ],
+        "rotation": 2.240159734980608,
+        "scale": [
+          1.0000158764190101,
+          0.9999841255295548
+        ],
+        "skew": -0.0008088845534971066,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 25,
+        "position": [
+          0.017175736554757324,
+          -0.04513428160549781,
+          0
+        ],
+        "rotation": 2.990159734980608,
+        "scale": [
+          1.0000158764190101,
+          0.9999841255295548
+        ],
+        "skew": -0.0008088845534971066,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 37,
+        "position": [
+          0.017175736554757324,
+          -0.04513428160549781,
+          0
+        ],
+        "rotation": 2.4401597349806083,
+        "scale": [
+          1.0000158764190101,
+          0.9999841255295548
+        ],
+        "skew": -0.0008088845534971066,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      },
+      {
+        "frame": 48,
+        "position": [
+          0.017175736554757324,
+          -0.04513428160549781,
+          0
+        ],
+        "rotation": 2.6901597349806083,
+        "scale": [
+          1.0000158764190101,
+          0.9999841255295548
+        ],
+        "skew": -0.0008088845534971066,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ]
+  },
+  "drawings": {
+    "Left_Hand": [
+      {
+        "frame": 1,
+        "drawing": "2"
+      }
+    ],
+    "Right_Hand": [
+      {
+        "frame": 1,
+        "drawing": "9"
+      }
+    ],
+    "Mouth": [
+      {
+        "frame": 1,
+        "drawing": "1"
+      }
+    ]
+  },
+  "deformationFrames": [
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95,
+    95
+  ],
+  "quality": {
+    "armCompositeMode": "native-rig",
+    "armPaintOrder": "both-front-left-under-right"
+  },
+  "sourceAction": {
+    "generatedFrom": "native-rig-controls-and-drawing-exposures",
+    "sourceFrame": 95,
+    "referenceHoldLocalFrames": [
+      8,
+      96
+    ]
+  },
+  "reference": {
+    "candidate": 8,
+    "label": "Heartfelt",
+    "sourceName": "0826.mov",
+    "sourceSha256": "237715f71eed5bb9fc561d8c1766448ec61ff727671ada4324d8dc1ae77f8127",
+    "clipName": "08-heartfelt.mp4",
+    "clipSha256": "20056ed75665b64ef628bff8522f3fe17d3e1b2d6a4b03fa884881bf4dc6506d",
+    "startSeconds": 68.2,
+    "endSeconds": 71.6,
+    "sourceFps": 30,
+    "clipFrameCount": 102,
+    "cameraMotionUsed": false,
+    "facialMotionUsed": false,
+    "artistRenderedFramesUsed": false,
+    "boundary": "Local frames 8-96 provide the two-hand chest-clasp hold; frames 1-7 are inherited lead-in and frames 97-102 are a hard edit, so no authentic entry or release is claimed."
+  },
+  "promotion": {
+    "status": "recipe-candidate",
+    "attemptsUsed": 3,
+    "mechanicalInspection": "pass",
+    "creativeReview": "pending",
+    "registered": false,
+    "safeListed": false,
+    "packetEligible": false,
+    "blocker": "Exact-output normal-speed creative review is pending, and the frozen source supplies no authentic entry or release boundary."
+  }
+}
