@@ -10,6 +10,11 @@ import { generateCherryCues, verifyCherryEngine } from "./runtime/cherry.mjs";
 import { inspectRun } from "./runtime/inspect-run.mjs";
 import { renderSequence } from "./runtime/render-sequence.mjs";
 import {
+  ensureWhisperEngine,
+  generateTranscript,
+  validateTranscriptionAudio,
+} from "./runtime/transcription.mjs";
+import {
   MAX_OUTPUT_FRAMES,
   execute,
   exists,
@@ -25,6 +30,7 @@ import {
 } from "./runtime/run-common.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
+const SHA256 = /^[a-f0-9]{64}$/;
 const ATTEMPT_LIMIT = 3;
 const TALK_TO_CAMERA_PRESET = "talk-to-camera";
 
@@ -33,6 +39,7 @@ function usage() {
   node runner.mjs check
   node runner.mjs smoke
   node runner.mjs lipsync --audio=/absolute/path/audio --output=/absolute/path/cherry.tsv
+  node runner.mjs transcribe --audio=/absolute/path/audio --output=/absolute/path/transcript.json
   node runner.mjs init --run=<id> --input=/absolute/path/input.json [--audio=/absolute/path/audio] [--lipsync=off] [--lipsync-cues=/absolute/path/cherry.tsv]
   node runner.mjs validate --run=<id>
   node runner.mjs render --run=<id>
@@ -78,6 +85,7 @@ async function check() {
     "poses/index.json",
     "motion-packets/index.json",
     "vendor/cherry-lip-sync/v0.1.0/VENDOR-MANIFEST.json",
+    "vendor/whisper.cpp/v1.9.2/VENDOR-MANIFEST.json",
     "rig-v2/runtime.json",
     "rig-v2/assets/receipt.json",
   ];
@@ -86,6 +94,7 @@ async function check() {
   }
   const { manifest, receipt } = await verifyAssetReceipt();
   const cherry = await verifyCherryEngine({ root });
+  const whisper = await ensureWhisperEngine({ root });
   const assetManifest = await readJson(path.join(root, "assets.json"));
   const backgroundIds = (assetManifest.backgrounds ?? []).map(({ id }) => id);
   if (new Set(backgroundIds).size !== backgroundIds.length) {
@@ -124,6 +133,7 @@ async function check() {
       ffprobe: toolVersion("ffprobe"),
       sharp: sharpVersion,
       cherry: `${cherry.manifest.engine} ${cherry.manifest.version} (WASI)`,
+      transcription: `${whisper.vendor.manifest.engine} ${whisper.vendor.manifest.version} (${whisper.receipt.execution})`,
     },
     sourceXstageSha256: manifest.source.sha256,
     artistRenderedFramesUsed: false,
@@ -147,6 +157,9 @@ async function init(args) {
   if (!args.input || !path.isAbsolute(args.input)) throw new Error("--input must be an absolute JSON path");
   await fs.access(args.input);
   const input = await readJson(args.input);
+  if (input.transcript !== undefined) {
+    throw new Error("source input must omit transcript; init generates checksum-bound local transcript evidence");
+  }
   const isPerformance = input.schemaVersion === "shaz-body-language-performance-v1";
   const isTalkToCamera = input.schemaVersion === "shaz-sequence-input-v1"
     && input.sequencePreset !== undefined;
@@ -162,6 +175,12 @@ async function init(args) {
   const isAudioSequence = input.schemaVersion === "shaz-sequence-input-v1"
     && (typeof input.backgroundId === "string" || isTalkToCamera);
   const needsAudio = isPerformance || isAudioSequence;
+  const needsSemanticPlan = needsAudio && !isTalkToCamera;
+  if (needsSemanticPlan && !SHA256.test(input.planningTranscriptSha256 ?? "")) {
+    throw new Error(
+      "audio-backed gesture plans require planningTranscriptSha256 from npm run transcribe",
+    );
+  }
   const lipSyncMode = args.lipsync ?? "auto";
   if (!["auto", "off"].includes(lipSyncMode)) throw new Error("--lipsync must be auto or off");
   if (args["lipsync-cues"] && lipSyncMode === "off") {
@@ -176,7 +195,7 @@ async function init(args) {
   if (!needsAudio && args.audio) {
     throw new Error("--audio requires a performance input or an audio-backed sequence with backgroundId");
   }
-  if (needsAudio) await fs.access(args.audio);
+  if (needsAudio) await validateTranscriptionAudio(args.audio);
   if (args["lipsync-cues"]) {
     if (!isAudioSequence) throw new Error("--lipsync-cues currently requires an audio-backed sequence input");
     if (!path.isAbsolute(args["lipsync-cues"])) {
@@ -188,6 +207,7 @@ async function init(args) {
   if (await exists(runDirectory)) throw new Error(`run already exists: ${runId}`);
   await fs.mkdir(runDirectory, { recursive: true });
   let lipSyncState = null;
+  let transcriptState = null;
   try {
     if (needsAudio) {
       const extension = path.extname(args.audio).toLowerCase() || ".audio";
@@ -196,6 +216,7 @@ async function init(args) {
       await fs.copyFile(args.audio, stagedAudioPath);
       input.audioFile = audioFile;
       delete input.lipSync;
+      delete input.transcript;
       let sequenceAudioFrames = null;
       if (isAudioSequence) {
         const probe = probeMedia(stagedAudioPath);
@@ -209,6 +230,30 @@ async function init(args) {
         }
         if (isTalkToCamera) input.durationFrames = sequenceAudioFrames;
       }
+      const transcriptFile = "transcript.json";
+      const transcriptReceiptFile = "transcription-receipt.json";
+      transcriptState = await generateTranscript({
+        root,
+        audioPath: stagedAudioPath,
+        outputPath: path.join(runDirectory, transcriptFile),
+        receiptPath: path.join(runDirectory, transcriptReceiptFile),
+      });
+      if (needsSemanticPlan
+        && input.planningTranscriptSha256 !== transcriptState.transcriptSha256) {
+        throw new Error(
+          "the gesture plan was written against a different transcript; rerun npm run transcribe and update the plan",
+        );
+      }
+      input.transcript = {
+        file: transcriptFile,
+        sha256: transcriptState.transcriptSha256,
+        receiptFile: transcriptReceiptFile,
+        receiptSha256: transcriptState.receiptSha256,
+        sourceAudioSha256: transcriptState.receipt.audio.sourceSha256,
+        language: transcriptState.transcript.language,
+        segmentCount: transcriptState.transcript.segments.length,
+        wordCount: transcriptState.transcript.words.length,
+      };
       if (isAudioSequence && lipSyncMode !== "off") {
         const cueFile = "cherry-lipsync.tsv";
         const cuePath = path.join(runDirectory, cueFile);
@@ -271,6 +316,16 @@ async function init(args) {
         sha256: await sha256(path.join(runDirectory, input.audioFile)),
       },
       ...(lipSyncState ? { lipSync: lipSyncState } : {}),
+      ...(transcriptState ? {
+        transcript: {
+          file: input.transcript.file,
+          sha256: input.transcript.sha256,
+          receiptFile: input.transcript.receiptFile,
+          receiptSha256: input.transcript.receiptSha256,
+          wordCount: input.transcript.wordCount,
+          segmentCount: input.transcript.segmentCount,
+        },
+      } : {}),
       ...(isTalkToCamera ? { sequencePreset: TALK_TO_CAMERA_PRESET } : {}),
     } : {}),
   });
@@ -292,6 +347,32 @@ async function lipsync(args) {
   });
   console.log(JSON.stringify(receipt, null, 2));
   return receipt;
+}
+
+async function transcribe(args) {
+  if (!args.audio || !path.isAbsolute(args.audio)) throw new Error("--audio must be an absolute audio path");
+  if (!args.output || !path.isAbsolute(args.output)) throw new Error("--output must be an absolute JSON path");
+  await fs.access(args.audio);
+  const result = await generateTranscript({
+    root,
+    audioPath: args.audio,
+    outputPath: args.output,
+  });
+  const report = {
+    status: "pass",
+    transcript: result.transcriptPath,
+    transcriptSha256: result.transcriptSha256,
+    receipt: result.receiptPath,
+    receiptSha256: result.receiptSha256,
+    language: result.transcript.language,
+    segmentCount: result.transcript.segments.length,
+    wordCount: result.transcript.words.length,
+    text: result.transcript.text,
+    providerCalls: 0,
+    cost: "$0",
+  };
+  console.log(JSON.stringify(report, null, 2));
+  return report;
 }
 
 async function runDirectoryFromArgs(args) {
@@ -364,6 +445,7 @@ async function finalize(args) {
     ...(isAudiovisual ? {
       audio: validated.receipt.audio,
       background: validated.receipt.background,
+      ...(validated.receipt.transcript ? { transcript: validated.receipt.transcript } : {}),
       ...(validated.receipt.lipSync ? { lipSync: validated.receipt.lipSync } : {}),
       ...(validated.receipt.sequencePreset
         ? { sequencePreset: validated.receipt.sequencePreset }
@@ -413,6 +495,7 @@ async function main() {
   if (command === "check") return check();
   if (command === "smoke") return smoke();
   if (command === "lipsync") return lipsync(args);
+  if (command === "transcribe") return transcribe(args);
   if (command === "init") return init(args);
   if (command === "validate") {
     const result = await validateRun({ root, runDirectory: await runDirectoryFromArgs(args) });

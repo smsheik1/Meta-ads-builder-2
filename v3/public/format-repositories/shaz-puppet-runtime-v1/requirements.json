@@ -1,10 +1,13 @@
 {
   "schemaVersion": 1,
   "localTools": [
-    { "name": "node", "minimum": "20", "required": true, "requiredFor": "official runtime and bundled Cherry WASI cue engine" },
+    { "name": "node", "minimum": "20", "required": true, "requiredFor": "official runtime, bundled Cherry WASI cue engine, and transcript workflow" },
     { "name": "npm", "required": true },
     { "name": "ffmpeg", "required": true },
     { "name": "ffprobe", "required": true },
+    { "name": "xcrun", "required": true, "platform": "darwin-arm64", "requiredFor": "locate Apple Clang and the macOS SDK for the first local whisper.cpp build" },
+    { "name": "clang", "required": true, "platform": "darwin-arm64", "source": "Xcode Command Line Tools", "requiredFor": "compile the bundled whisper.cpp source locally without a downloaded executable" },
+    { "name": "tar", "required": true, "platform": "darwin-arm64", "requiredFor": "extract the bundled whisper.cpp source archive into the local build cache" },
     { "name": "zip", "requiredFor": "build:kit" }
   ],
   "bundledEngines": [
@@ -16,6 +19,17 @@
       "nativeExecutable": false,
       "networkRequired": false,
       "purpose": "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs"
+    },
+    {
+      "name": "whisper.cpp",
+      "version": "1.9.2",
+      "artifact": "checksum-pinned source archive plus base.en Q5_1 model",
+      "host": "locally compiled Apple Silicon helper using Apple Clang and Accelerate",
+      "nativeExecutableIncluded": false,
+      "nativeExecutableBuiltLocally": true,
+      "networkRequired": false,
+      "supportedPlatform": "darwin-arm64",
+      "purpose": "create an English transcript with word timestamps before body-language planning"
     }
   ],
   "environmentVariables": [],

@@ -5,6 +5,7 @@
     "rig-v2/assets",
     "runtime/rig-v2-renderer.mjs",
     "checksum-locked bundled Cherry 0.1.0 WASI cue engine, provenance, and licenses",
+    "checksum-locked whisper.cpp 1.9.2 source, build plan, English base Q5_1 model, provenance, and licenses",
     "recovered paint order and transform math",
     "pose recipe schema and validation gates"
   ],
@@ -16,6 +17,7 @@
     "user-supplied audio for an audio-backed sequence",
     "one of the four checksum-registered fixed backgrounds; Sisters Room is the default",
     "a locally generated or user-supplied checksum-bound Cherry cue TSV that changes only registered Mouth drawings",
+    "a locally generated English transcript with word timestamps used to plan meaningful gesture beats",
     "the talk-to-camera composition preset, which maps measured audio to the existing neutral-listening body and required Cherry mouth cues",
     "new pose recipes authored through named rig controls and, only when the recovered vocabulary is proven insufficient, an exact registered part-specific substitution drawing"
   ],
@@ -23,6 +25,8 @@
     "finished artist-rendered frames as runtime sprites or pose-generation inputs",
     "a second renderer for preview or export",
     "requiring or silently launching a native cherrylipsync executable",
+    "shipping or silently downloading a native Whisper executable, uploading user audio for transcription, or accepting a source-input transcript as if it were generated evidence",
+    "transcript text directly mutating the renderer, rig controls, drawings, camera, or audio",
     "lip-sync cues changing body controls, pose timing, props, camera, or non-Mouth drawings",
     "registering talk-to-camera as a duplicate pose instead of reusing neutral-listening",
     "placing images, video, or other supporting media into the reserved Photo Zone before that future input contract and renderer behavior are implemented",

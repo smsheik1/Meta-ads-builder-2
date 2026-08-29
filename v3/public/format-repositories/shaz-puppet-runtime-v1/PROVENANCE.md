@@ -47,3 +47,18 @@ The source, build receipt, dependency-only patch, parity fixture, module checksu
 The build patch marks two unused build-time dependencies optional so the command-line target can compile for WASI. It changes no Rust source, model, inference, audio decoding, command-line behavior, or cue-generation logic. The fixture cues produced by the bundled module are byte-for-byte identical to the upstream macOS arm64 0.1.0 output.
 
 The package contains no native Cherry executable. Node runs the module with only a private temporary scratch folder open to WASI, so the downloaded kit never asks the user to bypass macOS Gatekeeper. Rust is needed only to rebuild the module from source, not to use the package.
+
+## Local transcription
+
+Beginning with Format 0.4.0, the package includes whisper.cpp 1.9.2 source and the English `base.en` Q5_1 model. It compiles a small arm64 helper locally with Apple Clang and Accelerate, then uses that helper to create text and word timestamps before body-language planning. The helper is build output, not a downloaded executable, and it is excluded from the distributable ZIP.
+
+- Upstream repository: <https://github.com/ggml-org/whisper.cpp>
+- Immutable tag: `v1.9.2`
+- Immutable commit: `306c88f4d1286aec1bf96e544632897886af5501`
+- Source archive SHA-256: `a6abd064fcca8b85e794d205abf328c522e9451db43a3eadc178b883b7d0e9cd`
+- Bundled model: `ggml-base.en-q5_1.bin`
+- Model repository commit: `5359861c739e955e79d9a303bcbc70fb988958b1`
+- Model SHA-256: `4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f`
+- Engine and model license: MIT
+
+`vendor/whisper.cpp/v1.9.2/VENDOR-MANIFEST.json` binds the source, model, build plan, and license files. `BUILD-PLAN.json` fixes the compiler inputs, architecture, minimum macOS version, and Accelerate linkage. No user audio leaves the machine, and no Deepgram or other hosted transcription service is used.

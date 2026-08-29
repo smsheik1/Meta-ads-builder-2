@@ -5,7 +5,7 @@ description: Animate the supplied Shaz puppet locally. Use Talk to Camera for di
 
 # Animate Shaz
 
-Skill version: **1.9**.
+Skill version: **2.0**.
 
 Use this kit to turn a voice track into a Shaz talking scene or to build a short performance from the recovered rig. Everything runs locally, makes no provider calls, and costs $0.
 
@@ -37,12 +37,18 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 
 1. Read `README.md`, `input-contract.json`, `composition-contract.json`, `output-contract.json`, `quality.json`, and `content-boundary.json`. Read `ROADMAP.md` as well when changing the Format, planning a capability, or checking what remains unfinished.
 2. Run `npm install` once. Then run `npm run check`, `npm run inspect:registry`, and `npm run smoke`.
-3. Choose the input:
+3. If the job uses audio, transcribe it before choosing gestures:
+
+   `npm run transcribe -- --audio=/absolute/path/audio --output=/absolute/path/transcript.json`
+
+   Read the full text and the word timestamps. The bundled English Whisper model runs locally; never upload the audio to Deepgram or another transcription service. For a gesture sequence, copy the printed transcript SHA into `planningTranscriptSha256`. Anchor each expressive action to a real `wordId`, label, and 24 fps frame (`round(startMs × 24 / 1000)`), then make the preceding frames add up to that anchor. Do not infer semantics from volume alone. Talk to Camera does not need a gesture plan, but initialization still records the local transcript as evidence.
+
+4. Choose the input:
    - For ordinary dialogue, copy `fixtures/talk-to-camera/input.json`. Supply no `sequence`, `durationFrames`, or frame math. Initialization derives one exact-length `neutral-listening` hold from the audio, with lip-sync required.
    - For body language, write a `sequence` with the five reviewed gesture IDs above. Use `neutral-listening` only as the calm default or connective tissue. Use explicit `holdFrames` and `gapFrames`. The last action must use `gapFrames: 0`.
    - Choose `sisters-room`, `living-room`, `map-photo-zone`, or `pure-white` from `assets.json`. Name `backgroundId` explicitly for an audio-backed sequence. A semantic performance input may omit it and use `assets.defaultBackgroundId`. Never invent a background ID.
    - `map-photo-zone` is only a clean fixed room in this release. Its empty area is reserved for future supporting media; do not add, crop, or position an image or video there.
-4. Start a run with an absolute input path:
+5. Start a run with an absolute input path:
 
    `npm run init -- --run=my-run --input=/absolute/path/input.json`
 
@@ -50,15 +56,15 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 
    `shaz-body-language-performance-v1` remains body-language-only. Its audio sets duration and gesture timing, not mouth drawings. It accepts the same backgrounds and defaults to Sisters Room.
 
-5. Run these commands in order:
+6. Run these commands in order:
 
    - `npm run validate -- --run=my-run`
    - `npm run render -- --run=my-run`
    - `npm run inspect -- --run=my-run`
 
-6. Watch `agent-runs/my-run/final.mp4` completely. Inspect `contact-sheet.jpg` and `quality-report.json`. Do not approve a video you did not watch.
-7. Edit only `agent-runs/my-run/human-review.json`. Keep the exact `reviewedOutputSha256`, name the reviewer, write concise notes, and set `status` to `approved` or `rejected`.
-8. Run `npm run finalize -- --run=my-run`. Delivery remains blocked unless validation, inspection, file checks, and human review all pass.
+7. Watch `agent-runs/my-run/final.mp4` completely. Inspect `contact-sheet.jpg` and `quality-report.json`. Do not approve a video you did not watch.
+8. Edit only `agent-runs/my-run/human-review.json`. Keep the exact `reviewedOutputSha256`, name the reviewer, write concise notes, and set `status` to `approved` or `rejected`.
+9. Run `npm run finalize -- --run=my-run`. Delivery remains blocked unless validation, inspection, file checks, and human review all pass.
 
 ## Author-and-learn loop
 
@@ -98,6 +104,7 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 - `runtime/rig-v2-renderer.mjs#renderRigFrame` is the only renderer for smoke, proof, and final video.
 - Lip-sync may change only the registered `Mouth` drawing at each output frame. It must not alter body controls, pose order, hold length, deformation, props, framing, or any other face drawing. Cherry runs locally through Node WASI as a cue generator, never as another renderer. Validation binds the exact engine artifact, cue file, and audio checksums.
 - Do not download, invoke, or require a native `cherrylipsync` executable. Use `npm run lipsync -- --audio=/absolute/path/audio --output=/absolute/path/cues.tsv`, or let audio-backed sequence initialization call the same bundled engine.
+- Transcription must use the bundled whisper.cpp source and English model through `npm run transcribe`. Never use Deepgram, another hosted service, an unsigned downloaded Whisper executable, or a source-supplied transcript as generated evidence. The transcript may guide pose choice and timing; it must never mutate the rig or renderer directly.
 - The waist-up crop is part of the composition contract on every background. The hoodie must continue below the bottom edge through every used action, while hands and pointing gestures retain clear horizontal margins. Never reveal the rounded lower hoodie boundary or invent legs.
 - Finished artist-rendered animation frames may guide phase, cadence, and acceptance criteria. They must never become runtime sprites, deformation data, or generated pose artwork. A user-supplied pose-design drawing may be registered only under the strict part-substitution rule above and must be disclosed separately from recovered Xstage drawings.
 - Never bypass `poses/index.json` with an arbitrary recipe path.
@@ -109,4 +116,4 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 
 ## Return the result
 
-Give the user the absolute path to `final.mp4`, the video checksum from `delivery.json`, the selected background ID, the actions in order, and any remaining limitations. Never claim delivery when `delivery.json` is absent.
+Give the user the absolute path to `final.mp4`, the video checksum from `delivery.json`, the selected background ID, the actions in order, `agent-runs/<run>/transcript.json` plus `delivery.json.transcript.sha256`, the anchor phrases used for body-language beats, and any remaining limitations. Never claim delivery when `delivery.json` is absent.

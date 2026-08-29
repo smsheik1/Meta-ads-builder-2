@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "platform": "darwin",
+  "architecture": "arm64",
+  "minimumMacosVersion": "13.0",
+  "sourceDirectory": "whisper.cpp-1.9.2",
+  "groups": [
+    {
+      "id": "ggml-base",
+      "defines": [
+        "GGML_COMMIT=\"306c88f4d1286aec1bf96e544632897886af5501\"",
+        "GGML_SCHED_MAX_COPIES=4",
+        "GGML_VERSION=\"0.18.1\"",
+        "_DARWIN_C_SOURCE",
+        "_XOPEN_SOURCE=600"
+      ],
+      "includes": ["ggml/src", "ggml/include"],
+      "sources": [
+        "ggml/src/ggml.c",
+        "ggml/src/ggml.cpp",
+        "ggml/src/ggml-alloc.c",
+        "ggml/src/ggml-backend.cpp",
+        "ggml/src/ggml-backend-meta.cpp",
+        "ggml/src/ggml-opt.cpp",
+        "ggml/src/ggml-threading.cpp",
+        "ggml/src/ggml-quants.c",
+        "ggml/src/gguf.cpp"
+      ]
+    },
+    {
+      "id": "ggml-cpu",
+      "defines": [
+        "ACCELERATE_LAPACK_ILP64",
+        "ACCELERATE_NEW_LAPACK",
+        "GGML_SCHED_MAX_COPIES=4",
+        "GGML_USE_ACCELERATE",
+        "GGML_USE_CPU_REPACK",
+        "_DARWIN_C_SOURCE",
+        "_XOPEN_SOURCE=600"
+      ],
+      "includes": ["ggml", "ggml/src", "ggml/src/ggml-cpu", "ggml/include"],
+      "sources": [
+        "ggml/src/ggml-cpu/ggml-cpu.c",
+        "ggml/src/ggml-cpu/ggml-cpu.cpp",
+        "ggml/src/ggml-cpu/repack.cpp",
+        "ggml/src/ggml-cpu/hbm.cpp",
+        "ggml/src/ggml-cpu/quants.c",
+        "ggml/src/ggml-cpu/traits.cpp",
+        "ggml/src/ggml-cpu/amx/amx.cpp",
+        "ggml/src/ggml-cpu/amx/mmq.cpp",
+        "ggml/src/ggml-cpu/binary-ops.cpp",
+        "ggml/src/ggml-cpu/unary-ops.cpp",
+        "ggml/src/ggml-cpu/vec.cpp",
+        "ggml/src/ggml-cpu/ops.cpp",
+        "ggml/src/ggml-cpu/arch/arm/quants.c",
+        "ggml/src/ggml-cpu/arch/arm/repack.cpp"
+      ]
+    },
+    {
+      "id": "ggml-backends",
+      "defines": [
+        "GGML_SCHED_MAX_COPIES=4",
+        "GGML_USE_BLAS",
+        "GGML_USE_CPU",
+        "_DARWIN_C_SOURCE",
+        "_XOPEN_SOURCE=600"
+      ],
+      "includes": ["ggml/include"],
+      "sources": ["ggml/src/ggml-backend-dl.cpp", "ggml/src/ggml-backend-reg.cpp"]
+    },
+    {
+      "id": "ggml-accelerate",
+      "defines": [
+        "ACCELERATE_LAPACK_ILP64",
+        "ACCELERATE_NEW_LAPACK",
+        "GGML_BLAS_USE_ACCELERATE",
+        "GGML_SCHED_MAX_COPIES=4",
+        "_DARWIN_C_SOURCE",
+        "_XOPEN_SOURCE=600"
+      ],
+      "includes": ["ggml/src", "ggml/include"],
+      "sources": ["ggml/src/ggml-blas/ggml-blas.cpp"]
+    },
+    {
+      "id": "whisper",
+      "defines": ["GGML_USE_BLAS", "GGML_USE_CPU", "WHISPER_VERSION=\"1.9.2\""],
+      "includes": ["src", "include", "ggml/include"],
+      "sources": ["src/whisper.cpp"]
+    },
+    {
+      "id": "cli-common",
+      "defines": ["GGML_USE_BLAS", "GGML_USE_CPU"],
+      "includes": ["examples", "src", "include", "ggml/include"],
+      "sources": [
+        "examples/common.cpp",
+        "examples/common-ggml.cpp",
+        "examples/common-whisper.cpp",
+        "examples/grammar-parser.cpp",
+        "examples/cli/cli.cpp"
+      ]
+    }
+  ],
+  "link": {
+    "frameworks": ["Accelerate"],
+    "libraries": ["m"]
+  }
+}

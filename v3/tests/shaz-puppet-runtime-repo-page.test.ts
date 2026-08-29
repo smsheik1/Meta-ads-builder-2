@@ -243,7 +243,7 @@ assert.equal(goldens.talkingSceneShowcase.audioSha256, expectedAudioSha);
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
 assert.equal(profile.name, "Animate Shaz");
-assert.equal(profile.version, "0.3.1");
+assert.equal(profile.version, "0.4.0");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(profile.proofEntries[0]?.id, "shaz-puppet-runtime-talking-scene");
 assert.equal(profile.proofEntries[0]?.format.name, "Animate Shaz");
@@ -259,7 +259,7 @@ assert.match(
 assert.match(profile.proofEntries[0]?.curatorNote ?? "", /creative review is still pending/);
 assert.match(profile.promise, /Give Shaz a voice track/);
 assert.match(profile.promise, /pick a room/);
-assert.match(profile.promise, /Talk to Camera handles everyday speech/);
+assert.match(profile.promise, /reads the words locally/);
 assert.match(profile.promise, /five artist-reviewed gestures/);
 assert.equal(profile.proofEntries[0]?.media.aspectRatio, "16:9");
 assert.equal(
@@ -291,6 +291,7 @@ assert.match(
   /no sequence, durationFrames, or frame math/,
 );
 assert.match(profile.handoff.instructions.join(" "), /present, think, aha, point, and confident/);
+assert.match(profile.handoff.instructions.join(" "), /npm run transcribe/);
 assert.match(profile.handoff.instructions.join(" "), /registered recipes are technically runnable reference material/);
 assert.equal(profile.handoff.totalEstimate, "$0 in service fees, usually 2-8 min");
 assert.equal(
@@ -315,9 +316,9 @@ assert.equal(
   "shaz-puppet-runtime-talking-scene",
 );
 assert.equal(presentation?.copy.runTitle, "Give Shaz a line.");
-assert.match(presentation?.copy.runDescription ?? "", /Talk to Camera/);
+assert.match(presentation?.copy.runDescription ?? "", /reads what Shaz is saying/);
 assert.match(presentation?.copy.runDescription ?? "", /artist-reviewed gesture/);
-assert.match(presentation?.copy.runDescription ?? "", /handles timing, mouth shapes, rendering, and checks locally/);
+assert.match(presentation?.copy.runDescription ?? "", /lip-syncs the mouth/);
 assert.equal(presentation?.copy.provided, "One voice track + room choice");
 assert.equal(presentation?.copy.examplesTitle, "Hear Shaz perform it.");
 assert.match(presentation?.copy.examplesDescription ?? "", /12-second first draft/);
@@ -335,7 +336,7 @@ for (const staleCopy of [
   assert.doesNotMatch(`${formatProofSource}\n${repoPageSource}`, new RegExp(staleCopy, "i"));
 }
 const trust = await getShazPuppetRuntimeTrustData();
-assert.equal(trust.version, "0.3.1");
+assert.equal(trust.version, "0.4.0");
 assert.equal(trust.includedAssets.poses.length, 14);
 assert.equal(
   trust.includedAssets.poses.some(({ id }) => id === "talk-to-camera"),
@@ -391,8 +392,19 @@ assert.deepEqual(trust.includedAssets.bundledEngines, [
     purpose:
       "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs",
   },
+  {
+    name: "whisper.cpp",
+    version: "1.9.2",
+    artifact: "checksum-pinned source archive plus base.en Q5_1 model",
+    host: "locally compiled Apple Silicon helper using Apple Clang and Accelerate",
+    nativeExecutableIncluded: false,
+    nativeExecutableBuiltLocally: true,
+    networkRequired: false,
+    supportedPlatform: "darwin-arm64",
+    purpose: "create an English transcript with word timestamps before body-language planning",
+  },
 ]);
-assert.equal(trust.quality.summary[0]?.value, "0.3.1");
+assert.equal(trust.quality.summary[0]?.value, "0.4.0");
 assert.equal(trust.quality.summary[0]?.label, "kit version");
 assert.ok(trust.commands.includes("npm run inspect:registry"));
 assert.ok(
@@ -408,6 +420,11 @@ assert.ok(
     "npm run lipsync -- --audio=/absolute/path/audio.wav --output=/absolute/path/cherry.tsv",
   ),
 );
+assert.ok(
+  trust.commands.includes(
+    "npm run transcribe -- --audio=/absolute/path/audio.wav --output=/absolute/path/transcript.json",
+  ),
+);
 assert.equal(trust.quality.summary[2]?.value, "5");
 assert.equal(trust.quality.summary[2]?.label, "artist-reviewed gestures");
 assert.equal(trust.proof.durationTimeLabel, "00:12");
@@ -418,7 +435,6 @@ assert.match(trust.quality.note, /generated 100 mouth-timing cues locally/);
 assert.match(trust.quality.note, /5 hand-drawn mouth shapes/);
 assert.match(trust.quality.note, /earlier 0\.2\.0 kit/);
 assert.match(trust.quality.note, /four built-in backgrounds/);
-assert.match(trust.quality.note, /Photo Zone is reserved for future supporting media but does not display it yet/);
 assert.match(trust.quality.note, /Creative review of this exact video is still pending/);
 assert.doesNotMatch(
   trustSource,
@@ -429,7 +445,9 @@ assert.equal(
   "/format-repositories/shaz-puppet-runtime-v1/goldens/five-authored-showcase/poster.jpg",
 );
 assert.match(includedAssetsSource, /data\.includedAssets\.poses\.length/);
-assert.match(includedAssetsSource, /Five reviewed gestures\. Local lip-sync\. Four rooms\./);
+assert.match(includedAssetsSource, /Five reviewed gestures/);
+assert.match(includedAssetsSource, /Local transcription and lip-sync/);
+assert.match(includedAssetsSource, /Four rooms/);
 assert.match(includedAssetsSource, /runnable actions in all/);
 assert.match(includedAssetsSource, /engineering reference material/);
 assert.match(includedAssetsSource, /fresh creative review/);
@@ -477,13 +495,16 @@ for (const mapping of ["A · X", "B · G · I · J", "C · H", "D", "E · F · K
   );
 }
 assert.match(includedAssetsSource, /swaps between five mouth drawings/);
-assert.match(connectionsSource, /No subscriptions\. No API keys\. It runs on your Mac\./);
+assert.match(connectionsSource, /No subscriptions\. No API keys\. It runs on Apple silicon\./);
 assert.match(connectionsSource, /Everything stays local/);
-assert.match(connectionsSource, /Lip-sync is built in/);
+assert.match(connectionsSource, /It hears the words, too/);
 assert.match(connectionsSource, /same Shaz rig/);
+assert.match(includedAssetsSource, /Understands the dialogue/);
+assert.match(includedAssetsSource, /Local English transcript/);
+assert.doesNotMatch(includedAssetsSource, /Cherry Lip Sync \{engine\.version\}/);
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Kit version")?.value,
-  "0.3.1",
+  "0.4.0",
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Demo made with")?.value,
@@ -521,8 +542,15 @@ for (const required of [
   "rig-v2/assets/receipt.json",
   "runtime/cherry-wasi-runner.mjs",
   "runtime/lipsync.mjs",
+  "runtime/transcription.mjs",
   ...expectedBackgrounds.map(({ path }) => path),
   "vendor/cherry-lip-sync/v0.1.0/cherrylipsync.wasm",
+  "vendor/whisper.cpp/v1.9.2/VENDOR-MANIFEST.json",
+  "vendor/whisper.cpp/v1.9.2/BUILD-PLAN.json",
+  "vendor/whisper.cpp/v1.9.2/whisper.cpp-v1.9.2.tar.gz",
+  "vendor/whisper.cpp/v1.9.2/ggml-base.en-q5_1.bin",
+  "vendor/whisper.cpp/v1.9.2/LICENSE-WHISPER.CPP",
+  "vendor/whisper.cpp/v1.9.2/LICENSE-OPENAI-WHISPER",
 ]) {
   assert.ok(
     archive.file(`${root}/${required}`),
@@ -543,11 +571,14 @@ const packagedRequirements = JSON.parse(
   bundledEngines: Array<{
     name: string;
     artifact: string;
-    nativeExecutable: boolean;
+    nativeExecutable?: boolean;
+    nativeExecutableIncluded?: boolean;
+    nativeExecutableBuiltLocally?: boolean;
     networkRequired: boolean;
+    supportedPlatform?: string;
   }>;
 };
-assert.equal(packagedFormat.version, "0.3.1");
+assert.equal(packagedFormat.version, "0.4.0");
 assert.match(packagedFormat.summary, /Give Shaz a voice track/);
 assert.match(packagedFormat.summary, /four built-in backgrounds/);
 assert.deepEqual(packagedRequirements.bundledEngines, [
@@ -561,11 +592,27 @@ assert.deepEqual(packagedRequirements.bundledEngines, [
     purpose:
       "generate A-K/X speech cues for audio-backed shaz-sequence-input-v1 runs",
   },
+  {
+    name: "whisper.cpp",
+    version: "1.9.2",
+    artifact: "checksum-pinned source archive plus base.en Q5_1 model",
+    host: "locally compiled Apple Silicon helper using Apple Clang and Accelerate",
+    nativeExecutableIncluded: false,
+    nativeExecutableBuiltLocally: true,
+    networkRequired: false,
+    supportedPlatform: "darwin-arm64",
+    purpose: "create an English transcript with word timestamps before body-language planning",
+  },
 ]);
 assert.equal(
   entries.some((entry) => /(^|\/)cherrylipsync(?:\.exe)?$/.test(entry)),
   false,
   "The ZIP must not ship a native Cherry executable.",
+);
+assert.equal(
+  entries.some((entry) => entry.includes(".runtime-cache/") || /(^|\/)whisper-cli$/.test(entry)),
+  false,
+  "The ZIP must contain source and model inputs, never the locally compiled Whisper helper.",
 );
 assert.doesNotMatch(
   joined,
@@ -573,7 +620,7 @@ assert.doesNotMatch(
 );
 assert.deepEqual(
   entries.filter((entry) => entry.includes("agent-runs/")),
-  [`${root}/agent-runs/`, `${root}/agent-runs/.gitkeep`],
+  [`${root}/agent-runs/.gitkeep`],
 );
 assert.deepEqual(
   entries.filter((entry) => entry.includes("downloads/")),

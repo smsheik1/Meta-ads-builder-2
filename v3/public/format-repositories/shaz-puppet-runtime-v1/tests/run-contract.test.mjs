@@ -70,7 +70,7 @@ test("packaged skill protects the one-action learning loop", async () => {
     fs.readFile(path.join(root, "references", "rig-animation-playbook.md"), "utf8"),
   ]);
   const learningQuestion = "What did this teach us, and does the skill, runtime, or test suite need updating?";
-  assert.match(skill, /Skill version: \*\*1\.9\*\*/);
+  assert.match(skill, /Skill version: \*\*2\.0\*\*/);
   assert.match(skill, /Do not repair several unapproved actions at once/);
   assert.ok(skill.includes(learningQuestion));
   assert.match(skill, /references\/rig-animation-playbook\.md/);
@@ -95,6 +95,10 @@ test("packaged skill protects the one-action learning loop", async () => {
   assert.match(skill, /sisters-room.*living-room.*map-photo-zone.*pure-white/);
   assert.match(skill, /reserved for future supporting media/);
   assert.match(skill, /Registered means runnable\. It does not mean creatively approved\./);
+  assert.match(skill, /npm run transcribe/);
+  assert.match(skill, /planningTranscriptSha256/);
+  assert.match(skill, /wordId/);
+  assert.match(skill, /never upload the audio to Deepgram/);
   assert.match(skill, /neutral-listening[\s\S]*present[\s\S]*think[\s\S]*aha[\s\S]*point[\s\S]*confident/);
   assert.match(skill, /shrug[\s\S]*key-point[\s\S]*excited-celebration[\s\S]*point-at-screen[\s\S]*look-at-phone[\s\S]*facepalm-frustrated[\s\S]*arms-crossed-skeptical[\s\S]*phone-use-sequence/);
 });
@@ -128,10 +132,17 @@ test("build kit excludes runtime outputs and packages only registered prop asset
   assert.match(buildKit, /if \(parts\[0\] === "downloads"\) return false;/);
   assert.doesNotMatch(buildKit, /parts\[0\] === "downloads"[^\n]*parts\.length/);
   assert.match(buildKit, /parts\[0\] === "goldens" \|\| relative === "goldens\.json"/);
+  assert.match(buildKit, /excludedNames = new Set\(\["node_modules", "\.runtime-cache"/);
+  assert.match(buildKit, /evidence\/local-transcription-sealed-receipt\.md/);
+  assert.equal(
+    (await fs.readFile(path.join(root, ".gitignore"), "utf8")).includes("/.runtime-cache/"),
+    true,
+  );
   assert.match(buildKit, /new Set\(\["phone\.svg", "crossed-arms-pose\.png"\]\)/);
   assert.match(buildKit, /!packagedPropFiles\.has/);
-  assert.match(buildKit, /commands: \["check", "inspect:registry", "smoke"/);
+  assert.match(buildKit, /commands: \["check", "inspect:registry", "smoke", "transcribe"/);
   assert.ok(manifest.commands.includes("inspect:registry"));
+  assert.ok(manifest.commands.includes("transcribe"));
 });
 
 test("packaged smoke uses only the reviewed gesture set", async () => {

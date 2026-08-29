@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
+import { createReadStream } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -12,8 +13,10 @@ import {
   validatePerformancePlan,
 } from "./motion-packets.mjs";
 import { loadManifest } from "./rig-v2-renderer.mjs";
+import { validateTranscriptEvidence } from "./transcription.mjs";
 
 const RUN_ID = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
+const SHA256 = /^[a-f0-9]{64}$/;
 const INPUT_SCHEMA = "shaz-sequence-input-v1";
 const TALK_TO_CAMERA_PRESET = "talk-to-camera";
 const MAX_ACTIONS = 24;
@@ -61,15 +64,23 @@ async function writeJson(file, value) {
 }
 
 async function sha256(file) {
-  return crypto.createHash("sha256").update(await fs.readFile(file)).digest("hex");
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash("sha256");
+    const stream = createReadStream(file);
+    stream.on("error", reject);
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("end", () => resolve(hash.digest("hex")));
+  });
 }
 
-function execute(program, values, { cwd, includeStderr = false } = {}) {
+function execute(program, values, { cwd, includeStderr = false, timeoutMs = 300_000 } = {}) {
   const result = spawnSync(program, values, {
     cwd,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
+    timeout: timeoutMs,
   });
+  if (result.error) throw result.error;
   if (result.status !== 0) {
     throw new Error(`${program} failed:\n${result.stderr || result.stdout || `exit ${result.status}`}`);
   }
@@ -79,11 +90,13 @@ function execute(program, values, { cwd, includeStderr = false } = {}) {
 function probeMedia(file) {
   return JSON.parse(execute("ffprobe", [
     "-v", "error",
+    "-protocol_whitelist", "file,pipe",
+    "-protocol_blacklist", "http,https,tcp,tls,udp,rtp",
     "-show_streams",
     "-show_format",
     "-of", "json",
     file,
-  ]));
+  ], { timeoutMs: 30_000 }));
 }
 
 function measuredAudioDuration(probe) {
@@ -144,6 +157,8 @@ function validateInput(input, registry) {
     "audioFile",
     "backgroundId",
     "lipSync",
+    "transcript",
+    "planningTranscriptSha256",
   ], "input");
   if (input.schemaVersion !== INPUT_SCHEMA) throw new Error(`unsupported input schema ${input.schemaVersion}`);
   if (typeof input.title !== "string" || input.title.trim().length < 1 || input.title.length > 120) {
@@ -191,7 +206,7 @@ function validateInput(input, registry) {
       if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
         throw new Error(`sequence[${index}] must be an object`);
       }
-      exactKeys(entry, ["poseId", "holdFrames", "gapFrames"], `sequence[${index}]`);
+      exactKeys(entry, ["poseId", "holdFrames", "gapFrames", "anchor"], `sequence[${index}]`);
       const pose = registry.byId.get(entry.poseId);
       if (!pose) throw new Error(`sequence[${index}] references unknown pose ${entry.poseId}`);
       const holdFrames = integerInRange(entry.holdFrames, 12, 0, 120, `sequence[${index}].holdFrames`);
@@ -199,9 +214,19 @@ function validateInput(input, registry) {
       if (index === input.sequence.length - 1 && gapFrames !== 0) {
         throw new Error("the final sequence entry must use gapFrames: 0");
       }
+      const startFrame = totalFrames;
       const outputFrames = pose.recipe.durationFrames + holdFrames + gapFrames;
       totalFrames += outputFrames;
-      return { index, poseId: pose.id, pose, holdFrames, gapFrames, outputFrames };
+      return {
+        index,
+        poseId: pose.id,
+        pose,
+        holdFrames,
+        gapFrames,
+        outputFrames,
+        startFrame,
+        anchor: entry.anchor ?? null,
+      };
     });
   }
   if (totalFrames > MAX_OUTPUT_FRAMES) {
@@ -225,12 +250,24 @@ function validateInput(input, registry) {
   if (input.lipSync !== undefined && (!audioFile || !backgroundId)) {
     throw new Error("input.lipSync requires an audio-backed sequence");
   }
+  if (input.transcript !== undefined && !audioFile) {
+    throw new Error("input.transcript requires staged audio");
+  }
   if (sequencePreset === TALK_TO_CAMERA_PRESET) {
     if (!audioFile || !backgroundId) {
       throw new Error("talk-to-camera requires staged audio and a registered background");
     }
     if (!input.lipSync || typeof input.lipSync !== "object" || Array.isArray(input.lipSync)) {
       throw new Error("talk-to-camera requires a validated lip-sync cue track");
+    }
+  }
+  if (audioFile && !input.transcript) {
+    throw new Error("every audio-backed run requires generated transcript evidence");
+  }
+  if (audioFile && sequencePreset !== TALK_TO_CAMERA_PRESET) {
+    if (!SHA256.test(input.planningTranscriptSha256 ?? "")
+      || input.planningTranscriptSha256 !== input.transcript.sha256) {
+      throw new Error("audio-backed gesture sequence is stale or missing planningTranscriptSha256");
     }
   }
   return {
@@ -242,7 +279,29 @@ function validateInput(input, registry) {
     audioFile,
     backgroundId,
     lipSync: input.lipSync ?? null,
+    transcript: input.transcript ?? null,
+    planningTranscriptSha256: input.planningTranscriptSha256 ?? null,
   };
+}
+
+function validateTranscriptAnchor(anchor, transcript, expectedFrame, context) {
+  if (!anchor || typeof anchor !== "object" || Array.isArray(anchor)) {
+    throw new Error(`${context} requires a transcript word anchor`);
+  }
+  exactKeys(anchor, ["wordId", "label", "frame"], `${context}.anchor`);
+  const word = transcript.words.find(({ id }) => id === anchor.wordId);
+  if (!word) throw new Error(`${context}.anchor references unknown transcript word ${anchor.wordId}`);
+  if (typeof anchor.label !== "string" || anchor.label.trim().length < 1 || anchor.label.length > 120) {
+    throw new Error(`${context}.anchor.label must contain 1-120 characters`);
+  }
+  const wordFrame = Math.round((word.startMs / 1000) * 24);
+  if (anchor.frame !== expectedFrame || anchor.frame !== wordFrame) {
+    throw new Error(`${context}.anchor.frame must equal transcript word ${anchor.wordId} at frame ${wordFrame}`);
+  }
+  if (!anchor.label.toLocaleLowerCase("en-US").includes(word.normalized)) {
+    throw new Error(`${context}.anchor.label must include transcript word ${word.text}`);
+  }
+  return { wordId: word.id, label: anchor.label.trim(), frame: anchor.frame };
 }
 
 async function validateLipSync({ config, root, runDirectory, audioPath, totalFrames }) {
@@ -354,12 +413,20 @@ async function validateRun({ root, runDirectory }) {
     const audioDurationSeconds = measuredAudioDuration(audioProbe);
     if (!audioStream) throw new Error("the staged performance file has no audio stream");
     if (!(audioDurationSeconds > 0)) throw new Error("the staged performance audio duration could not be measured");
+    if (!input.transcript) throw new Error("performance input requires generated transcript evidence");
+    const transcription = await validateTranscriptEvidence({
+      root,
+      runDirectory,
+      audioPath,
+      config: input.transcript,
+    });
     const assets = await readJson(path.join(root, "assets.json"));
     const packetRegistry = await loadMotionPacketRegistry({ root, poseRegistry: registry });
     const timeline = validatePerformancePlan(input, {
       packetRegistry,
       audioDurationSeconds,
       defaultBackgroundId: assets.defaultBackgroundId,
+      transcript: transcription.transcript,
     });
     const background = (assets.backgrounds ?? []).find(({ id }) => id === timeline.backgroundId);
     if (!background) throw new Error(`unknown registered background ${timeline.backgroundId}`);
@@ -384,6 +451,7 @@ async function validateRun({ root, runDirectory }) {
         codec: audioStream.codec_name,
         durationSeconds: audioDurationSeconds,
       },
+      transcript: transcription.receipt,
       background: {
         id: background.id,
         path: background.path,
@@ -425,6 +493,7 @@ async function validateRun({ root, runDirectory }) {
       inputPath,
       audioPath,
       audioProbe,
+      transcription,
       manifest,
       manifestPath,
       registry,
@@ -469,6 +538,24 @@ async function validateRun({ root, runDirectory }) {
         totalFrames: timeline.totalFrames,
       })
       : null;
+    if (!timeline.transcript) throw new Error("audio-backed sequence requires generated transcript evidence");
+    const transcription = await validateTranscriptEvidence({
+      root,
+      runDirectory,
+      audioPath,
+      config: timeline.transcript,
+    });
+    if (!timeline.sequencePreset) {
+      for (const entry of timeline.entries) {
+        if (entry.poseId === "neutral-listening") continue;
+        entry.anchor = validateTranscriptAnchor(
+          entry.anchor,
+          transcription.transcript,
+          entry.startFrame,
+          `sequence[${entry.index}]`,
+        );
+      }
+    }
     const receipt = {
       schemaVersion: 2,
       status: "pass",
@@ -494,6 +581,7 @@ async function validateRun({ root, runDirectory }) {
         cameraMotion: false,
       },
       ...(lipSync ? { lipSync: lipSync.receipt } : {}),
+      transcript: transcription.receipt,
       ...(timeline.sequencePreset ? { sequencePreset: timeline.sequencePreset } : {}),
       poses: timeline.entries.map(({ index, poseId, pose, holdFrames, gapFrames }) => ({
         index,
@@ -503,6 +591,7 @@ async function validateRun({ root, runDirectory }) {
         recipeFrames: pose.recipe.durationFrames,
         holdFrames,
         gapFrames,
+        ...(timeline.entries[index].anchor ? { anchor: timeline.entries[index].anchor } : {}),
       })),
       providerCalls: 0,
       estimatedCost: "$0",
@@ -521,6 +610,7 @@ async function validateRun({ root, runDirectory }) {
       background,
       backgroundPath,
       lipSync,
+      transcription,
       receipt,
     };
   }

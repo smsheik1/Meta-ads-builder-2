@@ -133,7 +133,7 @@ export async function getFormatRepoPagePresentation(
       copy: {
         runTitle: "Give Shaz a line.",
         runDescription:
-          "Add a voice track and pick a room. Talk to Camera handles most of the scene; add an artist-reviewed gesture where the performance needs one. The kit handles timing, mouth shapes, rendering, and checks locally.",
+          "Add a voice track and pick a room. The kit reads what Shaz is saying on your Mac, lip-syncs the mouth, and helps place an artist-reviewed gesture on the words that deserve one.",
         provided: "One voice track + room choice",
         ready: "2–8 minutes",
         examplesTitle: "Hear Shaz perform it.",

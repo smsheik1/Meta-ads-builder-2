@@ -53,9 +53,45 @@ npm run init -- --run=my-talking-head \
 
 Initialization measures the audio and holds `neutral-listening` for that exact duration. Cherry changes only Shaz's mouth. The preset adds no body keys, props, camera movement, gaps, or alternate renderer. Do not supply `sequence`, `durationFrames`, or handwritten frame math, and do not use `--lipsync=off` with this preset.
 
+Every audio-backed initialization also writes `transcript.json`, with the spoken words and their timing, plus `transcription-receipt.json`. This happens locally and does not change the video by itself.
+
+## Understand the audio before choosing gestures
+
+For a body-language sequence, make the transcript before writing the pose timeline:
+
+```sh
+npm run transcribe -- \
+  --audio=/absolute/path/dialogue.wav \
+  --output=/absolute/path/transcript.json
+```
+
+Read the text and word timestamps, then choose a small number of gestures for meaningful phrases. A Point can begin on the actual key word; a Think can begin on the thought it belongs to. Ordinary speech should stay in `neutral-listening`.
+
+The command prints the transcript SHA-256. Copy that value into `planningTranscriptSha256` in an audio-backed gesture input. Anchor every expressive entry to one real transcript word:
+
+```json
+{
+  "planningTranscriptSha256": "<SHA-256 printed by npm run transcribe>",
+  "sequence": [
+    {
+      "poseId": "point",
+      "holdFrames": 12,
+      "gapFrames": 0,
+      "anchor": { "wordId": "w0042", "label": "the important point", "frame": 214 }
+    }
+  ]
+}
+```
+
+At 24 fps, `frame` is `round(word.startMs × 24 / 1000)`. The frames before that entry must add up to the same value. Initialization regenerates the transcript and rejects the plan if its SHA, word ID, label, or frame no longer matches the staged audio.
+
+The bundled English Whisper model runs entirely on the Mac. On its first use, the package compiles a small Apple-silicon helper from the included whisper.cpp source with Apple Clang; later runs reuse that local helper. It does not use Deepgram, upload the audio, download a model, call an API, or require Python. The transcript helps the agent plan—it does not select poses or alter the renderer on its own.
+
+When the official run starts, initialization regenerates the transcript from the staged audio and binds it into the validation, render, inspection, and delivery receipts. Do not paste a transcript into the input as if it were generated evidence. The deliverable transcript is `agent-runs/<run>/transcript.json`; the preflight copy is only for planning.
+
 ## Build a gesture sequence
 
-For a more expressive moment, write a sequence with approved pose IDs and explicit timing:
+For a more expressive moment, write a sequence with approved pose IDs and explicit timing informed by the transcript:
 
 ```json
 {
@@ -158,6 +194,6 @@ Adding a recipe to `poses/index.json` makes it runnable. It does not make it cre
 
 ## Package integrity
 
-`npm run build:kit` removes the previous stable ZIP before rebuilding it and writes a `.sha256` file beside the new archive. The ZIP leaves out `node_modules`, run outputs, downloads, the original source archive, and finished artist renders.
+`npm run build:kit` removes the previous stable ZIP before rebuilding it and writes a `.sha256` file beside the new archive. The ZIP leaves out `node_modules`, run outputs, downloads, the original Toon Boom archive, source PSDs, and finished artist renders. It intentionally includes the pinned whisper.cpp source and English model needed for offline transcription.
 
 See `PROVENANCE.md` for where the rig, backgrounds, Cherry engine, and pose assets came from. See `PROOF-REPORT.md` for what has been proven and what still needs review.

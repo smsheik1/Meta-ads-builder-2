@@ -1,6 +1,6 @@
 {
   "name": "wiggly-shaz-puppet-runtime-format-kit",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "check": "node runner.mjs check",
     "smoke": "node runner.mjs smoke",
     "lipsync": "node runner.mjs lipsync",
+    "transcribe": "node runner.mjs transcribe",
     "init": "node runner.mjs init",
     "validate": "node runner.mjs validate",
     "render": "node runner.mjs render",

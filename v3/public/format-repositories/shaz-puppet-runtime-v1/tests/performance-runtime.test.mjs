@@ -10,31 +10,66 @@ import sharp from "sharp";
 import { inspectRun } from "../runtime/inspect-run.mjs";
 import { PERFORMANCE_STAGE_VIEW, renderSequence } from "../runtime/render-sequence.mjs";
 import { execute, sha256, validateRun, writeJson } from "../runtime/run-common.mjs";
+import { generateTranscript } from "../runtime/transcription.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const hello = path.join(root, "vendor", "cherry-lip-sync", "v0.1.0", "fixtures", "hello.ogg");
+
+async function stageTranscript(runDirectory, audioFile) {
+  const transcriptFile = "transcript.json";
+  const receiptFile = "transcription-receipt.json";
+  const generated = await generateTranscript({
+    root,
+    audioPath: path.join(runDirectory, audioFile),
+    outputPath: path.join(runDirectory, transcriptFile),
+    receiptPath: path.join(runDirectory, receiptFile),
+  });
+  return {
+    transcript: generated.transcript,
+    durationFrames: Math.max(1, Math.round((generated.transcript.audio.durationMs / 1000) * 24)),
+    config: {
+      file: transcriptFile,
+      sha256: generated.transcriptSha256,
+      receiptFile,
+      receiptSha256: generated.receiptSha256,
+      sourceAudioSha256: generated.receipt.audio.sourceSha256,
+      language: generated.transcript.language,
+      segmentCount: generated.transcript.segments.length,
+      wordCount: generated.transcript.words.length,
+    },
+  };
+}
+
+function transcriptWordAnchor(transcript, wordIndex = 0) {
+  const word = transcript.words[wordIndex];
+  assert.ok(word, `transcript must contain word ${wordIndex + 1}`);
+  return {
+    wordId: word.id,
+    label: `Gesture on ${word.text}`,
+    frame: Math.round((word.startMs / 1000) * 24),
+  };
+}
 
 test("official performance path stages an all-neutral fixed-background video with audible AAC", async (t) => {
   const runDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-performance-runtime-"));
   t.after(() => fs.rm(runDirectory, { recursive: true, force: true }));
-  const audioFile = path.join(runDirectory, "user-audio.wav");
-  execute("ffmpeg", [
-    "-hide_banner", "-loglevel", "error", "-y",
-    "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=1",
-    "-c:a", "pcm_s16le",
-    audioFile,
-  ]);
+  const audioName = "user-audio.ogg";
+  await fs.copyFile(hello, path.join(runDirectory, audioName));
+  const stagedTranscript = await stageTranscript(runDirectory, audioName);
   await writeJson(path.join(runDirectory, "input.json"), {
     schemaVersion: "shaz-body-language-performance-v1",
-    title: "One second neutral performance mechanics proof",
+    title: "Neutral performance mechanics proof",
     fps: 24,
-    audioFile: "user-audio.wav",
-    durationFrames: 24,
+    audioFile: audioName,
+    durationFrames: stagedTranscript.durationFrames,
     events: [],
+    transcript: stagedTranscript.config,
+    planningTranscriptSha256: stagedTranscript.config.sha256,
   });
 
   const validated = await validateRun({ root, runDirectory });
   assert.equal(validated.mode, "performance");
-  assert.equal(validated.timeline.durationFrames, 24);
+  assert.equal(validated.timeline.durationFrames, stagedTranscript.durationFrames);
   assert.equal(validated.receipt.background.id, "sisters-room");
   assert.equal(validated.receipt.background.cameraMotion, false);
 
@@ -57,7 +92,7 @@ test("official performance path stages an all-neutral fixed-background video wit
 
   const quality = await inspectRun({ root, runDirectory });
   assert.equal(quality.status, "pass", JSON.stringify(quality.failures, null, 2));
-  assert.equal(quality.measured.frames, 24);
+  assert.equal(quality.measured.frames, stagedTranscript.durationFrames);
   assert.equal(quality.measured.audioCodec, "aac");
   assert.ok(quality.measured.meanVolumeDb > -55);
   await Promise.all([
@@ -104,22 +139,20 @@ test("performance validation rejects audio paths outside the run folder", async 
 test("performance validation resolves an explicit registered background and rejects an unknown id", async (t) => {
   const runDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-performance-background-"));
   t.after(() => fs.rm(runDirectory, { recursive: true, force: true }));
-  const audioFile = path.join(runDirectory, "user-audio.wav");
-  execute("ffmpeg", [
-    "-hide_banner", "-loglevel", "error", "-y",
-    "-f", "lavfi", "-i", "anullsrc=r=48000:cl=mono:d=1",
-    "-c:a", "pcm_s16le",
-    audioFile,
-  ]);
+  const audioName = "user-audio.ogg";
+  await fs.copyFile(hello, path.join(runDirectory, audioName));
+  const stagedTranscript = await stageTranscript(runDirectory, audioName);
   const inputPath = path.join(runDirectory, "input.json");
   const input = {
     schemaVersion: "shaz-body-language-performance-v1",
     title: "Selectable background mechanics proof",
     fps: 24,
-    audioFile: "user-audio.wav",
+    audioFile: audioName,
     backgroundId: "pure-white",
-    durationFrames: 24,
+    durationFrames: stagedTranscript.durationFrames,
     events: [],
+    transcript: stagedTranscript.config,
+    planningTranscriptSha256: stagedTranscript.config.sha256,
   };
   await writeJson(inputPath, input);
 
@@ -141,13 +174,20 @@ test("performance validation resolves an explicit registered background and reje
 test("official sequence path stacks complete registered poses over fixed background and audio", async (t) => {
   const runDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-audio-sequence-"));
   t.after(() => fs.rm(runDirectory, { recursive: true, force: true }));
-  const audioFile = path.join(runDirectory, "user-audio.wav");
-  execute("ffmpeg", [
-    "-hide_banner", "-loglevel", "error", "-y",
-    "-f", "lavfi", "-i", "sine=frequency=330:sample_rate=48000:duration=2",
-    "-c:a", "pcm_s16le",
-    audioFile,
-  ]);
+  const audioName = "user-audio.ogg";
+  const audioFile = path.join(runDirectory, audioName);
+  await fs.copyFile(hello, audioFile);
+  const stagedTranscript = await stageTranscript(runDirectory, audioName);
+  const presentAnchor = transcriptWordAnchor(stagedTranscript.transcript);
+  const presentHoldFrames = 4;
+  const presentRecipeFrames = 19;
+  const firstNeutralHoldFrames = presentAnchor.frame - 1;
+  const finalNeutralHoldFrames = stagedTranscript.durationFrames
+    - presentAnchor.frame
+    - presentRecipeFrames
+    - presentHoldFrames
+    - 1;
+  assert.ok(firstNeutralHoldFrames >= 0 && finalNeutralHoldFrames >= 0);
   await fs.writeFile(
     path.join(runDirectory, "cherry-lipsync.tsv"),
     "0.000 X\n0.125 D\n0.250 X\n0.750 D\n1.250 C\n1.750 X\n",
@@ -156,8 +196,8 @@ test("official sequence path stacks complete registered poses over fixed backgro
   const stagedCueSha256 = await sha256(path.join(runDirectory, "cherry-lipsync.tsv"));
   await writeJson(path.join(runDirectory, "input.json"), {
     schemaVersion: "shaz-sequence-input-v1",
-    title: "Two-second whole-pose Lego proof",
-    audioFile: "user-audio.wav",
+    title: "Whole-pose Lego proof",
+    audioFile: audioName,
     backgroundId: "sisters-room",
     lipSync: {
       engine: "cherry-lip-sync",
@@ -170,16 +210,18 @@ test("official sequence path stacks complete registered poses over fixed backgro
       fps: 24,
       filterSingleFrames: null,
     },
+    transcript: stagedTranscript.config,
+    planningTranscriptSha256: stagedTranscript.config.sha256,
     sequence: [
-      { poseId: "neutral-listening", holdFrames: 5, gapFrames: 0 },
-      { poseId: "present", holdFrames: 4, gapFrames: 0 },
-      { poseId: "neutral-listening", holdFrames: 18, gapFrames: 0 },
+      { poseId: "neutral-listening", holdFrames: firstNeutralHoldFrames, gapFrames: 0 },
+      { poseId: "present", holdFrames: presentHoldFrames, gapFrames: 0, anchor: presentAnchor },
+      { poseId: "neutral-listening", holdFrames: finalNeutralHoldFrames, gapFrames: 0 },
     ],
   });
 
   const validated = await validateRun({ root, runDirectory });
   assert.equal(validated.mode, "audio-sequence");
-  assert.equal(validated.timeline.totalFrames, 48);
+  assert.equal(validated.timeline.totalFrames, stagedTranscript.durationFrames);
   assert.equal(validated.receipt.lipSync.mappingId, "shaz-five-mouth-v1");
   assert.deepEqual(validated.receipt.lipSync.usedMouthDrawings, ["1", "2", "5"]);
   assert.deepEqual(
@@ -193,17 +235,17 @@ test("official sequence path stacks complete registered poses over fixed backgro
 
   const rendered = await renderSequence({ root, runDirectory });
   assert.equal(rendered.report.mode, "audio-backed-sequence");
-  assert.equal(rendered.report.totalFrames, 48);
+  assert.equal(rendered.report.totalFrames, stagedTranscript.durationFrames);
   assert.equal(rendered.report.segments[1].recipeFrames, 19);
-  assert.equal(rendered.report.segments[1].outputStartFrame, 7);
-  assert.equal(rendered.report.segments[1].outputEndFrame, 29);
+  assert.equal(rendered.report.segments[1].outputStartFrame, presentAnchor.frame + 1);
+  assert.equal(rendered.report.segments[1].outputEndFrame, presentAnchor.frame + 23);
   assert.equal(rendered.report.cameraMotion, false);
   assert.equal(rendered.report.mouthMode, "cherry-tsv-shaz-five-mouth-v1");
   assert.equal(rendered.report.lipSync.cueSha256, validated.receipt.lipSync.cueSha256);
 
   const quality = await inspectRun({ root, runDirectory });
   assert.equal(quality.status, "pass", JSON.stringify(quality.failures, null, 2));
-  assert.equal(quality.measured.frames, 48);
+  assert.equal(quality.measured.frames, stagedTranscript.durationFrames);
   assert.equal(quality.measured.audioCodec, "aac");
   assert.ok(quality.measured.meanVolumeDb > -55);
 
@@ -233,19 +275,35 @@ test("fixed audiovisual stage view hides the waist cutoff and preserves horizont
   const manifest = JSON.parse(await fs.readFile(path.join(root, "rig-v2", "runtime.json"), "utf8"));
   const runDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-stage-view-point-"));
   t.after(() => fs.rm(runDirectory, { recursive: true, force: true }));
-  const audioFile = path.join(runDirectory, "user-audio.wav");
+  const audioName = "user-audio.wav";
+  const audioFile = path.join(runDirectory, audioName);
+  execute("ffmpeg", [
+    "-hide_banner", "-loglevel", "error", "-y",
+    "-i", hello,
+    "-af", "apad",
+    "-t", "4",
+    "-c:a", "pcm_s16le",
+    audioFile,
+  ]);
+  const stagedTranscript = await stageTranscript(runDirectory, audioName);
+  const pointAnchor = transcriptWordAnchor(stagedTranscript.transcript);
+  assert.equal(
+    pointAnchor.frame + 76,
+    stagedTranscript.durationFrames,
+    "padded speech fixture must leave exactly one point recipe after its first word",
+  );
   await writeJson(path.join(runDirectory, "input.json"), {
     schemaVersion: "shaz-sequence-input-v1",
     title: "Point stage-view regression fixture",
-    audioFile: "user-audio.wav",
+    audioFile: audioName,
     backgroundId: "sisters-room",
-    sequence: [{ poseId: "point", holdFrames: 0, gapFrames: 0 }],
+    transcript: stagedTranscript.config,
+    planningTranscriptSha256: stagedTranscript.config.sha256,
+    sequence: [
+      { poseId: "neutral-listening", holdFrames: pointAnchor.frame - 1, gapFrames: 0 },
+      { poseId: "point", holdFrames: 0, gapFrames: 0, anchor: pointAnchor },
+    ],
   });
-  execute("ffmpeg", [
-    "-hide_banner", "-loglevel", "error", "-y",
-    "-f", "lavfi", "-i", `anullsrc=r=48000:cl=mono:d=${76 / 24}`,
-    "-c:a", "pcm_s16le", audioFile,
-  ]);
   const validated = await validateRun({ root, runDirectory });
   const { renderRigFrame } = await import("../runtime/rig-v2-renderer.mjs");
   const assetCache = new Map();
