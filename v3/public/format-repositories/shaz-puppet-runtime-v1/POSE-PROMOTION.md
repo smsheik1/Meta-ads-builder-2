@@ -167,7 +167,7 @@ The unshipped source is `0826.mov`, SHA-256 `237715f71eed5bb9fc561d8c1766448ec61
 | 07 | Key point | Review `key-point`; reuse `aha` when the shorter beat is enough | `registered-needs-review` | Aha is already reviewed. The longer Key Point action still needs exact current-recipe review and separate release evidence. |
 | 08 | Heartfelt | Build | `reference-only` | Author the two-hand chest-clasp action and solve crossover/paint order without merging it with #02. |
 | 09 | Low side-present / explain | Promote recovered recipe | `recipe-candidate` | The exact ignored-run recipe is now preserved at `poses/candidates/low-side-present.json`; its Xstage binding and fresh full inspection pass. It remains unregistered pending exact normal-speed creative review against the frozen 0826 clip. |
-| 10 | Big emphasis | Build | `reference-only` | Author the clean overhead V. The rejected `excited-celebration` is not a substitute. |
+| 10 | Big emphasis | Review built rig-native candidate | `recipe-candidate` | The third bounded native-rig pass is preserved at `poses/candidates/big-emphasis.json`; its clean overhead open-palm V and full 31-frame inspection pass remain unregistered pending exact normal-speed review. The rejected `excited-celebration` is not a substitute. |
 | 11 | Present screen-right | Build exact directional variant | `reference-only` | Author the right-facing action. Do not mirror the whole asymmetrical character as a shortcut. |
 
 The efficient order is #03 reuse verification, #05 review, #07 review, #09 promotion, then one new build at a time: #02, #08, #04, #10, #06, and #11. The order puts cheap certainty first and keeps the two chest-contact actions adjacent for shared learning without authoring them simultaneously.

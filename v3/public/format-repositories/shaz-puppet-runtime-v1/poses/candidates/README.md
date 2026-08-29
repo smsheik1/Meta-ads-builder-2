@@ -12,3 +12,4 @@ That distinction is a gate, not bookkeeping:
 | Candidate | Recipe | File SHA-256 | Semantic recipe SHA-256 | Status |
 | --- | --- | --- | --- | --- |
 | 09 — Low side-present / explain | `low-side-present.json` | `53fd11c8850ec7514b01ecee6627adc2cd357e2d00132d6a95e3120bcfb77447` | `e0bbd203cddc26966e8555ee0c3ac3d36f4103c8e2797a1080195683ab5a339e` | `recipe-candidate`; mechanically clean, creative review pending |
+| 10 — Big emphasis | `big-emphasis.json` | `215ee59e14b13489846f0905e9fa214409174ac8ecec52f325232a7c93cbc23f` | `24032ac06b54cedc3f7790ebdf1c09a5e4bd1480cbcab38a8af420b2899a7520` | `recipe-candidate`; third bounded native-rig silhouette pass, mechanically clean, creative review pending |
