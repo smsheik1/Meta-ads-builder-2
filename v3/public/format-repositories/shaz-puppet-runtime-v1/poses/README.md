@@ -19,11 +19,11 @@ Independently positioned limb fragments remain forbidden.
 
 ## Reconstructing a pose from video
 
-Do not begin by copying a vaguely similar action. First split the reference into setup, each distinct hold, any edit or counter-shift, and release. Pick one stable gold frame for one destination silhouette.
+Do not begin by copying a vaguely similar action. First split the reference into setup, authentic source entry, each distinct hold, any edit or counter-shift, afterbeat, and release when one is actually visible. Pick one stable gold frame for one destination silhouette.
 
-Build that destination as a one-frame, body-only candidate through the official renderer. Normalize reference and runtime character scale, then fit the complete native chain in joint order: shoulder, elbow, wrist, palm center, palm angle, and torso line. Store the target measurements and tolerances in a focused regression. Keep eyes, eyebrows, pupils, and Mouth out of the recipe unless they are truly part of the body-language contract.
+Build that destination as a one-frame, body-only candidate through the official renderer. Pose-first is the authoring order, not permission to stop at a still. Use a study-specific ID such as `<action>-destination-study`, never the canonical full-action ID. Normalize reference and runtime character scale, then fit the complete native chain in joint order: shoulder, elbow, wrist, palm center, palm angle, and torso line. Store the target measurements and tolerances in a focused regression. Keep eyes, eyebrows, pupils, and Mouth out of the recipe unless they are truly part of the body-language contract.
 
-A correct hold is not yet a reusable action. Review it first, then author and review neutral entry and release connectors separately. If the source has no release, say so; never borrow a generic reverse or another action's exit.
+A correct hold is not yet a reusable action. If the frozen reference contains body motion, reconstruct every observed phase before full-action review; its authentic non-neutral entry belongs to the action. A one-frame study cannot satisfy full-action inspection, review, or registration. If the source has no release, end the action at the last observed source state and never borrow a generic reverse or another action's exit. Neutral boundary connectors are separate packet-readiness work and receive their own review after the source action is complete.
 
 ## Minimal recipe
 

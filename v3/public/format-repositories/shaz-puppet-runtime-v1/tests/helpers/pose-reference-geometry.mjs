@@ -157,6 +157,102 @@ export async function measureScreenRightPresent(input) {
   };
 }
 
+async function paletteComponentForLayer(layer, predicate) {
+  const { data, info } = await sharp(layer.input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const mask = new Uint8Array(info.width * info.height);
+  for (let pixel = 0, offset = 0; pixel < mask.length; pixel += 1, offset += info.channels) {
+    mask[pixel] = data[offset + 3] > 20
+      && predicate(data[offset], data[offset + 1], data[offset + 2]) ? 1 : 0;
+  }
+  const [component] = connectedComponents(mask, info.width, info.height, 30);
+  if (!component) throw new Error(`reference geometry could not measure ${layer.nodePath}`);
+  return { component, width: info.width };
+}
+
+async function paletteComponentsForBuffer(input, predicate) {
+  const { data, info } = await sharp(input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const mask = new Uint8Array(info.width * info.height);
+  for (let pixel = 0, offset = 0; pixel < mask.length; pixel += 1, offset += info.channels) {
+    mask[pixel] = data[offset + 3] > 20
+      && predicate(data[offset], data[offset + 1], data[offset + 2]) ? 1 : 0;
+  }
+  return {
+    components: connectedComponents(mask, info.width, info.height, 30),
+    width: info.width,
+  };
+}
+
+/**
+ * Measure a screen-right action phase from renderer-owned layer buffers.
+ *
+ * The entry palm crosses the face, so a whole-frame skin mask merges the palm
+ * and face into one component. Reading the native Right_Hand layer keeps the
+ * same palette-space measurement useful for cross-chest, nose, cheek, and
+ * both destination holds without adding a second renderer or a screen-space
+ * limb substitute.
+ */
+export async function measureScreenRightPresentPhase(rendered) {
+  if (!Array.isArray(rendered.analysisLayers)) {
+    throw new Error("phase geometry requires renderRigFrame({ includeLayerBuffers: true })");
+  }
+  const handLayer = rendered.analysisLayers.find((layer) => (
+    layer.nodePath.endsWith("/Right_Hand") && layer.variant === "main"
+  ));
+  const headLayer = rendered.analysisLayers.find((layer) => (
+    layer.nodePath.endsWith("/Head_Base") && layer.variant === "main"
+  ));
+  const bodyLayer = rendered.analysisLayers.find((layer) => (
+    layer.nodePath.endsWith("/Body") && layer.variant === "main"
+  ));
+  if (!handLayer || !headLayer || !bodyLayer) {
+    throw new Error("phase geometry is missing the native right hand, head, or body");
+  }
+
+  const [handResult, headResult, bodyResult, coralResult] = await Promise.all([
+    paletteComponentForLayer(handLayer, isSkin),
+    paletteComponentForLayer(headLayer, isSkin),
+    paletteComponentForLayer(bodyLayer, isSkin),
+    paletteComponentsForBuffer(rendered.buffer, isCoral),
+  ]);
+  const hand = handResult.component;
+  const face = headResult.component;
+  const torsoBand = bodyResult.component;
+  // The source clip only exposes the visible sleeve silhouette. Measure the
+  // final composite here too; an isolated finished-sleeve layer includes
+  // artwork hidden by the body and is not comparable to the artist pixels.
+  const sleeve = coralResult.components.find((component) => (
+    component.area > 500
+    && component.centerX > 650
+    && component.centerY < 570
+  ));
+  if (!sleeve) throw new Error("phase geometry could not find the presenting sleeve");
+
+  return {
+    faceCentroid: { x: face.centerX, y: face.centerY },
+    shoulder: meanPoint(
+      sleeve.pixels.filter((pixel) => pixel % coralResult.width <= sleeve.minX + 4),
+      coralResult.width,
+    ),
+    elbow: meanPoint(
+      sleeve.pixels.filter((pixel) => (
+        Math.floor(pixel / coralResult.width) >= sleeve.maxY - 4
+      )),
+      coralResult.width,
+    ),
+    upperWristAnchor: { x: hand.minX, y: sleeve.minY },
+    palmCentroid: { x: hand.centerX, y: hand.centerY },
+    palmAxisDegrees: hand.axisDegrees,
+    sleeveCentroid: { x: sleeve.centerX, y: sleeve.centerY },
+    torsoBandAxisDegrees: torsoBand.axisDegrees,
+  };
+}
+
 export function assertPointNear(assert, actual, expected, label) {
   const distance = Math.hypot(actual.x - expected.x, actual.y - expected.y);
   assert.ok(

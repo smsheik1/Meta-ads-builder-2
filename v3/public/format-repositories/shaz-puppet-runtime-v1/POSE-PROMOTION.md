@@ -7,7 +7,7 @@ There are two honest finish lines:
 - **Sequence-ready:** the complete registered action has passed mechanical inspection and exact-output normal-speed review. It may be used as a whole clip in a sequence, with the known hard-cut behavior between actions.
 - **Packet-ready:** the entry, readable hold, and release have each passed review and the action reaches an exact declared boundary state. It may be woven into a performance without inventing a transition.
 
-An action can be sequence-ready without being packet-ready. Never describe a clean destination hold as a finished Lego block when its entry or release is still missing.
+An action can be sequence-ready without being packet-ready. Never describe a clean destination hold as a finished Lego block when its observed motion or boundary connectors are still missing. Pose-first is an authoring order, not permission to stop at a still.
 
 ## Status words
 
@@ -59,9 +59,11 @@ Before touching controls, write down:
 - the exact source frames used for comparison; and
 - visible reasons to reject it.
 
-If the source supplies only a hold or only half an action, say so. Either give the smaller action an honest name or plan a separately reviewed connector. Do not fabricate missing motion with a generic tween.
+If the source supplies only a hold or only half an action, say so. Either give the smaller action an honest name or plan a separately reviewed connector. Do not fabricate missing motion with a generic tween. If the frozen reference shows no release, the reconstructed action ends on its last observed state; do not invent one.
 
 When the reference comes from edited video, segment it before choosing the target. A single clip may contain two different holds separated by a cut or counter-shift. Lock one gold frame and one phase range per destination silhouette; do not average distinct poses into one recipe.
+
+Keep the source action distinct from packet connectors. An authentic non-neutral source entry belongs to the action and must survive reconstruction. A neutral-to-action entry or action-to-neutral release is separate packet-readiness work with its own declared boundaries and review.
 
 ## 3. Build through the recovered rig
 
@@ -71,19 +73,23 @@ Never use finished artist-video frames as runtime sprites. Never add a second re
 
 Work on one unapproved action at a time. Preserve the authored stepped cadence instead of smoothing every output frame.
 
-For a new video-guided pose, solve the destination before its connectors:
+For a new video-guided action, solve a destination before reconstructing its motion:
 
-1. render the closest complete native limb chain as a one-frame hold;
+1. render the closest complete native limb chain as a one-frame hold with a study-specific ID such as `<action>-destination-study`;
 2. normalize the reference and runtime to the same character scale;
 3. fit shoulder, elbow, wrist, palm centroid, palm angle, and torso line independently;
 4. lock those targets in a focused regression; and
-5. only after the hold passes review, author neutral entry and release as separate connector work.
+5. use the accepted study as one destination target while authoring the canonical full action.
+
+A one-frame destination study cannot use the canonical full-action ID and cannot satisfy full-action inspection, review, or registration. If the frozen reference contains body motion, reconstruct every observed setup, authentic source entry, accent, counter-shift, distinct hold, and afterbeat before making action-review evidence. Pose-first is an authoring order; it does not reduce the action to its destination.
+
+The canonical action ends where the frozen source ends. Never add a generic reverse, borrowed exit, or invented release to make it appear complete. Neutral boundary connectors are separate packet-readiness work: author and review them against declared states after the source action is honest, and never use them to replace or erase observed source motion.
 
 Borrow native drawings and joint vocabulary, not an unrelated action's body deformation, facial track, timing, or release.
 
 ## 4. Pass mechanical inspection
 
-Render the candidate through the official runtime and inspect every frame. The candidate must pass:
+Render the candidate through the official runtime and inspect every frame of every observed phase. The candidate must pass:
 
 - recipe schema, exact source binding, and file SHA-256 checks;
 - shoulder, sleeve, cuff, wrist, hand, and whole-body continuity;
@@ -107,7 +113,7 @@ Create one review bundle that a person can understand without reading code:
 - a contact sheet for quick navigation; and
 - optional 0.5× playback for diagnosis only.
 
-Normal speed is the approval view. A still image, contact sheet, slow-motion clip, successful command, or automatic inspection is not creative approval.
+Normal speed is the approval view. A still image, one-frame destination study, contact sheet, slow-motion clip, successful command, or automatic inspection is not creative approval of a moving action.
 
 ## 6. Record exact-output human review
 
@@ -119,7 +125,7 @@ If rejected, preserve the candidate and reason. A later attempt gets a new check
 
 ## 7. Register sequence readiness
 
-After approval:
+After approval of the complete canonical action:
 
 1. add the exact recipe file SHA-256 to `poses/index.json` and the authored index when applicable;
 2. add or update focused regression tests for every reusable mechanical lesson;
@@ -129,18 +135,20 @@ After approval:
 
 Existing `registered-needs-review` recipes may stay registered as engineering material, but they remain outside the safe list until this stage is complete.
 
+Never register a one-frame study under the full action's ID. A study may remain as calibration evidence under its study-specific ID, but it cannot satisfy or inherit the action's approval.
+
 ## 8. Promote packet readiness separately
 
-To become a real rearrangeable Lego block, the action also needs:
+To become a real rearrangeable Lego block, the already complete source action also needs:
 
-- a declared start state;
-- an authored entry;
+- a declared neutral or compatible start state;
+- a separately authored connector into the exact first frame of the approved action;
 - a readable, stretchable hold frame or hold range;
-- an authored release;
+- a separately authored connector from the exact last frame of the approved action;
 - a declared end state; and
 - complete normal-speed review of both boundaries in context.
 
-Do not reverse-scrub entry frames and call that a release unless the exact reversed motion was directly reviewed and approved. Do not hide a snap with a crossfade. Until all boundary evidence passes, keep the motion packet `ineligible` even if the whole pose recipe is sequence-approved.
+The action's authentic non-neutral source entry stays inside the action; it is not the neutral boundary connector named above. Do not reverse-scrub entry frames and call that a release unless the exact reversed motion was directly reviewed and approved as a separate connector. Do not hide a snap with a crossfade. Until all boundary evidence passes, keep the motion packet `ineligible` even if the whole pose recipe is sequence-approved.
 
 ## 9. Prove blind use and seal the package
 
@@ -180,6 +188,6 @@ The unshipped source is `0826.mov`, SHA-256 `237715f71eed5bb9fc561d8c1766448ec61
 | 08 | Heartfelt | Promote built hold-only native candidate | `recipe-candidate` | The third bounded pass is preserved at `poses/candidates/heartfelt-chest-clasp-hold.json`; all 48 frames pass unchanged mechanical inspection. It remains unregistered pending exact-output normal-speed creative review. The recipe honestly covers only the two-hand clasp hold: it has no authored entry or release and is not #02's one-hand self-reference. |
 | 09 | Low side-present / explain | Promote recovered recipe | `recipe-candidate` | The recovered motion is preserved at `poses/candidates/low-side-present.json`; its false crop-restoration claim is corrected without changing any control, drawing, or timing data. Its Xstage binding and fresh full inspection pass. The source-authored opposite hand intentionally continues below the fixed waist-up crop with its native cuff/wrist chain intact. It remains unregistered pending exact normal-speed creative review against the frozen 0826 clip. |
 | 10 | Big emphasis | Review built rig-native candidate | `recipe-candidate` | The mechanically corrected third bounded native-rig pass is preserved at `poses/candidates/big-emphasis.json`; it now owns only body language and inherits the neutral eyebrow, eye, pupil, and mouth tracks. Its clean overhead open-palm V and full 31-frame inspection pass remain unregistered, unapproved, and packet-ineligible pending exact normal-speed review. The rejected `excited-celebration` is not a substitute. |
-| 11 | Present screen-right | Review pose-first directional hold | `recipe-candidate` | The artist clip contains two destination silhouettes. `poses/candidates/present-screen-right.json` now locks the final settled hold (clip frame 80) as a one-frame body-only native-rig pose. Its shoulder, elbow, upper wrist envelope, sleeve, palm center, palm angle, and torso line are regression-checked against the reproducible normalization in `evidence/candidate-11-present-screen-right-target.json`, and it passes the unchanged inspector. It deliberately owns no face, entry, or release. Exact-output creative review and separately authored neutral connectors are still required before registration or packet use. |
+| 11 | Present screen-right | Review built full observed native-rig action | `recipe-candidate` | `poses/candidates/present-screen-right.json` reconstructs all 104 source frames as 83 runtime frames: the authentic cross-chest, nose-touch, and cheek-palm entry; Hold A; the observed five-step counter-shift; and Hold B. `evidence/candidate-11-present-screen-right-target.json` locks the normalized geometry for every phase. The reference has no release, so the candidate does not invent one. All 83 frames pass the official inspector with zero failures. The earlier one-frame fit is preserved separately as `poses/candidates/present-screen-right-destination-study.json`; it is calibration evidence, not the action. The full-action normal-speed review is still pending, so both artifacts remain unregistered, unapproved, absent from the safe list, and ineligible for motion packets. |
 
-The engineering pass is complete enough for one review session: #03 has a proposed Confident reuse to decide; #05 and #07 review registered actions; #04, #06, #08, #09, and #10 have action or hold candidates; #11 has a geometry-locked destination hold awaiting review and connectors; and #02 is blocked at its unchanged hand-proportion gate. Review each exact artifact before any mapping, registration, or safe-list change.
+The engineering pass is complete enough for one review session: #03 has a proposed Confident reuse to decide; #05 and #07 review registered actions; #04, #06, #08, #09, and #10 have action or hold candidates; #11 now has the complete observed 104-to-83-frame action plus a separately named destination study, with full-action normal-speed review still pending; and #02 is blocked at its unchanged hand-proportion gate. Review each exact artifact before any mapping, registration, or safe-list change.

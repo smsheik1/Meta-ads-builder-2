@@ -20,7 +20,10 @@ const CONTROL_FIELDS = new Set([
 const INTERPOLATIONS = new Set(["linear", "hold"]);
 const PROP_LAYERS = new Set(["behind", "body-front", "front"]);
 const ARM_SIDES = new Set(["Left", "Right"]);
-const ARM_PAINT_ORDERS = new Set(["both-front-left-under-right"]);
+const ARM_PAINT_ORDERS = new Set([
+  "both-front-left-under-right",
+  "right-front-of-head",
+]);
 const ARM_COMPOSITE_MODES = new Set(["native-rig", "registered-pose-replacement"]);
 const DEFAULT_ARM_LIMITS = {
   minimumHandToSleeveAreaRatio: 0.1,

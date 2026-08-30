@@ -236,6 +236,37 @@ test("pose replacement mode cannot also claim a native arm paint order", () => {
   );
 });
 
+test("pose recipes accept only the exact registered native arm paint-order enums", () => {
+  for (const armPaintOrder of [
+    "both-front-left-under-right",
+    "right-front-of-head",
+  ]) {
+    const input = recipe();
+    input.quality = { armCompositeMode: "native-rig", armPaintOrder };
+    assert.doesNotThrow(() => createPoseRuntime(fixture(), input));
+  }
+
+  const misspelled = recipe();
+  misspelled.quality = {
+    armCompositeMode: "native-rig",
+    armPaintOrder: "right-in-front-of-head",
+  };
+  assert.throws(
+    () => createPoseRuntime(fixture(), misspelled),
+    /not a registered native-arm paint policy/,
+  );
+
+  const replacement = recipe();
+  replacement.quality = {
+    armCompositeMode: "registered-pose-replacement",
+    armPaintOrder: "right-front-of-head",
+  };
+  assert.throws(
+    () => createPoseRuntime(fixture(), replacement),
+    /cannot declare a native-arm paint order/,
+  );
+});
+
 test("pose recipes map each local frame to an explicit Xstage deformation frame", () => {
   const mapped = recipe();
   mapped.deformationFrames = [2, 3, 4, 5, 6];

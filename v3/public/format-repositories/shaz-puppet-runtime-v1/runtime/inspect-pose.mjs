@@ -13,6 +13,7 @@ import {
   loadPoseRecipe,
 } from "./pose-recipe.mjs";
 import {
+  applyArmPaintOrder,
   loadManifest,
   READ_PAINT_PLAN,
   renderRigFrame,
@@ -219,6 +220,39 @@ async function alphaContactPixelCount(left, right, radius = 3, analysisWidth = 6
   return contactPixels;
 }
 
+async function alphaOverlapPixelCount(leftBuffers, rightBuffers, analysisWidth = 640) {
+  const left = Array.isArray(leftBuffers) ? leftBuffers : [leftBuffers];
+  const right = Array.isArray(rightBuffers) ? rightBuffers : [rightBuffers];
+  if (left.length === 0 || right.length === 0) return 0;
+  const masks = await Promise.all([...left, ...right].map((buffer) => (
+    sharp(buffer)
+      .resize({ width: analysisWidth })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+  )));
+  const [first, ...rest] = masks;
+  if (rest.some(({ info }) => (
+    info.width !== first.info.width || info.height !== first.info.height
+  ))) {
+    throw new Error("overlap masks must have matching dimensions");
+  }
+  const leftMasks = masks.slice(0, left.length);
+  const rightMasks = masks.slice(left.length);
+  let overlapPixels = 0;
+  for (let pixel = 0; pixel < first.info.width * first.info.height; pixel += 1) {
+    const leftVisible = leftMasks.some(({ data, info }) => (
+      data[pixel * info.channels + 3] > ALPHA_THRESHOLD
+    ));
+    if (!leftVisible) continue;
+    const rightVisible = rightMasks.some(({ data, info }) => (
+      data[pixel * info.channels + 3] > ALPHA_THRESHOLD
+    ));
+    if (rightVisible) overlapPixels += 1;
+  }
+  return overlapPixels;
+}
+
 function paintPlanKey(entry) {
   return `${entry.nodePath}:${entry.variant}`;
 }
@@ -301,28 +335,21 @@ function finishedSleeveValid(stats) {
 function paintOrderValid(layers, recipe = {}) {
   const actual = layers.map(paintPlanKey);
   const visible = new Set(actual);
-  let expected = READ_PAINT_PLAN.map(paintPlanKey).filter((key) => visible.has(key));
-  if (recipe.quality?.armPaintOrder === "both-front-left-under-right") {
-    const isLeftArm = (key) => key.includes("/Left_Forearm:") || key.includes("/Left_Hand:");
-    const isRightArm = (key) => key.includes("/Right_Forearm:") || key.includes("/Right_Hand:");
-    const left = expected.filter(isLeftArm);
-    const right = expected.filter(isRightArm);
-    const withoutArms = expected.filter((key) => !isLeftArm(key) && !isRightArm(key));
-    const firstHead = withoutArms.findIndex((key) => key.includes("/Head_Group/"));
-    const insertion = firstHead < 0 ? withoutArms.length : firstHead;
-    expected = [
-      ...withoutArms.slice(0, insertion),
-      ...left,
-      ...right,
-      ...withoutArms.slice(insertion),
-    ];
-  }
+  const expected = applyArmPaintOrder(
+    READ_PAINT_PLAN.filter((entry) => visible.has(paintPlanKey(entry))),
+    recipe.quality?.armPaintOrder,
+  ).map(paintPlanKey);
   return JSON.stringify(actual) === JSON.stringify(expected);
 }
 
 function crossedPaintOrderEligible(recipe, maximumCrossoverPixels) {
   return recipe.quality?.armPaintOrder !== "both-front-left-under-right"
     || maximumCrossoverPixels >= 20;
+}
+
+function rightFrontPaintOrderEligible(recipe, maximumHeadOverlapPixels) {
+  return recipe.quality?.armPaintOrder !== "right-front-of-head"
+    || maximumHeadOverlapPixels >= 20;
 }
 
 function armCompositeValid(layers, recipe = {}, frame = null) {
@@ -463,6 +490,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
   const propCache = new Map();
   const renderedFrameHashes = [];
   let maximumNativeSleeveCrossoverPixels = 0;
+  let maximumRightArmHeadBaseOverlapPixels = 0;
 
   for (let frame = 1; frame <= recipe.durationFrames; frame += 1) {
     const masterSample = masterNode
@@ -645,6 +673,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
         stats: await alphaStats(prop.input),
       })));
     const armGeometry = [];
+    let rightArmHeadBaseOverlapPixels = null;
     if (limbPropStats.length === 0) {
       const bodyLayer = rendered.analysisLayers.find((layer) => (
         layer.nodePath.endsWith("/Body") && layer.variant === "main"
@@ -656,6 +685,21 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       const headStats = headLayer
         ? await alphaStats(headLayer.input)
         : { empty: true };
+      const rightArmLayers = rendered.analysisLayers.filter((layer) => (
+        layer.variant === "main"
+        && (layer.nodePath.endsWith("/Right_Forearm")
+          || layer.nodePath.endsWith("/Right_Hand"))
+      ));
+      if (headLayer && rightArmLayers.length === 2) {
+        rightArmHeadBaseOverlapPixels = await alphaOverlapPixelCount(
+          rightArmLayers.map(({ input }) => input),
+          headLayer.input,
+        );
+        maximumRightArmHeadBaseOverlapPixels = Math.max(
+          maximumRightArmHeadBaseOverlapPixels,
+          rightArmHeadBaseOverlapPixels,
+        );
+      }
       const nativeForearms = ["Left", "Right"].map((side) => rendered.analysisLayers.find((layer) => (
         layer.nodePath.endsWith(`/${side}_Forearm`) && layer.variant === "main"
       )));
@@ -943,6 +987,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       limbSubstitutionProps: limbPropStats.map(({ id }) => id),
       armGeometry,
       eyeEnvelopeOverlapPixels,
+      rightArmHeadBaseOverlapPixels,
     });
   }
 
@@ -952,6 +997,13 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       frame: null,
       gate: "layer-order",
       detail: "custom crossed-arm paint order requires an observed native sleeve crossover",
+    });
+  }
+  if (!rightFrontPaintOrderEligible(recipe, maximumRightArmHeadBaseOverlapPixels)) {
+    failures.push({
+      frame: null,
+      gate: "layer-order",
+      detail: `right-front-of-head paint order requires at least 20 observed native right-arm/Head_Base overlap pixels; maximum was ${maximumRightArmHeadBaseOverlapPixels}`,
     });
   }
   if (recipe.quality?.maximumIdenticalFrames !== undefined
@@ -993,6 +1045,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
     approvedEdgeContacts,
     maximumIdenticalFrames,
     maximumNativeSleeveCrossoverPixels,
+    maximumRightArmHeadBaseOverlapPixels,
     frames: frameReports,
   };
 }
@@ -1022,6 +1075,7 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
 }
 
 export {
+  alphaOverlapPixelCount,
   alphaStats,
   alphaContactPixelCount,
   armCompositeValid,
@@ -1032,6 +1086,7 @@ export {
   observedHandLimits,
   registeredNonLimbProp,
   registeredPoseReplacement,
+  rightFrontPaintOrderEligible,
   shoulderAnchorValid,
   expectedEdgesForFrame,
   eyeEnvelopeCompositeValid,

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   alphaContactPixelCount,
+  alphaOverlapPixelCount,
   alphaStats,
   armCompositeValid,
   armTopologyValid,
@@ -22,6 +23,7 @@ import {
   paintOrderValid,
   registeredNonLimbProp,
   registeredPoseReplacement,
+  rightFrontPaintOrderEligible,
   shoulderAnchorValid,
 } from "../runtime/inspect-pose.mjs";
 import { loadManifest, READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
@@ -526,6 +528,95 @@ test("paint inspection recognizes only the declared native crossed-arm depth pol
     "recipe prose alone cannot certify a custom crossover depth policy");
   assert.equal(crossedPaintOrderEligible(recipe, 20), true,
     "the policy becomes eligible only after the native sleeves actually cross");
+});
+
+test("right-front-of-head moves only the complete native right arm after every head layer", () => {
+  const bySuffix = (suffix, variant = "main") => READ_PAINT_PLAN.find((entry) => (
+    entry.nodePath.endsWith(suffix) && entry.variant === variant
+  ));
+  const ordinary = [
+    bySuffix("/Left_Forearm"),
+    bySuffix("/Left_Hand"),
+    bySuffix("/Body"),
+    bySuffix("/Collar"),
+    bySuffix("/Right_Forearm"),
+    bySuffix("/Right_Hand"),
+    bySuffix("/Head_Base"),
+    bySuffix("/Mouth"),
+    bySuffix("/OL_Hand"),
+  ];
+  const rightFront = [
+    bySuffix("/Left_Forearm"),
+    bySuffix("/Left_Hand"),
+    bySuffix("/Body"),
+    bySuffix("/Collar"),
+    bySuffix("/Head_Base"),
+    bySuffix("/Mouth"),
+    bySuffix("/OL_Hand"),
+    bySuffix("/Right_Forearm"),
+    bySuffix("/Right_Hand"),
+  ];
+  const recipe = { quality: { armPaintOrder: "right-front-of-head" } };
+  assert.equal(paintOrderValid(rightFront, recipe), true);
+  assert.equal(paintOrderValid(ordinary, recipe), false);
+  assert.equal(paintOrderValid(rightFront), false,
+    "the front-of-face arm order must not leak into recipes without the policy");
+  assert.deepEqual(
+    rightFront.slice(0, 2),
+    ordinary.slice(0, 2),
+    "the left forearm and hand must remain at their ordinary depth",
+  );
+});
+
+test("right-front-of-head eligibility requires a meaningful observed right-arm/head overlap", async () => {
+  const recipe = { quality: { armPaintOrder: "right-front-of-head" } };
+  assert.equal(rightFrontPaintOrderEligible(recipe, 0), false);
+  assert.equal(rightFrontPaintOrderEligible(recipe, 19), false,
+    "antialias or accidental contact cannot self-certify the policy");
+  assert.equal(rightFrontPaintOrderEligible(recipe, 20), true);
+  assert.equal(rightFrontPaintOrderEligible({}, 0), true,
+    "ordinary paint order does not need a front-of-face overlap");
+
+  const left = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">'
+      + '<rect x="2" y="2" width="8" height="8" fill="black"/>'
+      + "</svg>",
+  );
+  const secondLeftPiece = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">'
+      + '<rect x="10" y="2" width="4" height="8" fill="black"/>'
+      + "</svg>",
+  );
+  const right = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">'
+      + '<rect x="6" y="4" width="6" height="4" fill="black"/>'
+      + "</svg>",
+  );
+  assert.equal(await alphaOverlapPixelCount([left, secondLeftPiece], right, 20), 24,
+    "overlap counts the union of complete arm pieces without double-counting pixels");
+});
+
+test("the real renderer and inspector agree on a qualified front-of-head right arm", async () => {
+  const [manifest, recipe] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    fs.readFile(new URL("../poses/authored/confident.json", import.meta.url), "utf8")
+      .then(JSON.parse),
+  ]);
+  recipe.quality = { ...recipe.quality, armPaintOrder: "right-front-of-head" };
+  const report = await inspectPose({
+    manifest,
+    assetRoot: fileURLToPath(new URL("../rig-v2/assets", import.meta.url)),
+    propRoot: fileURLToPath(new URL("../assets/props", import.meta.url)),
+    recipe,
+  });
+  assert.equal(report.status, "pass", JSON.stringify(report.failures, null, 2));
+  assert.ok(report.maximumRightArmHeadBaseOverlapPixels >= 20);
+  assert.ok(report.frames.some(({ rightArmHeadBaseOverlapPixels }) => (
+    rightArmHeadBaseOverlapPixels >= 20
+  )));
+  assert.ok(report.frames.every(({ rightArmHeadBaseOverlapPixels }) => (
+    Number.isInteger(rightArmHeadBaseOverlapPixels)
+  )));
 });
 
 test("temporal inspection measures the longest identical-frame run", () => {

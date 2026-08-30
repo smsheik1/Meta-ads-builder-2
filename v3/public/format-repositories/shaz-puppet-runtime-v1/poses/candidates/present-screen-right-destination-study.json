@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "shaz-pose-recipe-v1",
+  "id": "present-screen-right-destination-study",
+  "fps": 24,
+  "durationFrames": 1,
+  "baseFrame": 32,
+  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "artistRenderedFramesUsed": false,
+  "authorship": {
+    "method": "semantic-rig-control-composition",
+    "learnedFrom": [
+      "Candidate 11 clip frame 80: settled screen-right open-palm destination after the clip's counter-shift",
+      "authored/shrug source frame 82: native right sleeve, wrist, and open-hand vocabulary only",
+      "reference-fit target: solve shoulder, elbow, wrist, and palm independently without importing Shrug body deformation, face, timing, or release"
+    ],
+    "artistRenderedFramesUsed": false
+  },
+  "controls": {
+    "Right_Arm-P": [
+      {
+        "frame": 1,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Arm_MOVE-P": [
+      {
+        "frame": 1,
+        "position": [
+          0.25709918600062587,
+          -0.46386671491613524,
+          0
+        ],
+        "rotation": -10.933401987453507,
+        "scale": [
+          0.9999304125457725,
+          1.0000695923259297
+        ],
+        "skew": -0.00043598455979018165,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Arm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.02853656038852964,
+          0.28162651666868205,
+          0
+        ],
+        "rotation": 27.713177772478435,
+        "scale": [
+          1.0001304408764988,
+          0.9998695953040169
+        ],
+        "skew": -0.011218982367053655,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Forearm-P": [
+      {
+        "frame": 1,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": 0,
+        "scale": [
+          1,
+          1
+        ],
+        "skew": 0,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Forearm_Pivot-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.13235526834520991,
+          0.05455556388303063,
+          0
+        ],
+        "rotation": 103.28298232924544,
+        "scale": [
+          0.9998262117812842,
+          1.0001739545051036
+        ],
+        "skew": -0.02988787713649219,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ],
+    "Right_Hand-P": [
+      {
+        "frame": 1,
+        "position": [
+          -0.05617033336437403,
+          1.2721838338159848,
+          0.15875244140625
+        ],
+        "rotation": 20.246992378839654,
+        "scale": [
+          1.0000143635790806,
+          0.999985636629764
+        ],
+        "skew": -0.00012899320758995658,
+        "opacity": 100,
+        "flipHorizontal": false,
+        "flipVertical": false
+      }
+    ]
+  },
+  "drawings": {
+    "Right_Forearm": [
+      {
+        "frame": 1,
+        "drawing": "2"
+      }
+    ],
+    "Right_Hand": [
+      {
+        "frame": 1,
+        "drawing": "2"
+      }
+    ]
+  },
+  "quality": {
+    "maximumIdenticalFrames": 1,
+    "armCompositeMode": "native-rig",
+    "authoredOpenHandCuffs": [
+      "Right"
+    ]
+  }
+}

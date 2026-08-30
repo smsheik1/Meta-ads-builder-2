@@ -19,4 +19,5 @@ The recipe hashes below are an immutable lookup index. Current lifecycle status 
 | 08 — Heartfelt chest-clasp hold | `heartfelt-chest-clasp-hold.json` | `2e83aad0b5cef792d0d6ad2e3101c19591677392d58c385c5f5a961ffd09a8fa` | `3cc65e5a1a59cdb0ec725b5d9e97ca1ba863a49e83a1280e2e9b614f16a670b7` |
 | 09 — Low side-present / explain | `low-side-present.json` | `661fc3138f63218f0131effdac83197dcc2502d04ce3753486caac4cf0f9fdc2` | `2ac1b39b00692303414f5407ca075529b096f45ed8dd8d4140c056c8687d2aca` |
 | 10 — Big emphasis | `big-emphasis.json` | `9eba7c8a70f1dc05f1d73cba8de9977c6664cf9fcedb42cc573e89c56f6aaa8d` | `ee877349c1d4306ea2a9a7f737716ec878becb1177bd62376aa14cbbe30c2c0b` |
-| 11 — Present screen-right hold | `present-screen-right.json` | `6fb4a6ae1d5f4c72055675e23c5af6c1c8003c402ea46896c9393848c6bd39f8` | `5d2d5546d5d05c119ace4e40f3d58345d3f3930ebebf09664802b95a46e1ddb3` |
+| 11 — Present screen-right, full observed action | `present-screen-right.json` | `fe832541207b3c08d8a069fddc1889d011e68c780ea93ff579990e032971f09a` | `2fb52af797096a93f19d243f6a2541e37c9e4f5064a59a6d0098e59b9f0b702f` |
+| 11 study — Present screen-right destination | `present-screen-right-destination-study.json` | `b7455539f5bc806ae00ceb76f25cfefb4f914ba7ca9ccfb388cea774c14d4a51` | `c1ff392cb97b697588aa2cd5652e506e64622fda8b3aad297856c6358d1552e6` |

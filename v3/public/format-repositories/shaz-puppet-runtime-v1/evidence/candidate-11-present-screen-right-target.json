@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "shaz-reference-pose-target-v1",
+  "schemaVersion": "shaz-reference-action-target-v1",
   "candidateNumber": "11",
   "poseId": "present-screen-right",
   "source": {
@@ -12,54 +12,770 @@
     "clipFrameCount": 104
   },
   "segmentation": {
-    "entryFrames": [0, 5],
-    "holdAFrames": [6, 60],
-    "counterShiftFrames": [61, 70],
-    "holdBFrames": [71, 103],
+    "source": {
+      "entry": [
+        0,
+        5
+      ],
+      "holdA": [
+        6,
+        60
+      ],
+      "counterShift": [
+        61,
+        70
+      ],
+      "holdB": [
+        71,
+        103
+      ]
+    },
+    "runtime": {
+      "entry": [
+        1,
+        5
+      ],
+      "holdA": [
+        6,
+        49
+      ],
+      "counterShift": [
+        50,
+        57
+      ],
+      "holdB": [
+        58,
+        83
+      ]
+    },
     "releasePresent": false,
-    "note": "The clip contains two distinct destination silhouettes separated by a visible counter-shift. This target deliberately selects settled Hold B. Hold A is a separate future lean-in variant, not a phase of this static pose."
+    "note": "The complete action enters from cross-chest, touches the nose, opens beside the cheek, holds the first presentation, shifts in five observed steps, and ends in Hold B without a release."
   },
   "goldFrameZeroBased": 80,
+  "goldRuntimeFrameOneBased": 65,
   "goldFramePngSha256": "318ce0e8a7f548029a2e0d3a36fcfd91ed12360fad1e58451ac4681b443d6a81",
   "normalization": {
-    "canvas": [1280, 720],
+    "canvas": [
+      1280,
+      720
+    ],
     "method": "resize the 3840x2160 source frame to 1280x720; apply the locked uniform head-width scale 137/181; then translate the scaled artist face centroid onto the runtime face centroid. For every point, normalized = source * scale + translation. Angles are unchanged.",
     "sourceHairWidthPixels": 362,
     "runtimeHairWidthPixels": 274,
-    "scaleFraction": [137, 181],
+    "scaleFraction": [
+      137,
+      181
+    ],
     "scale": 0.7569060773480663,
-    "sourceFaceCentroid": { "x": 649.3868589836608, "y": 297.20587979220477 },
-    "runtimeFaceCentroid": { "x": 632.5541559214441, "y": 242.9319579448522 },
-    "translation": [141.02929580673958, 17.97502130655357]
-  },
-  "sourceFrameGeometry": {
-    "shoulder": { "x": 744.416149068323, "y": 424.54658385093165 },
-    "elbow": { "x": 861.1026785714286, "y": 602.6294642857143 },
-    "upperWristAnchor": {
-      "x": 897,
-      "y": 379,
-      "definition": "palette-measurable upper cuff-envelope proxy: presenting-hand minimum x paired with presenting-sleeve minimum y; topology remains the inspector's responsibility"
+    "sourceFaceCentroid": {
+      "x": 649.3868589836608,
+      "y": 297.20587979220477
     },
-    "palmCentroid": { "x": 984.5073338564616, "y": 391.4861471600169 },
-    "palmAxisDegrees": 27.560244361579986,
-    "sleeveCentroid": { "x": 861.074372001129, "y": 492.20725373976853 },
-    "torsoBandAxisDegrees": -4.294348596751657
+    "runtimeFaceCentroid": {
+      "x": 632.5541559214441,
+      "y": 242.9319579448522
+    },
+    "translation": [
+      141.02929580673958,
+      17.97502130655357
+    ]
   },
-  "geometry": {
-    "shoulder": { "x": 704.4824031125972, "y": 339.31691074068414, "tolerancePixels": 4 },
-    "elbow": { "x": 792.8031464381523, "y": 474.1089252134202, "tolerancePixels": 5 },
-    "upperWristAnchor": { "x": 819.974047187955, "y": 304.8424246214707, "tolerancePixels": 5 },
-    "palmCentroid": { "x": 886.208879996437, "y": 314.29326528954977, "tolerancePixels": 4 },
-    "palmAxisDegrees": { "value": 27.560244361579986, "toleranceDegrees": 2 },
-    "sleeveCentroid": { "x": 792.7817210230637, "y": 390.52968297698607, "tolerancePixels": 10 },
-    "torsoBandAxisDegrees": { "value": -4.294348596751657, "toleranceDegrees": 2 }
-  },
+  "phaseTargets": [
+    {
+      "id": "entry-cross-chest",
+      "sourceFrameZeroBased": 0,
+      "runtimeFrameOneBased": 1,
+      "holdThroughRuntimeFrame": 1,
+      "measurementNote": "Reliable under occlusion: the unobstructed face, isolated palm centroid/axis, and visible sleeve centroid. Omitted: shoulder/elbow because the standard left/bottom sleeve extrema are distal in this cross-chest silhouette; upperWristAnchor because combining hand.minX with sleeve.minY produces two unrelated component extrema rather than a joint; torsoBandAxisDegrees because the crossing forearm occludes and splits the source band into an incomparable fragment.",
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 668.6670694864048,
+          "y": 292.39667673716013
+        },
+        "palmCentroid": {
+          "x": 543.0143035689488,
+          "y": 638.527496181086
+        },
+        "palmAxisDegrees": 21.31877709186235,
+        "sleeveCentroid": {
+          "x": 742.1166855548776,
+          "y": 560.7025324731933
+        }
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 647.1474644235211,
+          "y": 239.29184292528802,
+          "tolerancePixels": 7
+        },
+        "palmCentroid": {
+          "x": 552.0401222650046,
+          "y": 501.2803637198617,
+          "tolerancePixels": 1
+        },
+        "palmAxisDegrees": {
+          "value": 21.31877709186235,
+          "toleranceDegrees": 0.5
+        },
+        "sleeveCentroid": {
+          "x": 702.7419252046303,
+          "y": 442.374175719965,
+          "tolerancePixels": 1
+        }
+      }
+    },
+    {
+      "id": "entry-nose-touch",
+      "sourceFrameZeroBased": 1,
+      "runtimeFrameOneBased": 2,
+      "holdThroughRuntimeFrame": 3,
+      "measurementNote": "Reliable under occlusion: the visible sleeve shoulder/elbow extrema, isolated palm centroid/axis, and sleeve centroid. Omitted: face because the hand occludes and splits the source face skin component; upperWristAnchor because combining the nose-side hand.minX with sleeve.minY produces unrelated component extrema rather than one anatomical wrist point.",
+      "sourceGeometry": {
+        "shoulder": {
+          "x": 669.4479166666666,
+          "y": 467.90625
+        },
+        "elbow": {
+          "x": 837.2057142857143,
+          "y": 630.6114285714285
+        },
+        "palmCentroid": {
+          "x": 678.2249488752557,
+          "y": 364.78653452886584
+        },
+        "palmAxisDegrees": -63.86271920245825,
+        "sleeveCentroid": {
+          "x": 792.2264903966077,
+          "y": 503.156592112192
+        }
+      },
+      "geometry": {
+        "shoulder": {
+          "x": 647.7384923997413,
+          "y": 372.1361055606972,
+          "tolerancePixels": 4
+        },
+        "elbow": {
+          "x": 774.7153889401255,
+          "y": 495.2886440374138,
+          "tolerancePixels": 2
+        },
+        "palmCentroid": {
+          "x": 654.3818814195022,
+          "y": 294.08416622619234,
+          "tolerancePixels": 1
+        },
+        "palmAxisDegrees": {
+          "value": -63.86271920245825,
+          "toleranceDegrees": 0.5
+        },
+        "sleeveCentroid": {
+          "x": 740.6703410240614,
+          "y": 398.8173037340138,
+          "tolerancePixels": 2
+        }
+      }
+    },
+    {
+      "id": "entry-cheek-palm",
+      "sourceFrameZeroBased": 4,
+      "runtimeFrameOneBased": 4,
+      "holdThroughRuntimeFrame": 5,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 686.2870499004994,
+          "y": 285.7033004167762
+        },
+        "shoulder": {
+          "x": 760.5,
+          "y": 443.2307692307692
+        },
+        "elbow": {
+          "x": 852.2323232323232,
+          "y": 627.5454545454545
+        },
+        "upperWristAnchor": {
+          "x": 793,
+          "y": 395
+        },
+        "palmCentroid": {
+          "x": 907.4406707576402,
+          "y": 355.5830852421168
+        },
+        "palmAxisDegrees": -25.823252569013107,
+        "sleeveCentroid": {
+          "x": 860.2205890862797,
+          "y": 506.4410335050055
+        },
+        "torsoBandAxisDegrees": -0.6185219826892295
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 660.4841346817032,
+          "y": 234.22558571041176,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 716.6563676299439,
+          "y": 353.4590842049811,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 786.0891205737466,
+          "y": 492.96798966416276,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 741.2558151437561,
+          "y": 316.95292185903975,
+          "tolerancePixels": 18
+        },
+        "palmCentroid": {
+          "x": 827.8766543360031,
+          "y": 287.11801952848725,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": -25.823252569013107,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 792.1354875460784,
+          "y": 401.3033173849279,
+          "tolerancePixels": 10
+        },
+        "torsoBandAxisDegrees": {
+          "value": -0.6185219826892295,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "hold-a",
+      "sourceFrameZeroBased": 11,
+      "runtimeFrameOneBased": 6,
+      "holdThroughRuntimeFrame": 49,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 680.2846109175377,
+          "y": 299.51358885017424
+        },
+        "shoulder": {
+          "x": 760.5,
+          "y": 443.2307692307692
+        },
+        "elbow": {
+          "x": 858.5233644859813,
+          "y": 628.5514018691589
+        },
+        "upperWristAnchor": {
+          "x": 884,
+          "y": 397
+        },
+        "palmCentroid": {
+          "x": 973.2390476765968,
+          "y": 411.3719862227325
+        },
+        "palmAxisDegrees": 23.881316745396138,
+        "sleeveCentroid": {
+          "x": 861.5512272596015,
+          "y": 515.4595437481952
+        },
+        "torsoBandAxisDegrees": -0.6215043052297123
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 655.9408521365885,
+          "y": 244.67867695558047,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 716.6563676299439,
+          "y": 353.4590842049811,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 790.8508479314878,
+          "y": 493.72939730696663,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 810.1342681824301,
+          "y": 318.4667340137359,
+          "tolerancePixels": 12
+        },
+        "palmCentroid": {
+          "x": 877.6798457056001,
+          "y": 329.3449777292848,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 23.881316745396138,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 793.1426556662169,
+          "y": 408.1294825966239,
+          "tolerancePixels": 10
+        },
+        "torsoBandAxisDegrees": {
+          "value": -0.6215043052297123,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "counter-shift-1",
+      "sourceFrameZeroBased": 61,
+      "runtimeFrameOneBased": 50,
+      "holdThroughRuntimeFrame": 51,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 682.972078166103,
+          "y": 285.97899285982714
+        },
+        "shoulder": {
+          "x": 758.7983870967741,
+          "y": 441.58870967741933
+        },
+        "elbow": {
+          "x": 858.0204081632653,
+          "y": 625.734693877551
+        },
+        "upperWristAnchor": {
+          "x": 878,
+          "y": 396
+        },
+        "palmCentroid": {
+          "x": 967.4021515774206,
+          "y": 406.78804544905114
+        },
+        "palmAxisDegrees": 23.855957661792196,
+        "sleeveCentroid": {
+          "x": 860.1375956539517,
+          "y": 513.0467317016181
+        },
+        "torsoBandAxisDegrees": -0.9828975292741897
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 657.9750124297015,
+          "y": 234.434258996036,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 715.3684064821985,
+          "y": 352.2161993496831,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 790.4701572341835,
+          "y": 491.5974139100037,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 805.5928317183417,
+          "y": 317.7098279363878,
+          "tolerancePixels": 8
+        },
+        "palmCentroid": {
+          "x": 873.2618635752843,
+          "y": 325.87536509948177,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 23.855957661792196,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 792.0726693127693,
+          "y": 406.30321049507114,
+          "tolerancePixels": 13
+        },
+        "torsoBandAxisDegrees": {
+          "value": -0.9828975292741897,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "counter-shift-2",
+      "sourceFrameZeroBased": 64,
+      "runtimeFrameOneBased": 52,
+      "holdThroughRuntimeFrame": 53,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 668.2836213763724,
+          "y": 293.1716482526928
+        },
+        "shoulder": {
+          "x": 752.7459016393443,
+          "y": 436.21311475409834
+        },
+        "elbow": {
+          "x": 859.149377593361,
+          "y": 616.6846473029045
+        },
+        "upperWristAnchor": {
+          "x": 870,
+          "y": 392
+        },
+        "palmCentroid": {
+          "x": 959.8671789906814,
+          "y": 394.7021057727218
+        },
+        "palmAxisDegrees": 22.41462097777367,
+        "sleeveCentroid": {
+          "x": 858.3795439816179,
+          "y": 504.94402875154657
+        },
+        "torsoBandAxisDegrees": -2.3294003529955196
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 646.8572302186899,
+          "y": 239.87842357516635,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 710.787243456409,
+          "y": 348.14737888286004,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 791.3246810569631,
+          "y": 484.7473786573708,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 799.5375830995572,
+          "y": 314.68220362699554,
+          "tolerancePixels": 8
+        },
+        "palmCentroid": {
+          "x": 867.5585970317304,
+          "y": 316.72744390800597,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 22.41462097777367,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 790.7419893176879,
+          "y": 400.1702253892159,
+          "tolerancePixels": 13
+        },
+        "torsoBandAxisDegrees": {
+          "value": -2.3294003529955196,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "counter-shift-3",
+      "sourceFrameZeroBased": 66,
+      "runtimeFrameOneBased": 54,
+      "holdThroughRuntimeFrame": 55,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 655.7301444667173,
+          "y": 289.1938549803
+        },
+        "shoulder": {
+          "x": 746.3963414634146,
+          "y": 426.7560975609756
+        },
+        "elbow": {
+          "x": 858.7352941176471,
+          "y": 605.4803921568628
+        },
+        "upperWristAnchor": {
+          "x": 874,
+          "y": 381
+        },
+        "palmCentroid": {
+          "x": 965.2183685800604,
+          "y": 379.83359516616315
+        },
+        "palmAxisDegrees": 19.044494007143225,
+        "sleeveCentroid": {
+          "x": 859.2893024317844,
+          "y": 493.00716405982416
+        },
+        "torsoBandAxisDegrees": -3.853288064030087
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 637.3554272539234,
+          "y": 236.86760767285796,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 705.9812227707606,
+          "y": 340.98930509580026,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 791.0112587576658,
+          "y": 476.26680984517344,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 802.5652074089495,
+          "y": 306.35623677616684,
+          "tolerancePixels": 8
+        },
+        "palmCentroid": {
+          "x": 871.6089449529732,
+          "y": 305.47337786878757,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 19.044494007143225,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 791.4305910175377,
+          "y": 391.13513995956964,
+          "tolerancePixels": 13
+        },
+        "torsoBandAxisDegrees": {
+          "value": -3.853288064030087,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "counter-shift-4",
+      "sourceFrameZeroBased": 69,
+      "runtimeFrameOneBased": 56,
+      "holdThroughRuntimeFrame": 57,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 652.5066073444452,
+          "y": 290.10475463178165
+        },
+        "shoulder": {
+          "x": 744.4099378881988,
+          "y": 424.2857142857143
+        },
+        "elbow": {
+          "x": 860.5366972477065,
+          "y": 602.6100917431193
+        },
+        "upperWristAnchor": {
+          "x": 889,
+          "y": 379
+        },
+        "palmCentroid": {
+          "x": 978.6563517915309,
+          "y": 384.00144770177343
+        },
+        "palmAxisDegrees": 22.28302670554518,
+        "sleeveCentroid": {
+          "x": 861.2531865910495,
+          "y": 491.13001852995677
+        },
+        "torsoBandAxisDegrees": -4.292896501880359
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 634.9155124155186,
+          "y": 237.55707315491867,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 704.4777018326138,
+          "y": 339.11945698137595,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 792.3747517345615,
+          "y": 474.0942620181963,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 813.9187985691705,
+          "y": 304.8424246214707,
+          "tolerancePixels": 8
+        },
+        "palmCentroid": {
+          "x": 881.7802361130364,
+          "y": 308.6280507824815,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 22.28302670554518,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 792.917066872893,
+          "y": 389.71431709994624,
+          "tolerancePixels": 10
+        },
+        "torsoBandAxisDegrees": {
+          "value": -4.292896501880359,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "hold-b-arrival",
+      "sourceFrameZeroBased": 71,
+      "runtimeFrameOneBased": 58,
+      "holdThroughRuntimeFrame": 64,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 652.5070829048203,
+          "y": 290.1592741266629
+        },
+        "shoulder": {
+          "x": 744.4197530864197,
+          "y": 424.4259259259259
+        },
+        "elbow": {
+          "x": 861.0450450450451,
+          "y": 602.6171171171171
+        },
+        "upperWristAnchor": {
+          "x": 896,
+          "y": 379
+        },
+        "palmCentroid": {
+          "x": 984.3997585270148,
+          "y": 390.87298520977964
+        },
+        "palmAxisDegrees": 27.05036458647806,
+        "sleeveCentroid": {
+          "x": 861.3322158994873,
+          "y": 492.13721899825345
+        },
+        "torsoBandAxisDegrees": -4.2928677206521595
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 634.9158723700566,
+          "y": 237.59833929192826,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 704.4851310157976,
+          "y": 339.2255840239671,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 792.7595232717737,
+          "y": 474.09957956647094,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 819.2171411106069,
+          "y": 304.8424246214707,
+          "tolerancePixels": 8
+        },
+        "palmCentroid": {
+          "x": 886.127455575806,
+          "y": 313.8291592830166,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 27.05036458647806,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 792.9768846367382,
+          "y": 390.4766732555078,
+          "tolerancePixels": 10
+        },
+        "torsoBandAxisDegrees": {
+          "value": -4.2928677206521595,
+          "toleranceDegrees": 1
+        }
+      }
+    },
+    {
+      "id": "hold-b-gold",
+      "sourceFrameZeroBased": 80,
+      "runtimeFrameOneBased": 65,
+      "holdThroughRuntimeFrame": 83,
+      "sourceGeometry": {
+        "faceCentroid": {
+          "x": 649.3868589836608,
+          "y": 297.20587979220477
+        },
+        "shoulder": {
+          "x": 744.416149068323,
+          "y": 424.54658385093165
+        },
+        "elbow": {
+          "x": 861.1026785714286,
+          "y": 602.6294642857143
+        },
+        "upperWristAnchor": {
+          "x": 897,
+          "y": 379
+        },
+        "palmCentroid": {
+          "x": 984.5073338564616,
+          "y": 391.4861471600169
+        },
+        "palmAxisDegrees": 27.560244361579986,
+        "sleeveCentroid": {
+          "x": 861.074372001129,
+          "y": 492.20725373976853
+        },
+        "torsoBandAxisDegrees": -4.294348596751657
+      },
+      "geometry": {
+        "faceCentroid": {
+          "x": 632.5541559214441,
+          "y": 242.9319579448522,
+          "tolerancePixels": 12
+        },
+        "shoulder": {
+          "x": 704.4824031125972,
+          "y": 339.31691074068414,
+          "tolerancePixels": 5
+        },
+        "elbow": {
+          "x": 792.8031464381523,
+          "y": 474.1089252134202,
+          "tolerancePixels": 6
+        },
+        "upperWristAnchor": {
+          "x": 819.974047187955,
+          "y": 304.8424246214707,
+          "tolerancePixels": 8
+        },
+        "palmCentroid": {
+          "x": 886.208879996437,
+          "y": 314.29326528954977,
+          "tolerancePixels": 5
+        },
+        "palmAxisDegrees": {
+          "value": 27.560244361579986,
+          "toleranceDegrees": 2
+        },
+        "sleeveCentroid": {
+          "x": 792.7817210230637,
+          "y": 390.52968297698607,
+          "tolerancePixels": 10
+        },
+        "torsoBandAxisDegrees": {
+          "value": -4.294348596751657,
+          "toleranceDegrees": 1
+        }
+      }
+    }
+  ],
   "ownership": {
     "bodyLanguageOnly": true,
     "faceTrackOwned": false,
     "mouthTrackOwned": false,
-    "entryAuthored": false,
+    "entryAuthored": true,
     "releaseAuthored": false,
-    "neutralConnectorRequiredBeforeRegistration": true
+    "sourceReleasePresent": false,
+    "destinationStudyPoseId": "present-screen-right-destination-study"
   }
 }

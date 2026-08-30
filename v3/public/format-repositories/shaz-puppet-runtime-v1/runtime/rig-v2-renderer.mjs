@@ -91,6 +91,49 @@ const READ_PAINT_PLAN = Object.freeze([
   ...READ_PAINT_ORDER.slice(10).map((nodePath) => ({ nodePath, variant: "main" })),
 ]);
 
+function applyArmPaintOrder(layers, armPaintOrder) {
+  const isLeftArmLayer = (layer) => (
+    layer.nodePath.endsWith("/Left_Forearm") || layer.nodePath.endsWith("/Left_Hand")
+  );
+  const isRightArmLayer = (layer) => (
+    layer.nodePath.endsWith("/Right_Forearm") || layer.nodePath.endsWith("/Right_Hand")
+  );
+
+  if (armPaintOrder === "both-front-left-under-right") {
+    const leftArmLayers = layers.filter(isLeftArmLayer);
+    const rightArmLayers = layers.filter(isRightArmLayer);
+    const withoutArms = layers.filter((layer) => (
+      !isLeftArmLayer(layer) && !isRightArmLayer(layer)
+    ));
+    const firstHeadIndex = withoutArms.findIndex((layer) => (
+      layer.nodePath.includes("/Head_Group/")
+    ));
+    const insertionIndex = firstHeadIndex < 0 ? withoutArms.length : firstHeadIndex;
+    return [
+      ...withoutArms.slice(0, insertionIndex),
+      ...leftArmLayers,
+      ...rightArmLayers,
+      ...withoutArms.slice(insertionIndex),
+    ];
+  }
+
+  if (armPaintOrder === "right-front-of-head") {
+    const rightArmLayers = layers.filter(isRightArmLayer);
+    const withoutRightArm = layers.filter((layer) => !isRightArmLayer(layer));
+    const lastHeadIndex = withoutRightArm.findLastIndex((layer) => (
+      layer.nodePath.includes("/Head_Group/")
+    ));
+    const insertionIndex = lastHeadIndex < 0 ? withoutRightArm.length : lastHeadIndex + 1;
+    return [
+      ...withoutRightArm.slice(0, insertionIndex),
+      ...rightArmLayers,
+      ...withoutRightArm.slice(insertionIndex),
+    ];
+  }
+
+  return layers;
+}
+
 function translation(x, y) {
   return [1, 0, 0, 1, x, y];
 }
@@ -1041,26 +1084,10 @@ async function renderRigFrame({
     frontBang.eyeEnvelopeClearancePixelCount = cleared.clearedPixelCount;
   }
 
-  let activeLayers = layers.filter(({ consumed }) => !consumed);
-  if (poseRuntime?.recipe.quality?.armPaintOrder === "both-front-left-under-right") {
-    const isLeftArmLayer = (layer) => (
-      layer.nodePath.endsWith("/Left_Forearm") || layer.nodePath.endsWith("/Left_Hand")
-    );
-    const isRightArmLayer = (layer) => (
-      layer.nodePath.endsWith("/Right_Forearm") || layer.nodePath.endsWith("/Right_Hand")
-    );
-    const leftArmLayers = activeLayers.filter(isLeftArmLayer);
-    const rightArmLayers = activeLayers.filter(isRightArmLayer);
-    const withoutArms = activeLayers.filter((layer) => !isLeftArmLayer(layer) && !isRightArmLayer(layer));
-    const firstHeadIndex = withoutArms.findIndex((layer) => layer.nodePath.includes("/Head_Group/"));
-    const insertionIndex = firstHeadIndex < 0 ? withoutArms.length : firstHeadIndex;
-    activeLayers = [
-      ...withoutArms.slice(0, insertionIndex),
-      ...leftArmLayers,
-      ...rightArmLayers,
-      ...withoutArms.slice(insertionIndex),
-    ];
-  }
+  const activeLayers = applyArmPaintOrder(
+    layers.filter(({ consumed }) => !consumed),
+    poseRuntime?.recipe.quality?.armPaintOrder,
+  );
   const baseCharacter = await sharp({
     create: {
       width: outputWidth,
@@ -1155,6 +1182,7 @@ async function loadManifest(manifestPath) {
 }
 
 export {
+  applyArmPaintOrder,
   ELEMENT_ASSET_IDS,
   READ_PAINT_ORDER,
   READ_PAINT_PLAN,
