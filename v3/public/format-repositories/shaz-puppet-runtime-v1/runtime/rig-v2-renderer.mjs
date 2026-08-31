@@ -46,6 +46,23 @@ const ELEMENT_ASSET_IDS = Object.freeze({
 const SHAZ_SKIN_COLOR = Object.freeze({ r: 255, g: 187, b: 152, alpha: 255 });
 const SHAZ_HOODIE_COLOR = Object.freeze({ r: 237, g: 113, b: 111, alpha: 255 });
 const OUTLINE_ALPHA_THRESHOLD = 24;
+const SHA256 = /^[a-f0-9]{64}$/;
+const ASSET_VARIANTS = new Set(["main", "color", "overlay"]);
+
+function isSafeSourceBasename(value, extension) {
+  return typeof value === "string"
+    && value.length > extension.length
+    && !/[\\/]/.test(value)
+    && value.toLowerCase().endsWith(extension);
+}
+
+function isSafeRelativeTvgSourcePath(value) {
+  if (typeof value !== "string" || value.startsWith("/") || value.includes("\\")) return false;
+  const segments = value.split("/");
+  return segments.length > 1
+    && segments.every((segment) => segment && segment !== "." && segment !== "..")
+    && segments.at(-1).toLowerCase().endsWith(".tvg");
+}
 
 // Rebuild the visible result of each source arm composite. Harmony's Auto-Patch
 // hides the construction overlap: only a clipped upper-arm colour bridge joins
@@ -184,7 +201,12 @@ function assetFilename(drawing, variant = "main") {
   const assetId = ELEMENT_ASSET_IDS[drawing.element];
   if (!assetId) throw new Error(`no TVG asset mapping for ${drawing.element}`);
   const suffix = variant === "main" ? "" : `--${variant}`;
-  return `${assetId}-${String(drawing.drawing).padStart(2, "0")}${suffix}.png`;
+  const filename = `${assetId}-${String(drawing.drawing).padStart(2, "0")}${suffix}.png`;
+  if (!drawing.sourceXstageSha256) return filename;
+  if (!/^[a-f0-9]{64}$/.test(drawing.sourceXstageSha256)) {
+    throw new Error("source-bound drawing requires a lowercase Xstage SHA-256");
+  }
+  return `sources/${drawing.sourceXstageSha256}/${filename}`;
 }
 
 function fieldGridForManifest(manifest) {
@@ -233,33 +255,117 @@ function tightStageMatrix(
   ));
 }
 
+async function assetTreeFiles(root) {
+  const files = [];
+  async function walk(directory, relativeDirectory = "") {
+    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+      const relative = path.posix.join(relativeDirectory, entry.name);
+      const absolute = path.join(directory, entry.name);
+      if (entry.isDirectory()) await walk(absolute, relative);
+      else if (entry.isFile()) files.push(relative);
+      else throw new Error(`asset directory contains an unsupported entry: ${relative}`);
+    }
+  }
+  await walk(root);
+  return files.sort();
+}
+
 async function loadAssetRegistration(assetRoot, sourceXstageSha256) {
   const receipt = JSON.parse(await fs.readFile(path.join(assetRoot, "receipt.json"), "utf8"));
-  if (receipt.schemaVersion !== "shaz-tvg-asset-receipt-v2") {
+  if (!["shaz-tvg-asset-receipt-v2", "shaz-tvg-asset-receipt-v3"].includes(receipt.schemaVersion)) {
     throw new Error(`unsupported Shaz asset receipt ${receipt.schemaVersion}`);
   }
   if (receipt.artistRenderedFramesUsed !== false) {
     throw new Error("asset receipt does not prove artist-frame exclusion");
   }
-  if (receipt.sourceXstageSha256 !== sourceXstageSha256) {
+  const runtimeSource = receipt.schemaVersion === "shaz-tvg-asset-receipt-v3"
+    ? receipt.runtimeXstageSha256
+    : receipt.sourceXstageSha256;
+  if (runtimeSource !== sourceXstageSha256) {
     throw new Error("asset receipt was compiled from a different Xstage source");
   }
-  const assets = new Map(receipt.assets.map((asset) => [asset.filename, asset]));
+  if (receipt.schemaVersion === "shaz-tvg-asset-receipt-v3" && !Array.isArray(receipt.sources)) {
+    throw new Error("asset receipt contains an invalid Xstage source registry");
+  }
+  const sourceRecords = receipt.schemaVersion === "shaz-tvg-asset-receipt-v3"
+    ? receipt.sources
+    : [{ xstageSha256: receipt.sourceXstageSha256 }];
+  if (sourceRecords.some((source) => !source || typeof source !== "object" || Array.isArray(source))) {
+    throw new Error("asset receipt contains an invalid Xstage source registry");
+  }
+  const registeredSources = new Set(sourceRecords.map(({ xstageSha256 }) => xstageSha256));
+  if (!SHA256.test(runtimeSource ?? "")
+    || !Array.isArray(sourceRecords)
+    || !registeredSources.has(runtimeSource)
+    || registeredSources.size !== sourceRecords.length
+    || sourceRecords.some((source) => (
+      !SHA256.test(source.xstageSha256 ?? "")
+      || (source.xstageSha256 !== runtimeSource && (
+        !isSafeSourceBasename(source.xstageName, ".xstage")
+        || !SHA256.test(source.sourceArchiveSha256 ?? "")
+        || !isSafeSourceBasename(source.sourceArchiveName, ".zip")
+        || source.sourceArchiveBundled !== false
+      ))
+    ))) {
+    throw new Error("asset receipt contains an invalid Xstage source registry");
+  }
+  if (!Array.isArray(receipt.assets)) {
+    throw new Error("asset receipt contains invalid model-space registrations");
+  }
+  const normalizedAssets = receipt.assets.map((asset) => ({
+    ...asset,
+    sourceXstageSha256: receipt.schemaVersion === "shaz-tvg-asset-receipt-v2"
+      ? (asset.sourceXstageSha256 ?? receipt.sourceXstageSha256)
+      : asset.sourceXstageSha256,
+  }));
+  const assets = new Map(normalizedAssets.map((asset) => [asset.filename, asset]));
   if (assets.size === 0 || assets.size !== receipt.assets.length
     || [...assets.values()].some((asset) => (
       !Number.isFinite(asset.canvas?.width)
       || !Number.isFinite(asset.canvas?.height)
+      || asset.canvas.width <= 0
+      || asset.canvas.height <= 0
       || !Number.isFinite(asset.modelOrigin?.x)
       || !Number.isFinite(asset.modelOrigin?.y)
+      || !isSafeRelativeTvgSourcePath(asset.source)
+      || !SHA256.test(asset.sourceSha256 ?? "")
+      || !SHA256.test(asset.outputSha256 ?? "")
+      || !ELEMENT_ASSET_IDS[asset.element]
+      || !/^\d+$/.test(String(asset.drawing ?? ""))
+      || !ASSET_VARIANTS.has(asset.variant)
+      || !registeredSources.has(asset.sourceXstageSha256)
+      || asset.filename !== assetFilename({
+        element: asset.element,
+        drawing: String(asset.drawing),
+        ...(asset.sourceXstageSha256 === runtimeSource
+          ? {}
+          : { sourceXstageSha256: asset.sourceXstageSha256 }),
+      }, asset.variant)
     ))) {
     throw new Error("asset receipt contains invalid model-space registrations");
+  }
+  const expectedFiles = ["receipt.json", ...assets.keys()].sort();
+  const actualFiles = await assetTreeFiles(assetRoot);
+  if (actualFiles.length !== expectedFiles.length
+    || actualFiles.some((filename, index) => filename !== expectedFiles[index])) {
+    throw new Error("asset directory does not exactly match its receipt");
   }
   return { assets, receipt };
 }
 
-async function readTightAsset(assetRoot, filename, registration, cache) {
+async function readTightAsset(
+  assetRoot,
+  filename,
+  registration,
+  cache,
+  expectedSourceXstageSha256 = null,
+) {
   const record = registration.assets.get(filename);
   if (!record) return null;
+  if (expectedSourceXstageSha256
+    && record.sourceXstageSha256 !== expectedSourceXstageSha256) {
+    throw new Error(`compiled asset source mismatch for ${filename}`);
+  }
   const source = path.join(assetRoot, filename);
   if (!cache.has(source)) {
     cache.set(source, fs.readFile(source).then((buffer) => {
@@ -809,6 +915,7 @@ async function renderRigFrame({
       filename,
       registration,
       assetCache,
+      drawing.sourceXstageSha256 ?? null,
     );
     if (!asset && variant !== "main") continue;
     if (!asset) throw new Error(`compiled asset is missing ${filename}`);
@@ -876,7 +983,10 @@ async function renderRigFrame({
     let deformation = null;
     if (variant === "main") {
       const deformationSourceFrame = poseRuntime?.deformationSourceFrameAtFrame(frame) ?? frame;
-      const derivedKey = `deformed:${path.join(assetRoot, filename)}:${deformationSourceFrame}`;
+      const deformationIdentity = poseRuntime
+        ? `${poseRuntime.recipeSha256}:${poseRuntime.deformationCacheIdentityAtFrame(frame)}`
+        : `source-frame:${deformationSourceFrame}`;
+      const derivedKey = `deformed:${path.join(assetRoot, filename)}:${deformationIdentity}`;
       if (!assetCache.has(derivedKey)) {
         assetCache.set(derivedKey, deformRegisteredAsset({
           buffer: renderBuffer,
@@ -1156,6 +1266,9 @@ async function renderRigFrame({
         nodePath,
         element: drawing.element,
         drawing: drawing.drawing,
+        ...(drawing.sourceXstageSha256
+          ? { sourceXstageSha256: drawing.sourceXstageSha256 }
+          : {}),
         variant,
         filename,
         compositeRole,

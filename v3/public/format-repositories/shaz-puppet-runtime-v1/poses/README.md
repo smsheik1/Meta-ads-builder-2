@@ -60,6 +60,30 @@ Supported numeric controls are:
 
 `flipHorizontal` and `flipVertical` are step-held booleans. Drawing keys name a READ node and use `{ "frame": N, "drawing": "drawing-id" }`; use `null` to hide that drawing.
 
+## Importing an action from a compatible Xstage
+
+When a second Harmony scene contains the same component rig, do not copy its shot framing into the package and do not pretend its frames belong to the base Xstage. Prove path-and-type compatibility first, render the source action directly, then retarget the character-local controls to the current runtime.
+
+A compatible-source recipe keeps `sourceXstageSha256` pinned to the packaged runtime. Its `sourceAction` records the external Xstage and archive hashes plus exact frame range. Every deformation node is carried in `deformationSamples` as deduplicated source samples with one `frameSamples` index per local frame; `deformationFrames` keeps the original source-frame timing as evidence. A missing drawing is declared in `drawingSources` and remains bound to the external Xstage hash.
+
+External drawings are compiled from TVG, normalized to the canonical palette before rasterization, stored below `rig-v2/assets/sources/<xstage-sha256>/`, and recorded per asset in the v3 receipt. Never overwrite an existing base filename or source-bind a drawing already present in the canonical rig. The palette transform must first reproduce shared canonical drawings byte-for-byte.
+
+Use `runtime/compile-tvg-assets.mjs --drawings ... --outline-source-color ... --outline-color ...` to compile only missing drawings, then register the exact source and every candidate that uses it:
+
+```sh
+node runtime/register-compatible-tvg-assets.mjs \
+  --manifest rig-v2/runtime.json \
+  --base-assets rig-v2/assets \
+  --compatible-assets /absolute/path/to/compiled-assets \
+  --source-xstage-sha256 <xstage-sha256> \
+  --source-xstage-name scene.xstage \
+  --source-archive-sha256 <archive-sha256> \
+  --source-archive-name source.zip \
+  --recipe poses/candidates/action.json
+```
+
+The command verifies the base receipt, manifest, recipe provenance, recorded TVG-source checksums, compiled PNG checksums, exact asset filenames, and hash namespace before a journaled replacement of that source's registered asset set. The external journal restores interrupted work on the next authoring invocation; the multi-file update is deliberately not described as atomic. The compiler is the step that reads and hashes the TVGs; registration validates that recorded provenance and re-hashes every compiled output. Pass every recipe that uses the source on each rerun so removed candidates cannot leave orphaned packaged assets. Both authoring tools and their journal namespace are excluded from the downloadable runtime kit.
+
 ## Render one recipe
 
 ```sh

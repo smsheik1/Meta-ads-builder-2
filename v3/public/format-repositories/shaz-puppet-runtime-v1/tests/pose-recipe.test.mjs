@@ -65,6 +65,7 @@ function fixture() {
       nodes: [
         peg,
         read,
+        { path: "Top/Curve", name: "Curve", type: "CurveModule", attrs: {} },
         { path: "Top/Composite-A", name: "Composite", type: "COMPOSITE", attrs: {} },
         { path: "Top/Composite-B", name: "Composite", type: "COMPOSITE", attrs: {} },
       ],
@@ -292,6 +293,115 @@ test("pose recipes reject incomplete or out-of-range deformation timing", () => 
   assert.throws(
     () => createPoseRuntime(fixture(), outsideScene),
     /exactly 5 valid Xstage frames/,
+  );
+});
+
+test("compatible Xstage drawings remain source-bound instead of entering the base rig silently", () => {
+  const sourceHash = "a".repeat(64);
+  const compatible = recipe();
+  compatible.sourceAction = {
+    sourceXstageSha256: sourceHash,
+    sourceFile: "compatible.xstage",
+    sourceXstagePath: "source/compatible.xstage",
+    sourceArchiveName: "compatible.zip",
+    sourceArchiveSha256: "c".repeat(64),
+    startFrame: 100,
+    endFrame: 104,
+  };
+  compatible.drawingSources = { Hand: { 3: sourceHash } };
+  compatible.drawings.Hand = [{ frame: 1, drawing: "3" }];
+  const runtime = createPoseRuntime(fixture(), compatible);
+  assert.deepEqual(runtime.resolveDrawing(fixture().scenes[0].nodes[1], 1), {
+    elementId: "hand-element",
+    element: "Hand",
+    drawing: "3",
+    file: "elements/Hand/Hand-3.tvg",
+    sourceXstageSha256: sourceHash,
+  });
+
+  compatible.drawingSources.Hand[3] = "b".repeat(64);
+  assert.throws(
+    () => createPoseRuntime(fixture(), compatible),
+    /must match sourceAction.sourceXstageSha256/,
+  );
+
+  compatible.drawingSources = { Hand: { foo: sourceHash } };
+  assert.throws(
+    () => createPoseRuntime(fixture(), compatible),
+    /must use a numeric drawing ID/,
+  );
+
+  const canonicalBound = recipe();
+  canonicalBound.sourceAction = {
+    sourceXstageSha256: sourceHash,
+    sourceFile: "compatible.xstage",
+    sourceXstagePath: "source/compatible.xstage",
+    sourceArchiveName: "compatible.zip",
+    sourceArchiveSha256: "c".repeat(64),
+    startFrame: 100,
+    endFrame: 104,
+  };
+  canonicalBound.drawingSources = { Hand: { 1: sourceHash } };
+  assert.throws(
+    () => createPoseRuntime(fixture(), canonicalBound),
+    /source-binds canonical drawing 1/,
+  );
+});
+
+test("compatible Xstage actions can carry exact compact deformation samples", () => {
+  const sourceHash = "a".repeat(64);
+  const input = recipe();
+  input.sourceAction = {
+    sourceXstageSha256: sourceHash,
+    sourceFile: "compatible.xstage",
+    sourceXstagePath: "source/compatible.xstage",
+    sourceArchiveName: "compatible.zip",
+    sourceArchiveSha256: "c".repeat(64),
+    startFrame: 100,
+    endFrame: 104,
+  };
+  input.deformationFrames = [100, 100, 100, 100, 100];
+  input.deformationSamples = {
+    "Top/Curve": {
+      samples: [
+        { path: "Top/Curve", type: "CurveModule", attrs: { offset: 1 } },
+        { path: "Top/Curve", type: "CurveModule", attrs: { offset: 2 } },
+      ],
+      frameSamples: [0, 0, 1, 1, 0],
+    },
+  };
+  const runtime = createPoseRuntime(fixture(), input);
+  const curve = fixture().scenes[0].nodes[2];
+  assert.equal(runtime.sampleNodeAtFrame(curve, new Map(), 2).attrs.offset, 1);
+  assert.equal(runtime.sampleNodeAtFrame(curve, new Map(), 3).attrs.offset, 2);
+  assert.equal(runtime.deformationSourceFrameAtFrame(5), 100);
+  assert.notEqual(
+    runtime.deformationCacheIdentityAtFrame(2),
+    runtime.deformationCacheIdentityAtFrame(3),
+    "explicit deformation samples must not share a cache entry merely because their source frame repeats",
+  );
+
+  input.deformationSamples["Top/Curve"].frameSamples = [0, 2, 1, 1, 0];
+  assert.throws(
+    () => createPoseRuntime(fixture(), input),
+    /references an unknown sample/,
+  );
+
+  const incompleteProvenance = recipe();
+  incompleteProvenance.sourceAction = {
+    sourceXstageSha256: "x",
+    startFrame: 100,
+    endFrame: 104,
+  };
+  incompleteProvenance.deformationSamples = {
+    "Top/Curve": {
+      samples: [{ path: "Top/Curve", type: "CurveModule", attrs: { offset: 1 } }],
+      frameSamples: [0, 0, 0, 0, 0],
+    },
+  };
+  assert.throws(
+    () => createPoseRuntime(fixture(), incompleteProvenance),
+    /complete, safe sourceAction provenance/,
   );
 });
 

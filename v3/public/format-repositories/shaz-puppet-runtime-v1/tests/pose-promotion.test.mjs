@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { include } from "../build-kit.mjs";
+import { createPoseRuntime } from "../runtime/pose-recipe.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -92,19 +94,25 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   assert.match(promotion, /full-action normal-speed review is still pending/);
   assert.match(promotion, /candidate-11-present-screen-right-target\.json/);
 
-  for (const candidateRecipe of [
-    "hand-to-chest-self.json",
-    "open-wide.json",
-    "present-screen-left.json",
-    "heartfelt-chest-clasp-hold.json",
-    "low-side-present.json",
-    "big-emphasis.json",
-    "present-screen-right.json",
-    "present-screen-right-destination-study.json",
-  ]) {
-    assert.ok(candidateReadme.includes(`\`${candidateRecipe}\``), `missing candidate recipe ${candidateRecipe}`);
-    const recipe = JSON.parse(await fs.readFile(path.join(root, "poses", "candidates", candidateRecipe), "utf8"));
+  const candidateDirectory = path.join(root, "poses", "candidates");
+  const candidateRecipes = (await fs.readdir(candidateDirectory))
+    .filter((candidate) => candidate.endsWith(".json"))
+    .sort();
+  const runtimeManifest = JSON.parse(await fs.readFile(path.join(root, "rig-v2", "runtime.json"), "utf8"));
+  assert.ok(candidateRecipes.length > 0, "candidate recipe directory must not be empty");
+  for (const candidateRecipe of candidateRecipes) {
+    assert.ok(candidateReadme.includes(`\`${candidateRecipe}\``), `missing candidate README row for ${candidateRecipe}`);
+    assert.ok(promotion.includes(`poses/candidates/${candidateRecipe}`), `missing promotion ledger entry for ${candidateRecipe}`);
+    const recipeBytes = await fs.readFile(path.join(candidateDirectory, candidateRecipe));
+    const recipe = JSON.parse(recipeBytes.toString("utf8"));
     assert.equal(recipe.promotion, undefined, `${candidateRecipe} must not embed mutable lifecycle state`);
+    assert.equal(recipe.status, undefined, `${candidateRecipe} must not embed mutable lifecycle state`);
+    assert.equal(recipe.approval, undefined, `${candidateRecipe} must not embed mutable lifecycle state`);
+    const fileSha256 = crypto.createHash("sha256").update(recipeBytes).digest("hex");
+    const semanticSha256 = createPoseRuntime(runtimeManifest, recipe).recipeSha256;
+    const tableRow = candidateReadme.split("\n").find((line) => line.includes(`\`${candidateRecipe}\``));
+    assert.ok(tableRow?.includes(`\`${fileSha256}\``), `candidate README has stale file SHA for ${candidateRecipe}`);
+    assert.ok(tableRow?.includes(`\`${semanticSha256}\``), `candidate README has stale semantic SHA for ${candidateRecipe}`);
   }
 
   assert.match(candidateReadme, /Current lifecycle status and the next required gate live only in `\.\.\/\.\.\/POSE-PROMOTION\.md`/);
@@ -115,6 +123,11 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   assert.match(candidateReadme, /11 study — Present screen-right destination/);
   assert.match(candidateReadme, /b7455539f5bc806ae00ceb76f25cfefb4f914ba7ca9ccfb388cea774c14d4a51/);
   assert.match(candidateReadme, /c1ff392cb97b697588aa2cd5652e506e64622fda8b3aad297856c6358d1552e6/);
+  assert.match(promotion, /Episode 5 Part 2 compatible-Xstage candidates/);
+  assert.match(promotion, /paired-open-hand-emphasis\.json/);
+  assert.match(promotion, /enumerate-list-items\.json/);
+  assert.match(promotion, /sheepish-side-eye\.json/);
+  assert.match(promotion, /None of these rows is in `poses\/index\.json`/);
 
   assert.match(candidate11Evidence, /all 104 source frames at 30 fps with 83 runtime frames at 24 fps/);
   assert.match(candidate11Evidence, /Five-step counter-shift[\s\S]*61–70[\s\S]*50–57/);
@@ -139,5 +152,8 @@ test("the package exposes one honest reference-to-packet promotion path", async 
   assert.match(poseReadme, /A one-frame study cannot satisfy full-action inspection, review, or registration/);
   assert.match(poseReadme, /authentic non-neutral entry belongs to the action/);
   assert.match(poseReadme, /Neutral boundary connectors are separate packet-readiness work/);
+  assert.match(poseReadme, /Importing an action from a compatible Xstage/);
+  assert.match(poseReadme, /deformationSamples/);
+  assert.match(poseReadme, /rig-v2\/assets\/sources\/<xstage-sha256>\//);
   assert.equal(include(path.join(root, "POSE-PROMOTION.md")), true);
 });

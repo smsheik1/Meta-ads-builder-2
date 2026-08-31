@@ -8,6 +8,7 @@ import sharp from "sharp";
 
 import { generateCherryCues, verifyCherryEngine } from "./runtime/cherry.mjs";
 import { inspectRun } from "./runtime/inspect-run.mjs";
+import { loadAssetRegistration } from "./runtime/rig-v2-renderer.mjs";
 import { renderSequence } from "./runtime/render-sequence.mjs";
 import {
   ensureWhisperEngine,
@@ -53,23 +54,17 @@ function toolVersion(program, args = ["-version"]) {
 
 async function verifyAssetReceipt() {
   const manifest = await readJson(path.join(root, "rig-v2", "runtime.json"));
-  const receipt = await readJson(path.join(root, "rig-v2", "assets", "receipt.json"));
-  if (receipt.schemaVersion !== "shaz-tvg-asset-receipt-v2") {
-    throw new Error("unsupported rig-v2 asset receipt");
-  }
-  if (receipt.sourceXstageSha256 !== manifest.source.sha256) {
-    throw new Error("rig manifest and compiled asset receipt reference different Xstage sources");
-  }
-  if (receipt.artistRenderedFramesUsed !== false) {
-    throw new Error("compiled asset receipt does not prove artist-frame exclusion");
-  }
-  for (const asset of receipt.assets) {
+  const registration = await loadAssetRegistration(
+    path.join(root, "rig-v2", "assets"),
+    manifest.source.sha256,
+  );
+  for (const asset of registration.assets.values()) {
     const file = path.join(root, "rig-v2", "assets", asset.filename);
     if (await sha256(file) !== asset.outputSha256) {
       throw new Error(`compiled rig asset checksum mismatch: ${asset.filename}`);
     }
   }
-  return { manifest, receipt };
+  return { manifest, receipt: registration.receipt };
 }
 
 async function check() {

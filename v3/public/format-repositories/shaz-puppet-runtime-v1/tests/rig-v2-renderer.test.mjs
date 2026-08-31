@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -23,9 +26,164 @@ import {
   fillEnclosedOutline,
   fieldGridForManifest,
   hideUpperBackBangPatch,
+  loadAssetRegistration,
   propStageMatrix,
   tightStageMatrix,
 } from "../runtime/rig-v2-renderer.mjs";
+
+test("multi-source asset receipts keep every compiled drawing bound to its Xstage", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-multi-source-assets-"));
+  const runtimeSource = "a".repeat(64);
+  const compatibleSource = "b".repeat(64);
+  const compatibleFilename = `sources/${compatibleSource}/left-hand-14.png`;
+  const receipt = {
+    schemaVersion: "shaz-tvg-asset-receipt-v3",
+    runtimeXstageSha256: runtimeSource,
+    artistRenderedFramesUsed: false,
+    sources: [
+      { xstageSha256: runtimeSource, sourceArchiveBundled: false },
+      {
+        xstageSha256: compatibleSource,
+        xstageName: "compatible.xstage",
+        sourceArchiveSha256: "e".repeat(64),
+        sourceArchiveName: "compatible.zip",
+        sourceArchiveBundled: false,
+      },
+    ],
+    assets: [{
+      filename: compatibleFilename,
+      element: "Left_Hand",
+      drawing: "14",
+      variant: "main",
+      sourceXstageSha256: compatibleSource,
+      source: "elements/Left_Hand/Left_Hand-14.tvg",
+      sourceSha256: "f".repeat(64),
+      outputSha256: "c".repeat(64),
+      canvas: { width: 10, height: 12 },
+      modelOrigin: { x: 1, y: 2 },
+    }],
+  };
+  try {
+    await fs.mkdir(path.join(scratch, "sources", compatibleSource), { recursive: true });
+    await fs.writeFile(path.join(scratch, compatibleFilename), "fixture");
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    const registration = await loadAssetRegistration(scratch, runtimeSource);
+    assert.equal(
+      registration.assets.get(compatibleFilename).sourceXstageSha256,
+      compatibleSource,
+    );
+
+    receipt.assets[0].sourceXstageSha256 = "d".repeat(64);
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid model-space registrations/,
+    );
+
+    receipt.assets[0].sourceXstageSha256 = compatibleSource;
+    receipt.assets[0].element = "Right_Hand";
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid model-space registrations/,
+    );
+
+    receipt.assets[0].element = "Left_Hand";
+    receipt.assets[0].sourceSha256 = "not-a-hash";
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid model-space registrations/,
+    );
+
+    receipt.assets[0].sourceSha256 = "f".repeat(64);
+    delete receipt.sources[1].sourceArchiveSha256;
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid Xstage source registry/,
+    );
+
+    receipt.sources[1].sourceArchiveSha256 = "e".repeat(64);
+    delete receipt.assets[0].sourceXstageSha256;
+    receipt.sourceXstageSha256 = compatibleSource;
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid model-space registrations/,
+    );
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("asset receipts remain v2-compatible and reject orphan files", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-v2-assets-"));
+  const runtimeSource = "a".repeat(64);
+  const receipt = {
+    schemaVersion: "shaz-tvg-asset-receipt-v2",
+    sourceXstageSha256: runtimeSource,
+    artistRenderedFramesUsed: false,
+    assets: [{
+      filename: "left-hand-01.png",
+      element: "Left_Hand",
+      drawing: "1",
+      variant: "main",
+      source: "elements/Left_Hand/Left_Hand-1.tvg",
+      sourceSha256: "f".repeat(64),
+      outputSha256: "c".repeat(64),
+      canvas: { width: 10, height: 12 },
+      modelOrigin: { x: 1, y: 2 },
+    }],
+  };
+  try {
+    await fs.writeFile(path.join(scratch, "left-hand-01.png"), "fixture");
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify(receipt));
+    const registration = await loadAssetRegistration(scratch, runtimeSource);
+    assert.equal(registration.assets.get("left-hand-01.png").sourceXstageSha256, runtimeSource);
+
+    await fs.writeFile(path.join(scratch, "interrupted-transaction.backup"), "orphan");
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /asset directory does not exactly match its receipt/,
+    );
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("malformed v3 receipt collections fail with receipt errors", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-malformed-assets-"));
+  const runtimeSource = "a".repeat(64);
+  const base = {
+    schemaVersion: "shaz-tvg-asset-receipt-v3",
+    runtimeXstageSha256: runtimeSource,
+    artistRenderedFramesUsed: false,
+    sources: [{ xstageSha256: runtimeSource }],
+    assets: [],
+  };
+  try {
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify({ ...base, sources: {} }));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid Xstage source registry/,
+    );
+
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify({ ...base, sources: [null] }));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid Xstage source registry/,
+    );
+
+    await fs.writeFile(path.join(scratch, "receipt.json"), JSON.stringify({ ...base, assets: {} }));
+    await assert.rejects(
+      () => loadAssetRegistration(scratch, runtimeSource),
+      /invalid model-space registrations/,
+    );
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
 
 function close(actual, expected, epsilon = 1e-8) {
   assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
@@ -159,6 +317,11 @@ test("drawing substitutions use deterministic main and art-layer filenames", () 
   assert.equal(assetFilename(drawing), "left-forearm-02.png");
   assert.equal(assetFilename(drawing, "color"), "left-forearm-02--color.png");
   assert.equal(assetFilename(drawing, "overlay"), "left-forearm-02--overlay.png");
+  const sourceXstageSha256 = "a".repeat(64);
+  assert.equal(
+    assetFilename({ ...drawing, sourceXstageSha256 }),
+    `sources/${sourceXstageSha256}/left-forearm-02.png`,
+  );
 });
 
 test("compiled tooth-bearing mouths preserve their artist-authored white regions", async () => {

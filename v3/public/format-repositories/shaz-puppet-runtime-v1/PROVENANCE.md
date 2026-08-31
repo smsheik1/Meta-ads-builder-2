@@ -20,6 +20,21 @@ That origin record does not make Crossed Arms creatively approved. Its current r
 
 The character assets are packaged for the owner's authorized Wiggly workflow. This package does not give third parties permission to redistribute or commercially use the character or source art.
 
+## Episode 5 Part 2 compatible Xstage
+
+Format 0.5.0 adds an authoring-only path for importing actions from another Xstage that uses the same inner Shaz rig topology. The supplied `PART2_F.zip` is a hybrid Harmony project: only five ranges expose the live `Puppet_Talk_Section_Group`; storyboard, animatic-coloring, and flattened scene ranges are excluded. The archive and Xstage are not packaged.
+
+- Source archive: `PART2_F.zip`, SHA-256 `ce74bf295692d55e65f2a10e81350f067be79ea8f110fde3d3f446bf3192cd97`
+- Source Xstage: `PART2_F/PART2_F_v2.xstage`, SHA-256 `0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f`
+- Live rig exposure ranges: 604–727, 1683–2094, 2231–2254, 2774–3054, and 3710–3958
+- Compatible inner rig: 112 matching paths and node types, all 23 READ paint paths, and all 26 deformation paths
+
+Portable candidate recipes keep the canonical runtime binding and separately record the external archive, Xstage, source range, drawing sources, and complete deformation samples. Only drawing IDs missing from the canonical rig are copied into a source-hash namespace. Each copied asset records its source TVG checksum, output checksum, canvas, model origin, element, drawing, variant, and source Xstage checksum. The authoring-only registration utility validates the complete set before a journaled receipt-and-asset update under an exclusive per-base lease. Its journal lives outside the Format package root, restores interrupted work before the next invocation reads the receipt, and never presents the multi-file update as atomic.
+
+The Episode 5 source uses a brown outline (`[77, 17, 3, 255]`) where the canonical runtime uses black (`[0, 0, 0, 255]`). Format 0.5.0 performs that one declared replacement in the exported TVG specification before rasterization. Three shared drawings then reproduced the existing packaged PNGs byte-for-byte, proving that geometry and the rest of the palette were unchanged.
+
+Two parity-proven recipes and one blocked extraction draft currently live under `poses/candidates/`. Paired Open-Hand Emphasis passes mechanical inspection but awaits human review. Enumerate List Items faithfully preserves six source-authored mouth defects. Sheepish Side-Eye has not passed the required direct-source/extracted-source parity and therefore carries no exact reconstruction claim; it is also blocked by mouth defects, hard-cut boundaries, and an inspector vocabulary gap for its hair drawing family. All three remain unregistered and unavailable to blind agents. Exact hashes and gates are in `evidence/episode5-part2-compatible-source.json` and `POSE-PROMOTION.md`.
+
 ## Backgrounds
 
 The package includes four opaque 3840×2160 RGB PNG backgrounds. `assets.json` records each output checksum, label, dimensions, use, source operation, and source checksum when a PSD exists.

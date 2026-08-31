@@ -1,6 +1,6 @@
 # Review-only pose candidates
 
-Files here are exact rig-native recipe bytes recovered or authored for the promotion pipeline in `../../POSE-PROMOTION.md`. They are deliberately absent from `../index.json`.
+Files here are checksum-locked rig-native recipes or extraction drafts recovered or authored for the promotion pipeline in `../../POSE-PROMOTION.md`. They are deliberately absent from `../index.json`. A file's presence here does not imply that source parity, inspection, or human review passed.
 
 That distinction is a gate, not bookkeeping:
 
@@ -21,3 +21,6 @@ The recipe hashes below are an immutable lookup index. Current lifecycle status 
 | 10 — Big emphasis | `big-emphasis.json` | `9eba7c8a70f1dc05f1d73cba8de9977c6664cf9fcedb42cc573e89c56f6aaa8d` | `ee877349c1d4306ea2a9a7f737716ec878becb1177bd62376aa14cbbe30c2c0b` |
 | 11 — Present screen-right, full observed action | `present-screen-right.json` | `fe832541207b3c08d8a069fddc1889d011e68c780ea93ff579990e032971f09a` | `2fb52af797096a93f19d243f6a2541e37c9e4f5064a59a6d0098e59b9f0b702f` |
 | 11 study — Present screen-right destination | `present-screen-right-destination-study.json` | `b7455539f5bc806ae00ceb76f25cfefb4f914ba7ca9ccfb388cea774c14d4a51` | `c1ff392cb97b697588aa2cd5652e506e64622fda8b3aad297856c6358d1552e6` |
+| Episode 5 Part 2 — Paired open-hand emphasis | `paired-open-hand-emphasis.json` | `a6e486296f72bf890ea12e253ad2c72d5f27a6141cbb5f4bee75095f8969584c` | `673106ed6c00707a317ddc794643bc6f6c0e0f7c0b01e69c94ae856a99a6c406` |
+| Episode 5 Part 2 — Enumerate list items | `enumerate-list-items.json` | `1ef12bea178bc123889d483d7a32b055b709bcf5b0a0849784fbd7328681b48c` | `53ca3f6ee7f66547e86337545496098b1d9163fa8bfa82cba265c9ea490f2e24` |
+| Episode 5 Part 2 — Sheepish side-eye | `sheepish-side-eye.json` | `6f554cdbd6d0085a6a1078516f8d9ea78e814ef71bfa70f6740e4d6d36ecd3d1` | `b5a1f7c72af35f6b1598d8ec1801f118b8a924182226872fd6acfc6c4044a4ae` |

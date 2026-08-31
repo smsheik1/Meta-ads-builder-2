@@ -1,6 +1,19 @@
 {
-  "schemaVersion": "shaz-tvg-asset-receipt-v2",
-  "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "schemaVersion": "shaz-tvg-asset-receipt-v3",
+  "runtimeXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+  "sources": [
+    {
+      "xstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f",
+      "xstageName": "PART2_F_v2.xstage",
+      "sourceArchiveSha256": "ce74bf295692d55e65f2a10e81350f067be79ea8f110fde3d3f446bf3192cd97",
+      "sourceArchiveName": "PART2_F.zip",
+      "sourceArchiveBundled": false
+    },
+    {
+      "xstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",
+      "sourceArchiveBundled": false
+    }
+  ],
   "sourceArchiveBundled": false,
   "artistRenderedFramesUsed": false,
   "rasterMarginModelUnits": 50,
@@ -27,7 +40,8 @@
         "minY": 73.890625,
         "maxX": -1668.8906,
         "maxY": 249.89063
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "back-hair-01.png",
@@ -51,7 +65,8 @@
         "minY": 73.890625,
         "maxX": -1668.8906,
         "maxY": 249.89063
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "back-hair-02--color.png",
@@ -75,7 +90,8 @@
         "minY": 73.890625,
         "maxX": -1668.8906,
         "maxY": 249.89063
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "back-hair-02.png",
@@ -99,7 +115,8 @@
         "minY": 73.890625,
         "maxX": -1668.8906,
         "maxY": 249.89063
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-back-01--color.png",
@@ -123,7 +140,8 @@
         "minY": -190.95313,
         "maxX": -1848.5625,
         "maxY": 36.78125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-back-01.png",
@@ -147,7 +165,8 @@
         "minY": -192.29688,
         "maxX": -1834.0781,
         "maxY": 36.78125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-back-02--color.png",
@@ -171,7 +190,8 @@
         "minY": -290.23438,
         "maxX": -1773.4063,
         "maxY": 57.59375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-back-02.png",
@@ -195,7 +215,8 @@
         "minY": -290.23438,
         "maxX": -1773.0313,
         "maxY": 57.59375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-back-03--color.png",
@@ -219,7 +240,8 @@
         "minY": -190.95313,
         "maxX": -1848.5625,
         "maxY": 36.78125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-back-03.png",
@@ -243,7 +265,8 @@
         "minY": -192.29688,
         "maxX": -1834.0781,
         "maxY": 36.78125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-front-01--color.png",
@@ -267,7 +290,8 @@
         "minY": -299.34375,
         "maxX": -2054.0938,
         "maxY": 37.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-front-01.png",
@@ -291,7 +315,8 @@
         "minY": -299.34375,
         "maxX": -2054.0938,
         "maxY": 37.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-front-02--color.png",
@@ -315,7 +340,8 @@
         "minY": -199.64063,
         "maxX": -2166.625,
         "maxY": 30.484375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-front-02.png",
@@ -339,7 +365,8 @@
         "minY": -203.21875,
         "maxX": -2165.1406,
         "maxY": 30.484375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-front-03--color.png",
@@ -363,7 +390,8 @@
         "minY": -299.34375,
         "maxX": -2054.0938,
         "maxY": 37.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "bangs-front-03.png",
@@ -387,7 +415,8 @@
         "minY": -299.34375,
         "maxX": -2054.0938,
         "maxY": 37.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "body-01--color.png",
@@ -411,7 +440,8 @@
         "minY": -595,
         "maxX": 232.39063,
         "maxY": 1259.3281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "body-01.png",
@@ -435,7 +465,8 @@
         "minY": -595.1406,
         "maxX": 232.39063,
         "maxY": 1259.3281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "body-02--color.png",
@@ -459,7 +490,8 @@
         "minY": -595,
         "maxX": 232.39063,
         "maxY": 1259.3281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "body-02.png",
@@ -483,7 +515,8 @@
         "minY": -595.1406,
         "maxX": 232.39063,
         "maxY": 1259.3281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "collar-01--color.png",
@@ -507,7 +540,8 @@
         "minY": -676.3906,
         "maxX": 160.54688,
         "maxY": -15.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "collar-01.png",
@@ -531,7 +565,8 @@
         "minY": -676.3906,
         "maxX": 160.54688,
         "maxY": -15.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "collar-02--color.png",
@@ -555,7 +590,8 @@
         "minY": -676.3906,
         "maxX": 160.54688,
         "maxY": -15.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "collar-02.png",
@@ -579,7 +615,8 @@
         "minY": -676.3906,
         "maxX": 160.54688,
         "maxY": -15.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-01.png",
@@ -603,7 +640,8 @@
         "minY": -74.21875,
         "maxX": -2016.2813,
         "maxY": -42.96875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-02.png",
@@ -627,7 +665,8 @@
         "minY": -47.28125,
         "maxX": -2004.125,
         "maxY": 17.34375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-03.png",
@@ -651,7 +690,8 @@
         "minY": -49.0625,
         "maxX": -2018.8594,
         "maxY": 2
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-04.png",
@@ -675,7 +715,8 @@
         "minY": -0.1875,
         "maxX": -1956.1875,
         "maxY": 35.078125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-05.png",
@@ -699,7 +740,8 @@
         "minY": -144.21875,
         "maxX": -2020.8906,
         "maxY": -2.53125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-06.png",
@@ -723,7 +765,8 @@
         "minY": -99.640625,
         "maxX": -2020.8906,
         "maxY": -2.53125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-07.png",
@@ -747,7 +790,8 @@
         "minY": -125.1875,
         "maxX": -2016,
         "maxY": -6.671875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-08.png",
@@ -771,7 +815,8 @@
         "minY": -41.125,
         "maxX": -2017.2813,
         "maxY": -5.625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "eyebrows-09.png",
@@ -795,7 +840,8 @@
         "minY": -74.21875,
         "maxX": -2016.2813,
         "maxY": -42.96875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "hair-01--color.png",
@@ -819,7 +865,8 @@
         "minY": -355.75,
         "maxX": -1745.5469,
         "maxY": 201.46875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "hair-01.png",
@@ -843,7 +890,8 @@
         "minY": -355.75,
         "maxX": -1745.5469,
         "maxY": 201.46875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "hair-02--color.png",
@@ -867,7 +915,8 @@
         "minY": -357,
         "maxX": -1745.2656,
         "maxY": 202.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "hair-02.png",
@@ -891,7 +940,8 @@
         "minY": -357,
         "maxX": -1745.2656,
         "maxY": 202.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "hair-03--color.png",
@@ -915,7 +965,8 @@
         "minY": -355.75,
         "maxX": -1745.5469,
         "maxY": 201.46875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "hair-03.png",
@@ -939,7 +990,8 @@
         "minY": -355.75,
         "maxX": -1745.5469,
         "maxY": 201.46875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "head-base-01--color.png",
@@ -963,7 +1015,8 @@
         "minY": -203.54688,
         "maxX": -1791.25,
         "maxY": 356.45313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "head-base-01.png",
@@ -987,7 +1040,8 @@
         "minY": -203.54688,
         "maxX": -1791.25,
         "maxY": 356.45313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "head-base-02--color.png",
@@ -1011,7 +1065,8 @@
         "minY": -207.40625,
         "maxX": -1791.25,
         "maxY": 356.45313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "head-base-02.png",
@@ -1035,7 +1090,8 @@
         "minY": -213.15625,
         "maxX": -1791.25,
         "maxY": 356.45313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "head-base-03--color.png",
@@ -1059,7 +1115,8 @@
         "minY": -203.54688,
         "maxX": -1791.25,
         "maxY": 356.45313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "head-base-03.png",
@@ -1083,7 +1140,8 @@
         "minY": -203.54688,
         "maxX": -1791.25,
         "maxY": 356.45313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-arm-01--color.png",
@@ -1107,7 +1165,8 @@
         "minY": -345.75,
         "maxX": -493.15625,
         "maxY": 800.3125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-arm-01.png",
@@ -1131,7 +1190,8 @@
         "minY": -345.75,
         "maxX": -493.15625,
         "maxY": 800.3125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-arm-02--color.png",
@@ -1155,7 +1215,8 @@
         "minY": -345.75,
         "maxX": -493.15625,
         "maxY": 800.3125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-arm-02.png",
@@ -1179,7 +1240,8 @@
         "minY": -345.75,
         "maxX": -493.15625,
         "maxY": 800.3125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-01--color.png",
@@ -1203,7 +1265,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-01.png",
@@ -1227,7 +1290,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-02--color.png",
@@ -1251,7 +1315,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-02.png",
@@ -1275,7 +1340,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-03--color.png",
@@ -1299,7 +1365,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-03.png",
@@ -1323,7 +1390,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-04--color.png",
@@ -1347,7 +1415,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-04.png",
@@ -1371,7 +1440,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-05--color.png",
@@ -1395,7 +1465,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-05.png",
@@ -1419,7 +1490,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-06--color.png",
@@ -1443,7 +1515,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-eye-06.png",
@@ -1467,7 +1540,8 @@
         "minY": -9.1875,
         "maxX": -2163.4219,
         "maxY": 141.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-01--color.png",
@@ -1491,7 +1565,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-01.png",
@@ -1515,7 +1590,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-02--color.png",
@@ -1539,7 +1615,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-02--overlay.png",
@@ -1563,7 +1640,8 @@
         "minY": 534.90625,
         "maxX": -629.65625,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-02.png",
@@ -1587,7 +1665,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-03--color.png",
@@ -1611,7 +1690,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-03--overlay.png",
@@ -1635,7 +1715,8 @@
         "minY": 780.7031,
         "maxX": -741.96875,
         "maxY": 1066.8906
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-03.png",
@@ -1659,7 +1740,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-04--color.png",
@@ -1683,7 +1765,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-04--overlay.png",
@@ -1707,7 +1790,8 @@
         "minY": 842.4219,
         "maxX": -796.03125,
         "maxY": 1128.6094
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-04.png",
@@ -1731,7 +1815,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-05--color.png",
@@ -1755,7 +1840,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-05.png",
@@ -1779,7 +1865,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-06--color.png",
@@ -1803,7 +1890,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-06--overlay.png",
@@ -1827,7 +1915,8 @@
         "minY": 345.34375,
         "maxX": -629.65625,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-forearm-06.png",
@@ -1851,7 +1940,8 @@
         "minY": 141.8125,
         "maxX": -569.0469,
         "maxY": 1208.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-01--color.png",
@@ -1875,7 +1965,8 @@
         "minY": 827.8125,
         "maxX": -808.0625,
         "maxY": 1670.6719
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-01.png",
@@ -1899,7 +1990,8 @@
         "minY": 827.8125,
         "maxX": -808.0625,
         "maxY": 1670.6719
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-02--color.png",
@@ -1923,7 +2015,8 @@
         "minY": 981.1719,
         "maxX": -461.03125,
         "maxY": 1541.8281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-02.png",
@@ -1947,7 +2040,8 @@
         "minY": 980.65625,
         "maxX": -461.03125,
         "maxY": 1541.8281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-03--color.png",
@@ -1971,7 +2065,8 @@
         "minY": 966.2344,
         "maxX": -736.375,
         "maxY": 1697.5313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-03.png",
@@ -1995,7 +2090,8 @@
         "minY": 966.2344,
         "maxX": -736.375,
         "maxY": 1697.5313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-04--color.png",
@@ -2019,7 +2115,8 @@
         "minY": 974.75,
         "maxX": -706.5625,
         "maxY": 1844.1563
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-04.png",
@@ -2043,7 +2140,8 @@
         "minY": 974.75,
         "maxX": -706.5625,
         "maxY": 1844.1563
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-05--color.png",
@@ -2067,7 +2165,8 @@
         "minY": 779.71875,
         "maxX": -531.9531,
         "maxY": 1525.5
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-05.png",
@@ -2091,7 +2190,8 @@
         "minY": 779.71875,
         "maxX": -531.9531,
         "maxY": 1525.5
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-06--color.png",
@@ -2115,7 +2215,8 @@
         "minY": 969.25,
         "maxX": -674.7031,
         "maxY": 1629.0156
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-06.png",
@@ -2139,7 +2240,8 @@
         "minY": 969.25,
         "maxX": -674.7031,
         "maxY": 1629.0156
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-07--color.png",
@@ -2163,7 +2265,8 @@
         "minY": 977.2656,
         "maxX": -812,
         "maxY": 1811.7656
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-07.png",
@@ -2187,7 +2290,8 @@
         "minY": 977.2656,
         "maxX": -812,
         "maxY": 1811.7656
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-08--color.png",
@@ -2211,7 +2315,8 @@
         "minY": 913.3281,
         "maxX": -760.6406,
         "maxY": 1904.875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-08.png",
@@ -2235,7 +2340,8 @@
         "minY": 913.3281,
         "maxX": -760.6406,
         "maxY": 1904.875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-09--color.png",
@@ -2259,7 +2365,8 @@
         "minY": 1127.7656,
         "maxX": -781.0781,
         "maxY": 1589.4219
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-09.png",
@@ -2283,7 +2390,8 @@
         "minY": 1127.7656,
         "maxX": -781.0781,
         "maxY": 1589.4219
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-10--color.png",
@@ -2307,7 +2415,8 @@
         "minY": 1027.4531,
         "maxX": -663.2656,
         "maxY": 1606.3594
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-10.png",
@@ -2331,7 +2440,8 @@
         "minY": 1027.4531,
         "maxX": -661.5781,
         "maxY": 1606.3594
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-11--color.png",
@@ -2355,7 +2465,8 @@
         "minY": 1127.7656,
         "maxX": -781.0781,
         "maxY": 1589.4219
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-11.png",
@@ -2379,7 +2490,8 @@
         "minY": 1127.7656,
         "maxX": -781.0781,
         "maxY": 1589.4219
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-12--color.png",
@@ -2403,7 +2515,8 @@
         "minY": 767.8906,
         "maxX": -564.5625,
         "maxY": 1698.3594
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-hand-12.png",
@@ -2427,7 +2540,8 @@
         "minY": 767.8906,
         "maxX": -536.6094,
         "maxY": 1698.3594
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-01.png",
@@ -2451,7 +2565,8 @@
         "minY": 30.03125,
         "maxX": -2175.2656,
         "maxY": 105.390625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-02.png",
@@ -2475,7 +2590,8 @@
         "minY": 67.25,
         "maxX": -2212.9531,
         "maxY": 104.109375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-03.png",
@@ -2499,7 +2615,8 @@
         "minY": 31.328125,
         "maxX": -2176.5469,
         "maxY": 81.71875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-04.png",
@@ -2523,7 +2640,8 @@
         "minY": 58.625,
         "maxX": -2203.8438,
         "maxY": 76.8125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-05.png",
@@ -2547,7 +2665,8 @@
         "minY": 7.671875,
         "maxX": -2164.3281,
         "maxY": 127.75
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-06.png",
@@ -2571,7 +2690,8 @@
         "minY": 50.0625,
         "maxX": -2246.2188,
         "maxY": 84.171875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-07.png",
@@ -2595,7 +2715,8 @@
         "minY": 30.03125,
         "maxX": -2172.6875,
         "maxY": 105.359375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-08.png",
@@ -2619,7 +2740,8 @@
         "minY": 104.609375,
         "maxX": -2302.75,
         "maxY": 105.390625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-09.png",
@@ -2643,7 +2765,8 @@
         "minY": 81.890625,
         "maxX": -2304.8438,
         "maxY": 82.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-10.png",
@@ -2667,7 +2790,8 @@
         "minY": 51.234375,
         "maxX": -2166.4688,
         "maxY": 85.140625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-11.png",
@@ -2691,7 +2815,8 @@
         "minY": 30.03125,
         "maxX": -2175.2656,
         "maxY": 105.390625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-12.png",
@@ -2715,7 +2840,8 @@
         "minY": 63.859375,
         "maxX": -2174.2813,
         "maxY": 105.359375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "left-pupil-13.png",
@@ -2739,7 +2865,8 @@
         "minY": -9.1875,
         "maxX": -2191.9375,
         "maxY": 7.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-01.png",
@@ -2763,7 +2890,8 @@
         "minY": 185.25,
         "maxX": -2031.9531,
         "maxY": 249.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-02--color.png",
@@ -2787,7 +2915,8 @@
         "minY": 159.48438,
         "maxX": -1975.9375,
         "maxY": 316.57813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-02.png",
@@ -2811,7 +2940,8 @@
         "minY": 159.48438,
         "maxX": -1975.875,
         "maxY": 316.57813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-03--color.png",
@@ -2835,7 +2965,8 @@
         "minY": 206.39063,
         "maxX": -2224.4531,
         "maxY": 271.92188
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-03.png",
@@ -2859,7 +2990,8 @@
         "minY": 206.39063,
         "maxX": -2224.4531,
         "maxY": 271.92188
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-04--color.png",
@@ -2883,7 +3015,8 @@
         "minY": 175.14063,
         "maxX": -1989.0625,
         "maxY": 291.6875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-04.png",
@@ -2907,7 +3040,8 @@
         "minY": 175.14063,
         "maxX": -1989.0625,
         "maxY": 291.6875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-05--color.png",
@@ -2931,7 +3065,8 @@
         "minY": 180.625,
         "maxX": -2031.9531,
         "maxY": 309.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-05.png",
@@ -2955,7 +3090,8 @@
         "minY": 180.53125,
         "maxX": -2028.5,
         "maxY": 309.82813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-06.png",
@@ -2979,7 +3115,8 @@
         "minY": 195.3125,
         "maxX": -2022.9844,
         "maxY": 238.8125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-07--color.png",
@@ -3003,7 +3140,8 @@
         "minY": 176.9375,
         "maxX": -2017.5625,
         "maxY": 298.125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-07.png",
@@ -3027,7 +3165,8 @@
         "minY": 176.73438,
         "maxX": -2017.5625,
         "maxY": 298.125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-08--color.png",
@@ -3051,7 +3190,8 @@
         "minY": 198.375,
         "maxX": -2002.0469,
         "maxY": 294.54688
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-08.png",
@@ -3075,7 +3215,8 @@
         "minY": 198.375,
         "maxX": -2002.0469,
         "maxY": 294.54688
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-09--color.png",
@@ -3099,7 +3240,8 @@
         "minY": 182.89063,
         "maxX": -2017.0781,
         "maxY": 295
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-09.png",
@@ -3123,7 +3265,8 @@
         "minY": 182.89063,
         "maxX": -2017.0781,
         "maxY": 295
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-10--color.png",
@@ -3147,7 +3290,8 @@
         "minY": 175.14063,
         "maxX": -1989.0625,
         "maxY": 291.6875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "mouth-10.png",
@@ -3171,7 +3315,8 @@
         "minY": 175.14063,
         "maxX": -1989.0625,
         "maxY": 291.6875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "nose-01--color.png",
@@ -3195,7 +3340,8 @@
         "minY": 92.578125,
         "maxX": -2129.9219,
         "maxY": 187.15625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "nose-01.png",
@@ -3219,7 +3365,8 @@
         "minY": 92.578125,
         "maxX": -2129.9219,
         "maxY": 187.15625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "nose-02--color.png",
@@ -3243,7 +3390,8 @@
         "minY": 92.578125,
         "maxX": -2129.9219,
         "maxY": 187.15625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "nose-02.png",
@@ -3267,7 +3415,8 @@
         "minY": 92.578125,
         "maxX": -2129.9219,
         "maxY": 187.15625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "ol-hand-01--color.png",
@@ -3291,7 +3440,8 @@
         "minY": 576.8594,
         "maxX": -2392.4688,
         "maxY": 958.8281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "ol-hand-01.png",
@@ -3315,7 +3465,8 @@
         "minY": 576.8594,
         "maxX": -2392.4688,
         "maxY": 958.8281
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "ol-hand-02--color.png",
@@ -3339,7 +3490,8 @@
         "minY": 1003.7344,
         "maxX": 1142.6875,
         "maxY": 1946.5156
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "ol-hand-02.png",
@@ -3363,7 +3515,8 @@
         "minY": 1003.7344,
         "maxX": 1142.6875,
         "maxY": 1946.5156
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "pouch-01--color.png",
@@ -3387,7 +3540,8 @@
         "minY": 742.15625,
         "maxX": -91.359375,
         "maxY": 1181.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "pouch-01.png",
@@ -3411,7 +3565,8 @@
         "minY": 742.15625,
         "maxX": -91.359375,
         "maxY": 1181.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "pouch-02--color.png",
@@ -3435,7 +3590,8 @@
         "minY": 742.15625,
         "maxX": -91.359375,
         "maxY": 1181.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "pouch-02.png",
@@ -3459,7 +3615,8 @@
         "minY": 742.15625,
         "maxX": -91.359375,
         "maxY": 1181.4375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-arm-01--color.png",
@@ -3483,7 +3640,8 @@
         "minY": -428.42188,
         "maxX": 627.53125,
         "maxY": 719.84375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-arm-01.png",
@@ -3507,7 +3665,8 @@
         "minY": -428.42188,
         "maxX": 627.53125,
         "maxY": 719.84375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-arm-02--color.png",
@@ -3531,7 +3690,8 @@
         "minY": -428.42188,
         "maxX": 627.53125,
         "maxY": 719.84375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-arm-02.png",
@@ -3555,7 +3715,8 @@
         "minY": -428.42188,
         "maxX": 627.53125,
         "maxY": 719.84375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-arm-03--color.png",
@@ -3579,7 +3740,8 @@
         "minY": -428.42188,
         "maxX": 627.53125,
         "maxY": 719.84375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-arm-03.png",
@@ -3603,7 +3765,8 @@
         "minY": -428.42188,
         "maxX": 627.53125,
         "maxY": 719.84375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-01--color.png",
@@ -3627,7 +3790,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-01.png",
@@ -3651,7 +3815,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-02--color.png",
@@ -3675,7 +3840,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-02.png",
@@ -3699,7 +3865,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-03--color.png",
@@ -3723,7 +3890,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-03.png",
@@ -3747,7 +3915,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-04--color.png",
@@ -3771,7 +3940,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-04.png",
@@ -3795,7 +3965,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-05--color.png",
@@ -3819,7 +3990,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-05.png",
@@ -3843,7 +4015,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-06--color.png",
@@ -3867,7 +4040,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-eye-06.png",
@@ -3891,7 +4065,8 @@
         "minY": -10.0625,
         "maxX": -1978.4688,
         "maxY": 142.70313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-01--color.png",
@@ -3915,7 +4090,8 @@
         "minY": 103.40625,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-01.png",
@@ -3939,7 +4115,8 @@
         "minY": 96.96875,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-02--color.png",
@@ -3963,7 +4140,8 @@
         "minY": 103.40625,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-02--overlay.png",
@@ -3987,7 +4165,8 @@
         "minY": 421.21875,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-02.png",
@@ -4011,7 +4190,8 @@
         "minY": 96.96875,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-03--color.png",
@@ -4035,7 +4215,8 @@
         "minY": 103.40625,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-03.png",
@@ -4059,7 +4240,8 @@
         "minY": 96.96875,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-04--color.png",
@@ -4083,7 +4265,8 @@
         "minY": 103.40625,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-04.png",
@@ -4107,7 +4290,8 @@
         "minY": 96.96875,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-05--color.png",
@@ -4131,7 +4315,8 @@
         "minY": 103.40625,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-05--overlay.png",
@@ -4155,7 +4340,8 @@
         "minY": 338.48438,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-forearm-05.png",
@@ -4179,7 +4365,8 @@
         "minY": 96.96875,
         "maxX": 798.4844,
         "maxY": 1180.8438
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-01--color.png",
@@ -4203,7 +4390,8 @@
         "minY": 762.03125,
         "maxX": 734.28125,
         "maxY": 1745.2813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-01.png",
@@ -4227,7 +4415,8 @@
         "minY": 760.78125,
         "maxX": 734.2969,
         "maxY": 1745.2813
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-02--color.png",
@@ -4251,7 +4440,8 @@
         "minY": 992.1406,
         "maxX": 932.40625,
         "maxY": 1575.1406
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-02.png",
@@ -4275,7 +4465,8 @@
         "minY": 989.15625,
         "maxX": 932.40625,
         "maxY": 1575.1406
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-03.png",
@@ -4299,7 +4490,8 @@
         "minY": 1013.75,
         "maxX": 721.3281,
         "maxY": 2048.125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-04.png",
@@ -4323,7 +4515,8 @@
         "minY": 962.3906,
         "maxX": 865.4531,
         "maxY": 2025.1406
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-05.png",
@@ -4347,7 +4540,8 @@
         "minY": 982.78125,
         "maxX": 1015.2344,
         "maxY": 1727.1875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-06--color.png",
@@ -4371,7 +4565,8 @@
         "minY": 828.78125,
         "maxX": 752.2344,
         "maxY": 1590.6875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-06.png",
@@ -4395,7 +4590,8 @@
         "minY": 828.78125,
         "maxX": 752.2344,
         "maxY": 1590.6875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-07--color.png",
@@ -4419,7 +4615,8 @@
         "minY": 766.59375,
         "maxX": 1071.3125,
         "maxY": 1553.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-07.png",
@@ -4443,7 +4640,8 @@
         "minY": 766.59375,
         "maxX": 1071.3125,
         "maxY": 1553.0313
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-08--color.png",
@@ -4467,7 +4665,8 @@
         "minY": 903.8281,
         "maxX": 863.90625,
         "maxY": 1454.0781
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-08.png",
@@ -4491,7 +4690,8 @@
         "minY": 903.8281,
         "maxX": 863.90625,
         "maxY": 1454.0781
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-09--color.png",
@@ -4515,7 +4715,8 @@
         "minY": 903.8281,
         "maxX": 863.90625,
         "maxY": 1454.0781
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-09.png",
@@ -4539,7 +4740,8 @@
         "minY": 903.8281,
         "maxX": 863.90625,
         "maxY": 1454.0781
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-10--color.png",
@@ -4563,7 +4765,8 @@
         "minY": 903.8281,
         "maxX": 863.90625,
         "maxY": 1454.0781
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-10.png",
@@ -4587,7 +4790,8 @@
         "minY": 903.8281,
         "maxX": 863.90625,
         "maxY": 1454.0781
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-11--color.png",
@@ -4611,7 +4815,8 @@
         "minY": 1003.7344,
         "maxX": 1142.6875,
         "maxY": 1946.5156
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-hand-11.png",
@@ -4635,7 +4840,8 @@
         "minY": 1003.7344,
         "maxX": 1142.6875,
         "maxY": 1946.5156
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-01.png",
@@ -4659,7 +4865,8 @@
         "minY": 30.21875,
         "maxX": -2019.4375,
         "maxY": 105.21875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-02.png",
@@ -4683,7 +4890,8 @@
         "minY": 68.890625,
         "maxX": -2056.9531,
         "maxY": 105.21875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-03.png",
@@ -4707,7 +4915,8 @@
         "minY": 30.21875,
         "maxX": -2019.4375,
         "maxY": 79.75
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-04.png",
@@ -4731,7 +4940,8 @@
         "minY": 58.34375,
         "maxX": -2047.5625,
         "maxY": 77.09375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-05.png",
@@ -4755,7 +4965,8 @@
         "minY": 5.84375,
         "maxX": -1995.0469,
         "maxY": 129.59375
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-06.png",
@@ -4779,7 +4990,8 @@
         "minY": 49.890625,
         "maxX": -2088.7031,
         "maxY": 87.671875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-07.png",
@@ -4803,7 +5015,8 @@
         "minY": 30.234375,
         "maxX": -1987.5156,
         "maxY": 105.140625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-08.png",
@@ -4827,7 +5040,8 @@
         "minY": 33.953125,
         "maxX": -2126.5156,
         "maxY": 102.296875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-09.png",
@@ -4851,7 +5065,8 @@
         "minY": 53.4375,
         "maxX": -2108.1094,
         "maxY": 82.046875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-10.png",
@@ -4875,7 +5090,8 @@
         "minY": 50.15625,
         "maxX": -1980.875,
         "maxY": 50.25
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-11.png",
@@ -4899,7 +5115,8 @@
         "minY": 30.21875,
         "maxX": -2019.4375,
         "maxY": 105.21875
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-12.png",
@@ -4923,7 +5140,8 @@
         "minY": 65.25,
         "maxX": -1989.0469,
         "maxY": 105.140625
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "right-pupil-13.png",
@@ -4947,7 +5165,1592 @@
         "minY": -10.0625,
         "maxX": -2015.5313,
         "maxY": 0.828125
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/back-hair-03--color.png",
+      "variant": "color",
+      "elementId": 70,
+      "element": "Back_Hair",
+      "drawing": "3",
+      "source": "elements/Back_Hair/Back_Hair-3.tvg",
+      "sourceSha256": "71e7e2c32d84a1df99bc4972e5623a13a8293a6a067705b58d2402b10bec0e9d",
+      "outputSha256": "655e16ce424dd6fb567cfaaaeb0d69fdb74b50ad0870c427db90aa0ffd834fa8",
+      "canvas": {
+        "width": 393,
+        "height": 277
+      },
+      "modelOrigin": {
+        "x": -2011.8594,
+        "y": 23.890625
+      },
+      "drawingBounds": {
+        "minX": -1961.8594,
+        "minY": 73.890625,
+        "maxX": -1668.8906,
+        "maxY": 249.89063
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/back-hair-03.png",
+      "variant": "main",
+      "elementId": 70,
+      "element": "Back_Hair",
+      "drawing": "3",
+      "source": "elements/Back_Hair/Back_Hair-3.tvg",
+      "sourceSha256": "71e7e2c32d84a1df99bc4972e5623a13a8293a6a067705b58d2402b10bec0e9d",
+      "outputSha256": "cdaf704907a25cb61f13e79a47ef94f7154be765bd1ac4aa548a2f98cb8096bf",
+      "canvas": {
+        "width": 393,
+        "height": 277
+      },
+      "modelOrigin": {
+        "x": -2011.8594,
+        "y": 23.890625
+      },
+      "drawingBounds": {
+        "minX": -1961.8594,
+        "minY": 73.890625,
+        "maxX": -1668.8906,
+        "maxY": 249.89063
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 4
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/bangs-back-04--color.png",
+      "variant": "color",
+      "elementId": 74,
+      "element": "Bangs_back",
+      "drawing": "4",
+      "source": "elements/Bangs_back/Bangs_back-4.tvg",
+      "sourceSha256": "017b71e1fd3bfcead5f1e2c27f2641c68ffcf201867f7d0c0807932127ff4a08",
+      "outputSha256": "e9b21424f519846769ef040b73b477b0c9d0abd0a5f6b37a61ade195d8b2f31c",
+      "canvas": {
+        "width": 305,
+        "height": 328
+      },
+      "modelOrigin": {
+        "x": -2103.5,
+        "y": -240.95313
+      },
+      "drawingBounds": {
+        "minX": -2053.5,
+        "minY": -190.95313,
+        "maxX": -1848.5625,
+        "maxY": 36.78125
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/bangs-back-04.png",
+      "variant": "main",
+      "elementId": 74,
+      "element": "Bangs_back",
+      "drawing": "4",
+      "source": "elements/Bangs_back/Bangs_back-4.tvg",
+      "sourceSha256": "017b71e1fd3bfcead5f1e2c27f2641c68ffcf201867f7d0c0807932127ff4a08",
+      "outputSha256": "8c7121595cbd87caf032d0fca57ae66c380cd00f02dc9640fdb32f7824a9143e",
+      "canvas": {
+        "width": 320,
+        "height": 330
+      },
+      "modelOrigin": {
+        "x": -2103.5,
+        "y": -242.29688
+      },
+      "drawingBounds": {
+        "minX": -2053.5,
+        "minY": -192.29688,
+        "maxX": -1834.0781,
+        "maxY": 36.78125
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 2
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/bangs-front-04--color.png",
+      "variant": "color",
+      "elementId": 71,
+      "element": "Bangs_front",
+      "drawing": "4",
+      "source": "elements/Bangs_front/Bangs_front-4.tvg",
+      "sourceSha256": "e292acb64637106ea58651aaebbbf9354a4dc3d014f2475e5143a77d980d1b15",
+      "outputSha256": "4e8907a7f33df8d0ef899ac944a0b1b5d5d8ae09fc820678e683a57843b2054c",
+      "canvas": {
+        "width": 478,
+        "height": 437
+      },
+      "modelOrigin": {
+        "x": -2481.2813,
+        "y": -349.34375
+      },
+      "drawingBounds": {
+        "minX": -2431.2813,
+        "minY": -299.34375,
+        "maxX": -2054.0938,
+        "maxY": 37.4375
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/bangs-front-04.png",
+      "variant": "main",
+      "elementId": 71,
+      "element": "Bangs_front",
+      "drawing": "4",
+      "source": "elements/Bangs_front/Bangs_front-4.tvg",
+      "sourceSha256": "e292acb64637106ea58651aaebbbf9354a4dc3d014f2475e5143a77d980d1b15",
+      "outputSha256": "86557203275d7778f1df2c8e537605ae99fefacd28e61c91b95666f30648ba48",
+      "canvas": {
+        "width": 480,
+        "height": 437
+      },
+      "modelOrigin": {
+        "x": -2484.0156,
+        "y": -349.34375
+      },
+      "drawingBounds": {
+        "minX": -2434.0156,
+        "minY": -299.34375,
+        "maxX": -2054.0938,
+        "maxY": 37.4375
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 2
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/body-03--color.png",
+      "variant": "color",
+      "elementId": 90,
+      "element": "Body",
+      "drawing": "3",
+      "source": "elements/Body/Body-3.tvg",
+      "sourceSha256": "86f79c0307c88975c0b76cfdd8a40b365eeab53688911067a25d3d8711fe65fc",
+      "outputSha256": "b275c6190efbe20efa9a1c01f6e45f70642a7b1dd779f124c27b4d9bcfec8af1",
+      "canvas": {
+        "width": 1298,
+        "height": 1955
+      },
+      "modelOrigin": {
+        "x": -1015.4375,
+        "y": -645
+      },
+      "drawingBounds": {
+        "minX": -965.4375,
+        "minY": -595,
+        "maxX": 232.39063,
+        "maxY": 1259.3281
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/body-03.png",
+      "variant": "main",
+      "elementId": 90,
+      "element": "Body",
+      "drawing": "3",
+      "source": "elements/Body/Body-3.tvg",
+      "sourceSha256": "86f79c0307c88975c0b76cfdd8a40b365eeab53688911067a25d3d8711fe65fc",
+      "outputSha256": "704970241f99753481fe2f51a10018b1fc955adf0a20d4ded0897d2f570c2f29",
+      "canvas": {
+        "width": 1298,
+        "height": 1955
+      },
+      "modelOrigin": {
+        "x": -1015.4375,
+        "y": -645.1406
+      },
+      "drawingBounds": {
+        "minX": -965.4375,
+        "minY": -595.1406,
+        "maxX": 232.39063,
+        "maxY": 1259.3281
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/collar-03--color.png",
+      "variant": "color",
+      "elementId": 89,
+      "element": "Collar",
+      "drawing": "3",
+      "source": "elements/Collar/Collar-3.tvg",
+      "sourceSha256": "8ebe8228bb2d01df0900b282644303604a17a517f453a104d4357decf1b44f46",
+      "outputSha256": "50b6e5febef990dbcc1e675d9fd58d37c5cbafc30c10334727c579cd89a4ab19",
+      "canvas": {
+        "width": 1150,
+        "height": 762
+      },
+      "modelOrigin": {
+        "x": -938.71875,
+        "y": -726.3906
+      },
+      "drawingBounds": {
+        "minX": -888.71875,
+        "minY": -676.3906,
+        "maxX": 160.54688,
+        "maxY": -15.1875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/collar-03.png",
+      "variant": "main",
+      "elementId": 89,
+      "element": "Collar",
+      "drawing": "3",
+      "source": "elements/Collar/Collar-3.tvg",
+      "sourceSha256": "8ebe8228bb2d01df0900b282644303604a17a517f453a104d4357decf1b44f46",
+      "outputSha256": "ddd813bef24826cbc4efe74c507fc6b97d244f7286d11ab6a4fc0c9901337d1f",
+      "canvas": {
+        "width": 1150,
+        "height": 762
+      },
+      "modelOrigin": {
+        "x": -938.71875,
+        "y": -726.3906
+      },
+      "drawingBounds": {
+        "minX": -888.71875,
+        "minY": -676.3906,
+        "maxX": 160.54688,
+        "maxY": -15.1875
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 3
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/hair-04--color.png",
+      "variant": "color",
+      "elementId": 76,
+      "element": "Hair",
+      "drawing": "4",
+      "source": "elements/Hair/Hair-4.tvg",
+      "sourceSha256": "3d5caaa930347cecc1a6c1d7f2c2351cd6c48e9eacbe8d53c8535b46706d87cd",
+      "outputSha256": "c37685d542c50e0cc341a4ea02a8fe6e9c2bfb843106f671d45ab02f2efffd73",
+      "canvas": {
+        "width": 670,
+        "height": 658
+      },
+      "modelOrigin": {
+        "x": -2365.2813,
+        "y": -405.75
+      },
+      "drawingBounds": {
+        "minX": -2315.2813,
+        "minY": -355.75,
+        "maxX": -1745.5469,
+        "maxY": 201.46875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/hair-04.png",
+      "variant": "main",
+      "elementId": 76,
+      "element": "Hair",
+      "drawing": "4",
+      "source": "elements/Hair/Hair-4.tvg",
+      "sourceSha256": "3d5caaa930347cecc1a6c1d7f2c2351cd6c48e9eacbe8d53c8535b46706d87cd",
+      "outputSha256": "686fdbb74ab9d8fa865a200d983836062aebc32cdd4402c0219ef3dda4d2c374",
+      "canvas": {
+        "width": 670,
+        "height": 658
+      },
+      "modelOrigin": {
+        "x": -2365.2813,
+        "y": -405.75
+      },
+      "drawingBounds": {
+        "minX": -2315.2813,
+        "minY": -355.75,
+        "maxX": -1745.5469,
+        "maxY": 201.46875
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 3
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/head-base-04--color.png",
+      "variant": "color",
+      "elementId": 75,
+      "element": "Head_Base",
+      "drawing": "4",
+      "source": "elements/Head_Base/Head_Base-4.tvg",
+      "sourceSha256": "3442ae65b4ef54ea61c72209238bfc32efad787a0c466c309f78bdb8a2633a6f",
+      "outputSha256": "f538d18ea32ea3a5236cde11b47a5205fb2d942248faa1ec9c45b7f0d0b0a430",
+      "canvas": {
+        "width": 695,
+        "height": 661
+      },
+      "modelOrigin": {
+        "x": -2436,
+        "y": -253.54688
+      },
+      "drawingBounds": {
+        "minX": -2386,
+        "minY": -203.54688,
+        "maxX": -1791.25,
+        "maxY": 356.45313
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/head-base-04.png",
+      "variant": "main",
+      "elementId": 75,
+      "element": "Head_Base",
+      "drawing": "4",
+      "source": "elements/Head_Base/Head_Base-4.tvg",
+      "sourceSha256": "3442ae65b4ef54ea61c72209238bfc32efad787a0c466c309f78bdb8a2633a6f",
+      "outputSha256": "6093754f684231df70731954156e014e8c432a5f3e07d96350fec766ef24ec1a",
+      "canvas": {
+        "width": 695,
+        "height": 661
+      },
+      "modelOrigin": {
+        "x": -2436.0156,
+        "y": -253.54688
+      },
+      "drawingBounds": {
+        "minX": -2386.0156,
+        "minY": -203.54688,
+        "maxX": -1791.25,
+        "maxY": 356.45313
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 8
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-arm-03--color.png",
+      "variant": "color",
+      "elementId": 86,
+      "element": "Left_Arm",
+      "drawing": "3",
+      "source": "elements/Left_Arm/Left_Arm-3.tvg",
+      "sourceSha256": "d3ad6956b3ce01b0b33911bd68fcb659f5616cbe2aa4747eae1ec1ba5d34e3d0",
+      "outputSha256": "d153818216969dcb748b83dc3205a87e02ba4e64bcbdbb231521cd96d1e6c9aa",
+      "canvas": {
+        "width": 800,
+        "height": 1247
+      },
+      "modelOrigin": {
+        "x": -1242.7344,
+        "y": -395.75
+      },
+      "drawingBounds": {
+        "minX": -1192.7344,
+        "minY": -345.75,
+        "maxX": -493.15625,
+        "maxY": 800.3125
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-arm-03.png",
+      "variant": "main",
+      "elementId": 86,
+      "element": "Left_Arm",
+      "drawing": "3",
+      "source": "elements/Left_Arm/Left_Arm-3.tvg",
+      "sourceSha256": "d3ad6956b3ce01b0b33911bd68fcb659f5616cbe2aa4747eae1ec1ba5d34e3d0",
+      "outputSha256": "b151dd2cfab6c4fcebd316a85fd6ad843841cc354eec4ef1f24e8c49f50f10b9",
+      "canvas": {
+        "width": 800,
+        "height": 1247
+      },
+      "modelOrigin": {
+        "x": -1242.7344,
+        "y": -395.75
+      },
+      "drawingBounds": {
+        "minX": -1192.7344,
+        "minY": -345.75,
+        "maxX": -493.15625,
+        "maxY": 800.3125
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 2
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-forearm-07--color.png",
+      "variant": "color",
+      "elementId": 88,
+      "element": "Left_Forearm",
+      "drawing": "7",
+      "source": "elements/Left_Forearm/Left_Forearm-7.tvg",
+      "sourceSha256": "fbb60c0a0c235f500f14288fbaa2aaac213d3d3c98b86a4f470468915514cca5",
+      "outputSha256": "aa0b422854c016c4af56ec1693876dfa3c951906632275d59d34d4aca2322b59",
+      "canvas": {
+        "width": 880,
+        "height": 1167
+      },
+      "modelOrigin": {
+        "x": -1398.8438,
+        "y": 91.8125
+      },
+      "drawingBounds": {
+        "minX": -1348.8438,
+        "minY": 141.8125,
+        "maxX": -569.0469,
+        "maxY": 1208.0313
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-forearm-07--overlay.png",
+      "variant": "overlay",
+      "elementId": 88,
+      "element": "Left_Forearm",
+      "drawing": "7",
+      "source": "elements/Left_Forearm/Left_Forearm-7.tvg",
+      "sourceSha256": "fbb60c0a0c235f500f14288fbaa2aaac213d3d3c98b86a4f470468915514cca5",
+      "outputSha256": "9dfb0bde80e26ef2b8db97a92e6181cfdefd7bb3b4369042c88da0673e843130",
+      "canvas": {
+        "width": 820,
+        "height": 963
+      },
+      "modelOrigin": {
+        "x": -1398.8438,
+        "y": 295.34375
+      },
+      "drawingBounds": {
+        "minX": -1348.8438,
+        "minY": 345.34375,
+        "maxX": -629.65625,
+        "maxY": 1208.0313
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 2
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-forearm-07.png",
+      "variant": "main",
+      "elementId": 88,
+      "element": "Left_Forearm",
+      "drawing": "7",
+      "source": "elements/Left_Forearm/Left_Forearm-7.tvg",
+      "sourceSha256": "fbb60c0a0c235f500f14288fbaa2aaac213d3d3c98b86a4f470468915514cca5",
+      "outputSha256": "67a8abdd4a9c50645fa1a927e585d9c35e9b3e7658ee979b0421681ed0ff8042",
+      "canvas": {
+        "width": 880,
+        "height": 1167
+      },
+      "modelOrigin": {
+        "x": -1398.8438,
+        "y": 91.8125
+      },
+      "drawingBounds": {
+        "minX": -1348.8438,
+        "minY": 141.8125,
+        "maxX": -569.0469,
+        "maxY": 1208.0313
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 3
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-forearm-08--color.png",
+      "variant": "color",
+      "elementId": 88,
+      "element": "Left_Forearm",
+      "drawing": "8",
+      "source": "elements/Left_Forearm/Left_Forearm-8.tvg",
+      "sourceSha256": "3d882225570f657c7ac75d8509a600da0621abd6890f27aa05cdafd3507240e0",
+      "outputSha256": "aa0b422854c016c4af56ec1693876dfa3c951906632275d59d34d4aca2322b59",
+      "canvas": {
+        "width": 880,
+        "height": 1167
+      },
+      "modelOrigin": {
+        "x": -1398.8438,
+        "y": 91.8125
+      },
+      "drawingBounds": {
+        "minX": -1348.8438,
+        "minY": 141.8125,
+        "maxX": -569.0469,
+        "maxY": 1208.0313
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-forearm-08.png",
+      "variant": "main",
+      "elementId": 88,
+      "element": "Left_Forearm",
+      "drawing": "8",
+      "source": "elements/Left_Forearm/Left_Forearm-8.tvg",
+      "sourceSha256": "3d882225570f657c7ac75d8509a600da0621abd6890f27aa05cdafd3507240e0",
+      "outputSha256": "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef",
+      "canvas": {
+        "width": 880,
+        "height": 1167
+      },
+      "modelOrigin": {
+        "x": -1398.8438,
+        "y": 91.8125
+      },
+      "drawingBounds": {
+        "minX": -1348.8438,
+        "minY": 141.8125,
+        "maxX": -569.0469,
+        "maxY": 1208.0313
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-14--color.png",
+      "variant": "color",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "14",
+      "source": "elements/Left_Hand/Left_Hand-14.tvg",
+      "sourceSha256": "a6ed32e4abfbbd947e98ecf5490c8a64ebe86717f1381929b6e208bb44a2a641",
+      "outputSha256": "d4c4225bb19c2359322be6c872484e121057098b99d965bdb8ab762b76180ff2",
+      "canvas": {
+        "width": 846,
+        "height": 888
+      },
+      "modelOrigin": {
+        "x": -1478.6875,
+        "y": 927.3594
+      },
+      "drawingBounds": {
+        "minX": -1428.6875,
+        "minY": 977.3594,
+        "maxX": -683.0156,
+        "maxY": 1764.4063
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-14.png",
+      "variant": "main",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "14",
+      "source": "elements/Left_Hand/Left_Hand-14.tvg",
+      "sourceSha256": "a6ed32e4abfbbd947e98ecf5490c8a64ebe86717f1381929b6e208bb44a2a641",
+      "outputSha256": "8221afc1cd36b267010b754f2af05a8d23fcb38dd778123b0d0ed3b46ff34c6e",
+      "canvas": {
+        "width": 846,
+        "height": 888
+      },
+      "modelOrigin": {
+        "x": -1478.6875,
+        "y": 926.7031
+      },
+      "drawingBounds": {
+        "minX": -1428.6875,
+        "minY": 976.7031,
+        "maxX": -683.0156,
+        "maxY": 1764.4063
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 9
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-15--color.png",
+      "variant": "color",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "15",
+      "source": "elements/Left_Hand/Left_Hand-15.tvg",
+      "sourceSha256": "06532caa8071f67008ae14ac5774e96dbfadf014a24b718aabf9208c2f99fc8d",
+      "outputSha256": "106b7ba5e672bc74a876706932e0f97aa14479ca0d21bb2eae55fd93f12e5d29",
+      "canvas": {
+        "width": 558,
+        "height": 943
+      },
+      "modelOrigin": {
+        "x": -1315.1875,
+        "y": 777.8125
+      },
+      "drawingBounds": {
+        "minX": -1265.1875,
+        "minY": 827.8125,
+        "maxX": -808.0625,
+        "maxY": 1670.6719
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-15.png",
+      "variant": "main",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "15",
+      "source": "elements/Left_Hand/Left_Hand-15.tvg",
+      "sourceSha256": "06532caa8071f67008ae14ac5774e96dbfadf014a24b718aabf9208c2f99fc8d",
+      "outputSha256": "3ef1e369748725b40b472a29e3dacf866402b2ba5ef015890019cdda13ffa79d",
+      "canvas": {
+        "width": 558,
+        "height": 943
+      },
+      "modelOrigin": {
+        "x": -1315.1875,
+        "y": 777.8125
+      },
+      "drawingBounds": {
+        "minX": -1265.1875,
+        "minY": 827.8125,
+        "maxX": -808.0625,
+        "maxY": 1670.6719
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 3
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-16--color.png",
+      "variant": "color",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "16",
+      "source": "elements/Left_Hand/Left_Hand-16.tvg",
+      "sourceSha256": "51420bb16e5e49029eac8360505bb401396ce3569bd3cea51479bd949075d14e",
+      "outputSha256": "2d0a38d3e0c1056d656806821604f1a94aa14261e5b053dc0949c91aed02aaea",
+      "canvas": {
+        "width": 998,
+        "height": 941
+      },
+      "modelOrigin": {
+        "x": -1611.9375,
+        "y": 977.4531
+      },
+      "drawingBounds": {
+        "minX": -1561.9375,
+        "minY": 1027.4531,
+        "maxX": -664.09375,
+        "maxY": 1868.2188
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-16.png",
+      "variant": "main",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "16",
+      "source": "elements/Left_Hand/Left_Hand-16.tvg",
+      "sourceSha256": "51420bb16e5e49029eac8360505bb401396ce3569bd3cea51479bd949075d14e",
+      "outputSha256": "2f5013a55f522080633f0e1fa565c109cf11c0618e118a0d15af34be264ae06d",
+      "canvas": {
+        "width": 1001,
+        "height": 941
+      },
+      "modelOrigin": {
+        "x": -1611.9375,
+        "y": 977.4531
+      },
+      "drawingBounds": {
+        "minX": -1561.9375,
+        "minY": 1027.4531,
+        "maxX": -661.5781,
+        "maxY": 1868.2188
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 9
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-17--color.png",
+      "variant": "color",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "17",
+      "source": "elements/Left_Hand/Left_Hand-17.tvg",
+      "sourceSha256": "64e51bdbade21e38e1ddae03daf00441bb37a50d2d5e7403927c307194a3642d",
+      "outputSha256": "a852505b3360e46c99f14d8ec0f2c36655e9fb96e2108f1aa1719c246c67a916",
+      "canvas": {
+        "width": 990,
+        "height": 941
+      },
+      "modelOrigin": {
+        "x": -1611.9375,
+        "y": 977.4531
+      },
+      "drawingBounds": {
+        "minX": -1561.9375,
+        "minY": 1027.4531,
+        "maxX": -672.40625,
+        "maxY": 1868.2188
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-hand-17.png",
+      "variant": "main",
+      "elementId": 87,
+      "element": "Left_Hand",
+      "drawing": "17",
+      "source": "elements/Left_Hand/Left_Hand-17.tvg",
+      "sourceSha256": "64e51bdbade21e38e1ddae03daf00441bb37a50d2d5e7403927c307194a3642d",
+      "outputSha256": "4aaaad7c4e9a3699ecd0c520bccf68a461a70fe7bb08f2c6d025face044e29f8",
+      "canvas": {
+        "width": 1001,
+        "height": 941
+      },
+      "modelOrigin": {
+        "x": -1611.9375,
+        "y": 977.4531
+      },
+      "drawingBounds": {
+        "minX": -1561.9375,
+        "minY": 1027.4531,
+        "maxX": -661.5781,
+        "maxY": 1868.2188
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 9
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-pupil-15.png",
+      "variant": "main",
+      "elementId": 78,
+      "element": "Left_Pupil",
+      "drawing": "15",
+      "source": "elements/Left_Pupil/Left_Pupil-15.tvg",
+      "sourceSha256": "786a9180b7593403ee7beef0f706ed478ffb4342098960215f32685bb83ea604",
+      "outputSha256": "ebd99307fb325d18933f6a7641fed40da5165894110da9167edb91e79afcfe32",
+      "canvas": {
+        "width": 139,
+        "height": 149
+      },
+      "modelOrigin": {
+        "x": -2260.7969,
+        "y": -19.96875
+      },
+      "drawingBounds": {
+        "minX": -2210.7969,
+        "minY": 30.03125,
+        "maxX": -2172.6875,
+        "maxY": 78.046875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/nose-03--color.png",
+      "variant": "color",
+      "elementId": 73,
+      "element": "Nose",
+      "drawing": "3",
+      "source": "elements/Nose/Nose-3.tvg",
+      "sourceSha256": "6a464561c37343a369c897cb82718e733fdbd0b04a5248514b911e76a4fd5c29",
+      "outputSha256": "847f0b18617940dc7115705a33fe676faa72d2203d0e26455e0550982dd50ca4",
+      "canvas": {
+        "width": 193,
+        "height": 195
+      },
+      "modelOrigin": {
+        "x": -2272.1563,
+        "y": 42.578125
+      },
+      "drawingBounds": {
+        "minX": -2222.1563,
+        "minY": 92.578125,
+        "maxX": -2129.9219,
+        "maxY": 187.15625
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/nose-03.png",
+      "variant": "main",
+      "elementId": 73,
+      "element": "Nose",
+      "drawing": "3",
+      "source": "elements/Nose/Nose-3.tvg",
+      "sourceSha256": "6a464561c37343a369c897cb82718e733fdbd0b04a5248514b911e76a4fd5c29",
+      "outputSha256": "64735adb2581c951bdfca8517ff92e186742474e20c49ed59568925d5daee39c",
+      "canvas": {
+        "width": 193,
+        "height": 195
+      },
+      "modelOrigin": {
+        "x": -2272.1563,
+        "y": 42.578125
+      },
+      "drawingBounds": {
+        "minX": -2222.1563,
+        "minY": 92.578125,
+        "maxX": -2129.9219,
+        "maxY": 187.15625
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/pouch-03--color.png",
+      "variant": "color",
+      "elementId": 92,
+      "element": "Pouch",
+      "drawing": "3",
+      "source": "elements/Pouch/Pouch-3.tvg",
+      "sourceSha256": "68dbebb1a726f1e5077f0c7a1fe82449d44f20fa38365ec67f55dad3fdcda2aa",
+      "outputSha256": "de29b5a0741c907f37cc6bc810ae286907367dc88ba5f47dd666cff9297ac8e1",
+      "canvas": {
+        "width": 718,
+        "height": 540
+      },
+      "modelOrigin": {
+        "x": -758.9219,
+        "y": 692.15625
+      },
+      "drawingBounds": {
+        "minX": -708.9219,
+        "minY": 742.15625,
+        "maxX": -91.359375,
+        "maxY": 1181.4375
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/pouch-03.png",
+      "variant": "main",
+      "elementId": 92,
+      "element": "Pouch",
+      "drawing": "3",
+      "source": "elements/Pouch/Pouch-3.tvg",
+      "sourceSha256": "68dbebb1a726f1e5077f0c7a1fe82449d44f20fa38365ec67f55dad3fdcda2aa",
+      "outputSha256": "e1e5498d108cdf9f4420ac82d28ce5d364f09cb59d721492d981d38bf0cb2b05",
+      "canvas": {
+        "width": 718,
+        "height": 540
+      },
+      "modelOrigin": {
+        "x": -758.9219,
+        "y": 692.15625
+      },
+      "drawingBounds": {
+        "minX": -708.9219,
+        "minY": 742.15625,
+        "maxX": -91.359375,
+        "maxY": 1181.4375
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-arm-04--color.png",
+      "variant": "color",
+      "elementId": 85,
+      "element": "Right_Arm",
+      "drawing": "4",
+      "source": "elements/Right_Arm/Right_Arm-4.tvg",
+      "sourceSha256": "63c43d40034435c5f54f9da33e952379020ac6486c6a07458255d5b216272792",
+      "outputSha256": "447920362d09da8cfefa55cbdbae215bfcdbf6ed9eeb3473f2e5a21a256d543e",
+      "canvas": {
+        "width": 764,
+        "height": 1249
+      },
+      "modelOrigin": {
+        "x": -85.859375,
+        "y": -478.42188
+      },
+      "drawingBounds": {
+        "minX": -35.859375,
+        "minY": -428.42188,
+        "maxX": 627.53125,
+        "maxY": 719.84375
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-arm-04.png",
+      "variant": "main",
+      "elementId": 85,
+      "element": "Right_Arm",
+      "drawing": "4",
+      "source": "elements/Right_Arm/Right_Arm-4.tvg",
+      "sourceSha256": "63c43d40034435c5f54f9da33e952379020ac6486c6a07458255d5b216272792",
+      "outputSha256": "2cd5306eb6c1f657dbf334a9beee84a4ed753d57af02bf628e101ccce3b7beee",
+      "canvas": {
+        "width": 764,
+        "height": 1249
+      },
+      "modelOrigin": {
+        "x": -85.859375,
+        "y": -478.42188
+      },
+      "drawingBounds": {
+        "minX": -35.859375,
+        "minY": -428.42188,
+        "maxX": 627.53125,
+        "maxY": 719.84375
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 2
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-forearm-06--color.png",
+      "variant": "color",
+      "elementId": 84,
+      "element": "Right_Forearm",
+      "drawing": "6",
+      "source": "elements/Right_Forearm/Right_Forearm-6.tvg",
+      "sourceSha256": "b954957078379c80e8c97b28f9046e152ce50ef45fb76ba4bd1e854866e84731",
+      "outputSha256": "594f0923916089e665e58ee34c2825db29229801e448c76d0d8c08395b7d57d6",
+      "canvas": {
+        "width": 883,
+        "height": 1178
+      },
+      "modelOrigin": {
+        "x": -34.40625,
+        "y": 53.40625
+      },
+      "drawingBounds": {
+        "minX": 15.59375,
+        "minY": 103.40625,
+        "maxX": 798.4844,
+        "maxY": 1180.8438
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-forearm-06--overlay.png",
+      "variant": "overlay",
+      "elementId": 84,
+      "element": "Right_Forearm",
+      "drawing": "6",
+      "source": "elements/Right_Forearm/Right_Forearm-6.tvg",
+      "sourceSha256": "b954957078379c80e8c97b28f9046e152ce50ef45fb76ba4bd1e854866e84731",
+      "outputSha256": "f03a4c3c93a9e7e166f52cfb86d3192bbdd677431fd9b70162e0e60f90a7d42d",
+      "canvas": {
+        "width": 779,
+        "height": 943
+      },
+      "modelOrigin": {
+        "x": 70.234375,
+        "y": 288.48438
+      },
+      "drawingBounds": {
+        "minX": 120.234375,
+        "minY": 338.48438,
+        "maxX": 798.4844,
+        "maxY": 1180.8438
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-forearm-06.png",
+      "variant": "main",
+      "elementId": 84,
+      "element": "Right_Forearm",
+      "drawing": "6",
+      "source": "elements/Right_Forearm/Right_Forearm-6.tvg",
+      "sourceSha256": "b954957078379c80e8c97b28f9046e152ce50ef45fb76ba4bd1e854866e84731",
+      "outputSha256": "fb0021af61e935872684984f9da37900167abed3e7c3a74b6d1e839ef92a5483",
+      "canvas": {
+        "width": 883,
+        "height": 1184
+      },
+      "modelOrigin": {
+        "x": -34.40625,
+        "y": 46.96875
+      },
+      "drawingBounds": {
+        "minX": 15.59375,
+        "minY": 96.96875,
+        "maxX": 798.4844,
+        "maxY": 1180.8438
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 3
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-forearm-07--color.png",
+      "variant": "color",
+      "elementId": 84,
+      "element": "Right_Forearm",
+      "drawing": "7",
+      "source": "elements/Right_Forearm/Right_Forearm-7.tvg",
+      "sourceSha256": "74ff80bcc3c58b3bad27673be197f901ec2e0ab29d156d857a4f442c78be5cad",
+      "outputSha256": "594f0923916089e665e58ee34c2825db29229801e448c76d0d8c08395b7d57d6",
+      "canvas": {
+        "width": 883,
+        "height": 1178
+      },
+      "modelOrigin": {
+        "x": -34.40625,
+        "y": 53.40625
+      },
+      "drawingBounds": {
+        "minX": 15.59375,
+        "minY": 103.40625,
+        "maxX": 798.4844,
+        "maxY": 1180.8438
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-forearm-07.png",
+      "variant": "main",
+      "elementId": 84,
+      "element": "Right_Forearm",
+      "drawing": "7",
+      "source": "elements/Right_Forearm/Right_Forearm-7.tvg",
+      "sourceSha256": "74ff80bcc3c58b3bad27673be197f901ec2e0ab29d156d857a4f442c78be5cad",
+      "outputSha256": "6825bd9502845dfee7f44700488d25469fd15a3fddafc8aa5c007ae8ef3d29ba",
+      "canvas": {
+        "width": 883,
+        "height": 1184
+      },
+      "modelOrigin": {
+        "x": -34.40625,
+        "y": 46.96875
+      },
+      "drawingBounds": {
+        "minX": 15.59375,
+        "minY": 96.96875,
+        "maxX": 798.4844,
+        "maxY": 1180.8438
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-hand-12--color.png",
+      "variant": "color",
+      "elementId": 83,
+      "element": "Right_Hand",
+      "drawing": "12",
+      "source": "elements/Right_Hand/Right_Hand-12.tvg",
+      "sourceSha256": "c089ca19ab045b131779e2db999c7f5d5e08fa281fc5537a433da39ae1498da9",
+      "outputSha256": "5304d86ee9b93057befd15696fd0bd5d799ab31ea68712d7bb2aa7c804d61ab9",
+      "canvas": {
+        "width": 847,
+        "height": 891
+      },
+      "modelOrigin": {
+        "x": 39.8125,
+        "y": 881.9219
+      },
+      "drawingBounds": {
+        "minX": 89.8125,
+        "minY": 931.9219,
+        "maxX": 836.4844,
+        "maxY": 1722.0313
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-hand-12.png",
+      "variant": "main",
+      "elementId": 83,
+      "element": "Right_Hand",
+      "drawing": "12",
+      "source": "elements/Right_Hand/Right_Hand-12.tvg",
+      "sourceSha256": "c089ca19ab045b131779e2db999c7f5d5e08fa281fc5537a433da39ae1498da9",
+      "outputSha256": "46f239138384a7a67e0e078a449324087f1ff21eabdec46a3b1bf37277835862",
+      "canvas": {
+        "width": 847,
+        "height": 891
+      },
+      "modelOrigin": {
+        "x": 39.8125,
+        "y": 881.8906
+      },
+      "drawingBounds": {
+        "minX": 89.8125,
+        "minY": 931.8906,
+        "maxX": 836.4844,
+        "maxY": 1722.0313
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 7
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-hand-13--color.png",
+      "variant": "color",
+      "elementId": 83,
+      "element": "Right_Hand",
+      "drawing": "13",
+      "source": "elements/Right_Hand/Right_Hand-13.tvg",
+      "sourceSha256": "ba3fe89ee18f611005081ce16bbccaeef2c81ba36eb75f975de7df4b22c07ee7",
+      "outputSha256": "6acc11a8922839321868c6d8df11b2e0546cb951883c298e39223b1b2e32f7e8",
+      "canvas": {
+        "width": 671,
+        "height": 1084
+      },
+      "modelOrigin": {
+        "x": 113.89062999999999,
+        "y": 712.03125
+      },
+      "drawingBounds": {
+        "minX": 163.89063,
+        "minY": 762.03125,
+        "maxX": 734.28125,
+        "maxY": 1745.2813
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-hand-13.png",
+      "variant": "main",
+      "elementId": 83,
+      "element": "Right_Hand",
+      "drawing": "13",
+      "source": "elements/Right_Hand/Right_Hand-13.tvg",
+      "sourceSha256": "ba3fe89ee18f611005081ce16bbccaeef2c81ba36eb75f975de7df4b22c07ee7",
+      "outputSha256": "c934baf339c2785f5af6c0c5624cf1fc0573ffd7d0b13a338558fa599d15af84",
+      "canvas": {
+        "width": 671,
+        "height": 1085
+      },
+      "modelOrigin": {
+        "x": 113.89062999999999,
+        "y": 710.78125
+      },
+      "drawingBounds": {
+        "minX": 163.89063,
+        "minY": 760.78125,
+        "maxX": 734.2969,
+        "maxY": 1745.2813
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 5
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-pupil-15.png",
+      "variant": "main",
+      "elementId": 80,
+      "element": "Right_Pupil",
+      "drawing": "15",
+      "source": "elements/Right_Pupil/Right_Pupil-15.tvg",
+      "sourceSha256": "e2b5c1a5b9d5d22c6b287bdb3d415ff888808b8412ac8f65166ab2f228d09a94",
+      "outputSha256": "7103348cfc0f90e85e6e307555361046d9829fa6fca75d442cd642cdb28a6d1c",
+      "canvas": {
+        "width": 137,
+        "height": 149
+      },
+      "modelOrigin": {
+        "x": -2074.2344000000003,
+        "y": -19.765625
+      },
+      "drawingBounds": {
+        "minX": -2024.2344,
+        "minY": 30.234375,
+        "maxX": -1987.5156,
+        "maxY": 79.078125
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/strings-03--color.png",
+      "variant": "color",
+      "elementId": 91,
+      "element": "Strings",
+      "drawing": "3",
+      "source": "elements/Strings/Strings-3.tvg",
+      "sourceSha256": "cb848c30a47fa8c98ad0318562036671402f8e3cceabe2d096ddcb7e3d5dbc73",
+      "outputSha256": "8211c2572044880bc736db5d3b0ebedb703155d41ad987d16aaea2f6d99873e4",
+      "canvas": {
+        "width": 320,
+        "height": 321
+      },
+      "modelOrigin": {
+        "x": -611.96875,
+        "y": -92.0625
+      },
+      "drawingBounds": {
+        "minX": -561.96875,
+        "minY": -42.0625,
+        "maxX": -342.32813,
+        "maxY": 178.26563
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/strings-03.png",
+      "variant": "main",
+      "elementId": 91,
+      "element": "Strings",
+      "drawing": "3",
+      "source": "elements/Strings/Strings-3.tvg",
+      "sourceSha256": "cb848c30a47fa8c98ad0318562036671402f8e3cceabe2d096ddcb7e3d5dbc73",
+      "outputSha256": "94625e1baf7e6adad684496ca09e69f510a71d8ca4f674ef440dd4c5888955b7",
+      "canvas": {
+        "width": 320,
+        "height": 321
+      },
+      "modelOrigin": {
+        "x": -611.96875,
+        "y": -92.0625
+      },
+      "drawingBounds": {
+        "minX": -561.96875,
+        "minY": -42.0625,
+        "maxX": -342.32813,
+        "maxY": 178.26563
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 2
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
     {
       "filename": "strings-01--color.png",
@@ -4971,7 +6774,8 @@
         "minY": -42.0625,
         "maxX": -342.32813,
         "maxY": 178.26563
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "strings-01.png",
@@ -4995,7 +6799,8 @@
         "minY": -42.0625,
         "maxX": -342.32813,
         "maxY": 178.26563
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "strings-02--color.png",
@@ -5019,7 +6824,8 @@
         "minY": -42.0625,
         "maxX": -342.32813,
         "maxY": 178.26563
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
     {
       "filename": "strings-02.png",
@@ -5043,7 +6849,8 @@
         "minY": -42.0625,
         "maxX": -342.32813,
         "maxY": 178.26563
-      }
+      },
+      "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     }
   ]
 }

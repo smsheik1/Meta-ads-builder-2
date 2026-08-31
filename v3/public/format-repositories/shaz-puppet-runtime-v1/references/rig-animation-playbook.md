@@ -36,6 +36,16 @@ Rendered artist animation frames may be used to identify phases, presentation ca
 
 For video-guided reconstruction, use a pose-first, connector-second pass before the stages below. Render one native destination hold, normalize it to the artist frame, and solve the complete chain in order: shoulder, elbow, wrist, palm center and angle, then torso relationship. Lock those measurements in a focused test. Do not import the donor action's deformation, face, cadence, or release merely because its hand drawing is useful. After the exact hold passes review, author entry and release as separate boundary work.
 
+For a compatible Xstage source, use the rig data instead of rebuilding from video:
+
+1. Hash the archive and named non-backup Xstage, verify archive integrity, and isolate only frames where the live rig group reaches the scene composite.
+2. Prove that every rendered READ path and every deformation path/type matches the packaged rig. Map equivalent outer master controls by name; omit camera, shot placement, and static scene wrappers.
+3. Render the source range directly and render an extracted source recipe. If the raw shot includes camera, shot placement, or static wrapper transforms, preserve that raw render as context and make a second checksum-bound character-local direct render by disabling only those documented wrappers. Require exact frame count and byte-identical output between the applicable direct render and the extracted source recipe before retargeting. A visually plausible crop or unexplained framing difference does not pass this gate.
+4. Pin the portable recipe to the packaged runtime hash, record the external source under `sourceAction`, preserve complete character-local controls and drawings, and serialize compact samples for every deformation node. Never point legacy `deformationFrames` at a different manifest.
+5. Source-bind only drawing IDs missing from the canonical rig. Compile those TVGs into a hash-namespaced asset directory and preserve their per-asset Xstage provenance.
+6. If palettes differ, transform the exported TVG specification before rasterization. Prove the transform by reproducing shared canonical assets byte-for-byte; do not recolor finished frames or overwrite existing assets.
+7. Render and inspect the portable recipe through the same official renderer, then create normal-speed source/runtime/difference evidence. Keep it a candidate until a person reviews that exact output.
+
 ### 1. Assembly and silhouette
 
 Make the character look like one finished drawing before judging the animation. Hide construction artwork, join intended sleeve components, preserve collar and skin fills, remove stray drawing components, and respect recovered paint order.

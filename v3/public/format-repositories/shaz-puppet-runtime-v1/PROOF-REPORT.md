@@ -1,6 +1,6 @@
 # Animate Shaz: proof report
 
-Proof baseline: Format 0.4.0
+Proof baseline: Format 0.5.0
 
 The package can transcribe local English audio with word timing, turn that audio into a complete Shaz talking scene, animate the mouth with five real rig drawings, place Shaz over four built-in rooms, and deliver an inspected 1280×720 video. The 12-second showcase is a strong first draft, not a claim of final creative approval.
 
@@ -15,14 +15,24 @@ Registry checks prove that a recipe can run and pass mechanical rules. They do n
 ## Runtime facts
 
 - Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
-- Compiled rig assets verified: 210
+- Compiled rig assets verified: 258, including 48 source-hash-namespaced variants for 24 drawing tuples imported from the compatible Episode 5 Xstage
 - Registered pose recipes: 14
-- Automated tests: 125 passing, including reproducible package bytes, bundled-engine parity, transcript and cue provenance, tamper rejection, transcript-anchored choreography, local-only audio ingress, cache-link rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, the exact four-background registry, and a smoke-fixture guard that excludes needs-review poses
+- Automated tests: 191 passing, including reproducible package bytes, bundled-engine parity, transcript and cue provenance, tamper rejection, transcript-anchored choreography, local-only audio ingress, cache-link rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, the exact four-background registry, compatible-Xstage source binding, fail-closed palette normalization, exact asset-tree checks, lease-safe journal recovery and rollback for compatible-asset registration, and a smoke-fixture guard that excludes needs-review poses
 - Registry inspection: all 14 registered actions, 461 recipe frames, zero mechanical failures
 - Official smoke: Present and Confident only, 40 frames over 1.666667 seconds; validation, rendering, inspection, and finalization pass without using a needs-review action
 - Provider calls: 0
 - Cost: $0
 - Finished artist-rendered frames used by the runtime or as generation input: false
+
+## Episode 5 Part 2 compatible-rig import
+
+The `PART2_F.zip` audit excluded every storyboard, animatic-coloring, and flattened range, then extracted three action candidates from the live Harmony rig data. No artist-rendered video frame became a runtime asset. The source archive and Xstage are not packaged; their hashes, ranges, topology comparison, drawing sources, palette transform, and parity status are locked in `evidence/episode5-part2-compatible-source.json`.
+
+- Paired Open-Hand Emphasis preserves 58 source frames and passes official inspection with zero failures.
+- Enumerate List Items preserves 165 source frames. Official inspection reports six source-authored mouth failures; the native-source recipe render matches the direct source render byte-for-byte before canonical palette conversion.
+- Sheepish Side-Eye is a 117-frame character-local extraction draft and is blocked before any exact reconstruction claim. Its raw direct-Xstage render does not yet match the extracted native-source recipe because unresolved outer shot placement remains. The draft also has ten mouth failures, 117 uncertified Hair4/Head_Base4/Bangs_back4 inspector failures, and hard-cut entry and release boundaries.
+
+All three recipe files remain outside `poses/index.json`, the safe sequence list, and the motion-packet registry. Human approval is pending. Paired Open-Hand Emphasis is the only mechanically clean audition candidate. Exact source preservation is claimed only where the direct parity gate passed, and neither parity nor a passing renderer is being presented as creative approval.
 
 ## Talking-scene proof
 

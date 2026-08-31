@@ -9,6 +9,7 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const archiveName = "wiggly-shaz-puppet-runtime-format-kit";
 const downloads = path.join(root, "downloads");
 const excludedNames = new Set(["node_modules", ".runtime-cache", ".DS_Store", ".git"]);
+const registrationStateName = /^(?:\.wiggly-authoring-state|\.compatible-registration-journal(?:-|$))/;
 const historicalFixtureFiles = new Set([
   "fixtures/final-unlabeled-input.json",
   "fixtures/lego-body-language-sample-input.json",
@@ -43,6 +44,7 @@ export function include(source) {
   if (!relative) return true;
   const parts = relative.split(path.sep);
   if (parts.some((part) => excludedNames.has(part))) return false;
+  if (parts.some((part) => registrationStateName.test(part))) return false;
   if (parts[0] === "downloads") return false;
   if (historicalFixtureFiles.has(relative)) return false;
   if (parts[0] === "agent-runs" && parts.length > 1 && parts.at(-1) !== ".gitkeep") return false;
@@ -67,6 +69,7 @@ export function include(source) {
   if (relative === "evidence/local-transcription-sealed-receipt.md") return false;
   if (relative === "runtime/build-crossed-arms-assembly.mjs") return false;
   if (relative === "runtime/compile-tvg-assets.mjs") return false;
+  if (relative === "runtime/register-compatible-tvg-assets.mjs") return false;
   return true;
 }
 

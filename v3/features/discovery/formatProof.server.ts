@@ -428,7 +428,7 @@ const formatConfigs: FormatProfileConfig[] = [
     lastUpdated: "August 2026",
     repositoryHref: "/format-repositories/shaz-puppet-runtime-v1/downloads/wiggly-shaz-puppet-runtime-format-kit.zip",
     manifestPath: "format-repositories/shaz-puppet-runtime-v1/format.json",
-    historicalProofVersions: ["0.2.0"],
+    historicalProofVersions: ["0.2.0", "0.4.0"],
     whatStays: [
       "Shaz stays on-model throughout the scene",
       "Shaz’s original rig draws the body, mouth shapes, effects, preview, and final video",

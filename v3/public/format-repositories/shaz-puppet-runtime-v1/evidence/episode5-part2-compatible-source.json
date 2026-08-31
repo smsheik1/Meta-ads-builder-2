@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "shaz-compatible-xstage-source-evidence-v1",
+  "sourceArchive": {
+    "name": "PART2_F.zip",
+    "sha256": "ce74bf295692d55e65f2a10e81350f067be79ea8f110fde3d3f446bf3192cd97",
+    "bundled": false,
+    "integrity": "pass"
+  },
+  "sourceXstage": {
+    "path": "PART2_F/PART2_F_v2.xstage",
+    "sha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f",
+    "harmony": "22.0.1 build 19338",
+    "resolution": [1920, 1080],
+    "fps": 24,
+    "artistRenderedFramesUsed": false
+  },
+  "liveRigExposureRanges": [
+    [604, 727],
+    [1683, 2094],
+    [2231, 2254],
+    [2774, 3054],
+    [3710, 3958]
+  ],
+  "excludedMaterial": "All frames outside live Puppet_Talk_Section_Group exposure ranges are storyboard, animatic-coloring, or other flattened scene material and are not eligible pose sources.",
+  "compatibility": {
+    "matchingInnerRigPathAndTypeCount": 112,
+    "canonicalInnerRigPathCount": 113,
+    "readPaintPathsExact": 23,
+    "deformationPathsExact": 26,
+    "ignoredCompositeRename": {
+      "canonical": "Top/Shaz_Rig/Rig_Composite",
+      "compatible": "Top/Shaz_Rig/Composite_1"
+    },
+    "outerMasterMapping": "Map the compatible scene's animated inner Shaz_Master-P to the canonical outer Shaz_Master-P; omit camera, scene wrapper, static resize, and static rig-root controls."
+  },
+  "canonicalPaletteProof": {
+    "schemaVersion": "shaz-outline-palette-normalization-v1",
+    "sourceColor": [77, 17, 3, 255],
+    "destinationColor": [0, 0, 0, 255],
+    "method": "Replace the outline color in exported TVG specifications before rasterization.",
+    "byteIdenticalSharedAssets": {
+      "body-01.png": "704970241f99753481fe2f51a10018b1fc955adf0a20d4ded0897d2f570c2f29",
+      "left-hand-01.png": "3ef1e369748725b40b472a29e3dacf866402b2ba5ef015890019cdda13ffa79d",
+      "left-forearm-01.png": "66d4c48a8656d36fa99ac68cd59272f25f249d170d9c8ef2f6f8279ffa38ddef"
+    }
+  },
+  "candidateActions": [
+    {
+      "id": "paired-open-hand-emphasis",
+      "sourceFrames": [1683, 1740],
+      "durationFrames": 58,
+      "recipeFileSha256": "a6e486296f72bf890ea12e253ad2c72d5f27a6141cbb5f4bee75095f8969584c",
+      "recipeSemanticSha256": "673106ed6c00707a317ddc794643bc6f6c0e0f7c0b01e69c94ae856a99a6c406",
+      "sourceRenderSha256": "15ddfeb18d19b48d2e662a0b27f117e754911d65768ae624a8182feca3081739",
+      "preRetargetParity": {
+        "directXstageRenderSha256": "15ddfeb18d19b48d2e662a0b27f117e754911d65768ae624a8182feca3081739",
+        "nativeSourceRecipeRenderSha256": "15ddfeb18d19b48d2e662a0b27f117e754911d65768ae624a8182feca3081739",
+        "status": "byte-identical",
+        "nativeSourceRecipeArtifact": "parity/paired-open-hand-emphasis-native-source-recipe.json",
+        "nativeSourceRecipeReceiptArtifact": "parity/paired-open-hand-emphasis-native-source-recipe.receipt.json"
+      },
+      "runtimeRenderSha256": "059f2a214dc9086846bf008f8629ac78be6e8bd30c4d2bc67f7419ebbff72cfa",
+      "officialInspection": {
+        "status": "pass",
+        "framesInspected": 58,
+        "failureCount": 0
+      },
+      "status": "recipe-candidate",
+      "humanApproval": "pending"
+    },
+    {
+      "id": "enumerate-list-items",
+      "sourceFrames": [1795, 1959],
+      "durationFrames": 165,
+      "recipeFileSha256": "1ef12bea178bc123889d483d7a32b055b709bcf5b0a0849784fbd7328681b48c",
+      "recipeSemanticSha256": "53ca3f6ee7f66547e86337545496098b1d9163fa8bfa82cba265c9ea490f2e24",
+      "sourceRenderSha256": "d62cd8fed5bcb0d68b875a881fc3b7359653346e864aba06b1041cb9ceb0820f",
+      "preRetargetParity": {
+        "directXstageRenderSha256": "d62cd8fed5bcb0d68b875a881fc3b7359653346e864aba06b1041cb9ceb0820f",
+        "nativeSourceRecipeRenderSha256": "d62cd8fed5bcb0d68b875a881fc3b7359653346e864aba06b1041cb9ceb0820f",
+        "status": "byte-identical",
+        "directXstageReceiptArtifact": "parity/enumerate-list-items-direct-source.receipt.json",
+        "nativeSourceRecipeArtifact": "parity/enumerate-list-items-native-source-recipe.json"
+      },
+      "runtimeRenderSha256": "d33a762af1d4fbec4daf0e5b8b75e66bf92ee3994a5047b5c65198cfd4383de1",
+      "officialInspection": {
+        "status": "fail",
+        "framesInspected": 165,
+        "failureCount": 6,
+        "sourceAuthoredFailures": {
+          "jointContinuityLocalFrames": [48, 49, 52, 53],
+          "facialPopLocalFrames": [58, 73]
+        }
+      },
+      "status": "recipe-candidate",
+      "humanApproval": "pending"
+    },
+    {
+      "id": "sheepish-side-eye",
+      "sourceFrames": [2817, 2933],
+      "durationFrames": 117,
+      "recipeFileSha256": "6f554cdbd6d0085a6a1078516f8d9ea78e814ef71bfa70f6740e4d6d36ecd3d1",
+      "recipeSemanticSha256": "b5a1f7c72af35f6b1598d8ec1801f118b8a924182226872fd6acfc6c4044a4ae",
+      "nativeSourceRecipeRenderSha256": "4085927d748ce565335f471a07a20f1af1dc3f342295612ec2c8906a65b36c23",
+      "preRetargetParity": {
+        "directXstageRenderSha256": "be2ddbe84465551bfd8fa692a61f81a7ddbbbad46cc075b7bc564daa344e7153",
+        "nativeSourceRecipeRenderSha256": "4085927d748ce565335f471a07a20f1af1dc3f342295612ec2c8906a65b36c23",
+        "status": "fail",
+        "exactReconstructionClaim": false,
+        "promotionBlocked": true,
+        "difference": "The raw direct shot retains unresolved outer scene placement and does not match the extracted character-local native-source recipe. No checksum-bound normalized-direct render has yet proved that removing only documented shot wrappers produces byte-identical output.",
+        "directXstageVideoArtifact": "parity/sheepish-side-eye-direct-source.mp4",
+        "directXstageReceiptArtifact": "parity/sheepish-side-eye-direct-source.receipt.json",
+        "nativeSourceRecipeArtifact": "parity/sheepish-side-eye-native-source-recipe.json"
+      },
+      "runtimeRenderSha256": "9771e53b6db56104edfb45a741e5cd2b22420518d1fab9b1985520fc9b2889c6",
+      "officialInspection": {
+        "status": "fail",
+        "framesInspected": 117,
+        "failureCount": 127,
+        "sourceAuthoredMouthFailureCount": 10,
+        "hairVocabularyFalseNegativeCount": 117
+      },
+      "status": "blocked",
+      "resumeCondition": "First produce a checksum-bound normalized-direct character-local render that is byte-identical to the extracted native-source recipe. Then obtain approval for any bounded mouth repair or trim, explicitly certify the Hair4/Head_Base4/Bangs_back4 family, author neutral entry and release connectors, and rerun all gates.",
+      "humanApproval": "pending"
+    }
+  ],
+  "reviewBundle": {
+    "name": "shaz-episode5-part2-live-rig-audit",
+    "bundled": false,
+    "manifestRequired": true,
+    "humanApproval": "pending"
+  }
+}

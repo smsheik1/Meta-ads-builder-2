@@ -53,6 +53,8 @@ test("the sealed kit contains every candidate source but no review-only runtime 
     "fixtures/final-unlabeled-input.json",
     "fixtures/lego-body-language-sample-input.json",
     "fixtures/proof-alternate-input.json",
+    "runtime/compile-tvg-assets.mjs",
+    "runtime/register-compatible-tvg-assets.mjs",
   ]) {
     assert.equal(include(path.join(root, relative)), false);
     assert.equal(packaged.has(relative), false, `review-only fixture leaked into kit: ${relative}`);
@@ -65,6 +67,38 @@ test("the sealed kit contains every candidate source but no review-only runtime 
     assert.doesNotMatch(relative, /(?:^|\/)whisper-cli$/);
     assert.doesNotMatch(relative, /artifacts\/shaz-0826-pose-selection|clips\/\d{2}-/);
   }
+});
+
+test("registration journals and lock state can never enter the sealed kit", async (t) => {
+  const legacyState = path.join(
+    root,
+    `.compatible-registration-journal-build-test-${process.pid}`,
+  );
+  const currentState = path.join(root, ".wiggly-authoring-state", `build-test-${process.pid}`);
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-build-kit-journal-guard-"));
+  t.after(async () => {
+    await fs.rm(legacyState, { recursive: true, force: true });
+    await fs.rm(currentState, { recursive: true, force: true });
+    await fs.rmdir(path.dirname(currentState)).catch((error) => {
+      if (!["ENOENT", "ENOTEMPTY", "EEXIST"].includes(error?.code)) throw error;
+    });
+    await fs.rm(scratch, { recursive: true, force: true });
+  });
+  await Promise.all([
+    fs.mkdir(legacyState, { recursive: true }),
+    fs.mkdir(currentState, { recursive: true }),
+  ]);
+  await Promise.all([
+    fs.writeFile(path.join(legacyState, "journal.json"), "must not ship"),
+    fs.writeFile(path.join(currentState, "active.lock"), "must not ship"),
+  ]);
+
+  assert.equal(include(legacyState), false);
+  assert.equal(include(currentState), false);
+  const built = await buildKit({ outputDirectory: scratch });
+  const entries = archiveEntries(built.output);
+  assert.equal(entries.some((entry) => entry.includes("compatible-registration-journal")), false);
+  assert.equal(entries.some((entry) => entry.includes(".wiggly-authoring-state")), false);
 });
 
 test("every downloadable sequence fixture uses only reviewed gestures or neutral", async () => {

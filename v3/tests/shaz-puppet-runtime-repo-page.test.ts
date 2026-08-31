@@ -380,7 +380,7 @@ assert.deepEqual(goldens.transcriptGuidedStoryShowcase, {
 const profile = getDiscoveryFormatProfile("shaz-puppet-runtime");
 assert.ok(profile);
 assert.equal(profile.name, "Animate Shaz");
-assert.equal(profile.version, "0.4.0");
+assert.equal(profile.version, "0.5.0");
 assert.deepEqual(
   profile.proofEntries.map(({ id, format }) => ({ id, version: format.version })),
   [
@@ -491,7 +491,7 @@ for (const staleCopy of [
   assert.doesNotMatch(`${formatProofSource}\n${repoPageSource}`, new RegExp(staleCopy, "i"));
 }
 const trust = await getShazPuppetRuntimeTrustData();
-assert.equal(trust.version, "0.4.0");
+assert.equal(trust.version, "0.5.0");
 assert.equal(trust.includedAssets.poses.length, 14);
 assert.equal(
   trust.includedAssets.poses.some(({ id }) => id === "talk-to-camera"),
@@ -559,7 +559,7 @@ assert.deepEqual(trust.includedAssets.bundledEngines, [
     purpose: "create an English transcript with word timestamps before body-language planning",
   },
 ]);
-assert.equal(trust.quality.summary[0]?.value, "0.4.0");
+assert.equal(trust.quality.summary[0]?.value, "0.5.0");
 assert.equal(trust.quality.summary[0]?.label, "kit version");
 assert.ok(trust.commands.includes("npm run inspect:registry"));
 assert.ok(
@@ -659,7 +659,7 @@ assert.match(includedAssetsSource, /Local English transcript/);
 assert.doesNotMatch(includedAssetsSource, /Cherry Lip Sync \{engine\.version\}/);
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Kit version")?.value,
-  "0.4.0",
+  "0.5.0",
 );
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Demo made with")?.value,
@@ -733,7 +733,7 @@ const packagedRequirements = JSON.parse(
     supportedPlatform?: string;
   }>;
 };
-assert.equal(packagedFormat.version, "0.4.0");
+assert.equal(packagedFormat.version, "0.5.0");
 assert.match(packagedFormat.summary, /Give Shaz a voice track/);
 assert.match(packagedFormat.summary, /four built-in backgrounds/);
 assert.deepEqual(packagedRequirements.bundledEngines, [

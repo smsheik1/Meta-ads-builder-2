@@ -40,6 +40,39 @@ const DEFORMATION_NODE_TYPES = new Set([
   "DeformationCompositeModule",
   "OffsetModule",
 ]);
+const SHA256 = /^[a-f0-9]{64}$/;
+
+function isSafeSourceBasename(value, extension) {
+  return typeof value === "string"
+    && value.length > extension.length
+    && !/[\\/]/.test(value)
+    && value.toLowerCase().endsWith(extension);
+}
+
+function validateCompatibleSourceAction(manifest, recipe) {
+  const usesCompatibleSource = Object.keys(recipe.drawingSources ?? {}).length > 0
+    || recipe.deformationSamples !== undefined;
+  if (!usesCompatibleSource) return;
+  const sourceAction = recipe.sourceAction ?? {};
+  const archiveName = sourceAction.sourceArchiveName ?? sourceAction.sourceArchive;
+  const sourcePath = sourceAction.sourceXstagePath;
+  const pathSegments = typeof sourcePath === "string" ? sourcePath.split("/") : [];
+  if (!SHA256.test(sourceAction.sourceXstageSha256 ?? "")
+    || sourceAction.sourceXstageSha256 === manifest.source.sha256
+    || !isSafeSourceBasename(sourceAction.sourceFile, ".xstage")
+    || !isSafeSourceBasename(archiveName, ".zip")
+    || !SHA256.test(sourceAction.sourceArchiveSha256 ?? "")
+    || pathSegments.length === 0
+    || pathSegments.some((segment) => !segment || segment === "." || segment === "..")
+    || sourcePath.includes("\\")
+    || pathSegments.at(-1) !== sourceAction.sourceFile
+    || !Number.isInteger(sourceAction.startFrame)
+    || !Number.isInteger(sourceAction.endFrame)
+    || sourceAction.startFrame < 1
+    || sourceAction.endFrame < sourceAction.startFrame) {
+    throw new Error("compatible Xstage recipes require complete, safe sourceAction provenance");
+  }
+}
 
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -178,6 +211,69 @@ function drawingElementForNode(manifest, scene, node, columns) {
   const element = manifest.elements.find((candidate) => candidate.id === column.elementId);
   if (!element) throw new Error(`${node.name} references missing element ${column.elementId}`);
   return element;
+}
+
+function normalizeExternalDrawingSources(recipe, nodesByName) {
+  const configured = new Map();
+  const sourceHash = recipe.sourceAction?.sourceXstageSha256;
+  for (const [nodeName, drawings] of Object.entries(recipe.drawingSources ?? {})) {
+    const node = nodesByName.get(nodeName);
+    if (!node || node.type !== "READ") {
+      throw new Error(`drawingSources does not resolve to a READ: ${nodeName}`);
+    }
+    if (!drawings || typeof drawings !== "object" || Array.isArray(drawings)) {
+      throw new Error(`drawingSources.${nodeName} must map drawings to Xstage source hashes`);
+    }
+    for (const [drawing, declaredHash] of Object.entries(drawings)) {
+      if (!/^\d+$/.test(drawing)) {
+        throw new Error(`drawingSources.${nodeName}.${drawing} must use a numeric drawing ID`);
+      }
+      if (!/^[a-f0-9]{64}$/.test(declaredHash) || declaredHash !== sourceHash) {
+        throw new Error(`drawingSources.${nodeName}.${drawing} must match sourceAction.sourceXstageSha256`);
+      }
+      configured.set(`${node.path}:${drawing}`, declaredHash);
+    }
+  }
+  return configured;
+}
+
+function normalizeDeformationSamples(manifest, scene, recipe) {
+  if (recipe.deformationSamples === undefined) return null;
+  const sourceAction = recipe.sourceAction;
+  if (!sourceAction?.sourceXstageSha256
+    || sourceAction.sourceXstageSha256 === manifest.source.sha256) {
+    throw new Error("deformationSamples require a distinct sourceAction.sourceXstageSha256");
+  }
+  const deformationNodes = scene.nodes.filter(({ type }) => DEFORMATION_NODE_TYPES.has(type));
+  const configuredPaths = Object.keys(recipe.deformationSamples).sort();
+  const expectedPaths = deformationNodes.map(({ path }) => path).sort();
+  if (JSON.stringify(configuredPaths) !== JSON.stringify(expectedPaths)) {
+    throw new Error("deformationSamples must cover every runtime deformation node exactly once");
+  }
+
+  const normalized = new Map();
+  for (const node of deformationNodes) {
+    const entry = recipe.deformationSamples[node.path];
+    const context = `deformationSamples.${node.path}`;
+    if (!entry || !Array.isArray(entry.samples) || entry.samples.length === 0
+      || !Array.isArray(entry.frameSamples)
+      || entry.frameSamples.length !== recipe.durationFrames) {
+      throw new Error(`${context} requires samples and one frameSamples index per pose frame`);
+    }
+    for (const [index, sample] of entry.samples.entries()) {
+      if (!sample || sample.path !== node.path || sample.type !== node.type
+        || !sample.attrs || typeof sample.attrs !== "object" || Array.isArray(sample.attrs)) {
+        throw new Error(`${context}.samples[${index}] does not match the runtime node`);
+      }
+    }
+    if (entry.frameSamples.some((index) => (
+      !Number.isInteger(index) || index < 0 || index >= entry.samples.length
+    ))) {
+      throw new Error(`${context}.frameSamples references an unknown sample`);
+    }
+    normalized.set(node.path, entry);
+  }
+  return normalized;
 }
 
 function normalizeControlKeys(keys, baseState, durationFrames, context) {
@@ -347,8 +443,11 @@ function createPoseRuntime(manifest, recipe) {
 
   const scene = manifest.scenes[0];
   if (!scene) throw new Error("manifest contains no scene");
+  validateCompatibleSourceAction(manifest, recipe);
   const columns = indexColumns(scene);
   const nodesByName = indexNodesByName(scene);
+  const externalDrawingSources = normalizeExternalDrawingSources(recipe, nodesByName);
+  const deformationSamples = normalizeDeformationSamples(manifest, scene, recipe);
   const baseSamples = new Map(scene.nodes.map((node) => [
     node.path,
     sampleNode(node, columns, recipe.baseFrame),
@@ -356,12 +455,16 @@ function createPoseRuntime(manifest, recipe) {
   const deformationFrames = recipe.deformationFrames === undefined
     ? Array.from({ length: recipe.durationFrames }, () => recipe.baseFrame)
     : recipe.deformationFrames;
+  const sourceRange = deformationSamples
+    ? [recipe.sourceAction?.startFrame, recipe.sourceAction?.endFrame]
+    : [scene.startFrame, scene.stopFrame];
   if (!Array.isArray(deformationFrames)
     || deformationFrames.length !== recipe.durationFrames
+    || !sourceRange.every(Number.isInteger)
     || deformationFrames.some((sourceFrame) => (
       !Number.isInteger(sourceFrame)
-      || sourceFrame < scene.startFrame
-      || sourceFrame > scene.stopFrame
+      || sourceFrame < sourceRange[0]
+      || sourceFrame > sourceRange[1]
     ))) {
     throw new Error(`deformationFrames must contain exactly ${recipe.durationFrames} valid Xstage frames`);
   }
@@ -389,10 +492,20 @@ function createPoseRuntime(manifest, recipe) {
     const element = drawingElementForNode(manifest, scene, node, columns);
     const normalized = keys.map((key, index) => {
       const drawing = key.drawing === null ? null : String(key.drawing);
-      if (drawing !== null && !element.drawings.map(String).includes(drawing)) {
+      const externalSourceXstageSha256 = drawing === null
+        ? null
+        : externalDrawingSources.get(`${node.path}:${drawing}`);
+      if (drawing !== null
+        && externalSourceXstageSha256
+        && element.drawings.map(String).includes(drawing)) {
+        throw new Error(`drawings.${nodeName}[${index}] source-binds canonical drawing ${drawing}`);
+      }
+      if (drawing !== null
+        && !element.drawings.map(String).includes(drawing)
+        && !externalSourceXstageSha256) {
         throw new Error(`drawings.${nodeName}[${index}] exposes unknown drawing ${drawing}`);
       }
-      return { frame: key.frame, drawing };
+      return { frame: key.frame, drawing, externalSourceXstageSha256 };
     });
     drawingKeys.set(node.path, { element, keys: normalized });
   }
@@ -428,6 +541,8 @@ function createPoseRuntime(manifest, recipe) {
   function sampleNodeAtFrame(node, ignoredColumns, frame) {
     assertLocalFrame(frame);
     if (DEFORMATION_NODE_TYPES.has(node.type)) {
+      const explicit = deformationSamples?.get(node.path);
+      if (explicit) return structuredClone(explicit.samples[explicit.frameSamples[frame - 1]]);
       return sampleNode(node, columns, deformationFrames[frame - 1]);
     }
     const baseSample = baseSamples.get(node.path);
@@ -446,6 +561,9 @@ function createPoseRuntime(manifest, recipe) {
       element: configured.element.name,
       drawing: key.drawing,
       file: `${configured.element.rootFolder}/${configured.element.folder}/${configured.element.folder}-${key.drawing}.tvg`,
+      ...(key.externalSourceXstageSha256
+        ? { sourceXstageSha256: key.externalSourceXstageSha256 }
+        : {}),
     };
   }
 
@@ -465,6 +583,13 @@ function createPoseRuntime(manifest, recipe) {
     return deformationFrames[frame - 1];
   }
 
+  function deformationCacheIdentityAtFrame(frame) {
+    assertLocalFrame(frame);
+    return deformationSamples
+      ? `explicit-frame:${frame}`
+      : `source-frame:${deformationFrames[frame - 1]}`;
+  }
+
   return {
     recipe,
     recipeSha256: poseRecipeSha256(recipe),
@@ -472,6 +597,7 @@ function createPoseRuntime(manifest, recipe) {
     resolveDrawing,
     propsAtFrame,
     deformationSourceFrameAtFrame,
+    deformationCacheIdentityAtFrame,
   };
 }
 
