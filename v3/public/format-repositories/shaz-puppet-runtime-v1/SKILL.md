@@ -5,7 +5,7 @@ description: Animate the supplied Shaz puppet locally. Use Talk to Camera for di
 
 # Animate Shaz
 
-Skill version: **2.2**.
+Skill version: **2.3**.
 
 Use this kit to turn a voice track into a Shaz talking scene or to build a short performance from the recovered rig. Everything runs locally, makes no provider calls, and costs $0.
 
@@ -13,7 +13,7 @@ Use this kit to turn a voice track into a Shaz talking scene or to build a short
 
 - **Talk to Camera:** the normal choice for direct-to-audience speech. `sequencePreset: "talk-to-camera"` measures the audio, holds `neutral-listening` for the full line, and lets Cherry change only the mouth. Do not invent a pose or calculate frames.
 - **Reviewed gesture sequence:** arrange the five artist-reviewed gestures listed below, then follow the complete run workflow.
-- **Action repair or authoring:** work on exactly one action. Read `POSE-PROMOTION.md` and `references/rig-animation-playbook.md` completely, then follow the author-and-learn loop. Do not repair several unapproved actions at once.
+- **Action repair or authoring:** work on exactly one action. Read `POSE-PROMOTION.md` and `references/rig-animation-playbook.md` completely, then follow the author-and-learn loop. For a compatible Xstage, use the canonical tutorial in `references/rig-animation-playbook.md`; do not reconstruct that action from video. Do not repair several unapproved actions at once.
 
 ## Which actions may be used
 
@@ -73,7 +73,7 @@ The registry also contains `shrug`, `key-point`, `excited-celebration`, `point-a
 1. Choose exactly one action. Record its reference segment, meaning, duration, and visible acceptance criteria. Check the surrounding frames before choosing the cut: include setup through release, or give a smaller gesture a smaller, honest name. A preexisting filename does not define the action.
 2. Watch the complete reference at normal speed. Then inspect dense decoded frames and consecutive-frame differences. When source controls exist, inspect their timing, hierarchy, drawing substitutions, deformation channels, and asymmetry. Find intentional stepped exposures and holds before deciding how to interpolate. Never infer motion from one destination frame.
 3. For video-guided reconstruction without an exact Xstage action, segment every edit, counter-shift, and distinct hold. Choose one stable gold frame for one destination silhouette. Do not average two poses or borrow a similar action's full body deformation, face, cadence, and release.
-   When an exact compatible Xstage exists, do not rebuild from video. Follow `poses/README.md`: prove rig topology, omit shot controls, preserve complete character-local controls and compact deformation samples, source-bind only missing drawings, and prove any TVG palette normalization against byte-identical shared assets.
+   When an exact compatible Xstage exists, do not rebuild from video. Compatible-Xstage import is a source-repository maintainer workflow; its authoring tools are intentionally absent from the sealed runtime kit. Follow the canonical tutorial in `references/rig-animation-playbook.md` and the pose contract in `poses/README.md`: pass the actual full archive so its Xstage and TVGs are verified, hash the native Toon Boom export, use native playback as the independent fidelity authority, prove the extraction boundary plus parent graph/pivot/stage compatibility, honor path3D velocity semantics, preserve complete character-local controls and compact deformation samples, audit every used READ/drawing pair after palette normalization, source-bind both absent drawings and same-number/different-art drawings, and treat custom direct-Xstage renders as diagnostic only.
 4. Build the destination first as a one-frame body-only native-rig hold. Pose-first is the authoring order, not permission to stop at a still. Give this calibration artifact a study-specific ID such as `<action>-destination-study`; it cannot stand in for the full action. Normalize artist and runtime character scale, fit the complete chain in order—shoulder, elbow, wrist, palm center and angle, then torso relationship—and lock those targets in a focused regression.
 5. Render the authored calibration through the official runtime before changing its meaning. Fix renderer-wide silhouette, deformation, masking, fill, and paint-order defects before tuning timing.
 6. Review the exact destination hold. Passing the study only unlocks motion authoring. If the frozen reference contains body motion, reconstruct every observed phase—including an authentic non-neutral entry, counter-shifts, distinct holds, and afterbeats—in the canonical action before action review. End on the last observed source state when the reference has no release; do not invent one or reverse the entry. Neutral boundary connectors are separate packet-readiness work, not a substitute for the source action.

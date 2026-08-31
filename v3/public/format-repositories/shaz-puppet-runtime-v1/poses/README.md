@@ -6,7 +6,7 @@ A recipe does not contain finished artist-animation frames, a generic full-chara
 
 ## Before you animate
 
-Read the lifecycle in `../POSE-PROMOTION.md`, the author-and-learn loop in `../SKILL.md`, and all of `../references/rig-animation-playbook.md`. Work on one unapproved action at a time.
+Read the lifecycle in `../POSE-PROMOTION.md`, the author-and-learn loop in `../SKILL.md`, and all of `../references/rig-animation-playbook.md`. Its “Canonical tutorial: reconstruct a reusable action from a compatible Xstage” section is the source of truth for imported rig animation. Work on one unapproved action at a time.
 
 Use compiled Xstage drawings and complete native limb chains whenever possible. If bounded native-rig attempts prove that the recovered controls cannot make an essential destination, one coherent part-specific drawing may replace the complete corresponding native parts under the strict rule in `../SKILL.md`:
 
@@ -62,29 +62,9 @@ Supported numeric controls are:
 
 ## Importing an action from a compatible Xstage
 
-When a second Harmony scene contains the same component rig, do not copy its shot framing into the package and do not pretend its frames belong to the base Xstage. Prove path-and-type compatibility first, render the source action directly, then retarget the character-local controls to the current runtime.
+This is a source-repository maintainer workflow, and `../references/rig-animation-playbook.md` is its single source of truth. Read its complete “Canonical tutorial: reconstruct a reusable action from a compatible Xstage” section before running any authoring command. The sealed runtime kit intentionally excludes Xstage conversion, TVG compilation, compatible import, and asset-registration tools.
 
-The source action's fidelity must be checked against a checksum-locked native Toon Boom export. A “direct source” render made by `render-xstage-range.mjs` shares this package's parser, channel sampler, asset compiler, and renderer; matching it to an extracted recipe proves only that those two paths agree with each other. It does not prove that either path matches Harmony. Native video is review evidence only and never becomes a runtime asset or finished-frame shortcut.
-
-A compatible-source recipe keeps `sourceXstageSha256` pinned to the packaged runtime. Its `sourceAction` records the external Xstage and archive hashes plus exact frame range. Every deformation node is carried in `deformationSamples` as deduplicated source samples with one `frameSamples` index per local frame; `deformationFrames` keeps the original source-frame timing as evidence. A missing drawing is declared in `drawingSources` and remains bound to the external Xstage hash.
-
-External drawings are compiled from TVG, normalized to the canonical palette before rasterization, stored below `rig-v2/assets/sources/<xstage-sha256>/`, and recorded per asset in the v3 receipt. Numeric drawing IDs are scene-local: if a compatible scene reuses a canonical ID for different artwork, source-bind it explicitly so both assets coexist under different source namespaces. Never overwrite an existing base filename. The palette transform must first reproduce genuinely shared canonical drawings byte-for-byte.
-
-Use `runtime/compile-tvg-assets.mjs --drawings ... --outline-source-color ... --outline-color ...` to compile only missing drawings, then register the exact source and every candidate that uses it:
-
-```sh
-node runtime/register-compatible-tvg-assets.mjs \
-  --manifest rig-v2/runtime.json \
-  --base-assets rig-v2/assets \
-  --compatible-assets /absolute/path/to/compiled-assets \
-  --source-xstage-sha256 <xstage-sha256> \
-  --source-xstage-name scene.xstage \
-  --source-archive-sha256 <archive-sha256> \
-  --source-archive-name source.zip \
-  --recipe poses/candidates/action.json
-```
-
-The command verifies the base receipt, manifest, recipe provenance, recorded TVG-source checksums, compiled PNG checksums, exact asset filenames, and hash namespace before a journaled replacement of that source's registered asset set. The external journal restores interrupted work on the next authoring invocation; the multi-file update is deliberately not described as atomic. The compiler is the step that reads and hashes the TVGs; registration validates that recorded provenance and re-hashes every compiled output. Pass every recipe that uses the source on each rerun so removed candidates cannot leave orphaned packaged assets. Both authoring tools and their journal namespace are excluded from the downloadable runtime kit.
+The non-negotiable boundary is simple: use the complete source archive and a checksum-locked native Toon Boom export, preserve the audited puppet topology and full internal choreography, and treat drawing IDs as scene-local. The importer must verify the archive, exact Xstage and TVG members, parent graph, pivots, field grid, renderer registrations, and retained Harmony curve semantics before it writes a recoverable recipe/audit pair. Source-bind both absent artwork and same-ID/different-artwork collisions; never copy shot framing, hand-fill an intermediate recipe, or use finished video frames as runtime assets.
 
 ## Render one recipe
 
@@ -121,13 +101,17 @@ For a hybrid source scene, add `--node-prefix Top/Puppet_Talk_Section_Group/`
 so storyboard layers, cameras, and shot wrappers are never sampled as puppet
 controls. The prefix is an extraction boundary, not a way to hide an unsupported
 curve inside the selected rig: any selected nonconstant Harmony path still
-fails instead of being silently linearized.
+fails instead of being silently linearized. An explicit prefix that matches zero
+PEG/READ nodes aborts before output, and every successful extraction records the
+boundary in `sourceAction.extractionBoundary`.
 
 This writes held control keys, repeats matching deformation exposures, and records the measured cadence. Use only change frames proven by the reference. Do not guess them from control curves.
 
 ## Inspect, review, then register
 
 Run `runtime/inspect-pose.mjs` with the same manifest, asset, prop, and recipe paths. Watch the exact output completely at normal speed as well; an automatic pass does not decide whether the pose looks right.
+
+Derive source-specific inspector exceptions only from checksum-locked native evidence. A legitimate exceptional drawing family needs an exact source checksum plus exact drawing tuple or asset checksum; a native hold must be measured before changing an identical-frame ceiling. Never relax a broad inspection threshold to accommodate one candidate.
 
 Do not add a recipe to `poses/index.json` until inspection passes and the registry stores the exact file SHA-256. Once registered, all user-facing sequence renders must go through `runner.mjs`.
 

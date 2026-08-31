@@ -15,6 +15,13 @@ const historicalFixtureFiles = new Set([
   "fixtures/lego-body-language-sample-input.json",
   "fixtures/proof-alternate-input.json",
 ]);
+const sourceRepositoryOnlyTests = new Set([
+  "tests/build-kit.test.mjs",
+  "tests/compatible-xstage-actions.test.mjs",
+  "tests/compatible-xstage-importer.test.mjs",
+  "tests/compile-tvg-assets.test.mjs",
+  "tests/pose-recipe.test.mjs",
+]);
 const packagedPropFiles = new Set(["phone.svg", "crossed-arms-pose.png"]);
 const packagedBackgroundFiles = new Set([
   "living-room.png",
@@ -47,6 +54,7 @@ export function include(source) {
   if (parts.some((part) => registrationStateName.test(part))) return false;
   if (parts[0] === "downloads") return false;
   if (historicalFixtureFiles.has(relative)) return false;
+  if (sourceRepositoryOnlyTests.has(relative)) return false;
   if (parts[0] === "agent-runs" && parts.length > 1 && parts.at(-1) !== ".gitkeep") return false;
   if (parts[0] === "goldens" || relative === "goldens.json") return false;
   if (
@@ -69,6 +77,7 @@ export function include(source) {
   if (relative === "evidence/local-transcription-sealed-receipt.md") return false;
   if (relative === "runtime/build-crossed-arms-assembly.mjs") return false;
   if (relative === "runtime/compile-tvg-assets.mjs") return false;
+  if (relative === "runtime/extract-pose-recipe.mjs") return false;
   if (relative === "runtime/register-compatible-tvg-assets.mjs") return false;
   return true;
 }

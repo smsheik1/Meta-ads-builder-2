@@ -104,15 +104,19 @@ Do not weaken a threshold to make the candidate pass. Fix the action or mark it 
 
 ### Imported Xstage truth hierarchy
 
+The command-by-command maintainer tutorial lives in `references/rig-animation-playbook.md` under “Canonical tutorial: reconstruct a reusable action from a compatible Xstage.” This file owns lifecycle and promotion status; the playbook owns reconstruction technique.
+
 An imported Xstage is not validated by rendering it through the same parser and sampler used to build the portable recipe. That comparison is circular: matching hashes prove internal consistency, not Toon Boom fidelity.
 
 For every compatible-Xstage action:
 
-1. checksum a native Toon Boom export from the exact Xstage version and record resolution, frame rate, frame count, and the Xstage-frame-to-video-frame mapping;
-2. compare the portable runtime with that native export at normal speed and at the exact suspect frames;
-3. treat any custom direct-Xstage render as diagnostic evidence only when it shares the runtime's parser, sampler, asset compiler, or renderer;
-4. evaluate Harmony 3D paths through their velocity columns, preserving constant segments and rejecting unimplemented curve semantics instead of silently substituting linear interpolation; and
-5. treat numeric drawing IDs as scene-local. Reused IDs with different compiled artwork must be explicitly source-bound under `assets/sources/<xstage-sha256>/`, even when the canonical rig already has the same number.
+1. give the importer the actual source archive so it can verify the archive hash, exact Xstage member, compiled TVG bytes, mapped parent graph, pivots, and stage basis instead of trusting typed declarations;
+2. checksum a native Toon Boom export from the exact Xstage version and record resolution, frame rate, frame count, and the Xstage-frame-to-video-frame mapping;
+3. compare the portable runtime with that native export at normal speed and at the exact suspect frames;
+4. treat any custom direct-Xstage render as diagnostic evidence only when it shares the runtime's parser, sampler, asset compiler, or renderer;
+5. evaluate Harmony 3D paths through their velocity columns, preserving constant segments and rejecting unimplemented curve semantics instead of silently substituting linear interpolation;
+6. treat numeric drawing IDs as scene-local. Audit every used READ-node/drawing-ID pair after palette normalization as canonical-identical, absent from canonical, or same-ID/different-artwork; explicitly source-bind the latter two under `assets/sources/<xstage-sha256>/`; and
+7. derive any exceptional drawing-family allowance from an exact native source checksum plus exact drawing tuple or asset checksum, and derive identical-frame ceilings from measured native holds rather than relaxing a general gate.
 
 If no native export exists, the action remains an extraction candidate with Harmony fidelity unproven. Never relabel a runtime-vs-runtime match as artist-source parity.
 

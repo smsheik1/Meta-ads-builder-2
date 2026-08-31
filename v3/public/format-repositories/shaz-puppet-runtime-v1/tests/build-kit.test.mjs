@@ -41,6 +41,15 @@ test("the sealed kit contains every candidate source but no review-only runtime 
   const prefix = "wiggly-shaz-puppet-runtime-format-kit/";
   const packaged = new Set(entries.map((entry) => entry.startsWith(prefix) ? entry.slice(prefix.length) : entry));
 
+  for (const tutorialFile of [
+    "SKILL.md",
+    "POSE-PROMOTION.md",
+    "poses/README.md",
+    "references/rig-animation-playbook.md",
+  ]) {
+    assert.ok(packaged.has(tutorialFile), `sealed kit is missing ${tutorialFile}`);
+  }
+
   for (const directory of ["poses/candidates", "poses/candidates/sources"]) {
     const names = await fs.readdir(path.join(root, directory), { withFileTypes: true });
     for (const entry of names) {
@@ -54,7 +63,13 @@ test("the sealed kit contains every candidate source but no review-only runtime 
     "fixtures/lego-body-language-sample-input.json",
     "fixtures/proof-alternate-input.json",
     "runtime/compile-tvg-assets.mjs",
+    "runtime/extract-pose-recipe.mjs",
     "runtime/register-compatible-tvg-assets.mjs",
+    "tests/build-kit.test.mjs",
+    "tests/compatible-xstage-actions.test.mjs",
+    "tests/compatible-xstage-importer.test.mjs",
+    "tests/compile-tvg-assets.test.mjs",
+    "tests/pose-recipe.test.mjs",
   ]) {
     assert.equal(include(path.join(root, relative)), false);
     assert.equal(packaged.has(relative), false, `review-only fixture leaked into kit: ${relative}`);
@@ -66,6 +81,18 @@ test("the sealed kit contains every candidate source but no review-only runtime 
     assert.doesNotMatch(relative, /(?:^|\/)(?:agent-runs|goldens|node_modules|\.runtime-cache|downloads)(?:\/|$)/);
     assert.doesNotMatch(relative, /(?:^|\/)whisper-cli$/);
     assert.doesNotMatch(relative, /artifacts\/shaz-0826-pose-selection|clips\/\d{2}-/);
+  }
+
+  for (const relative of [...packaged].filter((entry) => /^tests\/.*\.test\.mjs$/.test(entry))) {
+    const source = execFileSync("unzip", ["-p", checkedInZip, `${prefix}${relative}`], {
+      encoding: "utf8",
+    });
+    const imports = source.matchAll(/(?:from\s+|import\s*\()\s*["']([^"']+)["']/g);
+    for (const [, specifier] of imports) {
+      if (!specifier.startsWith(".")) continue;
+      const dependency = path.posix.normalize(path.posix.join(path.posix.dirname(relative), specifier));
+      assert.ok(packaged.has(dependency), `${relative} imports missing packaged module ${dependency}`);
+    }
   }
 });
 
