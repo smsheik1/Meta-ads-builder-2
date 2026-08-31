@@ -171,6 +171,7 @@ def column_record(column: ET.Element) -> dict[str, Any]:
         )
     elif column_type == 2:
         path = column.find("./path3D")
+        velocity = column.find("./velocity")
         record["path3d"] = {
             "attributes": dict(sorted(path.attrib.items())) if path is not None else {},
             "points": [
@@ -181,6 +182,31 @@ def column_record(column: ET.Element) -> dict[str, Any]:
                 for point in ([] if path is None else path.findall("./points/pt"))
                 if "lockedInTime" in point.attrib and "val" in point.attrib
             ],
+            "velocity": {
+                "attributes": dict(sorted(velocity.attrib.items()))
+                if velocity is not None
+                else {},
+                "points": [
+                    {
+                        "expression": point.attrib.get("x", ""),
+                        "frames": parse_frame_expression(point.attrib.get("x", "")),
+                        "value": float(point.attrib.get("y", "0")),
+                        "localValue": float(
+                            point.attrib.get("yLocal", point.attrib.get("y", "0"))
+                        ),
+                        "constantSegment": point.attrib.get("constSeg", "false")
+                        == "true",
+                        "handles": {
+                            name: float(point.attrib[name])
+                            for name in ("lhx", "lhy", "lx", "ly", "rhx", "rhy", "rx", "ry")
+                            if name in point.attrib
+                        },
+                    }
+                    for point in (
+                        [] if velocity is None else velocity.findall("./points/pt")
+                    )
+                ],
+            },
         }
     elif column_type == 3:
         points = column.find("./points")

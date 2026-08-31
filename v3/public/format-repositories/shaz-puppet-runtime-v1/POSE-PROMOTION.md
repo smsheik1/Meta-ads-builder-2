@@ -102,6 +102,20 @@ Render the candidate through the official runtime and inspect every frame of eve
 
 Do not weaken a threshold to make the candidate pass. Fix the action or mark it blocked.
 
+### Imported Xstage truth hierarchy
+
+An imported Xstage is not validated by rendering it through the same parser and sampler used to build the portable recipe. That comparison is circular: matching hashes prove internal consistency, not Toon Boom fidelity.
+
+For every compatible-Xstage action:
+
+1. checksum a native Toon Boom export from the exact Xstage version and record resolution, frame rate, frame count, and the Xstage-frame-to-video-frame mapping;
+2. compare the portable runtime with that native export at normal speed and at the exact suspect frames;
+3. treat any custom direct-Xstage render as diagnostic evidence only when it shares the runtime's parser, sampler, asset compiler, or renderer;
+4. evaluate Harmony 3D paths through their velocity columns, preserving constant segments and rejecting unimplemented curve semantics instead of silently substituting linear interpolation; and
+5. treat numeric drawing IDs as scene-local. Reused IDs with different compiled artwork must be explicitly source-bound under `assets/sources/<xstage-sha256>/`, even when the canonical rig already has the same number.
+
+If no native export exists, the action remains an extraction candidate with Harmony fidelity unproven. Never relabel a runtime-vs-runtime match as artist-source parity.
+
 ## 5. Make the audition evidence
 
 Create one review bundle that a person can understand without reading code:
@@ -162,13 +176,15 @@ If a blind run exposes hard pose snaps, that is transition evidence—not permis
 
 The supplied `PART2_F.zip` is a hybrid scene. Only five ranges expose the live `Puppet_Talk_Section_Group`; all other material is storyboard, animatic coloring, or flattened scene work and is excluded. The archive, canonical Xstage, live ranges, topology proof, and palette proof are locked in `evidence/episode5-part2-compatible-source.json`.
 
-These candidates are extracted from component rig data, not traced from video. Their portable recipes stay pinned to the packaged runtime while `sourceAction` records the external Xstage and archive hashes. External deformation samples cover the complete canonical deformation topology, and only drawing IDs absent from the canonical rig are added under a source-hash namespace. The external scene's brown outline palette is converted at TVG-spec level before rasterization; the transform first reproduced three shared canonical assets byte-for-byte. Paired Open-Hand Emphasis and Enumerate List Items passed direct-source/extracted-source parity. Sheepish Side-Eye is retained only as a blocked extraction draft because that parity gate has not passed.
+These candidates are extracted from component rig data, not traced from video. Their portable recipes stay pinned to the packaged runtime while `sourceAction` records the external Xstage and archive hashes. External deformation samples cover the complete canonical deformation topology. The external scene's brown outline palette is converted at TVG-spec level before rasterization; 29 same-ID drawings used by these actions reproduce canonical artwork after normalization, while 24 absent drawings and 16 same-ID/different-artwork collisions remain explicitly source-bound.
+
+The native authority is the 4,334-frame, 24 fps Toon Boom export `Part2_Rig_v5.mp4`, SHA-256 `661709dd18373ce8550340a2c04ca8e5a0624d324ea7eb039bfef105568cb22e`, with Xstage frame `f` mapped to video frame `f - 1`. The older “direct Xstage” renders used the same custom sampler as extraction and are now recorded only as invalidated circular evidence. They cannot certify Harmony behavior.
 
 | Candidate | Source frames | Current honest status | Promotion work |
 | --- | --- | --- | --- |
-| Paired open-hand emphasis | 1683–1740 | `recipe-candidate` | The complete 58-frame character-local action is preserved at `poses/candidates/paired-open-hand-emphasis.json`. The semantic label is provisional, but the controls, four missing drawing IDs, deformation samples, and cadence are exact source data. Its current official render passes all 58 inspected frames with zero failures. Keep it unregistered until the exact source/runtime/difference bundle receives complete normal-speed human review. |
-| Enumerate list items | 1795–1959 | `recipe-candidate` | The complete 165-frame four-beat enumeration plus authored release is preserved at `poses/candidates/enumerate-list-items.json`. Three missing drawing IDs are source-bound; all other artwork remains canonical Wiggly. The official inspector reports six failures: joint continuity at local frames 48, 49, 52, and 53 from source-authored detached Mouth drawing 3, plus facial pops at local frames 58 and 73 from authored Mouth 4→2 swaps. A native-source render and the portable recipe are byte-identical before canonical palette conversion, so these are source defects rather than reconstruction drift. Keep it unregistered and packet-ineligible pending a separately approved mouth repair and complete normal-speed human review. |
-| Sheepish side-eye | 2817–2933 | `blocked` | `poses/candidates/sheepish-side-eye.json` is a checksum-locked 117-frame character-local extraction draft, not yet an exact reconstruction. The raw direct-Xstage render and extracted native-source recipe are not byte-identical because the direct shot retains unresolved outer scene placement; no exactness claim is allowed until a checksum-bound normalized-direct render matches the extracted recipe. The draft appears to contain a genuinely new full-body family, but it also has a detached mouth on local frames 4 and 7–12, an abrupt return on 13–15, and hard-cut entry and release boundaries. The official inspector reports 127 failures: ten mouth continuity/facial failures plus 117 hair-composite vocabulary failures because the current inspector does not yet certify the Hair4/Head_Base4/Bangs_back4 family. A 2× source/runtime proof shows that the extracted hair is visibly coherent, but it does not satisfy source parity. Resume by proving normalized-direct parity first; only then seek approval for a bounded mouth repair or trim, certify the hair family, author neutral connectors, and rerun every gate. |
+| Paired open-hand emphasis | 1683–1740 | `recipe-candidate` | The complete 58-frame character-local action is preserved at `poses/candidates/paired-open-hand-emphasis.json`. Harmony constant-velocity holds now prevent the invented mouth and end-frame wrist drift; 11 external drawings, including seven same-ID collisions, remain source-bound. The official inspector passes all 58 frames. A delegated agent normal-speed comparison against the native Toon Boom range passed; user creative approval is still pending. |
+| Enumerate list items | 1795–1959 | `recipe-candidate` | The complete 165-frame four-beat enumeration plus authored release is preserved at `poses/candidates/enumerate-list-items.json`. Nineteen external drawings, including both pupils and every different mouth drawing, are source-bound. Native playback disproved the earlier “source-authored detached mouth” diagnosis: it came from linearizing constant path segments and resolving PART2 drawing IDs through canonical artwork. The corrected motion and intentional eight-frame authored hold pass normal-speed agent review; user creative approval is still pending. |
+| Sheepish side-eye | 2817–2933 | `recipe-candidate` | `poses/candidates/sheepish-side-eye.json` preserves the complete 117-frame character-local rig action while intentionally omitting episode camera and storyboard framing. Twenty-six external drawings are source-bound, including the checksum-registered Hair4/Head_Base4/Bangs_back4 family and colliding mouth/pupil artwork. Normal-speed agent comparison confirms the facial performance and body timing match the native rig action. Hard-cut entry/release boundaries still prevent packet readiness, and user creative approval is pending. |
 
 None of these rows is in `poses/index.json`, the safe sequence list, or `motion-packets/index.json`.
 

@@ -40,6 +40,38 @@ test("path3d channels interpolate every axis and clamp outside the keyed range",
   assert.deepEqual(samplePath3dColumn(column, 8), [8, 6, 4]);
 });
 
+test("path3d channels honor Harmony constant velocity segments", () => {
+  const column = { path3d: {
+    points: [
+      { frame: 1952, value: [-0.3643, 1.4905, 0.0761] },
+      { frame: 1954, value: [0.4945, -0.2891, -0.2218] },
+    ],
+    velocity: { points: [
+      { frames: [1952], constantSegment: true },
+      { frames: [1954], constantSegment: true },
+    ] },
+  } };
+  assert.deepEqual(samplePath3dColumn(column, 1953), [-0.3643, 1.4905, 0.0761]);
+  assert.deepEqual(samplePath3dColumn(column, 1954), [0.4945, -0.2891, -0.2218]);
+});
+
+test("path3d channels reject unsupported curved velocity instead of inventing linear motion", () => {
+  const column = { path3d: {
+    points: [
+      { frame: 1, value: [0, 0, 0] },
+      { frame: 5, value: [8, 4, 0] },
+    ],
+    velocity: { points: [
+      { frames: [1], constantSegment: false },
+      { frames: [5], constantSegment: false },
+    ] },
+  } };
+  assert.throws(
+    () => samplePath3dColumn(column, 3),
+    /unsupported nonconstant Harmony path3D segment <unnamed> 1-5/,
+  );
+});
+
 test("drawing channels distinguish explicit exposure, held exposure, and empty exposure", () => {
   const column = {
     exposures: [{ frames: [1, 2], drawing: "1" }, { frames: [5], drawing: "2" }],

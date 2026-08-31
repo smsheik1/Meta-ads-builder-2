@@ -40,6 +40,12 @@ const REGISTERED_POSE_REPLACEMENTS = new Map([
     opacity: 100,
   }],
 ]);
+// PART2 drawing 4 carries the complete forehead shade and back-bang artwork in
+// the TVGs themselves, so it must not be forced through the base-rig patching
+// recipe. Keep this proof tied to the exact source and three-drawing family.
+const REGISTERED_COMPATIBLE_HAIR_FAMILIES = new Set([
+  "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f:4:4:4",
+]);
 const OBSERVED_HAND_LIMITS = {
   "hand-matted": {
     maximumHandToSleeveAreaRatio: 0.45,
@@ -406,8 +412,21 @@ function hairCompositeValid(layers) {
   const headBase = layers.find((layer) => (
     layer.nodePath.endsWith("/Head_Base") && layer.variant === "main"
   ));
-  if (!rearHair || !backBang || !headBase
-    || rearHair.compositeRole !== "rear-hair-with-artist-forehead-shade"
+  if (!rearHair || !backBang || !headBase) return false;
+  const compatibleFamilyKey = [
+    rearHair.sourceXstageSha256,
+    rearHair.drawing,
+    backBang.drawing,
+    headBase.drawing,
+  ].join(":");
+  if (REGISTERED_COMPATIBLE_HAIR_FAMILIES.has(compatibleFamilyKey)) {
+    return rearHair.sourceXstageSha256 === backBang.sourceXstageSha256
+      && rearHair.sourceXstageSha256 === headBase.sourceXstageSha256
+      && rearHair.compositeRole === "finished-artwork"
+      && backBang.compositeRole === "finished-artwork"
+      && headBase.compositeRole === "finished-artwork";
+  }
+  if (rearHair.compositeRole !== "rear-hair-with-artist-forehead-shade"
     || rearHair.foreheadShadePixelCount <= 0
     || rearHair.replacedForeheadShadowPixelCount <= 0) return false;
   const requiresPatchMask = ["1", "3"].includes(String(backBang.drawing));

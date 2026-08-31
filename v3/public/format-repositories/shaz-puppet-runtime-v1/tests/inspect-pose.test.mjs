@@ -426,6 +426,25 @@ test("hair-composite inspection requires the masked visible back-bang component"
   ]), false);
 });
 
+test("hair-composite inspection accepts only the checksum-registered PART2 native family", () => {
+  const sourceXstageSha256 = "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f";
+  const layer = (node, drawing = "4") => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${node}`,
+    drawing,
+    sourceXstageSha256,
+    variant: "main",
+    compositeRole: "finished-artwork",
+  });
+  const family = [layer("Hair"), layer("Bangs_back"), layer("Head_Base")];
+  assert.equal(hairCompositeValid(family), true);
+  assert.equal(hairCompositeValid([
+    family[0],
+    { ...family[1], sourceXstageSha256: "f".repeat(64) },
+    family[2],
+  ]), false);
+  assert.equal(hairCompositeValid([family[0], layer("Bangs_back", "3"), family[2]]), false);
+});
+
 test("eye-occlusion inspection requires two semantic eye envelopes and front-bang clearance", () => {
   const frontBang = {
     nodePath: "Top/Shaz_Rig/Head_Group/Bangs_front",

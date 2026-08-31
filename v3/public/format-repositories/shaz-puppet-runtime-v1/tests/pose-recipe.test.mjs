@@ -342,10 +342,14 @@ test("compatible Xstage drawings remain source-bound instead of entering the bas
     endFrame: 104,
   };
   canonicalBound.drawingSources = { Hand: { 1: sourceHash } };
-  assert.throws(
-    () => createPoseRuntime(fixture(), canonicalBound),
-    /source-binds canonical drawing 1/,
-  );
+  const canonicalCollisionRuntime = createPoseRuntime(fixture(), canonicalBound);
+  assert.deepEqual(canonicalCollisionRuntime.resolveDrawing(fixture().scenes[0].nodes[1], 1), {
+    elementId: "hand-element",
+    element: "Hand",
+    drawing: "1",
+    file: "elements/Hand/Hand-1.tvg",
+    sourceXstageSha256: sourceHash,
+  });
 });
 
 test("compatible Xstage actions can carry exact compact deformation samples", () => {

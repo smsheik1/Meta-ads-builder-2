@@ -496,11 +496,6 @@ function createPoseRuntime(manifest, recipe) {
         ? null
         : externalDrawingSources.get(`${node.path}:${drawing}`);
       if (drawing !== null
-        && externalSourceXstageSha256
-        && element.drawings.map(String).includes(drawing)) {
-        throw new Error(`drawings.${nodeName}[${index}] source-binds canonical drawing ${drawing}`);
-      }
-      if (drawing !== null
         && !element.drawings.map(String).includes(drawing)
         && !externalSourceXstageSha256) {
         throw new Error(`drawings.${nodeName}[${index}] exposes unknown drawing ${drawing}`);

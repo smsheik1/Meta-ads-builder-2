@@ -26,6 +26,7 @@ function parseArgs(values) {
     end: null,
     baseFrame: 1,
     exposureChangeFrames: null,
+    nodePrefix: null,
     output: null,
   };
   for (let index = 0; index < values.length; index += 1) {
@@ -38,6 +39,7 @@ function parseArgs(values) {
     else if (value === "--exposure-change-frames") {
       args.exposureChangeFrames = values[++index].split(",").map(Number);
     }
+    else if (value === "--node-prefix") args.nodePrefix = values[++index];
     else if (value === "--output") args.output = values[++index];
     else throw new Error(`unknown argument ${value}`);
   }
@@ -45,7 +47,7 @@ function parseArgs(values) {
     || !Number.isInteger(args.start) || !Number.isInteger(args.end)
     || args.start < 1 || args.end < args.start
     || !Number.isInteger(args.baseFrame) || args.baseFrame < 1) {
-    throw new Error("usage: extract-pose-recipe.mjs --manifest runtime.json --id pose-id --start N --end N --base-frame N [--exposure-change-frames 1,3,...] --output recipe.json");
+    throw new Error("usage: extract-pose-recipe.mjs --manifest runtime.json --id pose-id --start N --end N --base-frame N [--exposure-change-frames 1,3,...] [--node-prefix Top/Rig/] --output recipe.json");
   }
   return args;
 }
@@ -163,7 +165,8 @@ async function main() {
   const drawings = {};
 
   for (const node of scene.nodes.filter((candidate) => (
-    candidate.type === "PEG" || candidate.type === "READ"
+    (candidate.type === "PEG" || candidate.type === "READ")
+    && (!args.nodePrefix || candidate.path.startsWith(args.nodePrefix))
   ))) {
     const baseState = controlStateForNode(sampleNode(node, columns, args.baseFrame));
     const sampledFrames = [];

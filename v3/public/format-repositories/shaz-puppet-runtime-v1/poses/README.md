@@ -64,9 +64,11 @@ Supported numeric controls are:
 
 When a second Harmony scene contains the same component rig, do not copy its shot framing into the package and do not pretend its frames belong to the base Xstage. Prove path-and-type compatibility first, render the source action directly, then retarget the character-local controls to the current runtime.
 
+The source action's fidelity must be checked against a checksum-locked native Toon Boom export. A “direct source” render made by `render-xstage-range.mjs` shares this package's parser, channel sampler, asset compiler, and renderer; matching it to an extracted recipe proves only that those two paths agree with each other. It does not prove that either path matches Harmony. Native video is review evidence only and never becomes a runtime asset or finished-frame shortcut.
+
 A compatible-source recipe keeps `sourceXstageSha256` pinned to the packaged runtime. Its `sourceAction` records the external Xstage and archive hashes plus exact frame range. Every deformation node is carried in `deformationSamples` as deduplicated source samples with one `frameSamples` index per local frame; `deformationFrames` keeps the original source-frame timing as evidence. A missing drawing is declared in `drawingSources` and remains bound to the external Xstage hash.
 
-External drawings are compiled from TVG, normalized to the canonical palette before rasterization, stored below `rig-v2/assets/sources/<xstage-sha256>/`, and recorded per asset in the v3 receipt. Never overwrite an existing base filename or source-bind a drawing already present in the canonical rig. The palette transform must first reproduce shared canonical drawings byte-for-byte.
+External drawings are compiled from TVG, normalized to the canonical palette before rasterization, stored below `rig-v2/assets/sources/<xstage-sha256>/`, and recorded per asset in the v3 receipt. Numeric drawing IDs are scene-local: if a compatible scene reuses a canonical ID for different artwork, source-bind it explicitly so both assets coexist under different source namespaces. Never overwrite an existing base filename. The palette transform must first reproduce genuinely shared canonical drawings byte-for-byte.
 
 Use `runtime/compile-tvg-assets.mjs --drawings ... --outline-source-color ... --outline-color ...` to compile only missing drawings, then register the exact source and every candidate that uses it:
 
@@ -114,6 +116,12 @@ node runtime/extract-pose-recipe.mjs \
   --exposure-change-frames 1,3,5,7,9,11,13 \
   --output poses/authored/confident.json
 ```
+
+For a hybrid source scene, add `--node-prefix Top/Puppet_Talk_Section_Group/`
+so storyboard layers, cameras, and shot wrappers are never sampled as puppet
+controls. The prefix is an extraction boundary, not a way to hide an unsupported
+curve inside the selected rig: any selected nonconstant Harmony path still
+fails instead of being silently linearized.
 
 This writes held control keys, repeats matching deformation exposures, and records the measured cadence. Use only change frames proven by the reference. Do not guess them from control curves.
 

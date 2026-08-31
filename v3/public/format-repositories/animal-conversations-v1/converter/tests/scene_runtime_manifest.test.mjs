@@ -77,7 +77,7 @@ test("runtime manifest expands drawing exposures and scalar frame expressions", 
 <project><elements/><options/><scenes><scene nbframes="20" startFrame="1" stopFrame="20"><columns>
     <column type="0" name="drawing" displayOrder="0" anonymous="false" id="7"><heldSeq exposures="4,6-7"/><elementSeq exposures="1-3,5" val="2" id="2"/></column>
     <column type="3" name="angle" displayOrder="1" anonymous="true"><points version="1"><pt constSeg="true" x="1,4-5" yLocal="10" y="10"/></points></column>
-    <column type="2" name="position" displayOrder="2" anonymous="true"><path3D useVeloX="false"><points><pt val="1,2,3" lockedInTime="6"/></points></path3D></column>
+    <column type="2" name="position" displayOrder="2" anonymous="true"><path3D useVeloX="true"><points><pt val="1,2,3" lockedInTime="6"/></points></path3D><velocity type="3" name="position-velocity"><points version="2"><pt constSeg="true" x="6" yLocal="0.5" y="0.5" rhx="0.25" rx="6.5"/></points></velocity></column>
   </columns><rootgroup name=""><nodeslist/><linkedlist/></rootgroup></scene></scenes></project>`, async (manifest) => {
     const [drawing, angle, position] = manifest.scenes[0].columns;
     assert.deepEqual(drawing.exposures[0].frames, [1, 2, 3, 5]);
@@ -86,6 +86,17 @@ test("runtime manifest expands drawing exposures and scalar frame expressions", 
     assert.deepEqual(angle.points[0].frames, [1, 4, 5]);
     assert.equal(angle.points[0].constantSegment, true);
     assert.deepEqual(position.path3d.points[0], { frame: 6, value: [1, 2, 3] });
+    assert.deepEqual(position.path3d.velocity, {
+      attributes: { name: "position-velocity", type: "3" },
+      points: [{
+        expression: "6",
+        frames: [6],
+        value: 0.5,
+        localValue: 0.5,
+        constantSegment: true,
+        handles: { rhx: 0.25, rx: 6.5 },
+      }],
+    });
     assert.equal(position.payload.children.path3D[0].children.points[0].children.pt[0].attributes.lockedInTime, "6");
   });
 });

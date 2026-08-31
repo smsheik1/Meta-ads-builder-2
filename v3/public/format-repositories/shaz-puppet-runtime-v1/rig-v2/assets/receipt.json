@@ -5565,6 +5565,72 @@
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
     {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/head-base-01--color.png",
+      "variant": "color",
+      "elementId": 75,
+      "element": "Head_Base",
+      "drawing": "1",
+      "source": "elements/Head_Base/Head_Base-1.tvg",
+      "sourceSha256": "3442ae65b4ef54ea61c72209238bfc32efad787a0c466c309f78bdb8a2633a6f",
+      "outputSha256": "f538d18ea32ea3a5236cde11b47a5205fb2d942248faa1ec9c45b7f0d0b0a430",
+      "canvas": {
+        "width": 695,
+        "height": 661
+      },
+      "modelOrigin": {
+        "x": -2436,
+        "y": -253.54688
+      },
+      "drawingBounds": {
+        "minX": -2386,
+        "minY": -203.54688,
+        "maxX": -1791.25,
+        "maxY": 356.45313
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/head-base-01.png",
+      "variant": "main",
+      "elementId": 75,
+      "element": "Head_Base",
+      "drawing": "1",
+      "source": "elements/Head_Base/Head_Base-1.tvg",
+      "sourceSha256": "3442ae65b4ef54ea61c72209238bfc32efad787a0c466c309f78bdb8a2633a6f",
+      "outputSha256": "6093754f684231df70731954156e014e8c432a5f3e07d96350fec766ef24ec1a",
+      "canvas": {
+        "width": 695,
+        "height": 661
+      },
+      "modelOrigin": {
+        "x": -2436.0156,
+        "y": -253.54688
+      },
+      "drawingBounds": {
+        "minX": -2386.0156,
+        "minY": -203.54688,
+        "maxX": -1791.25,
+        "maxY": 356.45313
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 8
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
       "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/head-base-04--color.png",
       "variant": "color",
       "elementId": 75,
@@ -6134,6 +6200,106 @@
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
     {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-pupil-01.png",
+      "variant": "main",
+      "elementId": 78,
+      "element": "Left_Pupil",
+      "drawing": "1",
+      "source": "elements/Left_Pupil/Left_Pupil-1.tvg",
+      "sourceSha256": "aecf2e7bf825c19419f5cf52044816458491cc122c5aaa59285b01d58a2f4dfb",
+      "outputSha256": "4f0692975e80193882a0d98cd8535421b4bdbbe1d15cdfb96cc6bdccbbe26879",
+      "canvas": {
+        "width": 176,
+        "height": 176
+      },
+      "modelOrigin": {
+        "x": -2300.625,
+        "y": -19.96875
+      },
+      "drawingBounds": {
+        "minX": -2250.625,
+        "minY": 30.03125,
+        "maxX": -2175.2656,
+        "maxY": 105.390625
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-pupil-08.png",
+      "variant": "main",
+      "elementId": 78,
+      "element": "Left_Pupil",
+      "drawing": "8",
+      "source": "elements/Left_Pupil/Left_Pupil-8.tvg",
+      "sourceSha256": "bb4d377c2b6683f48915b4ff8b79622031d411667f3aa02ed13fd77a8874763c",
+      "outputSha256": "025ece5bb171e608e6e72e1c67ebd70e1a10c04662d5fb94215ab91a4664015f",
+      "canvas": {
+        "width": 108,
+        "height": 101
+      },
+      "modelOrigin": {
+        "x": -2360.4219,
+        "y": 54.609375
+      },
+      "drawingBounds": {
+        "minX": -2310.4219,
+        "minY": 104.609375,
+        "maxX": -2302.75,
+        "maxY": 105.390625
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-pupil-11.png",
+      "variant": "main",
+      "elementId": 78,
+      "element": "Left_Pupil",
+      "drawing": "11",
+      "source": "elements/Left_Pupil/Left_Pupil-11.tvg",
+      "sourceSha256": "aecf2e7bf825c19419f5cf52044816458491cc122c5aaa59285b01d58a2f4dfb",
+      "outputSha256": "4f0692975e80193882a0d98cd8535421b4bdbbe1d15cdfb96cc6bdccbbe26879",
+      "canvas": {
+        "width": 176,
+        "height": 176
+      },
+      "modelOrigin": {
+        "x": -2300.625,
+        "y": -19.96875
+      },
+      "drawingBounds": {
+        "minX": -2250.625,
+        "minY": 30.03125,
+        "maxX": -2175.2656,
+        "maxY": 105.390625
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-pupil-13.png",
+      "variant": "main",
+      "elementId": 78,
+      "element": "Left_Pupil",
+      "drawing": "13",
+      "source": "elements/Left_Pupil/Left_Pupil-13.tvg",
+      "sourceSha256": "52b1e0fa4e16db52596011e627aaa0f77e6c2992432d86316b53b2c13bc0f8aa",
+      "outputSha256": "6f8d74b0de8d23593e792f43dc1f5bd0d80c35ec34550ecde7700a777d404eba",
+      "canvas": {
+        "width": 175,
+        "height": 117
+      },
+      "modelOrigin": {
+        "x": -2316.1563,
+        "y": -59.1875
+      },
+      "drawingBounds": {
+        "minX": -2266.1563,
+        "minY": -9.1875,
+        "maxX": -2191.9375,
+        "maxY": 7.1875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
       "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/left-pupil-15.png",
       "variant": "main",
       "elementId": 78,
@@ -6155,6 +6321,386 @@
         "minY": 30.03125,
         "maxX": -2172.6875,
         "maxY": 78.046875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-01.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "1",
+      "source": "elements/Mouth/Mouth-1.tvg",
+      "sourceSha256": "b94b433288cbadae0656df7aa06134a8a1c7ea6c6a2213dc2ccf926bccea93aa",
+      "outputSha256": "4b7038c5f55f0d26d5e75c0bdbd94ff81694d9a828ef1ba26f2d3e7908e28fc6",
+      "canvas": {
+        "width": 283,
+        "height": 165
+      },
+      "modelOrigin": {
+        "x": -2264.25,
+        "y": 135.25
+      },
+      "drawingBounds": {
+        "minX": -2214.25,
+        "minY": 185.25,
+        "maxX": -2031.9531,
+        "maxY": 249.70313
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-02--color.png",
+      "variant": "color",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "2",
+      "source": "elements/Mouth/Mouth-2.tvg",
+      "sourceSha256": "951f257745a23ce0c79c7e0e72d758837890d18e294e2e499d1990603b5e0984",
+      "outputSha256": "2a901a0ace83aea345226cc8281930d5b2ed69ed8fa06372baa3888d9a8e2299",
+      "canvas": {
+        "width": 390,
+        "height": 258
+      },
+      "modelOrigin": {
+        "x": -2315.875,
+        "y": 109.48437999999999
+      },
+      "drawingBounds": {
+        "minX": -2265.875,
+        "minY": 159.48438,
+        "maxX": -1975.9375,
+        "maxY": 316.57813
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-02.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "2",
+      "source": "elements/Mouth/Mouth-2.tvg",
+      "sourceSha256": "951f257745a23ce0c79c7e0e72d758837890d18e294e2e499d1990603b5e0984",
+      "outputSha256": "ec55bc976d59973d9d09cf3eaaf6c978ff7bbecb24c43d7e1ec7e70d6a4410e2",
+      "canvas": {
+        "width": 390,
+        "height": 258
+      },
+      "modelOrigin": {
+        "x": -2315.875,
+        "y": 109.48437999999999
+      },
+      "drawingBounds": {
+        "minX": -2265.875,
+        "minY": 159.48438,
+        "maxX": -1975.875,
+        "maxY": 316.57813
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 6
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-03--color.png",
+      "variant": "color",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "3",
+      "source": "elements/Mouth/Mouth-3.tvg",
+      "sourceSha256": "553e0d22d17d739d3f22892f0b5b83a65baf368119cdb38687c101225c47c083",
+      "outputSha256": "280f9829e58083d64ed4a7e509bdd1c726497e207e562a04de56c98f4d962779",
+      "canvas": {
+        "width": 134,
+        "height": 166
+      },
+      "modelOrigin": {
+        "x": -2307.5469,
+        "y": 156.39063
+      },
+      "drawingBounds": {
+        "minX": -2257.5469,
+        "minY": 206.39063,
+        "maxX": -2224.4531,
+        "maxY": 271.92188
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-03.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "3",
+      "source": "elements/Mouth/Mouth-3.tvg",
+      "sourceSha256": "553e0d22d17d739d3f22892f0b5b83a65baf368119cdb38687c101225c47c083",
+      "outputSha256": "4787722429fe6bd530de60d2008de909d99b839e64dd3647e7b6fc8617b8b8d2",
+      "canvas": {
+        "width": 134,
+        "height": 166
+      },
+      "modelOrigin": {
+        "x": -2307.5469,
+        "y": 156.39063
+      },
+      "drawingBounds": {
+        "minX": -2257.5469,
+        "minY": 206.39063,
+        "maxX": -2224.4531,
+        "maxY": 271.92188
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 1
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-05--color.png",
+      "variant": "color",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "5",
+      "source": "elements/Mouth/Mouth-5.tvg",
+      "sourceSha256": "a46371303a01c56e87596e679be48be58dc8f435dc034aa9b14855ba1caebddf",
+      "outputSha256": "c7d936c091b2be99a09ab1b5c7d96775928655fa954c6f4bb1800d1469c71b46",
+      "canvas": {
+        "width": 293,
+        "height": 230
+      },
+      "modelOrigin": {
+        "x": -2274.2656,
+        "y": 130.625
+      },
+      "drawingBounds": {
+        "minX": -2224.2656,
+        "minY": 180.625,
+        "maxX": -2031.9531,
+        "maxY": 309.82813
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-05.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "5",
+      "source": "elements/Mouth/Mouth-5.tvg",
+      "sourceSha256": "a46371303a01c56e87596e679be48be58dc8f435dc034aa9b14855ba1caebddf",
+      "outputSha256": "990d6c61f496e2004da82ba713d191cb885ce2b131cd84d661833215e71c1f41",
+      "canvas": {
+        "width": 296,
+        "height": 230
+      },
+      "modelOrigin": {
+        "x": -2274.2656,
+        "y": 130.53125
+      },
+      "drawingBounds": {
+        "minX": -2224.2656,
+        "minY": 180.53125,
+        "maxX": -2028.5,
+        "maxY": 309.82813
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 5
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-06.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "6",
+      "source": "elements/Mouth/Mouth-6.tvg",
+      "sourceSha256": "79daf551b8793289876269d4596173d1d341e3e67b7eab1fc3d13f0042ad77c0",
+      "outputSha256": "27506dda1582be11a2325c3caae008e0b40e66954e6866781e8a2c02bd172243",
+      "canvas": {
+        "width": 271,
+        "height": 144
+      },
+      "modelOrigin": {
+        "x": -2243.3125,
+        "y": 145.3125
+      },
+      "drawingBounds": {
+        "minX": -2193.3125,
+        "minY": 195.3125,
+        "maxX": -2022.9844,
+        "maxY": 238.8125
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-07--color.png",
+      "variant": "color",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "7",
+      "source": "elements/Mouth/Mouth-7.tvg",
+      "sourceSha256": "41956d90ac868dc26f493b6b3ef8a1014cd9e645ebc01146f0df56563edc8a1c",
+      "outputSha256": "2fa560682a58222a706a32f2889353454dff602d1f8f1c03367502f386ddf5a4",
+      "canvas": {
+        "width": 295,
+        "height": 222
+      },
+      "modelOrigin": {
+        "x": -2262.1875,
+        "y": 126.9375
+      },
+      "drawingBounds": {
+        "minX": -2212.1875,
+        "minY": 176.9375,
+        "maxX": -2017.5625,
+        "maxY": 298.125
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-07.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "7",
+      "source": "elements/Mouth/Mouth-7.tvg",
+      "sourceSha256": "41956d90ac868dc26f493b6b3ef8a1014cd9e645ebc01146f0df56563edc8a1c",
+      "outputSha256": "4a2a2ff64f0341381e0acad6bdbd2b1286e5207ead4130c145999d503b64e6f6",
+      "canvas": {
+        "width": 295,
+        "height": 222
+      },
+      "modelOrigin": {
+        "x": -2262.1875,
+        "y": 126.73437999999999
+      },
+      "drawingBounds": {
+        "minX": -2212.1875,
+        "minY": 176.73438,
+        "maxX": -2017.5625,
+        "maxY": 298.125
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 7
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-09--color.png",
+      "variant": "color",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "9",
+      "source": "elements/Mouth/Mouth-9.tvg",
+      "sourceSha256": "8f2a69f033de8fe7b3af934205e556a5eb1410b96295e869b64dc89c824c3f88",
+      "outputSha256": "10a1e3deaf5e04c45d1dcce2de0a9344e6cb550509159b953b58babedab5f411",
+      "canvas": {
+        "width": 267,
+        "height": 213
+      },
+      "modelOrigin": {
+        "x": -2233.4063,
+        "y": 132.89063
+      },
+      "drawingBounds": {
+        "minX": -2183.4063,
+        "minY": 182.89063,
+        "maxX": -2017.0781,
+        "maxY": 295
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/mouth-09.png",
+      "variant": "main",
+      "elementId": 77,
+      "element": "Mouth",
+      "drawing": "9",
+      "source": "elements/Mouth/Mouth-9.tvg",
+      "sourceSha256": "8f2a69f033de8fe7b3af934205e556a5eb1410b96295e869b64dc89c824c3f88",
+      "outputSha256": "bc140dcd18fcbaf37c234529a93aee5ea936a07c1166ab8d0ff7b1b6b7ce2045",
+      "canvas": {
+        "width": 267,
+        "height": 213
+      },
+      "modelOrigin": {
+        "x": -2233.4063,
+        "y": 132.89063
+      },
+      "drawingBounds": {
+        "minX": -2183.4063,
+        "minY": 182.89063,
+        "maxX": -2017.0781,
+        "maxY": 295
+      },
+      "paletteNormalization": {
+        "schemaVersion": "shaz-outline-palette-normalization-v1",
+        "sourceColor": [
+          77,
+          17,
+          3,
+          255
+        ],
+        "destinationColor": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "replacementCount": 6
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
@@ -6658,6 +7204,106 @@
           255
         ],
         "replacementCount": 5
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-pupil-01.png",
+      "variant": "main",
+      "elementId": 80,
+      "element": "Right_Pupil",
+      "drawing": "1",
+      "source": "elements/Right_Pupil/Right_Pupil-1.tvg",
+      "sourceSha256": "9db5f7b6c8fb36f7a159675c87c9e01fcb7c4e203900941479f7dd757bf68bb9",
+      "outputSha256": "11e926dbf1d01c294c16359df9f987ed0c66bd19efc36a6fceebdb88c9dcdb54",
+      "canvas": {
+        "width": 176,
+        "height": 175
+      },
+      "modelOrigin": {
+        "x": -2144.4531,
+        "y": -19.78125
+      },
+      "drawingBounds": {
+        "minX": -2094.4531,
+        "minY": 30.21875,
+        "maxX": -2019.4375,
+        "maxY": 105.21875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-pupil-08.png",
+      "variant": "main",
+      "elementId": 80,
+      "element": "Right_Pupil",
+      "drawing": "8",
+      "source": "elements/Right_Pupil/Right_Pupil-8.tvg",
+      "sourceSha256": "f53fce4431492a96bade579a343460b9b7e04a3ec161eb98d9871b896acf99f4",
+      "outputSha256": "c59a3227caa4bab10ffe51d97c9269557869ffe01e334a2f03b9637d26f7d3d8",
+      "canvas": {
+        "width": 109,
+        "height": 169
+      },
+      "modelOrigin": {
+        "x": -2185.5,
+        "y": -16.046875
+      },
+      "drawingBounds": {
+        "minX": -2135.5,
+        "minY": 33.953125,
+        "maxX": -2126.5156,
+        "maxY": 102.296875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-pupil-11.png",
+      "variant": "main",
+      "elementId": 80,
+      "element": "Right_Pupil",
+      "drawing": "11",
+      "source": "elements/Right_Pupil/Right_Pupil-11.tvg",
+      "sourceSha256": "9db5f7b6c8fb36f7a159675c87c9e01fcb7c4e203900941479f7dd757bf68bb9",
+      "outputSha256": "11e926dbf1d01c294c16359df9f987ed0c66bd19efc36a6fceebdb88c9dcdb54",
+      "canvas": {
+        "width": 176,
+        "height": 175
+      },
+      "modelOrigin": {
+        "x": -2144.4531,
+        "y": -19.78125
+      },
+      "drawingBounds": {
+        "minX": -2094.4531,
+        "minY": 30.21875,
+        "maxX": -2019.4375,
+        "maxY": 105.21875
+      },
+      "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
+    },
+    {
+      "filename": "sources/0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f/right-pupil-13.png",
+      "variant": "main",
+      "elementId": 80,
+      "element": "Right_Pupil",
+      "drawing": "13",
+      "source": "elements/Right_Pupil/Right_Pupil-13.tvg",
+      "sourceSha256": "01d286f81067db714b74e7f7bab24b2ade390aaaf652e22a6a60956a94aa6f20",
+      "outputSha256": "ae4d4971a9530d1c954a914647a7227939954b14c01ca369a1b8a9734fc675f8",
+      "canvas": {
+        "width": 172,
+        "height": 111
+      },
+      "modelOrigin": {
+        "x": -2137.4375,
+        "y": -60.0625
+      },
+      "drawingBounds": {
+        "minX": -2087.4375,
+        "minY": -10.0625,
+        "maxX": -2015.5313,
+        "maxY": 0.828125
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },

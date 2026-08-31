@@ -1236,10 +1236,6 @@ async function registerCompatibleAssetsUnderLock(args, registrationState) {
     throw new Error("compatible Xstage source must differ from the runtime Xstage source");
   }
   const drawingElements = drawingElementsByNodeName(manifest);
-  const canonicalDrawings = new Set(state.assets
-    .filter(({ sourceXstageSha256 }) => sourceXstageSha256 === state.runtimeXstageSha256)
-    .map(({ element, drawing }) => `${element}:${drawing}`));
-
   const required = new Set();
   for (const recipe of recipes) {
     const sourceAction = recipe.sourceAction ?? {};
@@ -1256,9 +1252,6 @@ async function registerCompatibleAssetsUnderLock(args, registrationState) {
       for (const [drawing, source] of Object.entries(drawings)) {
         if (source !== args.sourceXstageSha256) {
           throw new Error(`recipe ${recipe.id} has a mismatched drawing source`);
-        }
-        if (canonicalDrawings.has(`${element}:${drawing}`)) {
-          throw new Error(`recipe ${recipe.id} source-binds canonical drawing ${element}:${drawing}`);
         }
         required.add(`${element}:${drawing}`);
       }

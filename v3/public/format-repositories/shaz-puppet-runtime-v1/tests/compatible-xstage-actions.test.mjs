@@ -48,15 +48,23 @@ test("compatible Episode 5 actions retain exact external provenance and complete
   ]);
   const expected = [
     [paired, "poses/candidates/paired-open-hand-emphasis.json", [1683, 1740], {
+      Head_Base: ["1"],
       Left_Forearm: ["7"],
       Left_Hand: ["14"],
+      Left_Pupil: ["1"],
+      Mouth: ["3", "6", "7", "9"],
       Right_Forearm: ["6"],
       Right_Hand: ["12"],
-    }, "a6e486296f72bf890ea12e253ad2c72d5f27a6141cbb5f4bee75095f8969584c", "673106ed6c00707a317ddc794643bc6f6c0e0f7c0b01e69c94ae856a99a6c406"],
+      Right_Pupil: ["1"],
+    }, "f589f603092bd36e66729e413f9762152e7779751e36f1354d9192eb22d4ef76", "0c9d69254e6a05a7c2e7cca17de70334ca33c7fa1c89de4805595ef70b7f76dd"],
     [enumeration, "poses/candidates/enumerate-list-items.json", [1795, 1959], {
+      Head_Base: ["1"],
       Left_Forearm: ["7"],
       Left_Hand: ["16", "17"],
-    }, "1ef12bea178bc123889d483d7a32b055b709bcf5b0a0849784fbd7328681b48c", "53ca3f6ee7f66547e86337545496098b1d9163fa8bfa82cba265c9ea490f2e24"],
+      Left_Pupil: ["1", "8", "11", "13"],
+      Mouth: ["1", "2", "3", "5", "6", "7", "9"],
+      Right_Pupil: ["1", "8", "11", "13"],
+    }, "059b231faf5e0517d94afb7ad99436ee0330df66b46ec79ef6cf7e3fd77c1802", "2a1040a70c9ef8d5e7615972be232a200bcd278ea4c4b995aa8a5ce411cae14f"],
     [sheepish, "poses/candidates/sheepish-side-eye.json", [2817, 2933], {
       Body: ["3"],
       Collar: ["3"],
@@ -73,10 +81,11 @@ test("compatible Episode 5 actions retain exact external provenance and complete
       Bangs_front: ["4"],
       Hair: ["4"],
       Head_Base: ["4"],
-      Left_Pupil: ["15"],
+      Left_Pupil: ["1", "15"],
+      Mouth: ["2", "3", "5", "6", "7", "9"],
       Nose: ["3"],
-      Right_Pupil: ["15"],
-    }, "6f554cdbd6d0085a6a1078516f8d9ea78e814ef71bfa70f6740e4d6d36ecd3d1", "b5a1f7c72af35f6b1598d8ec1801f118b8a924182226872fd6acfc6c4044a4ae"],
+      Right_Pupil: ["1", "15"],
+    }, "b4a43308afe0e84806e4b7173d84d148e1cf20763465074c4368628472e342c8", "20e352fa1a37a690003bdf40598c76802e9a57dc5b2f61f4c644ab879a53bbbe"],
   ];
   for (const [recipe, recipePath, range, drawings, fileSha256, semanticSha256] of expected) {
     assert.equal(recipe.sourceXstageSha256, runtimeSource);
@@ -127,8 +136,8 @@ test("compatible drawings are hash-namespaced, palette-normalized, and checksum-
   const assets = receipt.assets.filter(({ sourceXstageSha256 }) => (
     sourceXstageSha256 === compatibleSource
   ));
-  assert.equal(assets.length, 48);
-  assert.equal(assets.filter(({ paletteNormalization }) => paletteNormalization).length, 24);
+  assert.equal(assets.length, 70);
+  assert.equal(assets.filter(({ paletteNormalization }) => paletteNormalization).length, 30);
   for (const asset of assets) {
     assert.ok(asset.filename.startsWith(`sources/${compatibleSource}/`));
     assert.equal(
@@ -240,6 +249,101 @@ test("compatible asset registration rejects provenance drift and path traversal 
     const mislabeledResult = spawnSync(process.execPath, command, { encoding: "utf8" });
     assert.notEqual(mislabeledResult.status, 0);
     assert.match(mislabeledResult.stderr, /unsafe asset record/);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("compatible asset registration namespaces a source drawing that reuses a canonical numeric ID", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-collision-"));
+  const baseAssets = path.join(scratch, "format", "rig-v2", "assets");
+  const compatibleAssets = path.join(scratch, "compatible");
+  const transactionParent = path.join(scratch, "transactions");
+  const recipePath = path.join(scratch, "candidate.json");
+  const canonicalBytes = Buffer.from("canonical pupil eight");
+  const compatibleBytes = Buffer.from("PART2 pupil eight");
+  const canonicalSha256 = crypto.createHash("sha256").update(canonicalBytes).digest("hex");
+  const compatibleSha256 = crypto.createHash("sha256").update(compatibleBytes).digest("hex");
+  await Promise.all([
+    fs.mkdir(baseAssets, { recursive: true }),
+    fs.mkdir(compatibleAssets, { recursive: true }),
+  ]);
+  try {
+    await Promise.all([
+      fs.writeFile(path.join(baseAssets, "left-pupil-08.png"), canonicalBytes),
+      fs.writeFile(path.join(compatibleAssets, "left-pupil-08.png"), compatibleBytes),
+    ]);
+    await fs.writeFile(path.join(baseAssets, "receipt.json"), JSON.stringify({
+      schemaVersion: "shaz-tvg-asset-receipt-v2",
+      sourceXstageSha256: runtimeSource,
+      sourceArchiveBundled: false,
+      artistRenderedFramesUsed: false,
+      rasterMarginModelUnits: 50,
+      assets: [{
+        element: "Left_Pupil",
+        drawing: "8",
+        variant: "main",
+        filename: "left-pupil-08.png",
+        source: "elements/Left_Pupil/Left_Pupil-8.tvg",
+        sourceSha256: "b".repeat(64),
+        outputSha256: canonicalSha256,
+        canvas: { width: 10, height: 10 },
+        modelOrigin: { x: 0, y: 0 },
+      }],
+    }));
+    await fs.writeFile(path.join(compatibleAssets, "receipt.json"), JSON.stringify({
+      schemaVersion: "shaz-tvg-asset-receipt-v2",
+      sourceXstageSha256: compatibleSource,
+      artistRenderedFramesUsed: false,
+      assets: [{
+        element: "Left_Pupil",
+        drawing: "8",
+        variant: "main",
+        filename: "left-pupil-08.png",
+        source: "elements/Left_Pupil/Left_Pupil-8.tvg",
+        sourceSha256: "c".repeat(64),
+        outputSha256: compatibleSha256,
+        canvas: { width: 10, height: 10 },
+        modelOrigin: { x: 0, y: 0 },
+      }],
+    }));
+    await fs.writeFile(recipePath, JSON.stringify({
+      id: "same-id-compatible-drawing",
+      sourceAction: {
+        sourceXstageSha256: compatibleSource,
+        sourceFile: "compatible.xstage",
+        sourceArchiveName: "compatible.zip",
+        sourceArchiveSha256: archiveSha256,
+      },
+      drawingSources: { Left_Pupil: { 8: compatibleSource } },
+    }));
+    const result = spawnSync(process.execPath, [
+      path.join(root, "runtime", "register-compatible-tvg-assets.mjs"),
+      "--manifest", path.join(root, "rig-v2", "runtime.json"),
+      "--base-assets", baseAssets,
+      "--compatible-assets", compatibleAssets,
+      "--source-xstage-sha256", compatibleSource,
+      "--source-xstage-name", "compatible.xstage",
+      "--source-archive-sha256", archiveSha256,
+      "--source-archive-name", "compatible.zip",
+      "--registration-state-dir", transactionParent,
+      "--recipe", recipePath,
+    ], { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(await fs.readFile(path.join(baseAssets, "left-pupil-08.png"), "utf8"),
+      canonicalBytes.toString());
+    assert.equal(await fs.readFile(path.join(
+      baseAssets,
+      "sources",
+      compatibleSource,
+      "left-pupil-08.png",
+    ), "utf8"), compatibleBytes.toString());
+    const receipt = JSON.parse(await fs.readFile(path.join(baseAssets, "receipt.json"), "utf8"));
+    assert.deepEqual(receipt.assets.map(({ filename }) => filename).sort(), [
+      "left-pupil-08.png",
+      `sources/${compatibleSource}/left-pupil-08.png`,
+    ]);
+    await loadAssetRegistration(baseAssets, runtimeSource);
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
   }

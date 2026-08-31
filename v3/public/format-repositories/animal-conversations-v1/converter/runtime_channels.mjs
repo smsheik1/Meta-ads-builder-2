@@ -42,7 +42,32 @@ function sampleScalarColumn(column, frame) {
 }
 
 function samplePath3dColumn(column, frame) {
-  const keys = [...(column.path3d?.points ?? [])].sort((left, right) => left.frame - right.frame);
+  const velocityByFrame = new Map();
+  for (const point of column.path3d?.velocity?.points ?? []) {
+    for (const velocityFrame of point.frames ?? []) {
+      velocityByFrame.set(velocityFrame, point);
+    }
+  }
+  const hasVelocityMetadata = velocityByFrame.size > 0;
+  const keys = [...(column.path3d?.points ?? [])].map((point) => ({
+    ...point,
+    constantSegment: velocityByFrame.get(point.frame)?.constantSegment ?? false,
+  })).sort((left, right) => left.frame - right.frame);
+
+  if (hasVelocityMetadata && keys.length > 1
+    && frame > keys[0].frame && frame < keys.at(-1).frame) {
+    for (let index = 1; index < keys.length; index += 1) {
+      const right = keys[index];
+      if (frame >= right.frame) continue;
+      const left = keys[index - 1];
+      if (!left.constantSegment) {
+        throw new Error(
+          `unsupported nonconstant Harmony path3D segment ${column.name ?? "<unnamed>"} ${left.frame}-${right.frame}`,
+        );
+      }
+      break;
+    }
+  }
   return sampleKeys(keys, frame, (left, right, progress) => left.map(
     (value, index) => value + (right[index] - value) * progress,
   ));
