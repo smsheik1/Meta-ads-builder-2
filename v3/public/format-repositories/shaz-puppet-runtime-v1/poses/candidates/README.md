@@ -23,4 +23,4 @@ The recipe hashes below are an immutable lookup index. Current lifecycle status 
 | 11 study — Present screen-right destination | `present-screen-right-destination-study.json` | `b7455539f5bc806ae00ceb76f25cfefb4f914ba7ca9ccfb388cea774c14d4a51` | `c1ff392cb97b697588aa2cd5652e506e64622fda8b3aad297856c6358d1552e6` |
 | Episode 5 Part 2 — Paired open-hand emphasis | `paired-open-hand-emphasis.json` | `f589f603092bd36e66729e413f9762152e7779751e36f1354d9192eb22d4ef76` | `0c9d69254e6a05a7c2e7cca17de70334ca33c7fa1c89de4805595ef70b7f76dd` |
 | Episode 5 Part 2 — Enumerate list items | `enumerate-list-items.json` | `059b231faf5e0517d94afb7ad99436ee0330df66b46ec79ef6cf7e3fd77c1802` | `2a1040a70c9ef8d5e7615972be232a200bcd278ea4c4b995aa8a5ce411cae14f` |
-| Episode 5 Part 2 — Sheepish side-eye | `sheepish-side-eye.json` | `b4a43308afe0e84806e4b7173d84d148e1cf20763465074c4368628472e342c8` | `20e352fa1a37a690003bdf40598c76802e9a57dc5b2f61f4c644ab879a53bbbe` |
+| Episode 5 Part 2 — Sheepish side-eye | `sheepish-side-eye.json` | `dd0a9c32a4e8f1e80f47a7d0d90ad2a256332f546f67a1ea483f5dc315aa2533` | `a921a3fcf124c3a51092f34811cb6f8d9263fcc1a6fc945c1f8fab523789d8cf` |

@@ -159,8 +159,10 @@
   "id": "sheepish-side-eye",
   "learnedFrom": [
     "PART2_F_v2.xstage frames 2817-2933: complete hunched-shoulder, hanging-hands, side-eye performance with blink/talking beats and a wide-eyed finish",
-    "The extracted Mouth drawing exposure IDs and timing retain a detached drawing on local frames 4 and 7-12 plus an abrupt return on local frames 13-15 for diagnosis; full-frame source parity is not yet proven",
-    "The Hair 4, Head_Base 4, and Bangs_back 4 family is visually coherent but remains outside the current inspector's certified hair-drawing vocabulary"
+    "The checksum-locked native Toon Boom export is the fidelity authority; delegated normal-speed comparison passes for this repaired 117-frame character-local action while episode camera and storyboard framing remain intentionally omitted",
+    "Same-number PART2 mouth and pupil drawing IDs are scene-local and remain explicitly source-bound under the compatible Xstage hash instead of resolving through canonical artwork",
+    "The Hair 4, Head_Base 4, and Bangs_back 4 drawings form a checksum-registered finished-artwork family for this exact PART2 source; all 117 frames pass the official inspector with zero failures",
+    "Hard-cut entry and release boundaries still block motion-packet readiness, and human creative approval remains pending"
   ],
   "baseFrame": 1,
   "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca",

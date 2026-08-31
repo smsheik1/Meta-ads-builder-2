@@ -15,9 +15,9 @@ Registry checks prove that a recipe can run and pass mechanical rules. They do n
 ## Runtime facts
 
 - Source Xstage SHA-256: `507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca`
-- Compiled rig assets verified: 258, including 48 source-hash-namespaced variants for 24 drawing tuples imported from the compatible Episode 5 Xstage
+- Compiled rig assets verified: 280, including 70 source-hash-namespaced variants for 40 explicitly source-bound node-and-drawing pairs imported from the compatible Episode 5 Xstage
 - Registered pose recipes: 14
-- Automated tests: 191 passing, including reproducible package bytes, bundled-engine parity, transcript and cue provenance, tamper rejection, transcript-anchored choreography, local-only audio ingress, cache-link rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, the exact four-background registry, compatible-Xstage source binding, fail-closed palette normalization, exact asset-tree checks, lease-safe journal recovery and rollback for compatible-asset registration, and a smoke-fixture guard that excludes needs-review poses
+- Automated tests: 199/199 passing, including reproducible package bytes, bundled-engine parity, transcript and cue provenance, tamper rejection, transcript-anchored choreography, local-only audio ingress, cache-link rejection, audio-backed rendering, fixed-stage framing, the duration-derived Talk to Camera preset, the exact four-background registry, compatible-Xstage source binding, scene-local same-number drawing collisions, fail-closed palette normalization, Harmony constant-velocity holds and rejection of unsupported curves, extraction-boundary provenance and fail-closed prefix selection, exact asset-tree checks, lease-safe journal recovery and rollback for compatible-asset registration, and a smoke-fixture guard that excludes needs-review poses
 - Registry inspection: all 14 registered actions, 461 recipe frames, zero mechanical failures
 - Official smoke: Present and Confident only, 40 frames over 1.666667 seconds; validation, rendering, inspection, and finalization pass without using a needs-review action
 - Provider calls: 0
@@ -26,13 +26,15 @@ Registry checks prove that a recipe can run and pass mechanical rules. They do n
 
 ## Episode 5 Part 2 compatible-rig import
 
-The `PART2_F.zip` audit excluded every storyboard, animatic-coloring, and flattened range, then extracted three action candidates from the live Harmony rig data. No artist-rendered video frame became a runtime asset. The source archive and Xstage are not packaged; their hashes, ranges, topology comparison, drawing sources, palette transform, and parity status are locked in `evidence/episode5-part2-compatible-source.json`.
+The `PART2_F.zip` audit excluded every storyboard, animatic-coloring, and flattened range, then extracted three action candidates from the live Harmony rig data. No artist-rendered video frame became a runtime asset. The source archive and Xstage are not packaged; their hashes, ranges, topology comparison, drawing sources, palette transform, native-reference mapping, and inspection results are locked in `evidence/episode5-part2-compatible-source.json`.
 
-- Paired Open-Hand Emphasis preserves 58 source frames and passes official inspection with zero failures.
-- Enumerate List Items preserves 165 source frames. Official inspection reports six source-authored mouth failures; the native-source recipe render matches the direct source render byte-for-byte before canonical palette conversion.
-- Sheepish Side-Eye is a 117-frame character-local extraction draft and is blocked before any exact reconstruction claim. Its raw direct-Xstage render does not yet match the extracted native-source recipe because unresolved outer shot placement remains. The draft also has ten mouth failures, 117 uncertified Hair4/Head_Base4/Bangs_back4 inspector failures, and hard-cut entry and release boundaries.
+The repair fixed two converter errors: Harmony constant-velocity path segments now hold instead of inventing linear motion, and numeric drawing IDs are treated as scene-local so same-number PART2 mouth, pupil, and head artwork remains explicitly bound to the compatible source namespace. The independent fidelity authority is the checksum-locked native Toon Boom export `Part2_Rig_v5.mp4`, not a second render made through Wiggly's parser, sampler, compiler, and renderer.
 
-All three recipe files remain outside `poses/index.json`, the safe sequence list, and the motion-packet registry. Human approval is pending. Paired Open-Hand Emphasis is the only mechanically clean audition candidate. Exact source preservation is claimed only where the direct parity gate passed, and neither parity nor a passing renderer is being presented as creative approval.
+- Paired Open-Hand Emphasis preserves 58 source frames and passes the official inspector across 58/58 frames with zero failures. A delegated normal-speed comparison against the native Toon Boom range also passes: the mouth remains anchored and both wrists hold without the invented slide.
+- Enumerate List Items preserves 165 source frames and passes the official inspector across 165/165 frames with zero failures. The intentional eight-frame authored hold and the corrected mouth, pupil, and hand transitions pass delegated normal-speed comparison against native playback.
+- Sheepish Side-Eye preserves 117 character-local source frames and passes the official inspector across 117/117 frames with zero failures. Its checksum-registered Hair4/Head_Base4/Bangs_back4 finished-artwork family is certified for this exact PART2 source, and delegated normal-speed comparison confirms the facial and body timing against native playback. Episode camera and storyboard framing remain intentionally omitted; hard-cut entry and release boundaries still block packet readiness.
+
+All three recipe files remain outside `poses/index.json`, the safe sequence list, and the motion-packet registry. Human creative approval is pending for all three. A direct-Xstage render and an extracted-recipe render that share Wiggly's parser, channel sampler, asset compiler, and renderer are circular diagnostic evidence; matching them cannot certify Harmony fidelity or substitute for native Toon Boom comparison.
 
 ## Talking-scene proof
 

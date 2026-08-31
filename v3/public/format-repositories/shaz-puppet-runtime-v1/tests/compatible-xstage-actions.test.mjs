@@ -85,7 +85,7 @@ test("compatible Episode 5 actions retain exact external provenance and complete
       Mouth: ["2", "3", "5", "6", "7", "9"],
       Nose: ["3"],
       Right_Pupil: ["1", "15"],
-    }, "b4a43308afe0e84806e4b7173d84d148e1cf20763465074c4368628472e342c8", "20e352fa1a37a690003bdf40598c76802e9a57dc5b2f61f4c644ab879a53bbbe"],
+    }, "dd0a9c32a4e8f1e80f47a7d0d90ad2a256332f546f67a1ea483f5dc315aa2533", "a921a3fcf124c3a51092f34811cb6f8d9263fcc1a6fc945c1f8fab523789d8cf"],
   ];
   for (const [recipe, recipePath, range, drawings, fileSha256, semanticSha256] of expected) {
     assert.equal(recipe.sourceXstageSha256, runtimeSource);

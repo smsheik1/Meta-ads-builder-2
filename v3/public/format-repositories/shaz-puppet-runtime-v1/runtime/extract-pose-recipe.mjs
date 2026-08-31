@@ -39,7 +39,13 @@ function parseArgs(values) {
     else if (value === "--exposure-change-frames") {
       args.exposureChangeFrames = values[++index].split(",").map(Number);
     }
-    else if (value === "--node-prefix") args.nodePrefix = values[++index];
+    else if (value === "--node-prefix") {
+      const nodePrefix = values[++index];
+      if (typeof nodePrefix !== "string" || nodePrefix.trim() === "" || nodePrefix.startsWith("--")) {
+        throw new Error("--node-prefix requires a non-empty Harmony node-path prefix");
+      }
+      args.nodePrefix = nodePrefix;
+    }
     else if (value === "--output") args.output = values[++index];
     else throw new Error(`unknown argument ${value}`);
   }
@@ -161,13 +167,21 @@ async function main() {
     { length: durationFrames },
     (_, index) => index + 1,
   );
+  const extractableNodes = scene.nodes.filter((candidate) => (
+    candidate.type === "PEG" || candidate.type === "READ"
+  ));
+  const selectedNodes = extractableNodes.filter((candidate) => (
+    args.nodePrefix === null || candidate.path.startsWith(args.nodePrefix)
+  ));
+  if (args.nodePrefix !== null && selectedNodes.length === 0) {
+    throw new Error(
+      `--node-prefix ${JSON.stringify(args.nodePrefix)} matched zero PEG/READ nodes; extraction aborted`,
+    );
+  }
   const controls = {};
   const drawings = {};
 
-  for (const node of scene.nodes.filter((candidate) => (
-    (candidate.type === "PEG" || candidate.type === "READ")
-    && (!args.nodePrefix || candidate.path.startsWith(args.nodePrefix))
-  ))) {
+  for (const node of selectedNodes) {
     const baseState = controlStateForNode(sampleNode(node, columns, args.baseFrame));
     const sampledFrames = [];
     for (const localFrame of sampledLocalFrames) {
@@ -216,6 +230,9 @@ async function main() {
       startFrame: args.start,
       endFrame: args.end,
       generatedFrom: "xstage-control-channels-and-drawing-exposures",
+      extractionBoundary: args.nodePrefix === null
+        ? { type: "entire-scene" }
+        : { type: "node-path-prefix", nodePrefix: args.nodePrefix },
     },
     controls,
     drawings,

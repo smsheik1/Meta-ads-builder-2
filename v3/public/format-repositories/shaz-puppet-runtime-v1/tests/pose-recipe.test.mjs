@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   deformationFramesForExposureChanges,
@@ -10,6 +15,8 @@ import {
   createPoseRuntime,
   poseRecipeSha256,
 } from "../runtime/pose-recipe.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function value(val) {
   return { attributes: { val: String(val) } };
@@ -433,4 +440,88 @@ test("authored exposure cadence repeats deformation sources without invented in-
     () => validateExposureChangeFrames([1, 3, 5], 7),
     /from 1 through 7/,
   );
+});
+
+test("extractor CLI rejects an unmatched node boundary instead of writing an empty recipe", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-pose-boundary-"));
+  const manifestPath = path.join(scratch, "runtime.json");
+  const outputPath = path.join(scratch, "recipe.json");
+  try {
+    await fs.writeFile(manifestPath, JSON.stringify(fixture()));
+    const result = spawnSync(process.execPath, [
+      path.join(root, "runtime", "extract-pose-recipe.mjs"),
+      "--manifest", manifestPath,
+      "--id", "unmatched-boundary",
+      "--start", "1",
+      "--end", "2",
+      "--base-frame", "1",
+      "--node-prefix", "Top/Missing/",
+      "--output", outputPath,
+    ], { encoding: "utf8" });
+
+    assert.notEqual(result.status, 0);
+    assert.match(
+      result.stderr,
+      /--node-prefix "Top\/Missing\/" matched zero PEG\/READ nodes; extraction aborted/,
+    );
+    await assert.rejects(() => fs.stat(outputPath), { code: "ENOENT" });
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("extractor CLI records its selected node-path boundary in source provenance", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-pose-boundary-"));
+  const manifestPath = path.join(scratch, "runtime.json");
+  const outputPath = path.join(scratch, "recipe.json");
+  try {
+    await fs.writeFile(manifestPath, JSON.stringify(fixture()));
+    const result = spawnSync(process.execPath, [
+      path.join(root, "runtime", "extract-pose-recipe.mjs"),
+      "--manifest", manifestPath,
+      "--id", "hand-only",
+      "--start", "1",
+      "--end", "2",
+      "--base-frame", "1",
+      "--node-prefix", "Top/Hand",
+      "--output", outputPath,
+    ], { encoding: "utf8" });
+
+    assert.equal(result.status, 0, result.stderr);
+    const extracted = JSON.parse(await fs.readFile(outputPath, "utf8"));
+    assert.deepEqual(extracted.sourceAction.extractionBoundary, {
+      type: "node-path-prefix",
+      nodePrefix: "Top/Hand",
+    });
+    assert.deepEqual(Object.keys(extracted.controls), []);
+    assert.deepEqual(Object.keys(extracted.drawings), ["Hand"]);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("extractor CLI records full-scene extraction when no node boundary is supplied", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-pose-boundary-"));
+  const manifestPath = path.join(scratch, "runtime.json");
+  const outputPath = path.join(scratch, "recipe.json");
+  try {
+    await fs.writeFile(manifestPath, JSON.stringify(fixture()));
+    const result = spawnSync(process.execPath, [
+      path.join(root, "runtime", "extract-pose-recipe.mjs"),
+      "--manifest", manifestPath,
+      "--id", "whole-scene",
+      "--start", "1",
+      "--end", "2",
+      "--base-frame", "1",
+      "--output", outputPath,
+    ], { encoding: "utf8" });
+
+    assert.equal(result.status, 0, result.stderr);
+    const extracted = JSON.parse(await fs.readFile(outputPath, "utf8"));
+    assert.deepEqual(extracted.sourceAction.extractionBoundary, {
+      type: "entire-scene",
+    });
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
 });

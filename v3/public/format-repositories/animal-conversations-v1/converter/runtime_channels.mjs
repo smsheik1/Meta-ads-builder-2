@@ -54,6 +54,9 @@ function samplePath3dColumn(column, frame) {
     constantSegment: velocityByFrame.get(point.frame)?.constantSegment ?? false,
   })).sort((left, right) => left.frame - right.frame);
 
+  const exactKey = keys.find((key) => frame === key.frame);
+  if (exactKey) return exactKey.value;
+
   if (hasVelocityMetadata && keys.length > 1
     && frame > keys[0].frame && frame < keys.at(-1).frame) {
     for (let index = 1; index < keys.length; index += 1) {

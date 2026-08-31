@@ -72,6 +72,27 @@ test("path3d channels reject unsupported curved velocity instead of inventing li
   );
 });
 
+test("path3d channels return an exact interior key before checking its following curve", () => {
+  const column = { path3d: {
+    points: [
+      { frame: 1, value: [0, 0, 0] },
+      { frame: 5, value: [4, 2, 0] },
+      { frame: 9, value: [12, 6, 0] },
+    ],
+    velocity: { points: [
+      { frames: [1], constantSegment: true },
+      { frames: [5], constantSegment: false },
+      { frames: [9], constantSegment: false },
+    ] },
+  } };
+
+  assert.deepEqual(samplePath3dColumn(column, 5), [4, 2, 0]);
+  assert.throws(
+    () => samplePath3dColumn(column, 7),
+    /unsupported nonconstant Harmony path3D segment <unnamed> 5-9/,
+  );
+});
+
 test("drawing channels distinguish explicit exposure, held exposure, and empty exposure", () => {
   const column = {
     exposures: [{ frames: [1, 2], drawing: "1" }, { frames: [5], drawing: "2" }],
