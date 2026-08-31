@@ -19,7 +19,8 @@ const repoRoot = path.resolve(v3Root, "..");
 const renderEntry = path.join(v3Root, "remotion-entry", "index.ts");
 const outputDir = path.join(v3Root, "tmp", "renders");
 const bundleDir = path.join(v3Root, "tmp", "remotion-bundle");
-const heartbeatIntervalMs = 5000;
+const heartbeatIntervalMs = 10_000;
+const idlePollIntervalMs = 30_000;
 
 type ClaimedRenderJob = {
   renderJobId: Id<"renderJobs">;
@@ -373,7 +374,7 @@ async function main() {
     do {
       const didWork = await runOnce(client, serveUrl) || await runStitchOnce(client);
       if (!watch) break;
-      if (!didWork) await wait(3000);
+      if (!didWork) await wait(idlePollIntervalMs);
     } while (watch);
   } finally {
     clearInterval(heartbeatTimer);

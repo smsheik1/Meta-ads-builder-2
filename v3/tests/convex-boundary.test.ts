@@ -18,5 +18,8 @@ assert.ok(!providerSource.includes("process.env.NEXT_PUBLIC_CONVEX_URL"));
 const workerSource = readFileSync("scripts/render-worker.ts", "utf8");
 assert.ok(workerSource.includes("V3_CONVEX_URL"));
 assert.ok(workerSource.includes("NEXT_PUBLIC_V3_CONVEX_URL"));
+assert.ok(workerSource.includes("const heartbeatIntervalMs = 10_000;"));
+assert.ok(workerSource.includes("const idlePollIntervalMs = 30_000;"));
+assert.ok(workerSource.includes("await wait(idlePollIntervalMs)"));
 
 console.log("convex-boundary tests passed");
