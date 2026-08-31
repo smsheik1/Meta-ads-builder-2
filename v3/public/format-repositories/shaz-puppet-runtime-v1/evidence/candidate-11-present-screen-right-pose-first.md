@@ -44,9 +44,9 @@ The official runtime inspected all 83 canonical action frames and passed 83/83 w
 
 ## Pending normal-speed review
 
-The persistent review bundle is:
-
-`/Users/shaz/.codex/visualizations/2026/08/11/019ff2c9-6819-76f3-a4ca-20affda21f25/shaz-primary-11-present-screen-right-v3-full-action`
+The external review bundle is named
+`shaz-primary-11-present-screen-right-v3-full-action`; it is intentionally not
+included in the downloadable Format kit.
 
 Its exact primary artifacts are:
 
