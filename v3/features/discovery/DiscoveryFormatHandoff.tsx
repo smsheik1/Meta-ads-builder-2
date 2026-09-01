@@ -1,6 +1,7 @@
 "use client";
 
 import { Bot, Check, ChevronUp, Clipboard, ExternalLink, Terminal } from "lucide-react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -45,10 +46,18 @@ export function DiscoveryFormatHandoff({
   };
 
   const openCodex = () => {
+    posthog.capture("format_handoff_started", {
+      destination: "codex",
+      format_slug: format.slug,
+    });
     window.location.href = buildCodexHandoffUrl(prompt());
   };
 
   const openAntigravity = async () => {
+    posthog.capture("format_handoff_started", {
+      destination: "antigravity",
+      format_slug: format.slug,
+    });
     try {
       await navigator.clipboard.writeText(prompt());
       showFeedback("Prompt copied · opening Antigravity");
@@ -68,7 +77,19 @@ export function DiscoveryFormatHandoff({
   };
 
   const copyCliCommand = async (agent: DiscoveryCliAgent, label: string) => {
+    posthog.capture("format_handoff_started", {
+      destination: agent,
+      format_slug: format.slug,
+    });
     await copyText(buildDiscoveryCliCommand(agent, prompt()), `${label} command copied`);
+  };
+
+  const copyAgentPrompt = async () => {
+    posthog.capture("format_handoff_started", {
+      destination: "other-agent",
+      format_slug: format.slug,
+    });
+    await copyText(prompt(), "Coding agent prompt copied");
   };
 
   const actionMenu = (tone: "lime" | "dark" = "lime") => (
@@ -109,7 +130,7 @@ export function DiscoveryFormatHandoff({
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => void copyText(prompt(), "Coding agent prompt copied")}>
+          <DropdownMenuItem onSelect={() => void copyAgentPrompt()}>
             <Clipboard className="size-4" aria-hidden="true" />
             Copy for another coding agent
           </DropdownMenuItem>

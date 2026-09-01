@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";
+import posthog from "posthog-js";
 import { useMutation } from "convex/react";
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export function DiscoverySubmissionForm() {
     setError("");
     try {
       await submitFormat(normalized);
+      posthog.capture("format_submission_completed");
       setStatus("ready");
     } catch (caught) {
       setStatus("error");
