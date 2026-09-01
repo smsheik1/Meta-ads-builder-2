@@ -126,6 +126,10 @@ node runtime/compile-tvg-assets.mjs \
 
 Use the same `--node-prefix` here and in the importer. The compiler resolves renderer READs only inside that boundary; it never falls back to a same-named storyboard node elsewhere in a hybrid scene. Omit both outline options when no palette conversion is required. The receipt binds each source TVG hash, raster hash, variant, dimensions, origin, and any palette replacement. Compile into a dedicated work directory; the command stages a complete exact asset tree before replacing an earlier result. Never recolor finished video frames or overwrite canonical assets.
 
+Harmony compound fills need one more invariant. When a TVG `ShapeType::Unknown5` contains only fill paths, export the complete shape as one compound boundary. The first component may be the only one that repeats the fill color; later colorless components are continuation paths, not disposable fragments. Component order is not contour order: reconnect matching endpoints into closed chains, reverse a component and its cubic controls when its end is the required next endpoint, and emit a new move command only for a genuinely separate closed contour. Reject open chains and ambiguous branches instead of letting SVG implicitly close them into wedges. This preserves real holes and tangent contours without turning loose arcs into filled triangles. A mixed fill-and-pencil shape or conflicting component colors does not qualify and must keep its explicit handling or fail closed.
+
+Protect that behavior with a real-TVG regression corpus from the authoring pipeline, not only synthetic path fixtures. At least one fixture must exercise an `Unknown5` fill whose later components omit the repeated color, then prove that the exported boundary and compiled raster retain the complete pupil or other compound artwork. The real payload matters: the missing-pupil failure lived in a valid Harmony layout that a simplified mock never represented.
+
 A compatible scene may legitimately mix the declared outline color with drawings that contain no such stroke. Record the exact replacement count per asset and require the declared conversion to change at least one compiled asset overall; do not reject an unchanged drawing merely because a different drawing needed normalization. The later complete-registration comparison, not a blanket per-drawing color assumption, decides whether artwork is canonical-identical.
 
 #### Step 5: extract, retarget, and write the audit
@@ -212,6 +216,8 @@ Preserve drawing exposures, held exposures, and intentional blanks separately. N
 
 The sampler returns an exact keyed value on its frame, holds a constant velocity segment from its left key until the next key, and rejects unsupported nonconstant path3D curves. The importer exercises those semantics across the entire retained range. If it fails on an unsupported curve, the candidate is blocked until that curve is implemented and tested.
 
+For a sliding mouth, inspect `Mouth-P` before changing artwork or transforms. Read its path3D keys, velocity column, and drawing substitutions across the exact suspect interval. A velocity segment marked `constantSegment: true` holds the left position until the next authored key; the keyed frame itself must return the new exact value even when the following segment uses different semantics. Pin the source frame numbers, keyed values, held intervals, and mouth drawing changes in a regression. If those checks disagree with playback, fix the sampler first—do not compensate with a mouth offset.
+
 #### Step 8: understand the three drawing classes
 
 Inventory every `(READ node path, drawing ID)` pair used by the action. The audit classifies every used pair into exactly one bucket:
@@ -239,6 +245,19 @@ node runtime/register-compatible-tvg-assets.mjs \
 ```
 
 Add another `--recipe` for every candidate from the same Xstage. Registration selects only audited source-bound drawings, rechecks receipts and output hashes, writes them below the source-hash namespace, and prunes assets no current recipe uses. Never overwrite the canonical filename or let an unbound external drawing resolve by numeric ID.
+
+A compiler repair can invalidate both source-bound compatible assets and canonical assets built by that compiler. Recompile and register every affected compatible drawing, then refresh the affected canonical subset from its canonical TVGs; fixing only one side leaves other actions on stale pixels. Both operations use the same canonical asset-tree lease, resolve the real target path, stage exact files and the next receipt, verify unique element/drawing/variant registrations plus source and output hashes, and reject orphans and unsafe links. The compatible registrar has a durable journal and automatic recovery. The canonical refresher uses an atomic whole-tree swap with rollback for caught errors. If the process or machine dies during that swap, it preserves a sibling `.shaz-canonical-backup-*` directory and the next run fails closed. Never delete that backup: if `rig-v2/assets` is missing and exactly one matching backup exists, manually rename the backup to `assets`, run the full asset registration checks, and only then retry the refresh. If both the target and backup exist, stop for explicit operator inspection. Preserve unrelated canonical files and compatible source namespaces byte-for-byte. Canonical compiled records must also retain the existing `paletteNormalization` value exactly; an accidental outline-recoloring compile is not a valid refresh.
+
+Run the canonical subset refresh from the source repository, not from a sealed kit:
+
+```sh
+node runtime/refresh-canonical-tvg-assets.mjs \
+  --manifest rig-v2/runtime.json \
+  --base-assets rig-v2/assets \
+  --compiled-assets /absolute/work/compiled-canonical-assets
+```
+
+The compiled directory must contain only the intended canonical replacements plus its exact compiler receipt. Both this command and the compatible registrar always acquire the same lease derived from the canonical asset-tree identity, so separate invocations still serialize even when an operator supplies different `--registration-state-dir` values. That option changes only the per-operation journal and recovery location; use a stable, operator-visible directory when recovery artifacts must survive a disposable working directory. The refresher rejects changed palette normalization, undecodable PNG bytes, raster dimensions that disagree with the receipt, and invalid model geometry before it touches the live tree. If an interrupted swap leaves `rig-v2/assets` absent, the refresher first acquires that canonical identity lease; it emits manual recovery instructions only after proving that no live owner is still performing the swap. Locate the single sibling `.shaz-canonical-backup-*` named in that error, rename that directory to `assets`, then run `npm run check` and `npm run inspect:registry`. If the command instead reports a live owner, do not rename anything. Do not retry the refresh until both checks pass. If `assets` still exists too, do not choose one by timestamp; preserve both and inspect their receipts and hashes explicitly.
 
 #### Step 10: render the portable candidate
 
@@ -295,6 +314,13 @@ That file is the synchronized native-versus-runtime playback at 1×. Keep slow m
 For dense chronological sheets, run `ffmpeg` on each clip with `fps=24,scale=320:-1,tile=6x6:padding=4:margin=4` and an output pattern such as `dense-%03d.png`; do not stop after the first page. Make tight crops for every suspect face, mouth, pupil, shoulder, cuff, wrist, and hand interval.
 
 Watch the complete range and inspect exact suspect frames plus tight crops of pupils, eyelids, mouth, hair, collar, shoulders, cuffs, wrists, hands, and torso. Confirm authored holds, one-frame accents, substitutions, and release timing. A passing inspector or contact sheet cannot replace watching the moving result.
+
+Facial fidelity is fail-closed:
+
+- On every frame whose eye substitution is open, require the corresponding pupil layer to contain a meaningful connected **dark opaque** component; the current normalized minimum is 24 pixels. Also require at least `0.60` filled-area-to-bounding-box solidity so an open crescent or wedge cannot pass merely because its fragments touch, plus at least 12 dark pixels and half of the dark pupil area overlapping the transformed semantic eye envelope so a pupil cannot slide onto the face and still pass. Allow absence only when the side, closed-eye drawing, and compiled eye asset checksum all match an approved closed-eye registration. Bind any authored area or solidity exception to the exact eye/pupil drawing tuple and compiled pupil checksum; do not weaken either global floor.
+- Register the native and runtime frames through the same stable character anchors, then compare the face, each pupil, and mouth centroids at exact source-to-runtime frame mappings. Judge the residuals after registration, not by raw screen coordinates, and lock action-specific tolerances from native evidence. A shared stage shift is not a mouth defect; a feature moving relative to the registered face is.
+- After any parser, sampler, exporter, asset, or renderer repair, discard every old candidate render, inspection report, crop, and comparison. Rebuild them from the repaired runtime and bind the new hashes. A reused filename or plausible timestamp does not prove that the file contains the fix.
+- Watch the final synchronized normal-speed encode from first frame to last after the last change. Scrubbing, dense sheets, a few stills, or an earlier complete pass do not count. If the candidate or its assets change, the complete playback requirement resets.
 
 #### Step 12: derive narrow inspection rules from native evidence
 
@@ -355,6 +381,9 @@ Stop and mark the action blocked when the source archive is incomplete, the live
 | A video-guided rebuild looked like a stiff still instead of the authored action | Destination pose was mistaken for the full rig performance | Use the compatible Xstage whenever it exists; preserve setup, accent, secondary body motion, holds, and release. |
 | Mouth and hand artwork crawled sideways between keys | Harmony path3D velocity holds were discarded and replaced with linear interpolation | Treat velocity as motion data; hold constant segments, return exact keys, and reject unsupported curves. |
 | Pupils disappeared and mouths or head art changed | Numeric drawing IDs were treated as global across scenes | Compare every used node/drawing pair after palette normalization and source-bind absent or colliding artwork. |
+| An open eye rendered as a white socket, tiny black arc, or top-edge wedge | Colorless or out-of-order continuation paths in an all-fill Harmony `Unknown5` shape were dropped or emitted as separate open SVG contours | Stitch matching endpoints into closed compound contours, reject open or ambiguous topology, cover the real TVG layout in regression, and require both pupil area and solidity on every open-eye frame. |
+| A compatible action was repaired while an older canonical action kept the same broken face art | The shared compiler fix was registered into only one asset class | Refresh affected compatible and canonical assets under the same transactional asset-tree safeguards, then prove unrelated assets stayed unchanged. |
+| A post-fix review still showed the pre-fix pupils or mouth | An old render or crop survived under a familiar filename | Delete stale evidence, rerender from the repaired runtime, bind new hashes, and restart the complete playback review. |
 | Two generated renders matched but both disagreed with Toon Boom | The same parser, sampler, compiler, and renderer existed on both sides of the comparison | Use checksum-locked native Toon Boom playback as the independent fidelity authority; label runtime-vs-runtime matches diagnostic only. |
 | A mistyped puppet prefix could emit a plausible empty recipe | Extraction did not prove that the requested boundary selected nodes | Fail on zero explicit-prefix matches and record `sourceAction.extractionBoundary`. |
 | A source-authored hold looked like an accidental freeze—or a real freeze was excused as authored | Temporal limits were chosen from the candidate rather than the native source | Measure native exposure changes and longest holds before setting interpolation or inspector ceilings. |
@@ -459,6 +488,8 @@ For a whole-character mirror, reflect the common PEG ancestor rather than indepe
 | Hairline has a dark wedge or stray crescent | Component masking and shade ownership | Filter the stray component; restore the artist shade mask |
 | Hair or another occluder appears inside a squint or partial eye | Raw visible alpha was mistaken for the full region the substitution owns | Reconstruct the full semantic eye envelope and clip the occluder behind it; verify zero opaque overlap per frame |
 | Missing finger, teeth, eye, or mouth color | Drawing substitution, TVG paint-side recovery, and fill extraction | Use the intended drawing; recover an unambiguous enclosed region when the recorded paint side resolves to nothing; verify required palette colors directly |
+| Open eye has no pupil, a white pupil, a tiny fragment, a hollow wedge, or a pupil sliding onto the face | Compound TVG endpoint stitching, registered pupil asset, and open-eye darkness/area/solidity/eye-overlap gate | Preserve and reconnect all `Unknown5` fill continuation paths, refresh both compatible and canonical asset families, and reject the frame unless the dark pupil clears the connected-area and solidity floors while meaningfully overlapping the transformed eye envelope |
+| Mouth seems shifted after a runtime repair | Stale evidence, `Mouth-P` constant-segment sampling, then registered facial residuals | Discard old renders; pin held/keyed channel values; compare the mouth centroid after native-to-runtime face registration before changing any offset |
 | Pose reads correctly but feels choppy | Phase timing and secondary controls | Recover accents, overlaps, living hold, afterbeat, and release |
 | Long frozen hold | Omitted secondary source controls | Preserve the complete control choreography; add a temporal gate |
 | Motion is smooth but generic | Uniform interpolation | Use explicit asymmetric accents, overshoot, settle, and rebound |

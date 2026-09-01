@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
+import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -11,6 +12,7 @@ import { createPoseRuntime } from "../runtime/pose-recipe.mjs";
 import {
   commitCompatibleAssetRegistration,
   defaultCompatibleRegistrationStateParent,
+  retainedCanonicalBackupPath,
 } from "../runtime/register-compatible-tvg-assets.mjs";
 import { loadAssetRegistration } from "../runtime/rig-v2-renderer.mjs";
 
@@ -36,6 +38,55 @@ async function sha256(file) {
 
 async function canonicalPathForPotentialEntry(file) {
   return path.join(await fs.realpath(path.dirname(file)), path.basename(file));
+}
+
+function isPendingSourceCopy(source, destination) {
+  return path.basename(source) === "staged-source"
+    && path.basename(destination).startsWith(".registration-source-next-");
+}
+
+function isPendingReceiptInstall(source, destination) {
+  return path.basename(source).startsWith(".registration-receipt-next-")
+    && path.basename(destination) === "receipt.json";
+}
+
+function interruptedAtomicRegistrationFileSystem(interruptAt) {
+  const state = { interrupted: false, recoveryBlocked: false };
+  const fileSystem = {
+    ...fs,
+    rename: async (source, destination) => {
+      const sourceName = path.basename(source);
+      const destinationName = path.basename(destination);
+      const sourceRetirement = sourceName === compatibleSource
+        && destinationName.startsWith(".registration-source-prior-");
+      const sourceInstallation = sourceName.startsWith(".registration-source-next-")
+        && destinationName === compatibleSource;
+      const receiptInstallation = isPendingReceiptInstall(source, destination);
+      const shouldInterrupt = !state.interrupted && (
+        (interruptAt === "source-retired" && sourceRetirement)
+        || (interruptAt === "source-installed" && sourceInstallation)
+        || (interruptAt === "receipt-installed" && receiptInstallation)
+      );
+      if (shouldInterrupt) {
+        await fs.rename(source, destination);
+        state.interrupted = true;
+        throw new Error(`forced interruption after ${interruptAt}`);
+      }
+      const rollbackRestoreAfterRetirement = state.interrupted
+        && sourceName.startsWith(".registration-source-prior-")
+        && destinationName === compatibleSource;
+      const rollbackRetireInstalledSource = state.interrupted
+        && sourceName === compatibleSource
+        && destinationName.startsWith(".registration-source-next-");
+      if (!state.recoveryBlocked
+        && (rollbackRestoreAfterRetirement || rollbackRetireInstalledSource)) {
+        state.recoveryBlocked = true;
+        throw new Error("simulate process death before caught-error rollback can finish");
+      }
+      return fs.rename(source, destination);
+    },
+  };
+  return { fileSystem, state };
 }
 
 test("compatible Episode 5 actions retain exact external provenance and complete deformation state", async () => {
@@ -541,6 +592,14 @@ async function transactionFixture(scratch) {
   };
 }
 
+async function canonicalLockStateParent(baseAssets) {
+  const stateParent = defaultCompatibleRegistrationStateParent(
+    await fs.realpath(baseAssets),
+  );
+  await fs.mkdir(stateParent, { recursive: true });
+  return fs.realpath(stateParent);
+}
+
 test("compatible registration rolls back a failed receipt commit", async () => {
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-rollback-"));
   const transactionParent = path.join(scratch, "transactions");
@@ -551,14 +610,16 @@ test("compatible registration rolls back a failed receipt commit", async () => {
     let failureInjected = false;
     const failingFileSystem = {
       ...fs,
-      copyFile: async (source, destination) => {
-        if (!failureInjected && path.resolve(destination) === canonicalReceiptPath) {
+      rename: async (source, destination) => {
+        if (!failureInjected
+          && isPendingReceiptInstall(source, destination)
+          && path.resolve(destination) === canonicalReceiptPath) {
           failureInjected = true;
           const error = new Error("forced receipt commit failure");
           error.code = "EIO";
           throw error;
         }
-        return fs.copyFile(source, destination);
+        return fs.rename(source, destination);
       },
     };
     await assert.rejects(
@@ -727,15 +788,14 @@ test("compatible registration restores the previous source after source installa
     let failureInjected = false;
     const failingFileSystem = {
       ...fs,
-      cp: async (source, destination, options) => {
+      rename: async (source, destination) => {
         if (!failureInjected
-          && path.basename(source) === "staged-source"
+          && path.basename(source).startsWith(".registration-source-next-")
           && path.resolve(destination) === canonicalSourceDirectory) {
           failureInjected = true;
-          await fs.mkdir(destination, { recursive: true });
           throw new Error("forced source installation failure");
         }
-        return fs.cp(source, destination, options);
+        return fs.rename(source, destination);
       },
     };
     await assert.rejects(
@@ -765,21 +825,223 @@ test("compatible registration restores the previous source after source installa
   }
 });
 
+test("a torn owner-scoped pending source is removed without touching live bytes", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-pending-partial-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    let partialCopyCreated = false;
+    const interruptedFileSystem = {
+      ...fs,
+      cp: async (source, destination, options) => {
+        if (!partialCopyCreated && isPendingSourceCopy(source, destination)) {
+          partialCopyCreated = true;
+          await fs.mkdir(destination);
+          await fs.writeFile(path.join(destination, "left-eye-99.png"), "torn pending bytes");
+          throw new Error("forced partial pending source copy");
+        }
+        return fs.cp(source, destination, options);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        baseAssets: fixture.baseAssets,
+        sourceXstageSha256: compatibleSource,
+        preparedAssets: [{
+          source: fixture.preparedSource,
+          filename: "left-eye-99.png",
+          outputSha256: fixture.newOutputSha256,
+        }],
+        receipt: fixture.nextReceipt,
+        transactionParent,
+        fileSystem: interruptedFileSystem,
+      }),
+      /forced partial pending source copy/,
+    );
+    assert.equal(partialCopyCreated, true);
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-100.png"]);
+    assert.deepEqual(
+      JSON.parse(await fs.readFile(path.join(fixture.baseAssets, "receipt.json"), "utf8")),
+      fixture.currentReceipt,
+    );
+    assert.deepEqual(await fs.readdir(transactionParent), []);
+    assert.equal((await fs.readdir(path.dirname(fixture.sourceDirectory))).some((entry) => (
+      entry.startsWith(".registration-source-")
+    )), false);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("live source and receipt mutation uses only owner-scoped same-parent renames", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-atomic-live-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const liveSource = await fs.realpath(fixture.sourceDirectory);
+    const liveReceipt = await fs.realpath(path.join(fixture.baseAssets, "receipt.json"));
+    let sourceInstalledByRename = false;
+    let receiptInstalledByRename = false;
+    const observedRenames = [];
+    const observingFileSystem = {
+      ...fs,
+      cp: async (source, destination, options) => {
+        assert.notEqual(path.resolve(destination), liveSource, "recursive copy targeted live source");
+        return fs.cp(source, destination, options);
+      },
+      copyFile: async (source, destination, mode) => {
+        assert.notEqual(path.resolve(destination), liveReceipt, "copyFile targeted live receipt");
+        return fs.copyFile(source, destination, mode);
+      },
+      rm: async (target, options) => {
+        assert.notEqual(path.resolve(target), liveSource, "recursive removal targeted live source");
+        return fs.rm(target, options);
+      },
+      rename: async (source, destination) => {
+        observedRenames.push([path.resolve(source), path.resolve(destination)]);
+        if (path.resolve(destination) === liveSource) {
+          assert.equal(path.dirname(source), path.dirname(destination));
+          assert.equal(path.basename(source).startsWith(".registration-source-next-"), true);
+          sourceInstalledByRename = true;
+        }
+        if (path.resolve(destination) === liveReceipt) {
+          assert.equal(path.dirname(source), path.dirname(destination));
+          assert.equal(path.basename(source).startsWith(".registration-receipt-next-"), true);
+          receiptInstalledByRename = true;
+        }
+        return fs.rename(source, destination);
+      },
+    };
+    await commitCompatibleAssetRegistration({
+      baseAssets: fixture.baseAssets,
+      sourceXstageSha256: compatibleSource,
+      preparedAssets: [{
+        source: fixture.preparedSource,
+        filename: "left-eye-99.png",
+        outputSha256: fixture.newOutputSha256,
+      }],
+      receipt: fixture.nextReceipt,
+      transactionParent,
+      fileSystem: observingFileSystem,
+    });
+    assert.equal(sourceInstalledByRename, true, JSON.stringify(observedRenames));
+    assert.equal(receiptInstalledByRename, true, JSON.stringify(observedRenames));
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-99.png"]);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("owned sibling cleanup preserves a substituted directory", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-sibling-cleanup-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const preservedOriginal = path.join(
+      path.dirname(fixture.sourceDirectory),
+      "preserved-original-prior-source",
+    );
+    let replacementPath = null;
+    const interleavingFileSystem = {
+      ...fs,
+      rename: async (source, destination) => {
+        if (replacementPath === null
+          && path.basename(source).startsWith(".registration-source-prior-")
+          && path.basename(destination).startsWith(`${path.basename(source)}.cleanup-`)) {
+          replacementPath = source;
+          await fs.rename(source, preservedOriginal);
+          await fs.mkdir(source);
+          await fs.writeFile(path.join(source, "replacement-sentinel"), "preserve me");
+        }
+        return fs.rename(source, destination);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        baseAssets: fixture.baseAssets,
+        sourceXstageSha256: compatibleSource,
+        preparedAssets: [{
+          source: fixture.preparedSource,
+          filename: "left-eye-99.png",
+          outputSha256: fixture.newOutputSha256,
+        }],
+        receipt: fixture.nextReceipt,
+        transactionParent,
+        fileSystem: interleavingFileSystem,
+      }),
+      /committed but journal cleanup failed/,
+    );
+    assert.ok(replacementPath);
+    assert.equal(await fs.readFile(path.join(replacementPath, "replacement-sentinel"), "utf8"),
+      "preserve me");
+    assert.equal((await fs.lstat(preservedOriginal)).isDirectory(), true);
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-99.png"]);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("transaction cleanup preserves a substituted directory", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-transaction-cleanup-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const canonicalTransactionParent = await canonicalPathForPotentialEntry(transactionParent);
+    const preservedOriginal = path.join(transactionParent, "preserved-original-transaction");
+    let replacementPath = null;
+    const interleavingFileSystem = {
+      ...fs,
+      rename: async (source, destination) => {
+        if (replacementPath === null
+          && path.dirname(source) === canonicalTransactionParent
+          && path.basename(source).startsWith("registration-")
+          && path.basename(destination).startsWith("registration-retired-")) {
+          replacementPath = source;
+          await fs.rename(source, preservedOriginal);
+          await fs.mkdir(source);
+          await fs.writeFile(path.join(source, "replacement-sentinel"), "preserve me");
+        }
+        return fs.rename(source, destination);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        baseAssets: fixture.baseAssets,
+        sourceXstageSha256: compatibleSource,
+        preparedAssets: [{
+          source: fixture.preparedSource,
+          filename: "left-eye-99.png",
+          outputSha256: fixture.newOutputSha256,
+        }],
+        receipt: fixture.nextReceipt,
+        transactionParent,
+        fileSystem: interleavingFileSystem,
+      }),
+      /committed but journal cleanup failed/,
+    );
+    assert.ok(replacementPath);
+    assert.equal(await fs.readFile(path.join(replacementPath, "replacement-sentinel"), "utf8"),
+      "preserve me");
+    assert.equal((await fs.lstat(preservedOriginal)).isDirectory(), true);
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-99.png"]);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
 test("a concurrent invocation cannot recover or replace a live registration", async () => {
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-concurrent-"));
   const transactionParent = path.join(scratch, "transactions");
   let releaseInstall;
   try {
     const fixture = await transactionFixture(scratch);
-    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
     let notifyInstall;
     const installStarted = new Promise((resolve) => { notifyInstall = resolve; });
     const installRelease = new Promise((resolve) => { releaseInstall = resolve; });
     const blockingFileSystem = {
       ...fs,
       cp: async (source, destination, options) => {
-        if (path.basename(source) === "staged-source"
-          && path.resolve(destination) === canonicalSourceDirectory) {
+        if (isPendingSourceCopy(source, destination)) {
           notifyInstall();
           await installRelease;
         }
@@ -818,6 +1080,235 @@ test("a concurrent invocation cannot recover or replace a live registration", as
   }
 });
 
+test("different custom journal directories share one canonical asset-tree lease", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-custom-lock-"));
+  const firstTransactionParent = path.join(scratch, "transactions-a");
+  const secondTransactionParent = path.join(scratch, "transactions-b");
+  let releaseInstall;
+  try {
+    const fixture = await transactionFixture(scratch);
+    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
+    let notifyInstall;
+    const installStarted = new Promise((resolve) => { notifyInstall = resolve; });
+    const installRelease = new Promise((resolve) => { releaseInstall = resolve; });
+    const blockingFileSystem = {
+      ...fs,
+      cp: async (source, destination, options) => {
+        if (isPendingSourceCopy(source, destination)) {
+          notifyInstall();
+          await installRelease;
+        }
+        return fs.cp(source, destination, options);
+      },
+    };
+    const registration = {
+      baseAssets: fixture.baseAssets,
+      sourceXstageSha256: compatibleSource,
+      preparedAssets: [{
+        source: fixture.preparedSource,
+        filename: "left-eye-99.png",
+        outputSha256: fixture.newOutputSha256,
+      }],
+      receipt: fixture.nextReceipt,
+    };
+    const firstInvocation = commitCompatibleAssetRegistration({
+      ...registration,
+      transactionParent: firstTransactionParent,
+      fileSystem: blockingFileSystem,
+    });
+    await installStarted;
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        ...registration,
+        transactionParent: secondTransactionParent,
+      }),
+      /already active under process owner/,
+    );
+    releaseInstall();
+    await firstInvocation;
+    releaseInstall = null;
+    assert.deepEqual(await fs.readdir(firstTransactionParent), []);
+    assert.deepEqual(await fs.readdir(secondTransactionParent), []);
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-99.png"]);
+  } finally {
+    releaseInstall?.();
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("a canonical journal locator recovers custom directory A through directory B", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-custom-recovery-"));
+  const firstTransactionParent = path.join(scratch, "transactions-a");
+  const secondTransactionParent = path.join(scratch, "transactions-b");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const registration = {
+      baseAssets: fixture.baseAssets,
+      sourceXstageSha256: compatibleSource,
+      preparedAssets: [{
+        source: fixture.preparedSource,
+        filename: "left-eye-99.png",
+        outputSha256: fixture.newOutputSha256,
+      }],
+      receipt: fixture.nextReceipt,
+    };
+    const { fileSystem: interruptedFileSystem, state: interruption } =
+      interruptedAtomicRegistrationFileSystem("source-retired");
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        ...registration,
+        transactionParent: firstTransactionParent,
+        fileSystem: interruptedFileSystem,
+      }),
+      /journal recovery was incomplete/,
+    );
+    assert.equal(interruption.interrupted, true);
+    assert.equal(interruption.recoveryBlocked, true);
+    assert.equal((await fs.readdir(firstTransactionParent)).some((entry) => (
+      entry.startsWith("registration-")
+    )), true);
+
+    const stopAfterRecoveryFileSystem = {
+      ...fs,
+      mkdtemp: async (prefix) => {
+        if (path.basename(prefix) === "registration-") {
+          throw new Error("stop after cross-directory journal recovery");
+        }
+        return fs.mkdtemp(prefix);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        ...registration,
+        transactionParent: secondTransactionParent,
+        fileSystem: stopAfterRecoveryFileSystem,
+      }),
+      /stop after cross-directory journal recovery/,
+    );
+    assert.deepEqual(await fs.readdir(firstTransactionParent), []);
+    assert.deepEqual(await fs.readdir(secondTransactionParent), []);
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-100.png"]);
+    assert.deepEqual(
+      JSON.parse(await fs.readFile(path.join(fixture.baseAssets, "receipt.json"), "utf8")),
+      fixture.currentReceipt,
+    );
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    assert.equal((await fs.readdir(lockStateParent)).includes("active-journal.json"), false);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("the next invocation recovers an interruption after atomic source installation", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-source-interrupt-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const registration = {
+      baseAssets: fixture.baseAssets,
+      sourceXstageSha256: compatibleSource,
+      preparedAssets: [{
+        source: fixture.preparedSource,
+        filename: "left-eye-99.png",
+        outputSha256: fixture.newOutputSha256,
+      }],
+      receipt: fixture.nextReceipt,
+      transactionParent,
+    };
+    const { fileSystem: interruptedFileSystem } =
+      interruptedAtomicRegistrationFileSystem("source-installed");
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        ...registration,
+        fileSystem: interruptedFileSystem,
+      }),
+      /journal recovery was incomplete/,
+    );
+    const stopAfterRecoveryFileSystem = {
+      ...fs,
+      mkdtemp: async (prefix) => {
+        if (path.basename(prefix) === "registration-") {
+          throw new Error("stop after source-install recovery");
+        }
+        return fs.mkdtemp(prefix);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        ...registration,
+        fileSystem: stopAfterRecoveryFileSystem,
+      }),
+      /stop after source-install recovery/,
+    );
+    assert.deepEqual(await fs.readdir(transactionParent), []);
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-100.png"]);
+    assert.deepEqual(
+      JSON.parse(await fs.readFile(path.join(fixture.baseAssets, "receipt.json"), "utf8")),
+      fixture.currentReceipt,
+    );
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("a retained canonical backup blocks journal recovery without mutating live bytes", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-backup-guard-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const registration = {
+      baseAssets: fixture.baseAssets,
+      sourceXstageSha256: compatibleSource,
+      preparedAssets: [{
+        source: fixture.preparedSource,
+        filename: "left-eye-99.png",
+        outputSha256: fixture.newOutputSha256,
+      }],
+      receipt: fixture.nextReceipt,
+      transactionParent,
+    };
+    const { fileSystem: interruptedFileSystem } =
+      interruptedAtomicRegistrationFileSystem("source-installed");
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        ...registration,
+        fileSystem: interruptedFileSystem,
+      }),
+      /journal recovery was incomplete/,
+    );
+    const interruptedTransaction = (await fs.readdir(transactionParent))
+      .find((entry) => entry.startsWith("registration-"));
+    assert.ok(interruptedTransaction);
+    const sourceBeforeGuard = await fs.readFile(
+      path.join(fixture.sourceDirectory, "left-eye-99.png"),
+    );
+    const receiptBeforeGuard = await fs.readFile(
+      path.join(fixture.baseAssets, "receipt.json"),
+    );
+    const retainedBackup = retainedCanonicalBackupPath(await fs.realpath(fixture.baseAssets));
+    await fs.mkdir(retainedBackup);
+    await fs.writeFile(path.join(retainedBackup, "operator-recovery-required"), "retained");
+
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration(registration),
+      /retained canonical refresh backup requires explicit operator recovery/,
+    );
+    assert.deepEqual(
+      await fs.readFile(path.join(fixture.sourceDirectory, "left-eye-99.png")),
+      sourceBeforeGuard,
+    );
+    assert.deepEqual(
+      await fs.readFile(path.join(fixture.baseAssets, "receipt.json")),
+      receiptBeforeGuard,
+    );
+    assert.equal((await fs.readdir(transactionParent)).includes(interruptedTransaction), true);
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    assert.equal((await fs.readdir(lockStateParent)).includes("active-journal.json"), true);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
 test("a heartbeat waits for an in-process lease assertion transition", async () => {
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-transition-wait-"));
   const transactionParent = path.join(scratch, "transactions");
@@ -838,14 +1329,15 @@ test("a heartbeat waits for an in-process lease assertion transition", async () 
           throw error;
         }
       },
-      rm: async (target, options) => {
-        if (path.basename(target) === "active.transition.lock") {
+      rename: async (source, destination) => {
+        if (path.basename(source) === "active.transition.lock"
+          && path.basename(destination).startsWith(".transition-tombstone-")) {
           transitionReleases += 1;
           if (transitionReleases === 2) {
             await new Promise((resolve) => { setTimeout(resolve, 40); });
           }
         }
-        return fs.rm(target, options);
+        return fs.rename(source, destination);
       },
     };
     await commitCompatibleAssetRegistration({
@@ -879,15 +1371,15 @@ test("an expired heartbeat fails closed when its PID may have been reused", asyn
   const transactionParent = path.join(scratch, "transactions");
   try {
     const fixture = await transactionFixture(scratch);
-    const lockDirectory = path.join(transactionParent, "active.lock");
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    const lockDirectory = path.join(lockStateParent, "active.lock");
     await fs.mkdir(lockDirectory, { recursive: true });
     const canonicalBaseAssets = await fs.realpath(fixture.baseAssets);
-    const canonicalTransactionParent = await fs.realpath(transactionParent);
     await fs.writeFile(path.join(lockDirectory, "owner.json"), `${JSON.stringify({
       schemaVersion: "shaz-compatible-registration-lock-v1",
       ownerId: "d".repeat(32),
       baseAssetsRealpath: canonicalBaseAssets,
-      stateParentRealpath: canonicalTransactionParent,
+      stateParentRealpath: lockStateParent,
       processId: process.pid,
       createdAtMs: 1000,
       heartbeatAtMs: 1000,
@@ -914,7 +1406,7 @@ test("an expired heartbeat fails closed when its PID may have been reused", asyn
       }),
       /expired heartbeat metadata is not reclaim authority/,
     );
-    assert.deepEqual(await fs.readdir(transactionParent), ["active.lock"]);
+    assert.deepEqual(await fs.readdir(lockStateParent), ["active.lock"]);
     assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-100.png"]);
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
@@ -926,15 +1418,15 @@ test("an active lock is reclaimed only when process death is definitive", async 
   const transactionParent = path.join(scratch, "transactions");
   try {
     const fixture = await transactionFixture(scratch);
-    const lockDirectory = path.join(transactionParent, "active.lock");
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    const lockDirectory = path.join(lockStateParent, "active.lock");
     await fs.mkdir(lockDirectory, { recursive: true });
     const canonicalBaseAssets = await fs.realpath(fixture.baseAssets);
-    const canonicalTransactionParent = await fs.realpath(transactionParent);
     await fs.writeFile(path.join(lockDirectory, "owner.json"), `${JSON.stringify({
       schemaVersion: "shaz-compatible-registration-lock-v1",
       ownerId: "e".repeat(32),
       baseAssetsRealpath: canonicalBaseAssets,
-      stateParentRealpath: canonicalTransactionParent,
+      stateParentRealpath: lockStateParent,
       processId: 424242,
       createdAtMs: 1000,
       heartbeatAtMs: 1000,
@@ -955,8 +1447,73 @@ test("an active lock is reclaimed only when process death is definitive", async 
         isProcessAlive: () => false,
       },
     });
-    assert.deepEqual(await fs.readdir(transactionParent), []);
+    assert.deepEqual(await fs.readdir(lockStateParent), []);
     assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-99.png"]);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("active lock owner reads reject an inode swap without reclaiming the lock", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-lock-inode-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    const lockDirectory = path.join(lockStateParent, "active.lock");
+    const ownerPath = path.join(lockDirectory, "owner.json");
+    await fs.mkdir(lockDirectory);
+    await fs.writeFile(ownerPath, `${JSON.stringify({
+      schemaVersion: "shaz-compatible-registration-lock-v1",
+      ownerId: "8".repeat(32),
+      baseAssetsRealpath: await fs.realpath(fixture.baseAssets),
+      stateParentRealpath: lockStateParent,
+      processId: process.pid,
+      createdAtMs: 1000,
+      heartbeatAtMs: 1000,
+      leaseExpiresAtMs: 5000,
+      status: "active",
+    })}\n`);
+    let swappedOwner = false;
+    let usedNoFollow = false;
+    const interleavingFileSystem = {
+      ...fs,
+      open: async (target, flags, ...rest) => {
+        if (!swappedOwner
+          && path.basename(target) === "owner.json"
+          && path.basename(path.dirname(target)) === "active.lock") {
+          swappedOwner = true;
+          usedNoFollow = (flags & fsConstants.O_NOFOLLOW) === fsConstants.O_NOFOLLOW;
+          await fs.rename(target, `${target}.prior`);
+          const replacement = JSON.parse(await fs.readFile(`${target}.prior`, "utf8"));
+          await fs.writeFile(target, `${JSON.stringify({
+            ...replacement,
+            replacementGeneration: "same-owner-inode-swap",
+          })}\n`);
+        }
+        return fs.open(target, flags, ...rest);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        baseAssets: fixture.baseAssets,
+        sourceXstageSha256: compatibleSource,
+        preparedAssets: [{
+          source: fixture.preparedSource,
+          filename: "left-eye-99.png",
+          outputSha256: fixture.newOutputSha256,
+        }],
+        receipt: fixture.nextReceipt,
+        transactionParent,
+        fileSystem: interleavingFileSystem,
+      }),
+      /registration lock owner changed during validation/,
+    );
+    assert.equal(swappedOwner, true);
+    assert.equal(usedNoFollow, true);
+    assert.equal(JSON.parse(await fs.readFile(ownerPath, "utf8")).replacementGeneration,
+      "same-owner-inode-swap");
+    assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-100.png"]);
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
   }
@@ -967,15 +1524,15 @@ test("a stale transition mutex is never reclaimed automatically", async () => {
   const transactionParent = path.join(scratch, "transactions");
   try {
     const fixture = await transactionFixture(scratch);
-    const transitionDirectory = path.join(transactionParent, "active.transition.lock");
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    const transitionDirectory = path.join(lockStateParent, "active.transition.lock");
     await fs.mkdir(transitionDirectory, { recursive: true });
     const canonicalBaseAssets = await fs.realpath(fixture.baseAssets);
-    const canonicalTransactionParent = await fs.realpath(transactionParent);
     await fs.writeFile(path.join(transitionDirectory, "owner.json"), `${JSON.stringify({
       schemaVersion: "shaz-compatible-registration-transition-v1",
       ownerId: "f".repeat(32),
       baseAssetsRealpath: canonicalBaseAssets,
-      stateParentRealpath: canonicalTransactionParent,
+      stateParentRealpath: lockStateParent,
       processId: 424242,
       createdAtMs: 1000,
     })}\n`);
@@ -1007,20 +1564,129 @@ test("a stale transition mutex is never reclaimed automatically", async () => {
   }
 });
 
+test("transition owner reads reject an inode swap and preserve the retired mutex", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-transition-inode-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    let swappedOwner = false;
+    let usedNoFollow = false;
+    const interleavingFileSystem = {
+      ...fs,
+      open: async (target, flags, ...rest) => {
+        if (!swappedOwner
+          && path.basename(target) === "owner.json"
+          && path.basename(path.dirname(target)).startsWith(".transition-tombstone-")) {
+          swappedOwner = true;
+          usedNoFollow = (flags & fsConstants.O_NOFOLLOW) === fsConstants.O_NOFOLLOW;
+          const priorOwner = `${target}.prior`;
+          await fs.rename(target, priorOwner);
+          await fs.writeFile(target, await fs.readFile(priorOwner));
+        }
+        return fs.open(target, flags, ...rest);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        baseAssets: fixture.baseAssets,
+        sourceXstageSha256: compatibleSource,
+        preparedAssets: [{
+          source: fixture.preparedSource,
+          filename: "left-eye-99.png",
+          outputSha256: fixture.newOutputSha256,
+        }],
+        receipt: fixture.nextReceipt,
+        transactionParent,
+        fileSystem: interleavingFileSystem,
+      }),
+      /transition mutex owner changed during validation/,
+    );
+    assert.equal(swappedOwner, true);
+    assert.equal(usedNoFollow, true);
+    assert.equal((await fs.lstat(
+      path.join(lockStateParent, "active.transition.lock"),
+    )).isDirectory(), true);
+    assert.equal((await fs.readdir(lockStateParent)).some((entry) => (
+      entry.startsWith(".transition-tombstone-")
+    )), false);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
+test("owner-specific transition tombstones preserve an ABA replacement", async () => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-transition-aba-"));
+  const transactionParent = path.join(scratch, "transactions");
+  try {
+    const fixture = await transactionFixture(scratch);
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    const preservedOriginal = path.join(lockStateParent, "preserved-original-transition");
+    let interleaved = false;
+    const interleavingFileSystem = {
+      ...fs,
+      rename: async (source, destination) => {
+        if (!interleaved
+          && path.basename(source) === "active.transition.lock"
+          && path.basename(destination).startsWith(".transition-tombstone-")) {
+          interleaved = true;
+          const owner = JSON.parse(await fs.readFile(
+            path.join(source, "owner.json"),
+            "utf8",
+          ));
+          await fs.rename(source, preservedOriginal);
+          await fs.mkdir(source);
+          await fs.writeFile(path.join(source, "owner.json"), `${JSON.stringify({
+            ...owner,
+            replacementGeneration: "same-owner-aba",
+          })}\n`);
+        }
+        return fs.rename(source, destination);
+      },
+    };
+    await assert.rejects(
+      () => commitCompatibleAssetRegistration({
+        baseAssets: fixture.baseAssets,
+        sourceXstageSha256: compatibleSource,
+        preparedAssets: [{
+          source: fixture.preparedSource,
+          filename: "left-eye-99.png",
+          outputSha256: fixture.newOutputSha256,
+        }],
+        receipt: fixture.nextReceipt,
+        transactionParent,
+        fileSystem: interleavingFileSystem,
+      }),
+      /transition mutex owner changed during owner-specific retirement/,
+    );
+    assert.equal(interleaved, true);
+    const preservedOwner = JSON.parse(await fs.readFile(
+      path.join(lockStateParent, "active.transition.lock", "owner.json"),
+      "utf8",
+    ));
+    assert.equal(preservedOwner.replacementGeneration, "same-owner-aba");
+    assert.equal((await fs.readdir(lockStateParent)).some((entry) => (
+      entry.startsWith(".transition-tombstone-")
+    )), false);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
+});
+
 test("owner-specific tombstones preserve a fresh lock across an ABA reclaim interleaving", async () => {
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-lock-aba-"));
   const transactionParent = path.join(scratch, "transactions");
   try {
     const fixture = await transactionFixture(scratch);
-    const lockDirectory = path.join(transactionParent, "active.lock");
+    const lockStateParent = await canonicalLockStateParent(fixture.baseAssets);
+    const lockDirectory = path.join(lockStateParent, "active.lock");
     await fs.mkdir(lockDirectory, { recursive: true });
     const canonicalBaseAssets = await fs.realpath(fixture.baseAssets);
-    const canonicalTransactionParent = await fs.realpath(transactionParent);
     const lockOwner = (ownerId, leaseExpiresAtMs) => ({
       schemaVersion: "shaz-compatible-registration-lock-v1",
       ownerId,
       baseAssetsRealpath: canonicalBaseAssets,
-      stateParentRealpath: canonicalTransactionParent,
+      stateParentRealpath: lockStateParent,
       processId: process.pid,
       createdAtMs: 1000,
       heartbeatAtMs: 1000,
@@ -1083,7 +1749,7 @@ test("owner-specific tombstones preserve a fresh lock across an ABA reclaim inte
       "utf8",
     ));
     assert.equal(preservedOwner.ownerId, "b".repeat(32));
-    assert.equal((await fs.readdir(transactionParent)).some((entry) => (
+    assert.equal((await fs.readdir(lockStateParent)).some((entry) => (
       entry.startsWith(".lock-tombstone-") || entry === "active.transition.lock"
     )), false);
     assert.deepEqual(await fs.readdir(fixture.sourceDirectory), ["left-eye-100.png"]);
@@ -1102,15 +1768,13 @@ test("canonical leases survive a symlink alias retarget without touching the new
     await fs.mkdir(decoy, { recursive: true });
     await fs.writeFile(path.join(decoy, "sentinel.txt"), "untouched");
     await fs.symlink(fixture.baseAssets, alias);
-    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
     let notifyInstall;
     const installStarted = new Promise((resolve) => { notifyInstall = resolve; });
     const installRelease = new Promise((resolve) => { releaseInstall = resolve; });
     const blockingFileSystem = {
       ...fs,
       cp: async (source, destination, options) => {
-        if (path.basename(source) === "staged-source"
-          && path.resolve(destination) === canonicalSourceDirectory) {
+        if (isPendingSourceCopy(source, destination)) {
           notifyInstall();
           await installRelease;
         }
@@ -1279,31 +1943,8 @@ test("journal recovery preflights the whole collection before replaying an earli
   try {
     const fixture = await transactionFixture(scratch);
     const receiptPath = path.join(fixture.baseAssets, "receipt.json");
-    const canonicalReceiptPath = await fs.realpath(receiptPath);
-    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
-    let receiptFailureInjected = false;
-    let rollbackFailureInjected = false;
-    const interruptedFileSystem = {
-      ...fs,
-      copyFile: async (source, destination) => {
-        if (!receiptFailureInjected
-          && path.basename(source) === "staged-receipt.json"
-          && path.resolve(destination) === canonicalReceiptPath) {
-          receiptFailureInjected = true;
-          throw new Error("force an interrupted valid journal");
-        }
-        return fs.copyFile(source, destination);
-      },
-      cp: async (source, destination, options) => {
-        if (!rollbackFailureInjected
-          && path.basename(source) === "backup-source"
-          && path.resolve(destination) === canonicalSourceDirectory) {
-          rollbackFailureInjected = true;
-          throw new Error("leave the valid journal unreplayed");
-        }
-        return fs.cp(source, destination, options);
-      },
-    };
+    const { fileSystem: interruptedFileSystem, state: interruption } =
+      interruptedAtomicRegistrationFileSystem("source-installed");
     const registration = {
       baseAssets: fixture.baseAssets,
       sourceXstageSha256: compatibleSource,
@@ -1322,14 +1963,11 @@ test("journal recovery preflights the whole collection before replaying an earli
       }),
       /journal recovery was incomplete/,
     );
+    assert.equal(interruption.interrupted, true);
+    assert.equal(interruption.recoveryBlocked, true);
     const generatedTransaction = (await fs.readdir(transactionParent))
       .find((entry) => entry.startsWith("registration-"));
     assert.ok(generatedTransaction);
-    const earlyValidTransaction = "registration-aaa-valid";
-    await fs.rename(
-      path.join(transactionParent, generatedTransaction),
-      path.join(transactionParent, earlyValidTransaction),
-    );
     const laterUnsafeTransaction = "registration-zzz-unsafe";
     await fs.mkdir(path.join(transactionParent, laterUnsafeTransaction));
     await fs.writeFile(
@@ -1337,16 +1975,21 @@ test("journal recovery preflights the whole collection before replaying an earli
       `${JSON.stringify({ schemaVersion: "unknown-registration-owner" })}\n`,
     );
     const receiptBeforePreflight = await fs.readFile(receiptPath);
-    await assert.rejects(fs.stat(fixture.sourceDirectory), { code: "ENOENT" });
+    const sourceBeforePreflight = await fs.readFile(
+      path.join(fixture.sourceDirectory, "left-eye-99.png"),
+    );
 
     await assert.rejects(
       () => commitCompatibleAssetRegistration(registration),
       /unsupported compatible registration owner schema: registration-zzz-unsafe/,
     );
-    await assert.rejects(fs.stat(fixture.sourceDirectory), { code: "ENOENT" });
     assert.deepEqual(await fs.readFile(receiptPath), receiptBeforePreflight);
+    assert.deepEqual(
+      await fs.readFile(path.join(fixture.sourceDirectory, "left-eye-99.png")),
+      sourceBeforePreflight,
+    );
     const remainingState = await fs.readdir(transactionParent);
-    assert.equal(remainingState.includes(earlyValidTransaction), true);
+    assert.equal(remainingState.includes(generatedTransaction), true);
     assert.equal(remainingState.includes(laterUnsafeTransaction), true);
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
@@ -1376,37 +2019,8 @@ test("the next authoring invocation recovers an interrupted journal before stagi
       fs.writeFile(path.join(fixture.baseAssets, secondOldFilename), secondOldBytes),
       fs.writeFile(receiptPath, `${JSON.stringify(currentReceipt)}\n`),
     ]);
-    const canonicalReceiptPath = await fs.realpath(receiptPath);
-    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
-    let receiptFailureInjected = false;
-    let rollbackFailureInjected = false;
-    const interruptedFileSystem = {
-      ...fs,
-      copyFile: async (source, destination) => {
-        if (!receiptFailureInjected
-          && path.basename(source) === "staged-receipt.json"
-          && path.resolve(destination) === canonicalReceiptPath) {
-          receiptFailureInjected = true;
-          throw new Error("forced interrupted receipt installation");
-        }
-        return fs.copyFile(source, destination);
-      },
-      cp: async (source, destination, options) => {
-        if (!rollbackFailureInjected
-          && path.basename(source) === "backup-source"
-          && path.resolve(destination) === canonicalSourceDirectory) {
-          rollbackFailureInjected = true;
-          await fs.mkdir(destination, { recursive: true });
-          const [firstBackupAsset] = (await fs.readdir(source)).sort();
-          await fs.copyFile(
-            path.join(source, firstBackupAsset),
-            path.join(destination, firstBackupAsset),
-          );
-          throw new Error("forced interrupted partial rollback");
-        }
-        return fs.cp(source, destination, options);
-      },
-    };
+    const { fileSystem: interruptedFileSystem, state: interruption } =
+      interruptedAtomicRegistrationFileSystem("receipt-installed");
     const registration = {
       baseAssets: fixture.baseAssets,
       sourceXstageSha256: compatibleSource,
@@ -1425,24 +2039,9 @@ test("the next authoring invocation recovers an interrupted journal before stagi
       }),
       /journal recovery was incomplete/,
     );
+    assert.equal(interruption.interrupted, true);
+    assert.equal(interruption.recoveryBlocked, true);
     assert.equal((await fs.readdir(transactionParent)).length, 1);
-    const interruptedTransaction = (await fs.readdir(transactionParent))
-      .find((entry) => entry.startsWith("registration-"));
-    assert.ok(interruptedTransaction);
-    const [backupReceipt, stagedReceipt] = await Promise.all([
-      fs.readFile(path.join(transactionParent, interruptedTransaction, "backup-receipt.json")),
-      fs.readFile(path.join(transactionParent, interruptedTransaction, "staged-receipt.json")),
-    ]);
-    let firstReceiptDifference = 0;
-    while (backupReceipt[firstReceiptDifference] === stagedReceipt[firstReceiptDifference]) {
-      firstReceiptDifference += 1;
-    }
-    const partialBackupReceipt = backupReceipt.subarray(0, firstReceiptDifference + 1);
-    assert.equal(
-      partialBackupReceipt.equals(stagedReceipt.subarray(0, partialBackupReceipt.length)),
-      false,
-    );
-    await fs.writeFile(receiptPath, partialBackupReceipt);
 
     const stopAfterRecoveryFileSystem = {
       ...fs,
@@ -1481,31 +2080,8 @@ test("journal recovery fails closed before mutating unrecognized source or recei
   try {
     const fixture = await transactionFixture(scratch);
     const receiptPath = path.join(fixture.baseAssets, "receipt.json");
-    const canonicalReceiptPath = await fs.realpath(receiptPath);
-    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
-    let receiptFailureInjected = false;
-    let rollbackFailureInjected = false;
-    const interruptedFileSystem = {
-      ...fs,
-      copyFile: async (source, destination) => {
-        if (!receiptFailureInjected
-          && path.basename(source) === "staged-receipt.json"
-          && path.resolve(destination) === canonicalReceiptPath) {
-          receiptFailureInjected = true;
-          throw new Error("force a recoverable interruption");
-        }
-        return fs.copyFile(source, destination);
-      },
-      cp: async (source, destination, options) => {
-        if (!rollbackFailureInjected
-          && path.basename(source) === "backup-source"
-          && path.resolve(destination) === canonicalSourceDirectory) {
-          rollbackFailureInjected = true;
-          throw new Error("leave the journal for fail-closed recovery");
-        }
-        return fs.cp(source, destination, options);
-      },
-    };
+    const { fileSystem: interruptedFileSystem, state: interruption } =
+      interruptedAtomicRegistrationFileSystem("source-installed");
     const registration = {
       baseAssets: fixture.baseAssets,
       sourceXstageSha256: compatibleSource,
@@ -1524,17 +2100,18 @@ test("journal recovery fails closed before mutating unrecognized source or recei
       }),
       /journal recovery was incomplete/,
     );
+    assert.equal(interruption.interrupted, true);
+    assert.equal(interruption.recoveryBlocked, true);
 
     const unexpectedReceipt = Buffer.from("not a journaled receipt state");
     const unexpectedSource = Buffer.from("not a prepared drawing");
-    await fs.mkdir(fixture.sourceDirectory, { recursive: true });
     await Promise.all([
       fs.writeFile(receiptPath, unexpectedReceipt),
       fs.writeFile(path.join(fixture.sourceDirectory, "left-eye-99.png"), unexpectedSource),
     ]);
     await assert.rejects(
       () => commitCompatibleAssetRegistration(registration),
-      /bytes not recognized by its journal/,
+      /bytes not recognized by its atomic journal/,
     );
     assert.deepEqual(await fs.readFile(receiptPath), unexpectedReceipt);
     assert.deepEqual(
@@ -1549,37 +2126,14 @@ test("journal recovery fails closed before mutating unrecognized source or recei
   }
 });
 
-test("the CLI recovers a torn receipt before parsing or exact-tree validation", async () => {
+test("the CLI recovers an interrupted atomic receipt install before parsing", async () => {
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-compatible-cli-recovery-"));
   const transactionParent = path.join(scratch, "transactions");
   try {
     const fixture = await transactionFixture(scratch);
     const receiptPath = path.join(fixture.baseAssets, "receipt.json");
-    const canonicalReceiptPath = await fs.realpath(receiptPath);
-    const canonicalSourceDirectory = await fs.realpath(fixture.sourceDirectory);
-    let receiptFailureInjected = false;
-    let rollbackFailureInjected = false;
-    const interruptedFileSystem = {
-      ...fs,
-      copyFile: async (source, destination) => {
-        if (!receiptFailureInjected
-          && path.basename(source) === "staged-receipt.json"
-          && path.resolve(destination) === canonicalReceiptPath) {
-          receiptFailureInjected = true;
-          throw new Error("forced CLI receipt interruption");
-        }
-        return fs.copyFile(source, destination);
-      },
-      cp: async (source, destination, options) => {
-        if (!rollbackFailureInjected
-          && path.basename(source) === "backup-source"
-          && path.resolve(destination) === canonicalSourceDirectory) {
-          rollbackFailureInjected = true;
-          throw new Error("leave recovery for the CLI");
-        }
-        return fs.cp(source, destination, options);
-      },
-    };
+    const { fileSystem: interruptedFileSystem, state: interruption } =
+      interruptedAtomicRegistrationFileSystem("receipt-installed");
     await assert.rejects(
       () => commitCompatibleAssetRegistration({
         baseAssets: fixture.baseAssets,
@@ -1595,15 +2149,8 @@ test("the CLI recovers a torn receipt before parsing or exact-tree validation", 
       }),
       /journal recovery was incomplete/,
     );
-    const interruptedTransaction = (await fs.readdir(transactionParent))
-      .find((entry) => entry.startsWith("registration-"));
-    assert.ok(interruptedTransaction);
-    const stagedReceipt = await fs.readFile(path.join(
-      transactionParent,
-      interruptedTransaction,
-      "staged-receipt.json",
-    ));
-    await fs.writeFile(receiptPath, stagedReceipt.subarray(0, Math.floor(stagedReceipt.length / 2)));
+    assert.equal(interruption.interrupted, true);
+    assert.equal(interruption.recoveryBlocked, true);
 
     const compatibleAssets = path.dirname(fixture.preparedSource);
     await fs.writeFile(path.join(compatibleAssets, "receipt.json"), JSON.stringify({

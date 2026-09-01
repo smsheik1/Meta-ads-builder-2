@@ -468,7 +468,7 @@ export async function readTvgSourceWithinRig(
   }
 }
 
-async function validateCompiledAssetTree(
+export async function validateCompiledAssetTree(
   directory,
   { allowEmpty = false, fileSystem = fs } = {},
 ) {

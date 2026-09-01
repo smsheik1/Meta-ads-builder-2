@@ -21,12 +21,18 @@ import {
   opaqueMaskOverlapPixelCount,
   observedHandLimits,
   paintOrderValid,
+  pupilVisibilityObservations,
   registeredNonLimbProp,
   registeredPoseReplacement,
   rightFrontPaintOrderEligible,
   shoulderAnchorValid,
 } from "../runtime/inspect-pose.mjs";
-import { loadManifest, READ_PAINT_PLAN } from "../runtime/rig-v2-renderer.mjs";
+import { createPoseRuntime } from "../runtime/pose-recipe.mjs";
+import {
+  loadManifest,
+  READ_PAINT_PLAN,
+  renderRigFrame,
+} from "../runtime/rig-v2-renderer.mjs";
 
 test("mouth color inspection distinguishes authored white teeth from skin-colored gaps", async () => {
   const teeth = Buffer.from(
@@ -488,6 +494,379 @@ test("eye-occlusion inspection detects opaque hair inside an owned eye region", 
   assert.equal(await opaqueMaskOverlapPixelCount(noHair, [eyeEnvelope]), 0);
 });
 
+test("pupil visibility rejects alpha specks and exact-hash-locks null blink exposures", async () => {
+  const eye = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="30" ry="35" fill="white"/>'
+      + "</svg>",
+  );
+  const visiblePupil = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<circle cx="320" cy="180" r="8" fill="black"/>'
+      + "</svg>",
+  );
+  const pupilSpeck = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<rect x="320" y="180" width="1" height="1" fill="black"/>'
+      + "</svg>",
+  );
+  const layer = (side, feature, input, assetSha256 = null) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    input,
+    ...(assetSha256 ? { assetSha256 } : {}),
+  });
+  const receipt = (side, feature, drawing) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    drawing,
+  });
+
+  const openEyes = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye),
+    layer("Left", "Pupil", visiblePupil),
+    layer("Right", "Eye", eye),
+    layer("Right", "Pupil", pupilSpeck),
+  ], [
+    receipt("Left", "Eye", "1"),
+    receipt("Left", "Pupil", "1"),
+    receipt("Right", "Eye", "1"),
+    receipt("Right", "Pupil", "8"),
+  ]);
+  assert.equal(openEyes.find(({ side }) => side === "Left").visible, true);
+  const rejected = openEyes.find(({ side }) => side === "Right");
+  assert.equal(rejected.required, true);
+  assert.equal(rejected.visible, false,
+    "a present pupil receipt cannot let a negligible rendered speck pass");
+  assert.ok(rejected.largestComponentPixels < 24);
+
+  const missingLayer = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye),
+    layer("Left", "Pupil", visiblePupil),
+    layer("Right", "Eye", eye),
+  ], [
+    receipt("Left", "Eye", "1"),
+    receipt("Left", "Pupil", "1"),
+    receipt("Right", "Eye", "1"),
+    receipt("Right", "Pupil", "8"),
+  ]);
+  assert.deepEqual(missingLayer.find(({ side }) => side === "Right"), {
+    side: "Right",
+    eyeDrawing: "1",
+    pupilDrawing: "8",
+    required: true,
+    visible: false,
+    opaquePixels: 0,
+    largestComponentPixels: 0,
+    largestComponentSolidity: 0,
+    solidityFloor: 0.6,
+  }, "a non-null pupil receipt fails closed when its analysis layer is missing");
+
+  const missingExposure = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye),
+    layer("Right", "Eye", eye),
+  ], [
+    receipt("Left", "Eye", "1"),
+    receipt("Right", "Eye", "1"),
+  ]);
+  assert.ok(missingExposure.every(({ required, visible, pupilDrawing }) => (
+    required === true && visible === false && pupilDrawing === null
+  )), "open-eye drawings fail closed when their pupil exposure is missing entirely");
+
+  const blink = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye, "d1f8b7f50cb7835a59a8f851020d711bbf2f761f2495bae1f7ad317796f18ddb"),
+    layer("Right", "Eye", eye, "a5d718eee6fa33affe67cb88427504dc589e3e4e54ddee48675ea7d6d452537a"),
+  ], [
+    receipt("Left", "Eye", "5"),
+    receipt("Right", "Eye", "5"),
+  ]);
+  assert.ok(blink.every(({ required, visible, pupilDrawing }) => (
+    required === false && visible === null && pupilDrawing === null
+  )), "the two canonical closed-eye assets remain valid without pupil exposures");
+
+  const changedBlink = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye, "0".repeat(64)),
+    layer("Right", "Eye", eye, "a5d718eee6fa33affe67cb88427504dc589e3e4e54ddee48675ea7d6d452537a"),
+  ], [
+    receipt("Left", "Eye", "5"),
+    receipt("Right", "Eye", "5"),
+  ]);
+  assert.deepEqual(
+    changedBlink.map(({ side, required, visible }) => ({ side, required, visible })),
+    [
+      { side: "Left", required: true, visible: false },
+      { side: "Right", required: false, visible: null },
+    ],
+    "drawing 5 from changed artwork cannot inherit the canonical no-pupil exemption",
+  );
+
+  const wrongSideBlink = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye, "a5d718eee6fa33affe67cb88427504dc589e3e4e54ddee48675ea7d6d452537a"),
+    layer("Right", "Eye", eye, "d1f8b7f50cb7835a59a8f851020d711bbf2f761f2495bae1f7ad317796f18ddb"),
+  ], [
+    receipt("Left", "Eye", "5"),
+    receipt("Right", "Eye", "5"),
+  ]);
+  assert.ok(wrongSideBlink.every(({ required, visible }) => (
+    required === true && visible === false
+  )), "closed-eye asset hashes remain bound to their anatomical side");
+});
+
+test("pupil visibility rejects an opaque white pupil-shaped oval", async () => {
+  const eye = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="30" ry="35" fill="white"/>'
+      + "</svg>",
+  );
+  const pupil = (fill) => Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + `<ellipse cx="320" cy="180" rx="12" ry="10" fill="${fill}"/>`
+      + "</svg>",
+  );
+  const layer = (side, feature, input) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    input,
+  });
+  const receipt = (side, feature) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    drawing: "1",
+  });
+
+  const observations = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye),
+    layer("Left", "Pupil", pupil("white")),
+    layer("Right", "Eye", eye),
+    layer("Right", "Pupil", pupil("black")),
+  ], [
+    receipt("Left", "Eye"),
+    receipt("Left", "Pupil"),
+    receipt("Right", "Eye"),
+    receipt("Right", "Pupil"),
+  ]);
+  const white = observations.find(({ side }) => side === "Left");
+  const black = observations.find(({ side }) => side === "Right");
+  assert.ok(white.opaquePixels >= white.visibilityFloorPixels,
+    "the negative fixture is large enough to pass the old alpha-only gate");
+  assert.equal(white.darkOpaquePixels, 0);
+  assert.equal(white.visible, false,
+    "opaque light artwork cannot impersonate a black pupil");
+  assert.equal(black.visible, true);
+});
+
+test("pupil visibility rejects a solid black pupil translated outside its eye", async () => {
+  const eye = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="30" ry="35" fill="white"/>'
+      + "</svg>",
+  );
+  const pupil = (cx, cy) => Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + `<circle cx="${cx}" cy="${cy}" r="8" fill="black"/>`
+      + "</svg>",
+  );
+  const layer = (side, feature, input) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    input,
+  });
+  const receipt = (side, feature) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    drawing: "1",
+  });
+
+  const observations = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye),
+    layer("Left", "Pupil", pupil(520, 300)),
+    layer("Right", "Eye", eye),
+    layer("Right", "Pupil", pupil(320, 180)),
+  ], [
+    receipt("Left", "Eye"),
+    receipt("Left", "Pupil"),
+    receipt("Right", "Eye"),
+    receipt("Right", "Pupil"),
+  ]);
+  const offEye = observations.find(({ side }) => side === "Left");
+  const centered = observations.find(({ side }) => side === "Right");
+  assert.ok(offEye.largestComponentPixels >= offEye.visibilityFloorPixels);
+  assert.ok(offEye.largestComponentSolidity >= offEye.solidityFloor,
+    "the negative fixture passes the old connected-solid-alpha checks");
+  assert.equal(offEye.eyeOverlapPixels, 0);
+  assert.equal(offEye.visible, false,
+    "a valid-looking pupil component must still overlap its transformed eye envelope");
+  assert.equal(centered.visible, true);
+  assert.ok(centered.eyeOverlapPixels >= centered.eyeOverlapFloorPixels);
+});
+
+test("pupil visibility rejects a large but hollow wedge", async () => {
+  const eye = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="30" ry="35" fill="white"/>'
+      + "</svg>",
+  );
+  const authoredPupil = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="12" ry="10" fill="black"/>'
+      + "</svg>",
+  );
+  const hollowWedge = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<path d="M300 160 H340 V164 H304 V196 H300 Z" fill="black"/>'
+      + "</svg>",
+  );
+  const layer = (side, feature, input) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    input,
+  });
+  const receipt = (side, feature, drawing) => ({
+    nodePath: `Top/Shaz_Rig/Head_Group/${side}_${feature}`,
+    variant: "main",
+    drawing,
+  });
+  const observations = await pupilVisibilityObservations([
+    layer("Left", "Eye", eye),
+    layer("Left", "Pupil", authoredPupil),
+    layer("Right", "Eye", eye),
+    layer("Right", "Pupil", hollowWedge),
+  ], [
+    receipt("Left", "Eye", "1"),
+    receipt("Left", "Pupil", "1"),
+    receipt("Right", "Eye", "1"),
+    receipt("Right", "Pupil", "13"),
+  ]);
+
+  const authored = observations.find(({ side }) => side === "Left");
+  const rejected = observations.find(({ side }) => side === "Right");
+  assert.equal(authored.visible, true);
+  assert.ok(authored.largestComponentSolidity >= authored.solidityFloor);
+  assert.ok(rejected.largestComponentPixels >= rejected.visibilityFloorPixels,
+    "the regression shape is large enough to bypass the component-area gate");
+  assert.ok(rejected.largestComponentSolidity < rejected.solidityFloor);
+  assert.equal(rejected.visible, false,
+    "an open wedge cannot pass merely because it contains many connected pixels");
+});
+
+test("the authored canonical squint exception is exact-asset and exact-drawing bound", async () => {
+  const eye = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="30" ry="12" fill="white"/>'
+      + "</svg>",
+  );
+  const narrowPupil = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<rect x="309" y="180" width="23" height="1" fill="black"/>'
+      + "</svg>",
+  );
+  const layer = (assetSha256) => ({
+    nodePath: "Top/Shaz_Rig/Head_Group/Left_Pupil",
+    variant: "main",
+    input: narrowPupil,
+    assetSha256,
+  });
+  const receiptLayers = [
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/Left_Eye",
+      variant: "main",
+      drawing: "4",
+    },
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/Left_Pupil",
+      variant: "main",
+      drawing: "10",
+    },
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/Right_Eye",
+      variant: "main",
+      drawing: "5",
+    },
+  ];
+  const analysisLayers = [{
+    nodePath: "Top/Shaz_Rig/Head_Group/Left_Eye",
+    variant: "main",
+    input: eye,
+  }];
+
+  const approved = await pupilVisibilityObservations([
+    ...analysisLayers,
+    layer("651902c0c8055175737e772ad915e67365f8fb160ed8c71cf9021f819377ed83"),
+  ], receiptLayers);
+  const approvedLeft = approved.find(({ side }) => side === "Left");
+  assert.equal(approvedLeft.largestComponentPixels, 23);
+  assert.equal(approvedLeft.visibilityFloorPixels, 23);
+  assert.equal(approvedLeft.visible, true);
+
+  const changedAsset = await pupilVisibilityObservations([
+    ...analysisLayers,
+    layer("051902c0c8055175737e772ad915e67365f8fb160ed8c71cf9021f819377ed83"),
+  ], receiptLayers);
+  const changedLeft = changedAsset.find(({ side }) => side === "Left");
+  assert.equal(changedLeft.visibilityFloorPixels, 24);
+  assert.equal(changedLeft.visible, false,
+    "a changed asset cannot inherit the one-pixel authored exception");
+});
+
+test("the authored right squint solidity exception is exact-asset and exact-drawing bound", async () => {
+  const eye = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<ellipse cx="320" cy="180" rx="30" ry="12" fill="white"/>'
+      + "</svg>",
+  );
+  const narrowPupil = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">'
+      + '<path d="M300 180 H307 V184 H301 V188 H300 Z" fill="black"/>'
+      + "</svg>",
+  );
+  const pupilLayer = (assetSha256) => ({
+    nodePath: "Top/Shaz_Rig/Head_Group/Right_Pupil",
+    variant: "main",
+    input: narrowPupil,
+    assetSha256,
+  });
+  const receiptLayers = [
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/Left_Eye",
+      variant: "main",
+      drawing: "5",
+    },
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/Right_Eye",
+      variant: "main",
+      drawing: "4",
+    },
+    {
+      nodePath: "Top/Shaz_Rig/Head_Group/Right_Pupil",
+      variant: "main",
+      drawing: "10",
+    },
+  ];
+  const analysisLayers = [{
+    nodePath: "Top/Shaz_Rig/Head_Group/Right_Eye",
+    variant: "main",
+    input: eye,
+  }];
+
+  const approved = await pupilVisibilityObservations([
+    ...analysisLayers,
+    pupilLayer("2615b8e39bce476f98181f6a7211348da50c4a807a8826e8f3385179de513ed4"),
+  ], receiptLayers);
+  const approvedRight = approved.find(({ side }) => side === "Right");
+  assert.ok(approvedRight.largestComponentPixels >= approvedRight.visibilityFloorPixels);
+  assert.equal(approvedRight.solidityFloor, 0.57);
+  assert.equal(approvedRight.visible, true);
+
+  const changedAsset = await pupilVisibilityObservations([
+    ...analysisLayers,
+    pupilLayer("0615b8e39bce476f98181f6a7211348da50c4a807a8826e8f3385179de513ed4"),
+  ], receiptLayers);
+  const changedRight = changedAsset.find(({ side }) => side === "Right");
+  assert.equal(changedRight.solidityFloor, 0.6);
+  assert.equal(changedRight.visible, false,
+    "a changed asset cannot inherit the authored solidity exception");
+});
+
 test("edge-contact exceptions are source-only and frame-bounded", () => {
   const sourceRecipe = {
     sourceAction: { generatedFrom: "xstage-control-channels-and-drawing-exposures" },
@@ -615,6 +994,53 @@ test("right-front-of-head eligibility requires a meaningful observed right-arm/h
     "overlap counts the union of complete arm pieces without double-counting pixels");
 });
 
+test("source-bound enumerate pupil 13 stays visibly inside both real eye envelopes", async () => {
+  const [manifest, recipe] = await Promise.all([
+    loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
+    fs.readFile(new URL("../poses/candidates/enumerate-list-items.json", import.meta.url), "utf8")
+      .then(JSON.parse),
+  ]);
+  const poseRuntime = createPoseRuntime(manifest, recipe);
+  const assetRoot = fileURLToPath(new URL("../rig-v2/assets", import.meta.url));
+  const propRoot = fileURLToPath(new URL("../assets/props", import.meta.url));
+  const assetCache = new Map();
+  const propCache = new Map();
+  const sourceSha256 = recipe.sourceAction.sourceXstageSha256;
+
+  for (const frame of [106, 122]) {
+    const rendered = await renderRigFrame({
+      manifest,
+      frame,
+      assetRoot,
+      propRoot,
+      poseRuntime,
+      assetCache,
+      propCache,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+      includeLayerBuffers: true,
+    });
+    const observations = await pupilVisibilityObservations(
+      rendered.analysisLayers,
+      rendered.receipt.layers,
+    );
+
+    for (const observation of observations) {
+      const receipt = rendered.receipt.layers.find((layer) => (
+        layer.nodePath.endsWith(`/${observation.side}_Pupil`) && layer.variant === "main"
+      ));
+      assert.equal(receipt?.drawing, "13", `${observation.side} frame ${frame} drawing`);
+      assert.equal(receipt?.sourceXstageSha256, sourceSha256,
+        `${observation.side} frame ${frame} source binding`);
+      assert.equal(observation.required, true);
+      assert.equal(observation.visible, true,
+        `${observation.side} pupil 13 must pass the real transformed gate at frame ${frame}: ${JSON.stringify(observation)}`);
+      assert.ok(observation.darkOpaquePixels >= observation.visibilityFloorPixels);
+      assert.ok(observation.eyeOverlapPixels >= observation.eyeOverlapFloorPixels);
+      assert.ok(observation.eyeOverlapRatio >= observation.eyeOverlapRatioFloor);
+    }
+  }
+});
+
 test("the real renderer and inspector agree on a qualified front-of-head right arm", async () => {
   const [manifest, recipe] = await Promise.all([
     loadManifest(new URL("../rig-v2/runtime.json", import.meta.url)),
@@ -636,6 +1062,15 @@ test("the real renderer and inspector agree on a qualified front-of-head right a
   assert.ok(report.frames.every(({ rightArmHeadBaseOverlapPixels }) => (
     Number.isInteger(rightArmHeadBaseOverlapPixels)
   )));
+  assert.ok(report.gates.includes("pupil-visibility"));
+  assert.ok(report.frames.some(({ pupilVisibility }) => (
+    pupilVisibility.every(({ required, visible }) => required && visible)
+  )), "open-eye frames report two meaningfully visible pupils");
+  assert.ok(report.frames.some(({ pupilVisibility }) => (
+    pupilVisibility.every(({ required, visible, pupilDrawing }) => (
+      required === false && visible === null && pupilDrawing === null
+    ))
+  )), "closed-eye frames preserve their legitimate null pupil exposures");
 });
 
 test("temporal inspection measures the longest identical-frame run", () => {

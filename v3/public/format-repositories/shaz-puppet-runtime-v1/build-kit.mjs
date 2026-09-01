@@ -9,7 +9,7 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const archiveName = "wiggly-shaz-puppet-runtime-format-kit";
 const downloads = path.join(root, "downloads");
 const excludedNames = new Set(["node_modules", ".runtime-cache", ".DS_Store", ".git"]);
-const registrationStateName = /^(?:\.wiggly-authoring-state|\.compatible-registration-journal(?:-|$))/;
+const registrationStateName = /^(?:\.wiggly-authoring-state|\.compatible-registration-journal(?:-|$)|\.shaz-canonical-(?:stage|backup)(?:-|$))/;
 const historicalFixtureFiles = new Set([
   "fixtures/final-unlabeled-input.json",
   "fixtures/lego-body-language-sample-input.json",
@@ -20,6 +20,7 @@ const sourceRepositoryOnlyTests = new Set([
   "tests/compatible-xstage-actions.test.mjs",
   "tests/compatible-xstage-importer.test.mjs",
   "tests/compile-tvg-assets.test.mjs",
+  "tests/refresh-canonical-tvg-assets.test.mjs",
   "tests/pose-recipe.test.mjs",
 ]);
 const packagedPropFiles = new Set(["phone.svg", "crossed-arms-pose.png"]);
@@ -79,6 +80,7 @@ export function include(source) {
   if (relative === "runtime/compile-tvg-assets.mjs") return false;
   if (relative === "runtime/extract-pose-recipe.mjs") return false;
   if (relative === "runtime/register-compatible-tvg-assets.mjs") return false;
+  if (relative === "runtime/refresh-canonical-tvg-assets.mjs") return false;
   return true;
 }
 

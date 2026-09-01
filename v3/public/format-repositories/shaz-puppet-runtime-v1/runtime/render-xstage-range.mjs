@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { pipeline } from "node:stream/promises";
+import { fileURLToPath } from "node:url";
 
 import {
   createPoseRuntime,
@@ -47,9 +49,122 @@ function parseArgs(values) {
   return args;
 }
 
-function run(program, values) {
-  const result = spawnSync(program, values, { encoding: "utf8" });
-  if (result.status !== 0) throw new Error(`${program} failed:\n${result.stderr || result.stdout}`);
+async function streamPngFramesToFfmpeg({
+  frames,
+  fps,
+  output,
+  spawnProcess = spawn,
+}) {
+  const child = spawnProcess("ffmpeg", [
+    "-hide_banner", "-loglevel", "error", "-y",
+    "-f", "image2pipe",
+    "-framerate", String(fps),
+    "-i", "pipe:0",
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+    output,
+  ], { stdio: ["pipe", "ignore", "pipe"] });
+  let stderr = "";
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", (chunk) => {
+    stderr += chunk;
+  });
+  const completed = new Promise((resolve) => {
+    let settled = false;
+    const settle = (result) => {
+      if (settled) return;
+      settled = true;
+      resolve(result);
+    };
+    child.once("error", (error) => settle({ error }));
+    child.once("close", (code, signal) => settle({ code, signal }));
+  });
+
+  let frameError = null;
+  async function* trackedFrames() {
+    try {
+      for await (const frame of frames) yield frame;
+    } catch (error) {
+      frameError = error;
+      throw error;
+    }
+  }
+  let streamError = null;
+  try {
+    await pipeline(trackedFrames(), child.stdin);
+  } catch (error) {
+    streamError = error;
+    if (frameError
+      || (error?.code !== "EPIPE" && error?.code !== "ERR_STREAM_PREMATURE_CLOSE")) {
+      child.kill();
+    }
+  }
+
+  const result = await completed;
+  if (frameError) throw frameError;
+  if (result.error) {
+    throw new Error(`ffmpeg failed:\n${stderr || result.error.message}`, { cause: result.error });
+  }
+  if (result.code !== 0) {
+    const detail = stderr || (result.signal ? `terminated by ${result.signal}` : "unknown error");
+    throw new Error(`ffmpeg failed:\n${detail}`);
+  }
+  if (streamError) throw streamError;
+}
+
+export async function renderFrameRange({
+  start,
+  end,
+  fps,
+  output,
+  renderFrame,
+  spawnProcess = spawn,
+  fileSystem = fs,
+  temporaryId = () => crypto.randomUUID(),
+}) {
+  const finalOutput = path.resolve(output);
+  const extension = path.extname(finalOutput) || ".mp4";
+  const basename = path.basename(finalOutput, path.extname(finalOutput));
+  const stagedOutput = path.join(
+    path.dirname(finalOutput),
+    `.${basename}.stage-${temporaryId()}${extension}`,
+  );
+  const frameReceipts = [];
+  async function* frames() {
+    for (let sourceFrame = start; sourceFrame <= end; sourceFrame += 1) {
+      const rendered = await renderFrame(sourceFrame);
+      frameReceipts.push(rendered.receipt);
+      yield rendered.buffer;
+    }
+  }
+  let committed = false;
+  let operationError = null;
+  try {
+    await streamPngFramesToFfmpeg({
+      frames: frames(),
+      fps,
+      output: stagedOutput,
+      spawnProcess,
+    });
+    await fileSystem.rename(stagedOutput, finalOutput);
+    committed = true;
+  } catch (error) {
+    operationError = error;
+  }
+  if (!committed) {
+    try {
+      await fileSystem.rm(stagedOutput, { force: true });
+    } catch (cleanupError) {
+      if (operationError) {
+        throw new AggregateError(
+          [operationError, cleanupError],
+          "range render failed and its staged encode could not be removed",
+        );
+      }
+      throw cleanupError;
+    }
+  }
+  if (operationError) throw operationError;
+  return frameReceipts;
 }
 
 async function main() {
@@ -66,61 +181,48 @@ async function main() {
     throw new Error(`render range ${start}-${end} is invalid`);
   }
   const output = path.resolve(args.output);
-  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-xstage-range-"));
   const assetCache = new Map();
   const propCache = new Map();
-  const frameReceipts = [];
-  try {
-    for (let sourceFrame = start; sourceFrame <= end; sourceFrame += 1) {
-      const rendered = await renderRigFrame({
-        manifest,
-        frame: sourceFrame,
-        assetRoot: path.resolve(args.assets),
-        propRoot: args.propAssets ? path.resolve(args.propAssets) : null,
-        assetCache,
-        propCache,
-        poseRuntime,
-      });
-      const outputFrame = sourceFrame - start + 1;
-      await fs.writeFile(
-        path.join(scratch, `frame-${String(outputFrame).padStart(4, "0")}.png`),
-        rendered.buffer,
-      );
-      frameReceipts.push(rendered.receipt);
-    }
-    await fs.mkdir(path.dirname(output), { recursive: true });
-    run("ffmpeg", [
-      "-hide_banner", "-loglevel", "error", "-y",
-      "-framerate", String(args.fps),
-      "-i", path.join(scratch, "frame-%04d.png"),
-      "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
-      output,
-    ]);
-    if (args.receipt) {
-      const receiptPath = path.resolve(args.receipt);
-      await fs.mkdir(path.dirname(receiptPath), { recursive: true });
-      await fs.writeFile(receiptPath, `${JSON.stringify({
-        schemaVersion: "shaz-rig-v2-range-receipt-v1",
-        sourceXstageSha256: manifest.source.sha256,
-        mode: poseRuntime ? "pose-recipe" : "xstage-calibration",
-        startFrame: start,
-        endFrame: end,
-        fps: args.fps,
-        artistRenderedFramesUsed: false,
-        ...(poseRuntime ? {
-          poseRecipeId: poseRuntime.recipe.id,
-          poseRecipeSha256: poseRuntime.recipeSha256,
-        } : {}),
-        frames: frameReceipts,
-      }, null, 2)}\n`);
-    }
-    process.stdout.write(`${output}\n`);
-  } finally {
-    await fs.rm(scratch, { recursive: true, force: true });
+  await fs.mkdir(path.dirname(output), { recursive: true });
+  const frameReceipts = await renderFrameRange({
+    start,
+    end,
+    fps: args.fps,
+    output,
+    renderFrame: (sourceFrame) => renderRigFrame({
+      manifest,
+      frame: sourceFrame,
+      assetRoot: path.resolve(args.assets),
+      propRoot: args.propAssets ? path.resolve(args.propAssets) : null,
+      assetCache,
+      propCache,
+      poseRuntime,
+    }),
+  });
+  if (args.receipt) {
+    const receiptPath = path.resolve(args.receipt);
+    await fs.mkdir(path.dirname(receiptPath), { recursive: true });
+    await fs.writeFile(receiptPath, `${JSON.stringify({
+      schemaVersion: "shaz-rig-v2-range-receipt-v1",
+      sourceXstageSha256: manifest.source.sha256,
+      mode: poseRuntime ? "pose-recipe" : "xstage-calibration",
+      startFrame: start,
+      endFrame: end,
+      fps: args.fps,
+      artistRenderedFramesUsed: false,
+      ...(poseRuntime ? {
+        poseRecipeId: poseRuntime.recipe.id,
+        poseRecipeSha256: poseRuntime.recipeSha256,
+      } : {}),
+      frames: frameReceipts,
+    }, null, 2)}\n`);
   }
+  process.stdout.write(`${output}\n`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

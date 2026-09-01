@@ -65,10 +65,12 @@ test("the sealed kit contains every candidate source but no review-only runtime 
     "runtime/compile-tvg-assets.mjs",
     "runtime/extract-pose-recipe.mjs",
     "runtime/register-compatible-tvg-assets.mjs",
+    "runtime/refresh-canonical-tvg-assets.mjs",
     "tests/build-kit.test.mjs",
     "tests/compatible-xstage-actions.test.mjs",
     "tests/compatible-xstage-importer.test.mjs",
     "tests/compile-tvg-assets.test.mjs",
+    "tests/refresh-canonical-tvg-assets.test.mjs",
     "tests/pose-recipe.test.mjs",
   ]) {
     assert.equal(include(path.join(root, relative)), false);
@@ -102,10 +104,16 @@ test("registration journals and lock state can never enter the sealed kit", asyn
     `.compatible-registration-journal-build-test-${process.pid}`,
   );
   const currentState = path.join(root, ".wiggly-authoring-state", `build-test-${process.pid}`);
+  const canonicalStage = path.join(
+    root,
+    "rig-v2",
+    `.shaz-canonical-stage-build-test-${process.pid}`,
+  );
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), "shaz-build-kit-journal-guard-"));
   t.after(async () => {
     await fs.rm(legacyState, { recursive: true, force: true });
     await fs.rm(currentState, { recursive: true, force: true });
+    await fs.rm(canonicalStage, { recursive: true, force: true });
     await fs.rmdir(path.dirname(currentState)).catch((error) => {
       if (!["ENOENT", "ENOTEMPTY", "EEXIST"].includes(error?.code)) throw error;
     });
@@ -114,18 +122,22 @@ test("registration journals and lock state can never enter the sealed kit", asyn
   await Promise.all([
     fs.mkdir(legacyState, { recursive: true }),
     fs.mkdir(currentState, { recursive: true }),
+    fs.mkdir(canonicalStage, { recursive: true }),
   ]);
   await Promise.all([
     fs.writeFile(path.join(legacyState, "journal.json"), "must not ship"),
     fs.writeFile(path.join(currentState, "active.lock"), "must not ship"),
+    fs.writeFile(path.join(canonicalStage, "partial.png"), "must not ship"),
   ]);
 
   assert.equal(include(legacyState), false);
   assert.equal(include(currentState), false);
+  assert.equal(include(canonicalStage), false);
   const built = await buildKit({ outputDirectory: scratch });
   const entries = archiveEntries(built.output);
   assert.equal(entries.some((entry) => entry.includes("compatible-registration-journal")), false);
   assert.equal(entries.some((entry) => entry.includes(".wiggly-authoring-state")), false);
+  assert.equal(entries.some((entry) => entry.includes(".shaz-canonical-stage")), false);
 });
 
 test("every downloadable sequence fixture uses only reviewed gestures or neutral", async () => {

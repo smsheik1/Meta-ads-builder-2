@@ -21,6 +21,27 @@ import {
 
 const ALPHA_THRESHOLD = 24;
 const MIN_COMPONENT_PIXELS = 12;
+const MIN_VISIBLE_PUPIL_PIXELS = MIN_COMPONENT_PIXELS * 2;
+const MIN_VISIBLE_PUPIL_SOLIDITY = 0.6;
+const DARK_PUPIL_LUMA_THRESHOLD = 96;
+const MIN_PUPIL_EYE_OVERLAP_PIXELS = MIN_COMPONENT_PIXELS;
+const MIN_PUPIL_EYE_OVERLAP_RATIO = 0.5;
+// Drawing numbers are local to their source element. A null pupil exposure is
+// valid only for these exact compiled closed-eye assets, not every drawing 5.
+const REGISTERED_CLOSED_EYE_ASSETS = new Set([
+  "Left:5:d1f8b7f50cb7835a59a8f851020d711bbf2f761f2495bae1f7ad317796f18ddb",
+  "Right:5:a5d718eee6fa33affe67cb88427504dc589e3e4e54ddee48675ea7d6d452537a",
+]);
+// The canonical left squint is intentionally one pixel smaller than the
+// general visibility floor after its authored transform. Keep the exception
+// bound to the exact compiled artwork and exact eye/pupil drawing pair; any
+// changed asset or reused drawing ID still has to clear the global floor.
+const REGISTERED_SMALL_PUPIL_ASSETS = new Map([
+  ["Left:4:10:651902c0c8055175737e772ad915e67365f8fb160ed8c71cf9021f819377ed83", 23],
+]);
+const REGISTERED_LOW_SOLIDITY_PUPIL_ASSETS = new Map([
+  ["Right:4:10:2615b8e39bce476f98181f6a7211348da50c4a807a8826e8f3385179de513ed4", 0.57],
+]);
 const LIMB_PROP_PATTERN = /(?:arm|forearm|sleeve|hand|fist)/i;
 const REGISTERED_NON_LIMB_PROPS = new Map([
   ["phone", {
@@ -84,7 +105,17 @@ function parseArgs(values) {
   return args;
 }
 
-async function alphaStats(buffer, analysisWidth = 640) {
+function isAlphaPixel(data, offset) {
+  return data[offset + 3] > ALPHA_THRESHOLD;
+}
+
+function isDarkOpaquePixel(data, offset) {
+  if (!isAlphaPixel(data, offset)) return false;
+  const luma = (299 * data[offset] + 587 * data[offset + 1] + 114 * data[offset + 2]) / 1000;
+  return luma <= DARK_PUPIL_LUMA_THRESHOLD;
+}
+
+async function rasterMaskStats(buffer, analysisWidth, includesPixel) {
   const { data, info } = await sharp(buffer)
     .resize({ width: analysisWidth })
     .ensureAlpha()
@@ -102,8 +133,9 @@ async function alphaStats(buffer, analysisWidth = 640) {
   for (let y = 0; y < info.height; y += 1) {
     for (let x = 0; x < info.width; x += 1) {
       const pixel = y * info.width + x;
-      const alpha = data[pixel * info.channels + 3];
-      if (alpha <= ALPHA_THRESHOLD) continue;
+      const offset = pixel * info.channels;
+      const alpha = data[offset + 3];
+      if (!includesPixel(data, offset)) continue;
       mask[pixel] = 1;
       opaquePixels += 1;
       alphaSum += alpha;
@@ -176,6 +208,14 @@ async function alphaStats(buffer, analysisWidth = 640) {
     componentPixels: components.map(({ pixels }) => pixels),
     components,
   };
+}
+
+async function alphaStats(buffer, analysisWidth = 640) {
+  return rasterMaskStats(buffer, analysisWidth, isAlphaPixel);
+}
+
+async function darkOpaqueStats(buffer, analysisWidth = 640) {
+  return rasterMaskStats(buffer, analysisWidth, isDarkOpaquePixel);
 }
 
 async function nearWhitePixelCount(buffer) {
@@ -255,6 +295,27 @@ async function alphaOverlapPixelCount(leftBuffers, rightBuffers, analysisWidth =
       data[pixel * info.channels + 3] > ALPHA_THRESHOLD
     ));
     if (rightVisible) overlapPixels += 1;
+  }
+  return overlapPixels;
+}
+
+async function darkOpaqueMaskOverlapPixelCount(artwork, mask, analysisWidth = 640) {
+  const [artworkRaw, maskRaw] = await Promise.all([
+    sharp(artwork).resize({ width: analysisWidth }).ensureAlpha().raw()
+      .toBuffer({ resolveWithObject: true }),
+    sharp(mask).resize({ width: analysisWidth }).ensureAlpha().raw()
+      .toBuffer({ resolveWithObject: true }),
+  ]);
+  if (artworkRaw.info.width !== maskRaw.info.width
+    || artworkRaw.info.height !== maskRaw.info.height) {
+    throw new Error("pupil and eye-envelope masks must have matching dimensions");
+  }
+  let overlapPixels = 0;
+  for (let pixel = 0; pixel < artworkRaw.info.width * artworkRaw.info.height; pixel += 1) {
+    const artworkOffset = pixel * artworkRaw.info.channels;
+    const maskOffset = pixel * maskRaw.info.channels;
+    if (isDarkOpaquePixel(artworkRaw.data, artworkOffset)
+      && maskRaw.data[maskOffset + 3] > ALPHA_THRESHOLD) overlapPixels += 1;
   }
   return overlapPixels;
 }
@@ -453,6 +514,118 @@ function eyeEnvelopeCompositeValid(layers) {
       && eye.eyeEnvelopePixelCount > 0));
 }
 
+async function pupilVisibilityObservations(analysisLayers, receiptLayers) {
+  return Promise.all(["Left", "Right"].map(async (side) => {
+    const eyeSuffix = `/${side}_Eye`;
+    const pupilSuffix = `/${side}_Pupil`;
+    const eyeReceipt = receiptLayers.find((layer) => (
+      layer.nodePath.endsWith(eyeSuffix) && layer.variant === "main"
+    ));
+    const pupilReceipt = receiptLayers.find((layer) => (
+      layer.nodePath.endsWith(pupilSuffix) && layer.variant === "main"
+    ));
+    const eyeLayer = eyeReceipt ? analysisLayers.find((layer) => (
+      layer.nodePath === eyeReceipt.nodePath && layer.variant === "main"
+    )) : null;
+    if (!pupilReceipt) {
+      const eyeDrawing = eyeReceipt?.drawing ?? null;
+      const closedEyeAssetTuple = [
+        side,
+        eyeDrawing ?? "missing",
+        eyeLayer?.assetSha256 ?? "missing",
+      ].join(":");
+      const required = eyeDrawing !== null
+        && !REGISTERED_CLOSED_EYE_ASSETS.has(closedEyeAssetTuple);
+      return {
+        side,
+        eyeDrawing,
+        pupilDrawing: null,
+        required,
+        visible: required ? false : null,
+        opaquePixels: 0,
+        largestComponentPixels: 0,
+        largestComponentSolidity: 0,
+        solidityFloor: MIN_VISIBLE_PUPIL_SOLIDITY,
+      };
+    }
+
+    const pupilLayer = analysisLayers.find((layer) => (
+      layer.nodePath === pupilReceipt.nodePath && layer.variant === "main"
+    ));
+    if (!pupilLayer) {
+      return {
+        side,
+        eyeDrawing: eyeReceipt?.drawing ?? null,
+        pupilDrawing: pupilReceipt.drawing,
+        required: true,
+        visible: false,
+        opaquePixels: 0,
+        largestComponentPixels: 0,
+        largestComponentSolidity: 0,
+        solidityFloor: MIN_VISIBLE_PUPIL_SOLIDITY,
+      };
+    }
+
+    const eyeEnvelopeMask = eyeLayer?.eyeClearanceMask ?? eyeLayer?.input ?? null;
+    const [stats, darkStats, eyeOverlapPixels] = await Promise.all([
+      alphaStats(pupilLayer.input),
+      darkOpaqueStats(pupilLayer.input),
+      eyeEnvelopeMask
+        ? darkOpaqueMaskOverlapPixelCount(pupilLayer.input, eyeEnvelopeMask)
+        : 0,
+    ]);
+    const largestComponent = darkStats.components?.[0] ?? null;
+    const largestComponentPixels = largestComponent?.pixels ?? 0;
+    const largestComponentBounds = largestComponent?.bbox;
+    const largestComponentBoxPixels = largestComponentBounds
+      ? (largestComponentBounds.maxX - largestComponentBounds.minX + 1)
+        * (largestComponentBounds.maxY - largestComponentBounds.minY + 1)
+      : 0;
+    const largestComponentSolidity = largestComponentBoxPixels > 0
+      ? largestComponentPixels / largestComponentBoxPixels
+      : 0;
+    const assetTuple = [
+      side,
+      eyeReceipt?.drawing ?? "missing",
+      pupilReceipt.drawing,
+      pupilLayer.assetSha256 ?? "missing",
+    ].join(":");
+    const registeredFloor = REGISTERED_SMALL_PUPIL_ASSETS.get(assetTuple);
+    const visibilityFloorPixels = registeredFloor ?? MIN_VISIBLE_PUPIL_PIXELS;
+    const solidityFloor = REGISTERED_LOW_SOLIDITY_PUPIL_ASSETS.get(assetTuple)
+      ?? MIN_VISIBLE_PUPIL_SOLIDITY;
+    const darkOpaquePixels = darkStats.opaquePixels ?? 0;
+    const eyeOverlapFloorPixels = Math.min(
+      MIN_PUPIL_EYE_OVERLAP_PIXELS,
+      visibilityFloorPixels,
+    );
+    const eyeOverlapRatio = darkOpaquePixels > 0
+      ? eyeOverlapPixels / darkOpaquePixels
+      : 0;
+    return {
+      side,
+      eyeDrawing: eyeReceipt?.drawing ?? null,
+      pupilDrawing: pupilReceipt.drawing,
+      required: true,
+      visible: !darkStats.empty
+        && largestComponentPixels >= visibilityFloorPixels
+        && largestComponentSolidity >= solidityFloor
+        && eyeOverlapPixels >= eyeOverlapFloorPixels
+        && eyeOverlapRatio >= MIN_PUPIL_EYE_OVERLAP_RATIO,
+      opaquePixels: stats.opaquePixels ?? 0,
+      darkOpaquePixels,
+      largestComponentPixels,
+      visibilityFloorPixels,
+      largestComponentSolidity,
+      solidityFloor,
+      eyeOverlapPixels,
+      eyeOverlapFloorPixels,
+      eyeOverlapRatio,
+      eyeOverlapRatioFloor: MIN_PUPIL_EYE_OVERLAP_RATIO,
+    };
+  }));
+}
+
 async function opaqueMaskOverlapPixelCount(artwork, masks) {
   const [artworkRaw, ...maskRaws] = await Promise.all([
     sharp(artwork).ensureAlpha().raw().toBuffer(),
@@ -580,6 +753,19 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
           detail: `${eyeEnvelopeOverlapPixels} opaque front-bang pixels remain inside the eye envelopes`,
         });
       }
+    }
+    const pupilVisibility = await pupilVisibilityObservations(
+      rendered.analysisLayers,
+      rendered.receipt.layers,
+    );
+    for (const pupil of pupilVisibility.filter(({ required, visible }) => (
+      required && !visible
+    ))) {
+      failures.push({
+        frame,
+        gate: "pupil-visibility",
+        detail: `${pupil.side.toLowerCase()} pupil drawing ${pupil.pupilDrawing} for eye drawing ${pupil.eyeDrawing ?? "missing"} rendered ${pupil.opaquePixels} alpha pixels and ${pupil.darkOpaquePixels ?? 0} dark pixels; its largest dark connected component has ${pupil.largestComponentPixels} pixels against a ${pupil.visibilityFloorPixels ?? MIN_VISIBLE_PUPIL_PIXELS}-pixel floor and ${pupil.largestComponentSolidity.toFixed(3)} bbox solidity against a ${pupil.solidityFloor.toFixed(2)} floor; ${pupil.eyeOverlapPixels ?? 0} dark pixels overlap the eye envelope against a ${pupil.eyeOverlapFloorPixels ?? MIN_PUPIL_EYE_OVERLAP_PIXELS}-pixel floor`,
+      });
     }
     const backBangLayer = rendered.analysisLayers.find((layer) => (
       layer.nodePath.endsWith("/Bangs_back") && layer.variant === "main"
@@ -1006,6 +1192,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       limbSubstitutionProps: limbPropStats.map(({ id }) => id),
       armGeometry,
       eyeEnvelopeOverlapPixels,
+      pupilVisibility,
       rightArmHeadBaseOverlapPixels,
     });
   }
@@ -1051,6 +1238,7 @@ async function inspectPose({ manifest, assetRoot, propRoot = null, recipe }) {
       "limb-attachment",
       "hair-composite",
       "eye-occlusion",
+      "pupil-visibility",
       "construction-seam",
       "collar-fill",
       "mouth-color-ownership",
@@ -1115,4 +1303,5 @@ export {
   nearWhitePixelCount,
   opaqueMaskOverlapPixelCount,
   paintOrderValid,
+  pupilVisibilityObservations,
 };

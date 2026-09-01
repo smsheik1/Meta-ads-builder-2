@@ -31,6 +31,7 @@ test("the canonical compatible-Xstage tutorial preserves every proven reconstruc
     "runtime/compile-tvg-assets.mjs",
     "runtime/extract-pose-recipe.mjs",
     "runtime/register-compatible-tvg-assets.mjs",
+    "runtime/refresh-canonical-tvg-assets.mjs",
   ]) {
     assert.ok(playbook.includes(command), `missing authoring command: ${command}`);
   }
@@ -43,6 +44,20 @@ test("the canonical compatible-Xstage tutorial preserves every proven reconstruc
   assert.match(playbook, /parent graph, stage field grid, and static pivot basis/);
   assert.match(playbook, /canonical-identical[\s\S]*absent from canonical[\s\S]*same ID, different artwork/);
   assert.match(playbook, /unsupported nonconstant curve fails closed/);
+  assert.match(playbook, /Component order is not contour order/);
+  assert.match(playbook, /Reject open chains and ambiguous branches/);
+  assert.match(playbook, /`0\.60` filled-area-to-bounding-box solidity/);
+  assert.match(playbook, /dark opaque/);
+  assert.match(playbook, /overlapping the transformed semantic eye envelope/);
+  assert.match(playbook, /compiled eye asset checksum/);
+  assert.match(playbook, /canonical refresher uses an atomic whole-tree swap/);
+  assert.match(playbook, /Never delete that backup/);
+  assert.match(playbook, /retain the existing `paletteNormalization` value exactly/);
+  assert.match(playbook, /--compiled-assets \/absolute\/work\/compiled-canonical-assets/);
+  assert.match(playbook, /same lease derived from the canonical asset-tree identity/);
+  assert.match(playbook, /changes only the per-operation journal and recovery location/);
+  assert.match(playbook, /emits manual recovery instructions only after proving that no live owner/);
+  assert.match(playbook, /rejects changed palette normalization, undecodable PNG bytes/);
   assert.match(playbook, /currently end-to-end proven PART2 ranges are `1683-1740`, `1795-1959`, and `2817-2933`/);
   assert.match(playbook, /live-rig range `604-727` correctly stops/);
   assert.match(playbook, /synchronized native-versus-runtime playback at 1×/);

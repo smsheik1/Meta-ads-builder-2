@@ -2576,9 +2576,9 @@
       "drawing": "2",
       "source": "elements/Left_Pupil/Left_Pupil-2.tvg",
       "sourceSha256": "fb6309ccfe98cd5a9c5e25397724c85f7558941c472005873698f4b04d0e84c0",
-      "outputSha256": "a2a269561e36c32d2e98184feaa891cfac5fb10c506773771a5de1b9d29162af",
+      "outputSha256": "49be37e08b163f8671738eb3e454890682ed0b4b6707de05053b5ebc6a4dbd5b",
       "canvas": {
-        "width": 137,
+        "width": 173,
         "height": 137
       },
       "modelOrigin": {
@@ -2588,7 +2588,7 @@
       "drawingBounds": {
         "minX": -2249.3438,
         "minY": 67.25,
-        "maxX": -2212.9531,
+        "maxX": -2176.5469,
         "maxY": 104.109375
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2676,9 +2676,9 @@
       "drawing": "6",
       "source": "elements/Left_Pupil/Left_Pupil-6.tvg",
       "sourceSha256": "6b68b557033fdc3f5592f3f74d7300389751e9953b53c8197078d3c7104dfcf6",
-      "outputSha256": "fe657a8510f11b1813f286042ff9e130ea238757254935ecf42efc8a670d40ad",
+      "outputSha256": "b7cb191ffb2e0cc59065bfa3a0abec5e62412e376411b66d9f8e7d1c3a19eb33",
       "canvas": {
-        "width": 105,
+        "width": 176,
         "height": 135
       },
       "modelOrigin": {
@@ -2688,7 +2688,7 @@
       "drawingBounds": {
         "minX": -2250.625,
         "minY": 50.0625,
-        "maxX": -2246.2188,
+        "maxX": -2175.2656,
         "maxY": 84.171875
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2701,9 +2701,9 @@
       "drawing": "7",
       "source": "elements/Left_Pupil/Left_Pupil-7.tvg",
       "sourceSha256": "84553a885f6d8772ea6d86f718095cbdf6f9d9217949cc8b67c4a4a842b0926f",
-      "outputSha256": "866e3d91730482bea4be06663051b669105dd0dfa56f21fe65a9d61ac894ee91",
+      "outputSha256": "1949709fcfc3061e057bd8fd9407795e3a2cb6675779c921397da445e539f30b",
       "canvas": {
-        "width": 139,
+        "width": 148,
         "height": 176
       },
       "modelOrigin": {
@@ -2713,7 +2713,7 @@
       "drawingBounds": {
         "minX": -2210.7969,
         "minY": 30.03125,
-        "maxX": -2172.6875,
+        "maxX": -2163.4219,
         "maxY": 105.359375
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2726,19 +2726,19 @@
       "drawing": "8",
       "source": "elements/Left_Pupil/Left_Pupil-8.tvg",
       "sourceSha256": "bedb865933f75a09bca32f73797cc729fc3be2589d911ee720fdeebb3c45963f",
-      "outputSha256": "5212a268c4cac700ea11118b48d4460127969689685124fb16e5285ad73dc6d6",
+      "outputSha256": "3f95d59b8c531f4bac7f75e6857e7126e665fc08ab6f8685d041221269640bc0",
       "canvas": {
-        "width": 108,
-        "height": 101
+        "width": 156,
+        "height": 176
       },
       "modelOrigin": {
-        "x": -2360.4219,
-        "y": 54.609375
+        "x": -2370.8281,
+        "y": -19.96875
       },
       "drawingBounds": {
-        "minX": -2310.4219,
-        "minY": 104.609375,
-        "maxX": -2302.75,
+        "minX": -2320.8281,
+        "minY": 30.03125,
+        "maxX": -2265.0625,
         "maxY": 105.390625
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2751,19 +2751,19 @@
       "drawing": "9",
       "source": "elements/Left_Pupil/Left_Pupil-9.tvg",
       "sourceSha256": "263344804218dcede7ccdcd1920bd13ae6c83dcb044a3c2eb2615b6b76d8c7bb",
-      "outputSha256": "5b7cdfa7c9ad217502c92ebf62b1bffa41519cdfeb25abf36c0491d0007a9993",
+      "outputSha256": "ac730618218d0a4f551dfe4a235a3e18dabb2824aeefce704249830bd756fdab",
       "canvas": {
-        "width": 104,
-        "height": 101
+        "width": 123,
+        "height": 129
       },
       "modelOrigin": {
-        "x": -2357.8906,
-        "y": 31.890625
+        "x": -2362.0469,
+        "y": 3.234375
       },
       "drawingBounds": {
-        "minX": -2307.8906,
-        "minY": 81.890625,
-        "maxX": -2304.8438,
+        "minX": -2312.0469,
+        "minY": 53.234375,
+        "maxX": -2289.8438,
         "maxY": 82.1875
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2776,9 +2776,9 @@
       "drawing": "10",
       "source": "elements/Left_Pupil/Left_Pupil-10.tvg",
       "sourceSha256": "50ca574111ca462039757ba570631df55d76de3d22b09d3222f8d359fbb4ac4b",
-      "outputSha256": "58680f7cf96ede579d4a0a742204b66e2238bfd54e588189b7d9a9eb7a993e26",
+      "outputSha256": "651902c0c8055175737e772ad915e67365f8fb160ed8c71cf9021f819377ed83",
       "canvas": {
-        "width": 118,
+        "width": 122,
         "height": 134
       },
       "modelOrigin": {
@@ -2788,7 +2788,7 @@
       "drawingBounds": {
         "minX": -2183.6406,
         "minY": 51.234375,
-        "maxX": -2166.4688,
+        "maxX": -2162.3125,
         "maxY": 85.140625
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2826,19 +2826,19 @@
       "drawing": "12",
       "source": "elements/Left_Pupil/Left_Pupil-12.tvg",
       "sourceSha256": "86326553b99970dfe200e6f3b2b89140392aee186540ba1ab8f0d159ae7b3729",
-      "outputSha256": "8d08e2f13aa21316b8e68861a3579e6a4d58bb5828f843868875b23d2ed558fb",
+      "outputSha256": "f85a4175b4054b52142e24040d8f549d8a870039cd4b34c07698082d3bad6fdb",
       "canvas": {
-        "width": 137,
-        "height": 142
+        "width": 148,
+        "height": 144
       },
       "modelOrigin": {
         "x": -2260.7969,
-        "y": 13.859375
+        "y": 12.078125
       },
       "drawingBounds": {
         "minX": -2210.7969,
-        "minY": 63.859375,
-        "maxX": -2174.2813,
+        "minY": 62.078125,
+        "maxX": -2163.4219,
         "maxY": 105.359375
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -2851,20 +2851,20 @@
       "drawing": "13",
       "source": "elements/Left_Pupil/Left_Pupil-13.tvg",
       "sourceSha256": "e4f9c713830c881bda6c517c99df5025481699e5cae8d201e953f19cf601e2c4",
-      "outputSha256": "0e83e780d28dace90308248fb5ec50ff7d038db9b5ccb5749b62efb33b4c84b7",
+      "outputSha256": "49099712912837d825b2f634bb68c71a17630a4d35f549330a69abdc7b611043",
       "canvas": {
-        "width": 175,
-        "height": 117
+        "width": 176,
+        "height": 152
       },
       "modelOrigin": {
-        "x": -2316.1563,
+        "x": -2317.2188,
         "y": -59.1875
       },
       "drawingBounds": {
-        "minX": -2266.1563,
+        "minX": -2267.2188,
         "minY": -9.1875,
         "maxX": -2191.9375,
-        "maxY": 7.1875
+        "maxY": 42.421875
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
@@ -4876,9 +4876,9 @@
       "drawing": "2",
       "source": "elements/Right_Pupil/Right_Pupil-2.tvg",
       "sourceSha256": "b19818692247007ac91224496772a2e82913f4cfc03647f87eeffd503ed2c38e",
-      "outputSha256": "ae0b5ff01e26453719d860cfbc955869c23b51f17d7c8225c8a07420ee8da51b",
+      "outputSha256": "8318e1f56075095a148e7c1c6b409143e7c20c217a1b49f107ce3cef772c7983",
       "canvas": {
-        "width": 138,
+        "width": 175,
         "height": 137
       },
       "modelOrigin": {
@@ -4888,7 +4888,7 @@
       "drawingBounds": {
         "minX": -2094.4219,
         "minY": 68.890625,
-        "maxX": -2056.9531,
+        "maxX": -2019.4688,
         "maxY": 105.21875
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -4901,7 +4901,7 @@
       "drawing": "3",
       "source": "elements/Right_Pupil/Right_Pupil-3.tvg",
       "sourceSha256": "079ad092c182afe39c2ab72b69e042f9926eaf3f70f1da661d8c3fdedffe3a6b",
-      "outputSha256": "1ec94f9b172551b2a20f63cd01b4baad10cde69d8d22026823eeeb73c5275d65",
+      "outputSha256": "dfb1631013533fcbc40847dca4b0c328d68b40b9eb63d07b4d9dc2bff508741d",
       "canvas": {
         "width": 176,
         "height": 150
@@ -4976,9 +4976,9 @@
       "drawing": "6",
       "source": "elements/Right_Pupil/Right_Pupil-6.tvg",
       "sourceSha256": "704001c6240ac060d383bf12d0ba1d58cfe9a30fc25c534f5f36034c93ed0911",
-      "outputSha256": "c53e9f7c6997ca87e11b8d23237eb446e6912045eb899b7d794862ce169f1817",
+      "outputSha256": "9095bad06c2088521ba30312d0962c4e553b40b7ded517d86415961c128c74ff",
       "canvas": {
-        "width": 106,
+        "width": 176,
         "height": 138
       },
       "modelOrigin": {
@@ -4988,7 +4988,7 @@
       "drawingBounds": {
         "minX": -2094.4531,
         "minY": 49.890625,
-        "maxX": -2088.7031,
+        "maxX": -2019.4375,
         "maxY": 87.671875
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -5001,9 +5001,9 @@
       "drawing": "7",
       "source": "elements/Right_Pupil/Right_Pupil-7.tvg",
       "sourceSha256": "d6144facaca419090d0abee01bb418f53b88f5ef2f6e79c710045bad9986b97a",
-      "outputSha256": "0f4ec4347eb33d4e735a14b2750449ba7b78f37e1afc1dfcedefa6e6ea6b7840",
+      "outputSha256": "08dc6d51c5377b96424016b0f4bf63a16ef8367d71efe57fa68e77caac2429fd",
       "canvas": {
-        "width": 137,
+        "width": 146,
         "height": 175
       },
       "modelOrigin": {
@@ -5013,7 +5013,7 @@
       "drawingBounds": {
         "minX": -2024.2344,
         "minY": 30.234375,
-        "maxX": -1987.5156,
+        "maxX": -1978.4688,
         "maxY": 105.140625
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -5026,20 +5026,20 @@
       "drawing": "8",
       "source": "elements/Right_Pupil/Right_Pupil-8.tvg",
       "sourceSha256": "c9bfcfd0ee17f35fb8aa6fcf42cef25bab4263efdb028d1e03fa2104cb156c6c",
-      "outputSha256": "d9caa410c925a8eab4ff5e5d58ce1cec9eccae16bf3ad7ef84bba45c03def30f",
+      "outputSha256": "a349b0bd20d78e6723e57867f47afae2449d7559ce38f1558ef04df6739d5941",
       "canvas": {
-        "width": 109,
-        "height": 169
+        "width": 162,
+        "height": 175
       },
       "modelOrigin": {
         "x": -2185.5,
-        "y": -16.046875
+        "y": -19.78125
       },
       "drawingBounds": {
         "minX": -2135.5,
-        "minY": 33.953125,
-        "maxX": -2126.5156,
-        "maxY": 102.296875
+        "minY": 30.21875,
+        "maxX": -2074.4844,
+        "maxY": 105.21875
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
@@ -5051,17 +5051,17 @@
       "drawing": "9",
       "source": "elements/Right_Pupil/Right_Pupil-9.tvg",
       "sourceSha256": "1b2fa6bda3ef367185ec42761b532368d701fc1de44425c5110de8a2628a3aa3",
-      "outputSha256": "178ae527f67d0debd9967993874ca75263d5d1c365ca88e5b6ff7f8061bdb2ea",
+      "outputSha256": "74c501487e66c2a98b56992181dd3c54f6f049459a421a02d49c0b5a2edeb293",
       "canvas": {
-        "width": 121,
+        "width": 124,
         "height": 129
       },
       "modelOrigin": {
-        "x": -2178.75,
+        "x": -2181.5,
         "y": 3.4375
       },
       "drawingBounds": {
-        "minX": -2128.75,
+        "minX": -2131.5,
         "minY": 53.4375,
         "maxX": -2108.1094,
         "maxY": 82.046875
@@ -5076,20 +5076,20 @@
       "drawing": "10",
       "source": "elements/Right_Pupil/Right_Pupil-10.tvg",
       "sourceSha256": "f4715b4023b8733859668ecd4e5d5220c8a90465f56140fddb8c2b0ba35cee8e",
-      "outputSha256": "6c32b0605efa5e71ff48981d8020bc554155280d410150feac9b51c57ebcbddb",
+      "outputSha256": "2615b8e39bce476f98181f6a7211348da50c4a807a8826e8f3385179de513ed4",
       "canvas": {
-        "width": 101,
-        "height": 101
+        "width": 121,
+        "height": 134
       },
       "modelOrigin": {
-        "x": -2030.9219,
+        "x": -2047.4688,
         "y": 0.15625
       },
       "drawingBounds": {
-        "minX": -1980.9219,
+        "minX": -1997.4688,
         "minY": 50.15625,
-        "maxX": -1980.875,
-        "maxY": 50.25
+        "maxX": -1976.8594,
+        "maxY": 83.859375
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
@@ -5126,9 +5126,9 @@
       "drawing": "12",
       "source": "elements/Right_Pupil/Right_Pupil-12.tvg",
       "sourceSha256": "fc250c1da292646b3a31505da6c5e685f4555d207144fb577f357a5dd14b357d",
-      "outputSha256": "5e46aec1d51a70f91c14cda6c3d1baa66bf42e7dc4922ddd3405a9e472017e5f",
+      "outputSha256": "98268551ba784e3f111c18adae22a2014bcb4c7352cd517ac70a9dd0db4d54d0",
       "canvas": {
-        "width": 136,
+        "width": 146,
         "height": 140
       },
       "modelOrigin": {
@@ -5138,7 +5138,7 @@
       "drawingBounds": {
         "minX": -2024.2344,
         "minY": 65.25,
-        "maxX": -1989.0469,
+        "maxX": -1978.4688,
         "maxY": 105.140625
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
@@ -5151,20 +5151,20 @@
       "drawing": "13",
       "source": "elements/Right_Pupil/Right_Pupil-13.tvg",
       "sourceSha256": "170e6929ebf7476c860de2782ac1a0bab8e8f4b150ae4e0b3026fbc179d97e8a",
-      "outputSha256": "74bc8dff38e27725e2b5e600e7349464c95300573f64787a627c105492f0bf60",
+      "outputSha256": "b4b8c8238cf71612616c1ee666393a8fcdd899d33ad67df1235b0fe6cf3f6e55",
       "canvas": {
-        "width": 172,
-        "height": 111
+        "width": 176,
+        "height": 158
       },
       "modelOrigin": {
-        "x": -2137.4375,
+        "x": -2139.5156,
         "y": -60.0625
       },
       "drawingBounds": {
-        "minX": -2087.4375,
+        "minX": -2089.5156,
         "minY": -10.0625,
-        "maxX": -2015.5313,
-        "maxY": 0.828125
+        "maxX": -2014.5,
+        "maxY": 47.0625
       },
       "sourceXstageSha256": "507e8b0fa7b95d36b9429671b6b6a9ffa3dd77f5c559b84eb2b49add04512fca"
     },
@@ -6232,19 +6232,19 @@
       "drawing": "8",
       "source": "elements/Left_Pupil/Left_Pupil-8.tvg",
       "sourceSha256": "bb4d377c2b6683f48915b4ff8b79622031d411667f3aa02ed13fd77a8874763c",
-      "outputSha256": "025ece5bb171e608e6e72e1c67ebd70e1a10c04662d5fb94215ab91a4664015f",
+      "outputSha256": "436ba590b92e3ae8d716317b74b8a00b54d6e5b924eecbceff25bb5e84e6291d",
       "canvas": {
-        "width": 108,
-        "height": 101
+        "width": 156,
+        "height": 176
       },
       "modelOrigin": {
-        "x": -2360.4219,
-        "y": 54.609375
+        "x": -2370.8281,
+        "y": -19.96875
       },
       "drawingBounds": {
-        "minX": -2310.4219,
-        "minY": 104.609375,
-        "maxX": -2302.75,
+        "minX": -2320.8281,
+        "minY": 30.03125,
+        "maxX": -2265.0625,
         "maxY": 105.390625
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
@@ -6282,20 +6282,20 @@
       "drawing": "13",
       "source": "elements/Left_Pupil/Left_Pupil-13.tvg",
       "sourceSha256": "52b1e0fa4e16db52596011e627aaa0f77e6c2992432d86316b53b2c13bc0f8aa",
-      "outputSha256": "6f8d74b0de8d23593e792f43dc1f5bd0d80c35ec34550ecde7700a777d404eba",
+      "outputSha256": "754e925b8b92ce8e3cdb0eec82947e5cf2b497d744a995ac281a337a0fe867f1",
       "canvas": {
-        "width": 175,
-        "height": 117
+        "width": 176,
+        "height": 152
       },
       "modelOrigin": {
-        "x": -2316.1563,
+        "x": -2317.2188,
         "y": -59.1875
       },
       "drawingBounds": {
-        "minX": -2266.1563,
+        "minX": -2267.2188,
         "minY": -9.1875,
         "maxX": -2191.9375,
-        "maxY": 7.1875
+        "maxY": 42.421875
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
@@ -6307,9 +6307,9 @@
       "drawing": "15",
       "source": "elements/Left_Pupil/Left_Pupil-15.tvg",
       "sourceSha256": "786a9180b7593403ee7beef0f706ed478ffb4342098960215f32685bb83ea604",
-      "outputSha256": "ebd99307fb325d18933f6a7641fed40da5165894110da9167edb91e79afcfe32",
+      "outputSha256": "78c779950929d74bcad8fe13a3cae01048c8238ac202fd7fef5ce530707ecafa",
       "canvas": {
-        "width": 139,
+        "width": 148,
         "height": 149
       },
       "modelOrigin": {
@@ -6319,8 +6319,8 @@
       "drawingBounds": {
         "minX": -2210.7969,
         "minY": 30.03125,
-        "maxX": -2172.6875,
-        "maxY": 78.046875
+        "maxX": -2163.4219,
+        "maxY": 78.84375
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
@@ -7240,20 +7240,20 @@
       "drawing": "8",
       "source": "elements/Right_Pupil/Right_Pupil-8.tvg",
       "sourceSha256": "f53fce4431492a96bade579a343460b9b7e04a3ec161eb98d9871b896acf99f4",
-      "outputSha256": "c59a3227caa4bab10ffe51d97c9269557869ffe01e334a2f03b9637d26f7d3d8",
+      "outputSha256": "4643ec239db1038846c89085ab11454911db867b2682f79b0f028b941b1ff530",
       "canvas": {
-        "width": 109,
-        "height": 169
+        "width": 162,
+        "height": 175
       },
       "modelOrigin": {
         "x": -2185.5,
-        "y": -16.046875
+        "y": -19.78125
       },
       "drawingBounds": {
         "minX": -2135.5,
-        "minY": 33.953125,
-        "maxX": -2126.5156,
-        "maxY": 102.296875
+        "minY": 30.21875,
+        "maxX": -2074.4844,
+        "maxY": 105.21875
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
@@ -7290,20 +7290,20 @@
       "drawing": "13",
       "source": "elements/Right_Pupil/Right_Pupil-13.tvg",
       "sourceSha256": "01d286f81067db714b74e7f7bab24b2ade390aaaf652e22a6a60956a94aa6f20",
-      "outputSha256": "ae4d4971a9530d1c954a914647a7227939954b14c01ca369a1b8a9734fc675f8",
+      "outputSha256": "7bbfb89b740024379776b11c23711ab2d9e3648f6fbff19c7b42b7779de858da",
       "canvas": {
-        "width": 172,
-        "height": 111
+        "width": 176,
+        "height": 158
       },
       "modelOrigin": {
-        "x": -2137.4375,
+        "x": -2139.5156,
         "y": -60.0625
       },
       "drawingBounds": {
-        "minX": -2087.4375,
+        "minX": -2089.5156,
         "minY": -10.0625,
-        "maxX": -2015.5313,
-        "maxY": 0.828125
+        "maxX": -2014.5,
+        "maxY": 47.0625
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },
@@ -7315,10 +7315,10 @@
       "drawing": "15",
       "source": "elements/Right_Pupil/Right_Pupil-15.tvg",
       "sourceSha256": "e2b5c1a5b9d5d22c6b287bdb3d415ff888808b8412ac8f65166ab2f228d09a94",
-      "outputSha256": "7103348cfc0f90e85e6e307555361046d9829fa6fca75d442cd642cdb28a6d1c",
+      "outputSha256": "c022135ac56f21d852b1e8d7b3584b0f8a26487e59c89ee95874919d9cb2ae0b",
       "canvas": {
-        "width": 137,
-        "height": 149
+        "width": 146,
+        "height": 152
       },
       "modelOrigin": {
         "x": -2074.2344000000003,
@@ -7327,8 +7327,8 @@
       "drawingBounds": {
         "minX": -2024.2344,
         "minY": 30.234375,
-        "maxX": -1987.5156,
-        "maxY": 79.078125
+        "maxX": -1978.4688,
+        "maxY": 81.609375
       },
       "sourceXstageSha256": "0303b090a58f7ab66139e2e5328c29ca7a2528b7508c91fb648bbd80f8d1342f"
     },

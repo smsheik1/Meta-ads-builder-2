@@ -66,23 +66,186 @@ struct PaintEntry {
     color_id: u64,
 }
 
-fn path_to_svg(path: &Path) -> String {
-    let mut out = String::new();
-    for segment in &path.segments {
-        match segment {
-            PathSegment::Line((x, y)) => {
-                if out.is_empty() {
-                    out.push_str(&format!("M{x} {}", -y));
-                } else {
-                    out.push_str(&format!(" L{x} {}", -y));
+fn points_match(left: (f32, f32), right: (f32, f32)) -> bool {
+    const EPSILON: f32 = 0.001;
+    (left.0 - right.0).abs() <= EPSILON && (left.1 - right.1).abs() <= EPSILON
+}
+
+fn path_start(path: &Path) -> Option<(f32, f32)> {
+    match path.segments.first()? {
+        PathSegment::Line(point) => Some(*point),
+        PathSegment::Cubic(_, _, _) => {
+            panic!("TVG path must begin with a line point before any cubic segment")
+        }
+    }
+}
+
+fn path_end(path: &Path) -> Option<(f32, f32)> {
+    match path.segments.last()? {
+        PathSegment::Line(point) => Some(*point),
+        PathSegment::Cubic(_, _, point) => Some(*point),
+    }
+}
+
+#[derive(Clone, Copy)]
+struct OrientedPath<'a> {
+    path: &'a Path,
+    reversed: bool,
+}
+
+fn oriented_start(path: OrientedPath<'_>) -> Option<(f32, f32)> {
+    if path.reversed {
+        path_end(path.path)
+    } else {
+        path_start(path.path)
+    }
+}
+
+fn oriented_end(path: OrientedPath<'_>) -> Option<(f32, f32)> {
+    if path.reversed {
+        path_start(path.path)
+    } else {
+        path_end(path.path)
+    }
+}
+
+fn matching_path(
+    paths: &[&Path],
+    used: &[bool],
+    endpoint: (f32, f32),
+    match_start: bool,
+) -> Option<(usize, bool)> {
+    let mut matches = Vec::new();
+    for (index, path) in paths.iter().enumerate() {
+        if used[index] {
+            continue;
+        }
+        let start = path_start(path);
+        let end = path_end(path);
+        let normal_match = if match_start {
+            end.is_some_and(|candidate| points_match(candidate, endpoint))
+        } else {
+            start.is_some_and(|candidate| points_match(candidate, endpoint))
+        };
+        let reversed_match = if match_start {
+            start.is_some_and(|candidate| points_match(candidate, endpoint))
+        } else {
+            end.is_some_and(|candidate| points_match(candidate, endpoint))
+        };
+        if normal_match {
+            matches.push((index, false));
+        }
+        if reversed_match && !normal_match {
+            matches.push((index, true));
+        }
+    }
+    match matches.as_slice() {
+        [] => None,
+        [only] => Some(*only),
+        _ => panic!("TVG compound fill has ambiguous path topology at {endpoint:?}"),
+    }
+}
+
+fn stitch_paths<'a>(paths: Vec<&'a Path>, require_closed: bool) -> Vec<Vec<OrientedPath<'a>>> {
+    let mut used = vec![false; paths.len()];
+    let mut chains = Vec::new();
+    while let Some(seed_index) = used.iter().position(|used| !*used) {
+        used[seed_index] = true;
+        let mut chain = vec![OrientedPath {
+            path: paths[seed_index],
+            reversed: false,
+        }];
+        loop {
+            let start = oriented_start(chain[0]);
+            let end = oriented_end(*chain.last().expect("path chain must not be empty"));
+            if start.zip(end).is_some_and(|(start, end)| points_match(start, end)) {
+                break;
+            }
+            if let Some(end) = end {
+                if let Some((index, reversed)) = matching_path(&paths, &used, end, false) {
+                    used[index] = true;
+                    chain.push(OrientedPath { path: paths[index], reversed });
+                    continue;
                 }
             }
-            PathSegment::Cubic((a, b), (c, d), (e, f)) => {
-                out.push_str(&format!(" C{a} {} {c} {} {e} {}", -b, -d, -f));
+            if let Some(start) = start {
+                if let Some((index, reversed)) = matching_path(&paths, &used, start, true) {
+                    used[index] = true;
+                    chain.insert(0, OrientedPath { path: paths[index], reversed });
+                    continue;
+                }
+            }
+            break;
+        }
+        if require_closed {
+            let start = oriented_start(chain[0]);
+            let end = oriented_end(*chain.last().expect("path chain must not be empty"));
+            if !start
+                .zip(end)
+                .is_some_and(|(start, end)| points_match(start, end))
+            {
+                panic!("TVG fill has an open path contour");
+            }
+        }
+        chains.push(chain);
+    }
+    chains
+}
+
+fn push_point(out: &mut String, command: char, (x, y): (f32, f32)) {
+    out.push(command);
+    out.push_str(&format!("{x} {}", -y));
+}
+
+fn push_oriented_path(out: &mut String, path: OrientedPath<'_>, continues_previous: bool) {
+    if !out.is_empty() {
+        out.push(' ');
+    }
+    if !path.reversed {
+        for (segment_index, segment) in path.path.segments.iter().enumerate() {
+            match segment {
+                PathSegment::Line(point) => {
+                    push_point(out, if segment_index == 0 && !continues_previous { 'M' } else { 'L' }, *point);
+                }
+                PathSegment::Cubic((a, b), (c, d), (e, f)) => {
+                    out.push_str(&format!("C{a} {} {c} {} {e} {}", -b, -d, -f));
+                }
+            }
+        }
+        return;
+    }
+
+    let Some(start) = path_end(path.path) else { return; };
+    push_point(out, if continues_previous { 'L' } else { 'M' }, start);
+    for segment_index in (1..path.path.segments.len()).rev() {
+        let previous = match &path.path.segments[segment_index - 1] {
+            PathSegment::Line(point) => *point,
+            PathSegment::Cubic(_, _, point) => *point,
+        };
+        match &path.path.segments[segment_index] {
+            PathSegment::Line(_) => push_point(out, 'L', previous),
+            PathSegment::Cubic((a, b), (c, d), _) => {
+                out.push_str(&format!("C{c} {} {a} {} {} {}", -d, -b, previous.0, -previous.1));
             }
         }
     }
+}
+
+fn paths_to_svg<'a>(
+    paths: impl IntoIterator<Item = &'a Path>,
+    require_closed: bool,
+) -> String {
+    let mut out = String::new();
+    for chain in stitch_paths(paths.into_iter().collect(), require_closed) {
+        for (index, path) in chain.into_iter().enumerate() {
+            push_oriented_path(&mut out, path, index > 0);
+        }
+    }
     out
+}
+
+fn path_to_svg(path: &Path) -> String {
+    paths_to_svg(std::iter::once(path), false)
 }
 
 fn palette_map(items: &[FileData]) -> HashMap<u64, [u8; 4]> {
@@ -181,6 +344,26 @@ fn paint_seed(entry: PaintEntry, boundary_index: usize) -> PaintSeed {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tvg::layer::{ComponentInfo, ShapeComponent, VectorShape};
+    use tvg::util::Bytes;
+
+    fn component(
+        ty: ComponentType,
+        color_id: Option<u64>,
+        raw: Vec<u8>,
+        segments: Vec<PathSegment>,
+    ) -> ShapeComponent {
+        ShapeComponent {
+            tags: vec![
+                ShapeComponentData::Info(ComponentInfo {
+                    ty,
+                    color_id,
+                    raw: Bytes(raw),
+                }),
+                ShapeComponentData::Path(Path { segments }),
+            ],
+        }
+    }
 
     #[test]
     fn decodes_tgco_paint_point_and_palette_id_at_the_correct_offsets() {
@@ -203,6 +386,397 @@ mod tests {
         assert!((seeds[0].y - 607.3701).abs() < 0.01);
         assert_eq!(seeds[0].color, [255, 239, 210, 255]);
         assert_eq!(seeds[0].color_id, "0b6acb7cbef28614");
+    }
+
+    #[test]
+    fn line_layer_preserves_every_component_of_one_harmony_fill_shape() {
+        let color_id: u64 = 0x0102030405060708;
+        let mut paint_raw = vec![0_u8; 85];
+        paint_raw[0] = ComponentType::Fill as u8;
+        paint_raw[1] = 0;
+        paint_raw[6] = 1;
+        paint_raw[9..13].copy_from_slice(b"TGCO");
+        paint_raw[13..17].copy_from_slice(&66_u32.to_le_bytes());
+        paint_raw[54..58].copy_from_slice(&0.0_f32.to_le_bytes());
+        paint_raw[62..66].copy_from_slice(&0.0_f32.to_le_bytes());
+        paint_raw[66..74].copy_from_slice(&color_id.to_le_bytes());
+        let layer = LayerData::Vector(vec![VectorShape {
+            // Harmony stores the pupil fill as an Unknown5 shape whose
+            // individual components are all tagged as fills. Only the first
+            // component carries the paint record.
+            ty: ShapeType::Unknown5,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    None,
+                    paint_raw,
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((10.0, 10.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 10.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([(color_id, [77, 17, 3, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+
+        assert_eq!(drawing.boundaries.len(), 1);
+        assert_eq!(drawing.fills.len(), 1);
+        assert_eq!(drawing.fills[0].d, drawing.boundaries[0]);
+        assert_eq!(drawing.fills[0].d.matches('M').count(), 1);
+        assert!(drawing.fills[0].d.contains("L10 -10"));
+        assert_eq!(drawing.fills[0].color, [77, 17, 3, 255]);
+        assert_eq!(drawing.fills[0].color_id, "0102030405060708");
+    }
+
+    #[test]
+    fn compound_fill_stitches_out_of_order_components() {
+        let color_id = 0x090a0b0c0d0e0f10;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Unknown5,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(color_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 10.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((10.0, 10.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([(color_id, [77, 17, 3, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+
+        assert_eq!(drawing.boundaries.len(), 1);
+        assert_eq!(drawing.fills.len(), 1);
+        assert_eq!(drawing.fills[0].d.matches('M').count(), 1);
+        assert_eq!(drawing.fills[0].d.matches('L').count(), 5);
+        assert!(drawing.fills[0].d.ends_with("L0 -0"));
+    }
+
+    #[test]
+    fn compound_fill_reverses_cubic_controls_when_stitching() {
+        let color_id = 0x1112131415161718;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Unknown5,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(color_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 10.0)),
+                        PathSegment::Cubic((12.0, 8.0), (12.0, 2.0), (10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 10.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([(color_id, [90, 80, 70, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+
+        assert_eq!(drawing.fills[0].d.matches('M').count(), 1);
+        assert!(drawing.fills[0].d.contains("C12 -2 12 -8 10 -10"));
+        assert!(drawing.fills[0].d.ends_with("L0 -0"));
+    }
+
+    #[test]
+    fn compound_fill_keeps_closed_tangent_contours_separate() {
+        let color_id = 0x1112131415161718;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Fill,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(color_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((20.0, 0.0)),
+                        PathSegment::Line((20.0, 20.0)),
+                        PathSegment::Line((0.0, 20.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Unknown1,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((8.0, 4.0)),
+                        PathSegment::Line((4.0, 8.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([(color_id, [90, 80, 70, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+
+        assert_eq!(drawing.boundaries.len(), 1);
+        assert_eq!(drawing.fills.len(), 1);
+        assert_eq!(drawing.fills[0].d.matches('M').count(), 2);
+    }
+
+    #[test]
+    #[should_panic(expected = "open path contour")]
+    fn compound_fill_rejects_an_open_contour() {
+        let color_id = 0x191a1b1c1d1e1f20;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Unknown5,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(color_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((10.0, 10.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([(color_id, [90, 80, 70, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+    }
+
+    #[test]
+    #[should_panic(expected = "open path contour")]
+    fn fill_rejects_a_single_open_contour() {
+        let color_id = 0x292a2b2c2d2e2f30;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Unknown5,
+            components: vec![component(
+                ComponentType::Fill,
+                Some(color_id),
+                Vec::new(),
+                vec![
+                    PathSegment::Line((0.0, 0.0)),
+                    PathSegment::Line((10.0, 0.0)),
+                ],
+            )],
+        }]);
+        let palette = HashMap::from([(color_id, [90, 80, 70, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+    }
+
+    #[test]
+    fn svg_path_keeps_an_open_stroke_permissive() {
+        let path = Path {
+            segments: vec![
+                PathSegment::Line((0.0, 0.0)),
+                PathSegment::Line((10.0, 0.0)),
+            ],
+        };
+
+        assert_eq!(path_to_svg(&path), "M0 -0L10 -0");
+    }
+
+    #[test]
+    #[should_panic(expected = "ambiguous path topology")]
+    fn compound_fill_rejects_an_ambiguous_branch() {
+        let color_id = 0x2122232425262728;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Unknown5,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(color_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((10.0, 10.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    None,
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((20.0, 0.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([(color_id, [90, 80, 70, 255])]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+    }
+
+    #[test]
+    #[should_panic(expected = "conflicting compound-fill colors")]
+    fn compound_fill_rejects_conflicting_component_colors() {
+        let first_id = 0x2122232425262728;
+        let second_id = 0x3132333435363738;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Unknown5,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(first_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Fill,
+                    Some(second_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([
+            (first_id, [1, 2, 3, 255]),
+            (second_id, [4, 5, 6, 255]),
+        ]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+    }
+
+    #[test]
+    #[should_panic(expected = "mixes fill geometry with stroke or pencil components")]
+    fn compound_fill_rejects_mixed_pencil_components() {
+        let fill_id = 0x4142434445464748;
+        let pencil_id = 0x5152535455565758;
+        let layer = LayerData::Vector(vec![VectorShape {
+            ty: ShapeType::Fill,
+            components: vec![
+                component(
+                    ComponentType::Fill,
+                    Some(fill_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((0.0, 0.0)),
+                        PathSegment::Line((10.0, 0.0)),
+                    ],
+                ),
+                component(
+                    ComponentType::Pencil,
+                    Some(pencil_id),
+                    Vec::new(),
+                    vec![
+                        PathSegment::Line((10.0, 0.0)),
+                        PathSegment::Line((0.0, 0.0)),
+                    ],
+                ),
+            ],
+        }]);
+        let palette = HashMap::from([
+            (fill_id, [1, 2, 3, 255]),
+            (pencil_id, [4, 5, 6, 255]),
+        ]);
+        let mut drawing = ArtLayerSpec::default();
+
+        add_line_layer(&layer, &palette, &mut drawing);
+    }
+
+    #[test]
+    #[should_panic(expected = "TVG path must begin with a line point")]
+    fn svg_path_rejects_a_cubic_segment_without_a_move_point() {
+        let path = Path {
+            segments: vec![PathSegment::Cubic(
+                (0.0, 0.0),
+                (1.0, 1.0),
+                (2.0, 2.0),
+            )],
+        };
+
+        path_to_svg(&path);
     }
 }
 
@@ -258,7 +832,77 @@ fn add_color_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: 
 
 fn add_line_layer(layer: &LayerData, palette: &HashMap<u64, [u8; 4]>, drawing: &mut ArtLayerSpec) {
     let LayerData::Vector(shapes) = layer else { return; };
-    for shape in shapes {
+    for (shape_index, shape) in shapes.iter().enumerate() {
+        let component_info_types = shape
+            .components
+            .iter()
+            .flat_map(|component| {
+                component.tags.iter().filter_map(|tag| match tag {
+                    ShapeComponentData::Info(info) => Some(info.ty),
+                    _ => None,
+                })
+            })
+            .collect::<Vec<_>>();
+        let has_stroke_or_pencil_component = component_info_types
+            .iter()
+            .any(|ty| matches!(*ty, ComponentType::Stroke | ComponentType::Pencil));
+        if shape.ty == ShapeType::Fill && has_stroke_or_pencil_component {
+            panic!(
+                "TVG line shape {shape_index} mixes fill geometry with stroke or pencil components"
+            );
+        }
+        let all_components_are_fills = !component_info_types.is_empty()
+            && component_info_types.iter().all(|ty| *ty == ComponentType::Fill);
+        if shape.ty == ShapeType::Fill || all_components_are_fills {
+            let mut paths = Vec::new();
+            let mut shape_color = None;
+            for component in &shape.components {
+                for tag in &component.tags {
+                    match tag {
+                        ShapeComponentData::Info(info) => {
+                            if info.ty != ComponentType::Fill {
+                                continue;
+                            }
+                            let direct_color = info.color_id.and_then(|id| {
+                                palette.get(&id).copied().map(|rgba| (id, rgba))
+                            });
+                            let resolved_colors = if let Some(direct_color) = direct_color {
+                                vec![direct_color]
+                            } else {
+                                paint_entries(&info.raw.0, palette)
+                                    .into_iter()
+                                    .map(|entry| (entry.color_id, entry.color))
+                                    .collect::<Vec<_>>()
+                            };
+                            for candidate in resolved_colors {
+                                match shape_color {
+                                    None => shape_color = Some(candidate),
+                                    Some(current) if current == candidate => {}
+                                    Some((current_id, _)) => panic!(
+                                        "TVG line shape {shape_index} has conflicting compound-fill colors {current_id:016x} and {:016x}",
+                                        candidate.0
+                                    ),
+                                }
+                            }
+                        }
+                        ShapeComponentData::Path(path) => paths.push(path),
+                        _ => {}
+                    }
+                }
+            }
+            if !paths.is_empty() {
+                let d = paths_to_svg(paths, true);
+                drawing.boundaries.push(d.clone());
+                if let Some((id, color)) = shape_color {
+                    drawing.fills.push(FillSpec {
+                        d,
+                        color,
+                        color_id: format!("{id:016x}"),
+                    });
+                }
+            }
+            continue;
+        }
         let mut thickness = None;
         for component in &shape.components {
             let mut color = None;

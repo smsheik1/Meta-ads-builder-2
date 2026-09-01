@@ -1099,6 +1099,7 @@ async function renderRigFrame({
       drawing,
       variant,
       filename,
+      assetSha256: asset.outputSha256,
       compositeRole: isConstructionFill
         ? "hidden-construction-fill"
         : (hidesUpperBackBangPatch

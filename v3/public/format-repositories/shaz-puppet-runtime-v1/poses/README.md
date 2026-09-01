@@ -66,6 +66,8 @@ This is a source-repository maintainer workflow, and `../references/rig-animatio
 
 The non-negotiable boundary is simple: use the complete source archive and a checksum-locked native Toon Boom export, preserve the audited puppet topology and full internal choreography, and treat drawing IDs as scene-local. The importer must verify the archive, exact Xstage and TVG members, parent graph, pivots, field grid, renderer registrations, and retained Harmony curve semantics before it writes a recoverable recipe/audit pair. Source-bind both absent artwork and same-ID/different-artwork collisions; never copy shot framing, hand-fill an intermediate recipe, or use finished video frames as runtime assets.
 
+The generated recipe stores exact compact `deformationSamples` for every runtime deformation node, plus one `frameSamples` index for each pose frame. Artwork that is not byte-identical to the base rig stays source-bound under `rig-v2/assets/sources/<xstage-sha256>/` and is selected through `drawingSources`; it must never overwrite a canonical drawing merely because Toon Boom reused the same numeric ID in another scene.
+
 ## Render one recipe
 
 ```sh
