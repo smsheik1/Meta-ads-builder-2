@@ -23,6 +23,7 @@ export const deleteExpiredUnsharedRenders: ReturnType<typeof internalMutation> =
     renderJobIds: v.array(v.id("renderJobs")),
     cutoffMs: v.number(),
   },
+  returns: v.object({ deleted: v.number() }),
   handler: async (ctx, { renderJobIds, cutoffMs }) => {
     if (renderJobIds.length > 100) {
       throw new Error("Delete at most 100 render jobs per maintenance run.");
@@ -50,7 +51,8 @@ export const deleteExpiredUnsharedRenders: ReturnType<typeof internalMutation> =
       }
 
       if (renderJob.outputStorageId) {
-        await ctx.storage.delete(renderJob.outputStorageId);
+        const metadata = await ctx.db.system.get("_storage", renderJob.outputStorageId);
+        if (metadata) await ctx.storage.delete(renderJob.outputStorageId);
       }
       await ctx.db.delete(renderJobId);
       deleted += 1;

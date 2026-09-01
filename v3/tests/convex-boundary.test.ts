@@ -22,4 +22,8 @@ assert.ok(workerSource.includes("const heartbeatIntervalMs = 10_000;"));
 assert.ok(workerSource.includes("const idlePollIntervalMs = 30_000;"));
 assert.ok(workerSource.includes("await wait(idlePollIntervalMs)"));
 
+const storageMaintenanceSource = readFileSync("convex/storageMaintenance.ts", "utf8");
+assert.ok(storageMaintenanceSource.includes('ctx.db.system.get("_storage", renderJob.outputStorageId)'));
+assert.ok(storageMaintenanceSource.includes("if (metadata) await ctx.storage.delete(renderJob.outputStorageId)"));
+
 console.log("convex-boundary tests passed");
