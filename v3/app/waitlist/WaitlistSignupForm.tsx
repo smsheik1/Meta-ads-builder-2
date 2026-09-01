@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { useAction } from "convex/react";
 import { type FormEvent, useState } from "react";
 import { api } from "@/convex/_generated/api";
@@ -25,10 +26,11 @@ export function WaitlistSignupForm() {
 
     setStatus("loading");
     setErrorMessage("");
+    const source = params.get("utm_source") || params.get("ref") || "waitlist";
     try {
       await joinWaitlist({
         email: normalizedEmail,
-        source: params.get("utm_source") || params.get("ref") || "waitlist",
+        source,
         utmSource: params.get("utm_source") || undefined,
         utmMedium: params.get("utm_medium") || undefined,
         utmCampaign: params.get("utm_campaign") || undefined,
@@ -37,6 +39,7 @@ export function WaitlistSignupForm() {
         referrer: document.referrer || undefined,
         userAgent: navigator.userAgent,
       });
+      posthog.capture("waitlist_joined", { source });
       setStatus("ready");
     } catch (error) {
       setStatus("error");
