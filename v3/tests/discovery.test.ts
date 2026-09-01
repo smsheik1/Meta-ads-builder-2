@@ -315,6 +315,7 @@ const generatedFormatSlugs = [
   "2000s-effect",
   "80s-toon",
   "squilliam-news",
+  "shaz-puppet-runtime",
   "jingle",
   "newsletter-writer",
 ];
@@ -385,7 +386,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 15, "Current Discovery proof should organize into fifteen focused shelves.");
+assert.equal(shelves.length, 16, "Current Discovery proof should organize into sixteen focused shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -448,6 +449,19 @@ assert.deepEqual(
     "animal-conversations-i-made-a-mistake",
   ],
   "Animal Conversations should keep both finished videos on its dedicated shelf.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "two-d-character-animation"),
+  {
+    id: "two-d-character-animation",
+    title: "2D Character Animation",
+    description: "A reusable 2D character who can speak, react, and stay on-model from scene to scene.",
+    layout: "landscape",
+    entries: [
+      published.find((entry) => entry.id === "shaz-puppet-runtime-transcript-guided-story"),
+    ],
+  },
+  "Animate Shaz should be visible once on its dedicated landscape shelf.",
 );
 assert.ok(
   shelves
