@@ -415,7 +415,7 @@ assert.equal(
 assert.equal(profile.proofEntries[0]?.media.durationLabel, "12 sec");
 assert.equal(profile.proofEntries[1]?.title, "Leo: what puppy parenting taught us");
 assert.match(profile.proofEntries[1]?.curatorNote ?? "", /Think lands on “idea,”/);
-assert.match(profile.proofEntries[1]?.curatorNote ?? "", /final review is still pending/);
+assert.doesNotMatch(profile.proofEntries[1]?.curatorNote ?? "", /review is still pending/);
 assert.equal(
   profile.proofEntries[1]?.media.src,
   "/format-repositories/shaz-puppet-runtime-v1/goldens/transcript-guided-story-v1/final.mp4",
@@ -448,12 +448,12 @@ assert.match(profile.handoff.instructions.join(" "), /present, think, aha, point
 assert.match(profile.handoff.instructions.join(" "), /npm run transcribe/);
 assert.match(profile.handoff.instructions.join(" "), /registered recipes are technically runnable reference material/);
 assert.equal(profile.handoff.totalEstimate, "$0 in service fees, usually 2-8 min");
-assert.equal(
-  getPublishedDiscoveryEntries().some(
-    (entry) => entry.format.slug === "shaz-puppet-runtime",
-  ),
-  false,
-  "The proof stays off the Discovery shelf until the user visually approves it.",
+assert.deepEqual(
+  getPublishedDiscoveryEntries()
+    .filter((entry) => entry.format.slug === "shaz-puppet-runtime")
+    .map((entry) => entry.id),
+  ["shaz-puppet-runtime-transcript-guided-story"],
+  "Discovery should feature the approved 30-second Shaz performance without duplicating the older proof.",
 );
 assert.equal(
   getPublishedDiscoveryProofEntries().some(

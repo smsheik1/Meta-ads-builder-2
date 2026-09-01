@@ -2567,12 +2567,12 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "shaz-puppet-runtime-transcript-guided-story",
     status: "published",
-    showInDiscovery: false,
+    showInDiscovery: true,
     order: 11.73,
     brand: "Shaz Animated",
     title: "Leo: what puppy parenting taught us",
     curatorNote:
-      "A 30-second voice track becomes a full Shaz performance. Think lands on “idea,” Point on “least,” and Confident on “best,” while the mouth stays in sync. Selected for Examples; final review is still pending.",
+      "A 30-second voice track becomes a full Shaz performance. Think lands on “idea,” Point on “least,” and Confident on “best,” while the mouth stays in sync.",
     goal: "entertain",
     media: {
       kind: "video",
