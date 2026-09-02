@@ -77,9 +77,9 @@ const shelf = discoveryShelves.find(
 );
 assert.equal(shelf?.entries[0]?.format.slug, "animal-conversations");
 assert.equal(
-  discoveryShelves[0],
+  discoveryShelves[1],
   shelf,
-  "Animal Conversations should be the first visible Discover shelf, not buried below older formats.",
+  "Animal Conversations should stay directly below the featured 2D Character Animation shelf.",
 );
 assert.equal(shelf?.title, "Animal Conversations");
 
