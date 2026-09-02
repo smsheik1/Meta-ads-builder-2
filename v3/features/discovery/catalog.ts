@@ -2737,6 +2737,13 @@ export type DiscoveryShelf = {
 
 const discoveryShelfDefinitions = [
   {
+    id: "two-d-character-animation",
+    title: "2D Character Animation",
+    description: "A reusable 2D character who can speak, react, and stay on-model from scene to scene.",
+    formats: ["shaz-puppet-runtime"],
+    layout: "landscape",
+  },
+  {
     id: "character-conversations",
     title: "Animal Conversations",
     description: "User-supplied dialogue staged as expressive, captioned character exchanges.",
@@ -2802,13 +2809,6 @@ const discoveryShelfDefinitions = [
     title: "Character Dance-Offs",
     description: "Music, taunts, and reusable choreography built for replayable vertical video.",
     formats: ["bikini-bottom-dance-off"],
-  },
-  {
-    id: "two-d-character-animation",
-    title: "2D Character Animation",
-    description: "A reusable 2D character who can speak, react, and stay on-model from scene to scene.",
-    formats: ["shaz-puppet-runtime"],
-    layout: "landscape",
   },
   {
     id: "conversations",

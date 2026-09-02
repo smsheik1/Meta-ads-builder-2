@@ -388,6 +388,11 @@ const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
 assert.equal(shelves.length, 16, "Current Discovery proof should organize into sixteen focused shelves.");
 assert.equal(
+  shelves[0]?.id,
+  "two-d-character-animation",
+  "Animate Shaz should be the first visible Discover shelf.",
+);
+assert.equal(
   shelvedEntries.length,
   published.length,
   "Every published ad should appear on exactly one Discovery shelf.",
