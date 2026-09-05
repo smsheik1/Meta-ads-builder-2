@@ -6,6 +6,12 @@ function frameRate(value) {
   return denominator ? numerator / denominator : 0;
 }
 
+export function pauseClosuresStable(speechActivity, frameCount) {
+  return speechActivity?.inactiveSpeakingFrameRanges?.every(
+    ([start, end]) => start === 0 || end === frameCount - 1 || end - start + 1 >= 3,
+  ) === true;
+}
+
 export async function inspectRun({ runDirectory }) {
   const input = await readJson(path.join(runDirectory, "input.json"));
   const validation = await readJson(path.join(runDirectory, ".validation.json"));
@@ -53,9 +59,7 @@ export async function inspectRun({ runDirectory }) {
     captionsPresent: measured.captionedBeatCount > 0,
     speechActivityAnalyzed: Number.isFinite(measured.speechActivity?.thresholdDb),
     mouthAnimationAnalyzed: measured.mouthAnimation?.method === "audio-envelope-hysteresis" && measured.mouthAnimation?.openFrames > 0,
-    pauseClosuresStable: measured.speechActivity?.inactiveSpeakingFrameRanges?.every(
-      ([start, end]) => start === 0 || end === renderReport.frameCount - 1 || end - start + 1 >= 3,
-    ) === true,
+    pauseClosuresStable: pauseClosuresStable(measured.speechActivity, renderReport.frameCount),
   };
   const status = Object.values(gates).every(Boolean) ? "pass" : "fail";
   const report = { schemaVersion: 1, status, inspectedAt: new Date().toISOString(), measured, gates };

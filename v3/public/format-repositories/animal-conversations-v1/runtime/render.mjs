@@ -232,12 +232,24 @@ async function analyzeSpeechActivity({ audioFile, cacheDirectory, frameCount }) 
   return { ...buildSpeechActivityTrack(frameLevelsDb), frameLevelsDb };
 }
 
-function frameRanges(frames) {
+export function speakingPauseFrameRanges(activeFrames, inactiveSpeakingFrames) {
+  const speakingFrames = new Set(inactiveSpeakingFrames);
   const ranges = [];
-  for (const frame of frames) {
-    const previous = ranges.at(-1);
-    if (previous && frame === previous[1] + 1) previous[1] = frame;
-    else ranges.push([frame, frame]);
+  for (let start = 0; start < activeFrames.length;) {
+    if (activeFrames[start]) {
+      start += 1;
+      continue;
+    }
+    let end = start;
+    let intersectsSpeech = false;
+    while (end < activeFrames.length && !activeFrames[end]) {
+      if (speakingFrames.has(end)) intersectsSpeech = true;
+      end += 1;
+    }
+    // Keep the complete audio pause, including its continuation through a
+    // speaker=none beat; clipping at that boundary invents short closures.
+    if (intersectsSpeech) ranges.push([start, end - 1]);
+    start = end;
   }
   return ranges;
 }
@@ -410,7 +422,7 @@ export async function renderRun({ root, runDirectory }) {
       thresholdDb: Number(speechActivity.thresholdDb.toFixed(1)),
       activeFrames: speechActivity.activeFrames.filter(Boolean).length,
       inactiveFrames: speechActivity.activeFrames.filter((active) => !active).length,
-      inactiveSpeakingFrameRanges: frameRanges(inactiveSpeakingFrames),
+      inactiveSpeakingFrameRanges: speakingPauseFrameRanges(speechActivity.activeFrames, inactiveSpeakingFrames),
     },
     mouthAnimation: {
       method: "audio-envelope-hysteresis",
