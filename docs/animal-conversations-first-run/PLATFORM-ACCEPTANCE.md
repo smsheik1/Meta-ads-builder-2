@@ -1,6 +1,6 @@
 # Animal Conversations — Linux and WSL2 acceptance evidence
 
-**Latest result: both actual platforms passed** [run 33941276524](https://github.com/smsheik1/wiggly/actions/runs/33941276524). The earlier failures below are retained as history; platform mechanics/setup/offline intake are now verified, while real agent approval/playback acceptance remains separate.
+**Latest result: candidate 0.16.2 passed both actual platforms** [run 33967706772](https://github.com/smsheik1/wiggly/actions/runs/33967706772), commit `ff998959`. See [CHORUS-IMPORT-FIX.md](CHORUS-IMPORT-FIX.md) for exact archive and job evidence. This repeats fresh mechanics/setup/offline-intake verification after the instruction/test correction; real host-agent approval/playback/export acceptance remains separate. The 0.16.1 runs and earlier failures below are retained as history, not relabeled as 0.16.2 evidence.
 
 ## Scope
 

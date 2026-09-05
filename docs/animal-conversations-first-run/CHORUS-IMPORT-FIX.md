@@ -1,6 +1,6 @@
 # Chorus draft instructions — candidate 0.16.2
 
-Status: scoped instruction/test correction verified locally from a fresh archive. Not complete real-episode or supported-platform release acceptance.
+Status: scoped instruction/test correction verified from a fresh Mac archive and actual Linux/WSL platform mechanics/setup/offline-intake checks. Not complete fresh-agent real-episode release acceptance.
 
 ## Observed problem and fix
 
@@ -37,10 +37,29 @@ Fresh archive extraction: `/private/tmp/wiggly-fresh-0162.9Gl3J7`.
 7. Every fresh inventory size/hash rechecked after operation: **136/136 unchanged**.
 8. `git diff --check` passed. Ponytail complexity review: **Lean already. Ship.** This is only the complexity assessment, not a release-completion claim.
 
-No new frontend/layout code changed; no browser workaround or additional UI/perceptual claim was made. The optional Python/Rust converter profile was not rerun locally for this instruction-only change; its implementation/locks remain byte-identical to the previously tested candidate.
+No new frontend/layout code changed; no browser workaround or additional UI/perceptual claim was made. The three Python-dependent converter tests additionally passed in the fresh Mac extraction using the existing explicit Python 3.12 executable. Rust was not rerun locally because Cargo is absent from the normal PATH; its seven tests passed in both actual platform jobs below.
+
+## Actual Linux and WSL verification
+
+[Run 33967706772](https://github.com/smsheik1/wiggly/actions/runs/33967706772), commit `ff9989591b5d67e76f843734829a5e0389b0c6c7`, completed **success** on 2026-09-05, 13:01:49–13:09:34 UTC.
+
+| Evidence | Linux x64 | Actual Ubuntu in WSL2 x64 |
+|---|---|---|
+| Job | `101310632683` | `101310632552` |
+| Terminal result | Success | Success |
+| Kernel | `6.17.0-1022-azure` | `6.18.33.2-microsoft-standard-WSL2` |
+| Default profile | 98 pass, 8 explicit skips | 98 pass, 8 explicit skips |
+| Explicit profiles | 106 Node + 3 Python-dependent converter + 7 Rust pass | 106 Node + 3 Python-dependent converter + 7 Rust pass |
+| Caller / transcript ownership | UID:GID 1001:1001; mode 0600 | UID:GID 0:0; mode 0600 |
+| Explicit setup + two real offline intakes | Pass | Pass |
+| Both subsequent status checks | `needs-script-draft` | `needs-script-draft` |
+
+Both summaries identify **0.16.2** and inventory hash `758efbb4943c722008247e48f55ae3c7564d47a5d58074283048435d7fe4b9fa`. Both verify fresh installation, exact release inventory, the synthetic smoke and intake with the OS network namespace disconnected after explicit setup. Four transcript stat records per platform independently show caller ownership and mode 0600.
+
+The two real inputs remain the pinned distributable source clips: 31.137959s and 30.023401s. Both use the pinned small.en revision, CPU/int8 and declared English settings. No script approval, fresh host-agent interaction, perceptual review or real-episode delivery was fabricated. All jobs are terminal; no rerun is needed.
 
 ## Remaining acceptance
 
 - Existing real reviews stay in the original fresh 0.16.1 workspace; no files or approvals were silently migrated. We Listen's opening correction is recorded in PROGRESS.md. Its remaining pause and Mistake's reaction/pause questions still require honest resolution and complete-review approval.
 - Candidate 0.16.2 has not yet completed fresh host-agent real-episode rendering, actual playback assessment and verified export. Previous 0.16.1 platform evidence is not relabeled as a 0.16.2 run.
-- Linux/WSL candidate checks follow the existing push-triggered acceptance workflow. Record the actual run and outcome after dispatch; never infer success from the previous version.
+- Linux/WSL candidate mechanics/setup/intake checks are now complete as recorded above; they do not replace the pending host-agent approval/playback/export proof.
