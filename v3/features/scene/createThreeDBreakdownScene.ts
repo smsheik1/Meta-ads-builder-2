@@ -1,4 +1,4 @@
-import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
+import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/planning";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/prompt";
 import type { ThreeDBreakdownStorySubject } from "../formats/three-d-breakdown/storySubject";

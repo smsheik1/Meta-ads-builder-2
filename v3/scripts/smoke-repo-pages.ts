@@ -35,10 +35,15 @@ try {
           waitUntil: "domcontentloaded",
         });
         assert.equal(response?.status(), 200, `${slug}: page must load.`);
-        await page.locator("#included-assets").waitFor();
+        const assetsSelector = slug === "squilliam-news" ? "#anchors" : "#included-assets";
+        await page.locator(assetsSelector).waitFor();
+        if (slug === "squilliam-news") {
+          assert.equal(await page.locator("#included-assets").count(), 0);
+          assert.equal(await page.getByRole("heading", { name: "Choose your anchor." }).count(), 1);
+        }
         for (const selector of [
           "#accounts-youll-connect",
-          "#included-assets",
+          assetsSelector,
           "#examples",
           "#run-with-agent",
           ...(specialized.has(slug)

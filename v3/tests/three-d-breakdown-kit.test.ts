@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -24,6 +25,7 @@ assert.ok(entries.length > 0);
 const listing = entries.join("\n");
 for (const required of [
   "v3/package.json",
+  "v3/tsconfig.json",
   "v3/kit-smoke.mjs",
   "v3/scripts/three-d-breakdown-format.ts",
   "v3/scripts/smoke-three-d-breakdown-format.ts",
@@ -51,6 +53,15 @@ for (const required of [
 assert.equal(entries.some((entry) => entry.includes("/agent-runs/")), false);
 assert.equal(entries.some((entry) => entry.includes("/downloads/")), false);
 assert.equal(entries.some((entry) => /seedance.*\.mp4/i.test(entry)), false);
+for (const relative of [
+  "scripts/three-d-breakdown-format.ts",
+  "features/formats/three-d-breakdown/planning.ts",
+  "public/format-repositories/three-d-breakdown-v1/requirements.json",
+  "public/format-repositories/three-d-breakdown-v1/format.json",
+]) {
+  const archived = execFileSync("unzip", ["-p", archivePath, `wiggly-three-d-breakdown-format-kit/v3/${relative}`], { encoding: "utf8" });
+  assert.equal(archived, readFileSync(relative, "utf8"), `${relative}: downloadable ZIP must match the source, not an older NIM runner.`);
+}
 
 const packageJson = JSON.parse(readFileSync(
   "public/format-repositories/three-d-breakdown-v1/kit.package.json",
@@ -60,6 +71,8 @@ assert.match(packageJson.scripts["format:three-d"], /three-d-breakdown-format\.t
 assert.match(packageJson.scripts.smoke, /smoke-three-d-breakdown-format\.ts/);
 assert.equal(packageJson.dependencies["@remotion/renderer"], "4.0.473");
 assert.equal(packageJson.dependencies.remotion, "4.0.473");
+const archivedTsconfig = JSON.parse(execFileSync("unzip", ["-p", archivePath, "wiggly-three-d-breakdown-format-kit/v3/tsconfig.json"], { encoding: "utf8" }));
+assert.equal(archivedTsconfig.compilerOptions.jsx, "react-jsx", "The extracted kit must render without inheriting the app's JSX settings.");
 
 const skill = readFileSync(
   "public/format-repositories/three-d-breakdown-v1/SKILL.md",
@@ -70,7 +83,7 @@ assert.match(skill, /Do you want Guide Me or Turbo\?/);
 assert.match(skill, /Ask only one question in each message/);
 assert.match(skill, /Use short sentences and simple words/);
 assert.match(skill, /Never ask for a budget or spend limit/);
-assert.match(skill, /Story ideas and plan: 3 NIM calls/);
+assert.match(skill, /Story ideas and plan: your coding agent/);
 assert.match(skill, /Ready to start\?/);
 assert.match(skill, /A retry needs a new estimate and a new yes/);
 assert.match(skill, /Save the facts in `research\.json`/);

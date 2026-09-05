@@ -13,6 +13,8 @@ const required = [
   "assets.json",
   "quality.json",
   "fixtures/style-b-checkpoint.json",
+  "fixtures/agent-cookie-gift.json",
+  "fixtures/agent-wooden-toys.json",
   "fixtures/finalstraw-reproducibility.json",
   "assets/ecommerce-teardown-style-reference-clean-v7.jpg",
   "goldens/finalstraw.mp4",
@@ -21,6 +23,8 @@ const required = [
 const runtime = [
   "scripts/three-d-breakdown-format.ts",
   "scripts/smoke-three-d-breakdown-format.ts",
+  "tests/three-d-breakdown-agent-planning.test.ts",
+  "features/formats/three-d-breakdown/planning.ts",
   "remotion-entry/index.ts",
   "remotion-entry/Root.tsx",
   "remotion-entry/RemotionAdScene.tsx",
@@ -40,6 +44,8 @@ if (missing.length) {
   process.exitCode = 1;
 } else {
   const skill = readFileSync(path.join(packageRoot, "SKILL.md"), "utf8");
+  const requirements = JSON.parse(readFileSync(path.join(packageRoot, "requirements.json"), "utf8"));
+  if (requirements.environment.NVIDIA_NIM_API_KEY) throw new Error("Host-agent planning must not require NIM.");
   if (!/Do not rebuild/i.test(skill) || !/finalize --approve-final/i.test(skill)) {
     console.error("The skill must preserve the official renderer and explain final review.");
     process.exitCode = 1;

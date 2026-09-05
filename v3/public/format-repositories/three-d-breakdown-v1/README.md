@@ -32,18 +32,29 @@ Before planning, watch the packaged FinalStraw reference first, then Grüns, Kia
 6. One Fish narration and one final 20-second MP4 rendered through `AdRenderSurface`.
 
 The storyboard is a planning reference. Its small panel crops must never become video endpoints.
-Planning uses exactly three NIM calls in the Repo runner: one story slate, one selected script, and one selected scene plan. Calls are counted before dispatch, and the runner does not retry them automatically.
+Your coding agent authors the story slate, script, and scene plan. The packaged prompt commands provide the exact contracts; imports validate them locally before any media call. No NVIDIA NIM account or separate LLM API key is required. Coding-agent usage still applies.
+
+Extract the ZIP, enter its v3 directory, run npm install, then npm run smoke. For research, use the research object in public/format-repositories/three-d-breakdown-v1/fixtures/agent-cookie-gift.json as a structural example, not as facts to reuse. Write sourced brand, offer, audience, buyer moments, evidence receipts, and optional products with real URLs. Null is allowed for unavailable brand images; use empty arrays for unavailable optional facts. An existing Wiggly export also works.
 
 ## Commands
 
 ```bash
 npm run format:three-d -- check --stage=plan
 npm run format:three-d -- init --run=my-run --research=/absolute/path/research.json --subject=brand
-npm run format:three-d -- directions --run=my-run --approve-planning
-npm run format:three-d -- select --run=my-run --direction=idea-1 --approve-planning
+npm run format:three-d -- prompt --run=my-run --stage=directions
+# Read the saved prompt, then author directions.json with your coding agent.
+npm run format:three-d -- directions --run=my-run --input=/absolute/path/directions.json
+# Choose a direction, then author script.json using this prompt.
+npm run format:three-d -- prompt --run=my-run --stage=script --direction=idea-1
+npm run format:three-d -- script --run=my-run --direction=idea-1 --input=/absolute/path/script.json
+# Review the script, then author plan.json using this prompt.
+npm run format:three-d -- prompt --run=my-run --stage=plan --direction=idea-1
+npm run format:three-d -- select --run=my-run --direction=idea-1 --input=/absolute/path/plan.json
 npm run format:three-d -- validate --run=my-run
 npm run format:three-d -- inspect --run=my-run
 ```
+
+Failed imports do not advance the run. Correct the authored JSON and retry locally; there is no planning provider call. Once the scene is assembled, start a new run to change it so existing media and reviews stay intact.
 
 Image commands always create one image:
 

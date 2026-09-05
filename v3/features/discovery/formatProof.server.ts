@@ -122,6 +122,7 @@ const formatConfigs: FormatProfileConfig[] = [
     lastUpdated: "July 2026",
     technicalHref: "/format-lab/three-d-breakdown",
     manifestPath: "format-repositories/three-d-breakdown-v1/format.json",
+    historicalProofVersions: ["1.5.0"],
     whatStays: [
       "One evidence-backed story",
       "Six visual beats",
@@ -155,7 +156,7 @@ const formatConfigs: FormatProfileConfig[] = [
         "Compare the final video with the packaged proof",
       ],
       estimates: [
-        { label: "Story", cost: "Free", time: "about 1 min" },
+        { label: "Story + plan", cost: "Your coding agent · no extra provider", time: "about 1-3 min" },
         { label: "Storyboard + endpoints", cost: "~$0.05", time: "1-2 min" },
         { label: "Video", cost: "~$0.60", time: "3-6 min" },
         { label: "Voice + final", cost: "~$0.05", time: "under 2 min" },

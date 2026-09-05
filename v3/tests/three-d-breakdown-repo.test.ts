@@ -12,6 +12,7 @@ import {
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
 import type { ThreeDBreakdownAdScene } from "../features/scene/types";
 import { makeResearch } from "./helpers/research";
+import "./three-d-breakdown-agent-planning.test";
 
 const research = makeResearch({
   brand: {
@@ -273,7 +274,6 @@ assert.deepEqual(clipsReadyInspection.problems, []);
 
 const manifest: ThreeDBreakdownRepoRequirementManifest = {
   environment: {
-    NVIDIA_NIM_API_KEY: { requiredFor: ["plan"], secret: true },
     REPLICATE_API_TOKEN: { requiredFor: ["images", "video"], secret: true },
   },
   tools: {
@@ -325,9 +325,10 @@ assert.match(runnerSource, /async function retimeClip\(\)/);
 assert.match(runnerSource, /No provider was called; review clip-2 again/);
 assert.match(runnerSource, /entryPoint: path\.join\(v3Root, "remotion-entry", "index\.ts"\)/);
 assert.match(runnerSource, /finalize --approve-final|approve-final/);
-assert.match(runnerSource, /const maxPlanningCalls = 3/);
-assert.equal((runnerSource.match(/allowRetries: false/g) || []).length, 2);
-assert.match(runnerSource, /onProviderCall: recordPlanningCall\(state\)/);
+assert.doesNotMatch(runnerSource, /NVIDIA|NIM|recordPlanningCall|three-d-breakdown\/generate/);
+assert.match(runnerSource, /parseDirectorOutput/);
+assert.match(runnerSource, /parseStyleBScriptPlanOutput/);
+assert.match(runnerSource, /parseStoryDirectionSlateOutput/);
 assert.match(runnerSource, /Could not download a usable product reference/);
 assert.match(runnerSource, /withoutFinalArtifacts/);
 assert.match(runnerSource, /exactlyOneAudioStream: audioStreamCount === 1/);

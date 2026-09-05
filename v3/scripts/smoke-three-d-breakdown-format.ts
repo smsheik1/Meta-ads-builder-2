@@ -35,7 +35,8 @@ const freeCheck = evaluateThreeDBreakdownRepoRequirements({
   manifest,
   tools: { node: true },
 });
-assert.deepEqual(freeCheck.missingEnvironment, ["NVIDIA_NIM_API_KEY"]);
+assert.equal(freeCheck.ok, true);
+assert.deepEqual(freeCheck.missingEnvironment, []);
 const videoCheck = evaluateThreeDBreakdownRepoRequirements({
   stage: "video",
   environment: { REPLICATE_API_TOKEN: "present" },
@@ -45,3 +46,4 @@ const videoCheck = evaluateThreeDBreakdownRepoRequirements({
 assert.equal(videoCheck.ok, true);
 
 console.log("3D Breakdown Repo smoke passed without a provider call.");
+await import("../tests/three-d-breakdown-agent-planning.test");
