@@ -3,14 +3,14 @@
 ## Current checkpoint
 
 - **Goal:** implement the approved first-run package workflow and verify the packaged result.
-- **Status:** implementation delivered on a pushed development branch; platform mechanics/setup/offline intake passed. Blocked on explicit real-episode review/approval before the remaining end-to-end proofs. Not a certified public release.
+- **Status:** implementation delivered on a pushed development branch; platform mechanics/setup/offline intake passed. We Listen is now explicitly approved and rendered with 17/17 technical gates passing on the first cycle; genuine playback review/export remain pending. Mistake still awaits clarification/approval. Not a certified public release.
 - **Baseline:** kit 0.15.1; upstream Wiggly commit `356a1b06`.
 - **Branch:** `feat/animal-conversations-first-run`.
 - **Worktree:** `/Users/shaz/.codex/worktrees/e3ba/Meta-ads-builder-2/.goal-worktrees/animal-conversations-first-run`.
 - **Source kit:** `v3/public/format-repositories/animal-conversations-v1`.
 - **Current candidate:** 0.16.2, scoped chorus instruction/test correction; see CHORUS-IMPORT-FIX.md. Previous 0.16.1 evidence and archive are preserved; public ZIP/catalog intentionally remain 0.15.1.
 - **Current acceptance work:** 0.16.2 source/fresh-archive all-Node release profiles passed 106/106, default profiles passed 98 with 8 explicit skips, fresh Mac setup/check/smoke/inventory and three Python-dependent converter tests passed. Actual Linux and WSL2 run `33967706772` passed full profiles, setup and both offline intakes; all jobs are terminal success. Earlier 0.16.1 evidence remains scoped to that version. Both real Mac reviews still correctly stop at user approval; their files remain in the original fresh workspace.
-- **Next:** obtain corrections/explicit approval of the two displayed reviews; resolve marked uncertainties honestly; render, perform required technical and actual playback review, finalize and verify exports. Complete the required fresh host-agent supported-system end-to-end proof; the successful CI is mechanics/intake evidence, not that proof. Never substitute synthetic approval/playback attestations.
+- **Next:** complete genuine playback review and verified export for We Listen. Resolve Mistake's marked uncertainties and obtain its explicit approval before rendering. Complete the required fresh host-agent supported-system end-to-end proof; the successful CI is mechanics/intake evidence, not that proof. Never substitute synthetic approval/playback attestations.
 
 ## Planned versus delivered
 
@@ -72,9 +72,9 @@ Do not replace a pending row with “done” merely because code exists or tests
 - ZIP: `tmp/animal-conversations-candidate-0.16.1/wiggly-animal-conversations-format-kit-0.16.1.zip`
 - SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`; 18,921,637 bytes.
 - Fresh extracted kit: `/private/tmp/wiggly-fresh-0161.ykivnk`; report: `acceptance-evidence/FRESH-ACCEPTANCE-0161.md`.
-- We Listen: `fresh-0161-we-listen-20260904`, 16 beats, living room, 31.137959s. Current review ID after the user's opening-chorus correction: `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175`. Previous ID `ac0b93474534d1d13526613cb3924916a52580a5d443437d73efb0299fc8d05e` is superseded, not approved.
+- We Listen: `fresh-0161-we-listen-20260904`, 16 beats, living room, 31.137959s. Current explicitly approved review ID after the user's chorus and pause confirmations: `9f0d76ccc3344d5a0702fe329812b77cb15df8fd670fab4bc9b67df869be67d3`. Earlier IDs `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175` and `ac0b93474534d1d13526613cb3924916a52580a5d443437d73efb0299fc8d05e` are superseded, not approved.
 - Mistake: `fresh-0161-mistake-20260904`, 20 beats, backyard, 30.023401s. Review ID `fea5365cc1fbaa4958f6a54b995fec65751cf2851b67a5e4e0c5598e787c73cc`.
-- Both runs are `needs-script-approval`, owner user. Neither contains real approval, final MP4, playback receipt or delivery. Recheck current hashes/status before resuming. Reused drafts/evidence are not reused approval.
+- We Listen is `needs-playback-review`, owner agent, after explicit user approval and first-cycle render/inspection. Mistake remains `needs-script-approval`, owner user. Neither has a playback receipt or verified delivery. Recheck current hashes/status before resuming; approval is episode-specific.
 - Supporting checked-in evidence: PHASE-A-B-EVIDENCE.md, ASR-PREFLIGHT.md, PHASE-C-EVIDENCE.md, REVIEW-PAGE-QA.md, EXPORT-PAGE-QA.md and PLATFORM-ACCEPTANCE.md. Private media/review artifacts are intentionally not committed.
 
 ## Approval blocker and resumption
@@ -110,6 +110,14 @@ The original implementation turn and the next two goal continuations all retaine
 - Verified all 15 other input/review beats unchanged; opening words, boundaries and camera unchanged; full soundtrack and all 17 review WAV hashes unchanged; approval and attempt history unchanged. The generated role sheet now shows Dog + Bunny for the opening performance and caption ownership. This was file/data verification, not new browser QA. Package source, renderer, review-page design and Mistake draft remain unchanged.
 - Current We Listen review ID is `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175`; the episode still needs complete-review approval and the remaining pause evidence. This line-specific correction is not approval of either complete episode.
 - Observed package instruction mismatch: `input-contract.json` described `overlapEvidence` as written only by `approve-script`, while draft import's `validateTimeline` requires it before importing `speaker=both`. The episode correction supplied only the user's genuine overlap evidence through the official importer; it did not weaken validation or manufacture a receipt. The subsequent 0.16.2 checkpoint clarifies the wording and protects the intended import path in the existing integration test; see CHORUS-IMPORT-FIX.md. The immutable 0.16.1 candidate was not altered.
+
+### We Listen pause confirmation, approval and first render — 2026-09-05
+
+- The user answered "just a pause" after the Walmart line. Recorded beat 15 as `confirmedSpeaker=none`, `evidence=user-provided-label`, with no claim of agent hearing or digital silence. Regenerated through the official `review-script`. Verified the other 15 beats, input/state bytes, full audio and every review-WAV hash unchanged before approval; cleared only that pause uncertainty. No review-page redesign. Snapshot: `acceptance-evidence/we-listen-before-pause-confirmation-20260905.json` in the private fresh workspace.
+- The user then explicitly approved the full We Listen script. Official `approve-script` recorded current review ID `9f0d76ccc3344d5a0702fe329812b77cb15df8fd670fab4bc9b67df869be67d3` at `2026-09-05T13:21:34.974Z`; revision `c0269149301ab33976d33fd36082c314a1cfc262b2148dec4bfd8e0dacfde508`. This does not approve Mistake.
+- Official `run` completed cycle `c0269149301a-1` at `13:21:42.633Z`: **17/17 technical gates passed**, 31.138005s, 1080×1920, 24 fps, H.264/AAC, mean level −18.5 dB. Output: `/private/tmp/wiggly-fresh-0161.ykivnk/agent-runs/fresh-0161-we-listen-20260904/final.mp4`; SHA-256 `9279f4dcf888b85440b2fb41619ed15798a7af7e2715ffca9b067c022972d356`; render identity `d0a495ac53ee5d0627b41960ab1d5f40b0eb44b7c1a87326673f7c7708400b14`.
+- Actual nine-frame contact sheet inspected: recognizable colored characters, three camera compositions and readable captions visible in those samples. This is sampled-frame evidence only, not uninterrupted playback, verified mouth/blink cadence, direct hearing or a completed playback pass. Opening the MP4 through the app's display tool returned `queued`; do not claim it visibly opened. No playback attestation/finalization/export was fabricated. The render is offered in chat for viewing; final certification remains pending.
+- These are real 0.16.1 episode observations, not relabeled as 0.16.2 fresh-agent acceptance. Historical pre-approval rows above are superseded for We Listen only by this dated checkpoint.
 
 ## Final report format
 
