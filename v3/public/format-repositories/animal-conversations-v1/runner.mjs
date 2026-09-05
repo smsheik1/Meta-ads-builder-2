@@ -4,14 +4,12 @@ import { copyFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execute, exists, hashValue, parseArgs, readJson, requireEpisodeInputSource, resolveRunDirectory, sha256, writeJson } from "./runtime/common.mjs";
-import { inspectRun } from "./runtime/inspect.mjs";
-import { renderRun } from "./runtime/render.mjs";
-import { approveScriptReview, createScriptReview, reviewedScriptHash } from "./runtime/speaker-review.mjs";
-import { validateRun } from "./runtime/validate.mjs";
+import { checkDependencies } from "./runtime/doctor.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const command = process.argv[2];
 const args = parseArgs(process.argv.slice(3));
+let inspectRun, renderRun, approveScriptReview, createScriptReview, reviewedScriptHash, validateRun;
 
 async function initializeRun({ runId, audio, input }) {
   if (!audio || !path.isAbsolute(audio)) throw new Error("Pass the user's audio as an absolute --audio=/path/file.");
@@ -38,20 +36,9 @@ async function initializeRun({ runId, audio, input }) {
 }
 
 async function check() {
-  const versions = {};
-  for (const tool of ["node", "npm", "ffmpeg", "ffprobe"]) {
-    const flag = tool.startsWith("ff") ? "-version" : "--version";
-    versions[tool] = (await execute(tool, [flag], { capture: true })).split("\n")[0];
-  }
-  await import("sharp");
-  const assets = await readJson(path.join(root, "assets.json"));
-  const packagedAssets = [...assets.backgrounds, ...assets.characters.flatMap((character) => character.poses)];
-  for (const asset of packagedAssets) {
-    const file = path.join(root, asset.path);
-    if (!(await exists(file))) throw new Error(`Missing packaged asset: ${asset.path}`);
-    if (await sha256(file) !== asset.sha256) throw new Error(`Asset checksum mismatch: ${asset.path}`);
-  }
-  console.log(JSON.stringify({ status: "pass", versions, packagedAssets: packagedAssets.length }, null, 2));
+  const report = await checkDependencies({ root });
+  console.log(JSON.stringify(report, null, 2));
+  if (report.status !== "pass") process.exitCode = 1;
 }
 
 async function smoke() {
@@ -112,7 +99,12 @@ async function finalize(runDirectory) {
 }
 
 async function main() {
-  if (command === "check") return check();
+  if (command === "check" || command === "doctor") return check();
+  // Never load the rendering graph (including native Sharp) before the bootstrap command.
+  ({ inspectRun } = await import("./runtime/inspect.mjs"));
+  ({ renderRun } = await import("./runtime/render.mjs"));
+  ({ approveScriptReview, createScriptReview, reviewedScriptHash } = await import("./runtime/speaker-review.mjs"));
+  ({ validateRun } = await import("./runtime/validate.mjs"));
   if (command === "smoke") return smoke();
   if (command === "init") {
     const runDirectory = await initializeRun({ runId: args.run, audio: args.audio, input: args.input });
@@ -145,7 +137,7 @@ async function main() {
     return;
   }
   if (command === "finalize") return finalize(runDirectory);
-  throw new Error("Usage: node runner.mjs <check|smoke|init|review-script|approve-script|validate|render|inspect|finalize> [--run=id] [--audio=/abs/file] [--input=/abs/input.json]");
+  throw new Error("Usage: node runner.mjs <doctor|check|smoke|init|review-script|approve-script|validate|render|inspect|finalize> [--run=id] [--audio=/abs/file] [--input=/abs/input.json]");
 }
 
 main().catch((error) => {

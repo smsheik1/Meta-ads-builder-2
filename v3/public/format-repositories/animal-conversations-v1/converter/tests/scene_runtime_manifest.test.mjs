@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolExecutable } from "../../runtime/common.mjs";
 
 const converterRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -13,7 +14,7 @@ async function withFixture(source, callback) {
   const scene = path.join(directory, "fixture.xstage");
   await writeFile(scene, source);
   try {
-    const result = spawnSync("python3", [path.join(converterRoot, "scene_runtime_manifest.py"), scene], {
+    const result = spawnSync(toolExecutable("python3"), [path.join(converterRoot, "scene_runtime_manifest.py"), scene], {
       encoding: "utf8",
     });
     assert.equal(result.status, 0, result.stderr);

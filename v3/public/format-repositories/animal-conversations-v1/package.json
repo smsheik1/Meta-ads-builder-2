@@ -4,7 +4,10 @@
   "version": "0.15.1",
   "type": "module",
   "scripts": {
-    "test": "node --test converter/tests/*.test.mjs runtime/tests/*.test.mjs && node converter/run_cargo_test.mjs",
+    "test": "node --test converter/tests/manifests.test.mjs converter/tests/render_tvg.test.mjs converter/tests/runtime_channels.test.mjs converter/tests/scene_transforms.test.mjs runtime/tests/*.test.mjs",
+    "test:converter": "node --test converter/tests/scene_runtime_manifest.test.mjs converter/tests/scene_transform_summary.test.mjs && node converter/run_cargo_test.mjs",
+    "test:release": "npm test && npm run test:converter",
+    "doctor": "node runner.mjs doctor",
     "check": "node runner.mjs check",
     "smoke": "node runner.mjs smoke",
     "convert": "node converter/convert_pose.mjs",

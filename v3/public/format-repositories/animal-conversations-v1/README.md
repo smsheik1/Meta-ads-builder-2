@@ -6,12 +6,19 @@ The blue dog uses the legacy runtime ID `cat`; the pink bunny uses `bunny`. Narr
 
 ## Quick start
 
+Node >=20.9.0 is the initial prerequisite. The doctor works before `node_modules` exists and lists missing dependencies together; it never changes global installations. Python and Cargo are not required for normal rendering from the packaged poses.
+
 ```bash
-npm install
+node runner.mjs doctor
+npm ci
 npm test
 npm run check
 npm run smoke -- --run=smoke-proof
 ```
+
+The initial doctor can report `setup-required` until the listed prerequisites are installed. `npm run check` remains an alias for the same read-only report. Optional executable overrides are `FFMPEG`, `FFPROBE`, and `PYTHON`; set each to an executable path, not a shell command. Node subprocesses reuse the running Node executable.
+
+`npm test` includes the JavaScript runtime, converter logic, and packaged-asset tests. The Python converter tests and Cargo proof are kept in `npm run test:converter`; `npm run test:release` runs both profiles.
 
 Start a real episode with an absolute audio path and an absolute timing JSON path:
 

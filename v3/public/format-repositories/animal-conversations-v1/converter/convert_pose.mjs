@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { access, copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import { execute as executeTool } from "../runtime/common.mjs";
 
 const converterRoot = path.dirname(fileURLToPath(import.meta.url));
 const formatRoot = path.dirname(converterRoot);
@@ -20,19 +20,7 @@ function parseArgs(values) {
 }
 
 function execute(program, values, { cwd = converterRoot, capture = false } = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(program, values, { cwd, stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit" });
-    let stdout = "";
-    let stderr = "";
-    if (capture) {
-      child.stdout.on("data", (chunk) => { stdout += chunk; });
-      child.stderr.on("data", (chunk) => { stderr += chunk; });
-    }
-    child.on("error", reject);
-    child.on("close", (code) => code === 0
-      ? resolve(stdout)
-      : reject(new Error(`${program} exited ${code}\n${stderr.slice(-8000)}`)));
-  });
+  return executeTool(program, values, { cwd, capture, stdoutOnly: true });
 }
 
 async function exists(file) {
