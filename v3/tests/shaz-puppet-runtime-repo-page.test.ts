@@ -25,19 +25,32 @@ const qualityReport = `${talkingShowcase}/quality-report.json`;
 const humanReview = `${talkingShowcase}/human-review.json`;
 const transcriptGuidedShowcase = `${repository}/goldens/transcript-guided-story-v1`;
 const transcriptGuidedProofHashes = {
-  "source-input.json": "b4c538ad8f1fb13e8a7c77abf88cb239fcd4c0f4ad0c004b1549c4d13d0bba28",
-  "input.json": "d83e08e257edd403cab94eba41dfe264427949df17dab4fc936e7750b0e55b5d",
-  "transcript.json": "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
-  "transcription-receipt.json": "da59ca9a5c9d4e54b0d07a6a6b1c0c073444b6fa55a2958f5aee1e5647682ef1",
-  "cherry-lipsync.tsv": "1f8ba17f5f2ec57eef1468634133b1308ad99c9af00b1cc7860d99d497dd556d",
-  "user-audio.wav": "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
-  "final.mp4": "a1df5e2f89afc2e38589629efef81858d68887cf79f87c52e379c9d03332f212",
-  "poster.jpg": "c45114c5d6feb74ba127dacdead88223abc56d143218f1307ec8c7d278ee1cfb",
-  "contact-sheet.jpg": "8d5b348a7e6af6c44526fac8293aa5c5794ef48279be6950949c745c44567c8a",
-  "validation-receipt.json": "e2dfe27a3e29fffcdbd6b077baaaff96f94543ffd44939183f1ce3e9e67cdd5f",
-  "render-report.json": "f718b19dde00b57b28d4f3b8cf0cc5e22611a571d4645eb773695b08f7691dc5",
-  "quality-report.json": "25ceba243ae791d300bd36fc933df55384af182a69d2e97f53ac33bd9a41b8a7",
-  "human-review.json": "095d47ff0b64a0a3ba2bfa9267eb8ea07d22f1b6e1882099bce4ab5fd1d1715d",
+  "source-input.json":
+    "b4c538ad8f1fb13e8a7c77abf88cb239fcd4c0f4ad0c004b1549c4d13d0bba28",
+  "input.json":
+    "d83e08e257edd403cab94eba41dfe264427949df17dab4fc936e7750b0e55b5d",
+  "transcript.json":
+    "35a55600eafd90cb352c01e43e477bcddd945eca6dc21cf757049b059188af7b",
+  "transcription-receipt.json":
+    "da59ca9a5c9d4e54b0d07a6a6b1c0c073444b6fa55a2958f5aee1e5647682ef1",
+  "cherry-lipsync.tsv":
+    "1f8ba17f5f2ec57eef1468634133b1308ad99c9af00b1cc7860d99d497dd556d",
+  "user-audio.wav":
+    "977618823d072d933af1b76c10e7e07394a0001fe0775770c332a48b6457121b",
+  "final.mp4":
+    "a1df5e2f89afc2e38589629efef81858d68887cf79f87c52e379c9d03332f212",
+  "poster.jpg":
+    "c45114c5d6feb74ba127dacdead88223abc56d143218f1307ec8c7d278ee1cfb",
+  "contact-sheet.jpg":
+    "8d5b348a7e6af6c44526fac8293aa5c5794ef48279be6950949c745c44567c8a",
+  "validation-receipt.json":
+    "e2dfe27a3e29fffcdbd6b077baaaff96f94543ffd44939183f1ce3e9e67cdd5f",
+  "render-report.json":
+    "f718b19dde00b57b28d4f3b8cf0cc5e22611a571d4645eb773695b08f7691dc5",
+  "quality-report.json":
+    "25ceba243ae791d300bd36fc933df55384af182a69d2e97f53ac33bd9a41b8a7",
+  "human-review.json":
+    "095d47ff0b64a0a3ba2bfa9267eb8ea07d22f1b6e1882099bce4ab5fd1d1715d",
 } as const;
 const poseShowcase = `${repository}/goldens/five-authored-showcase`;
 const poseVideo = `${poseShowcase}/final.mp4`;
@@ -51,10 +64,23 @@ const connectionsSource = readFileSync(
   "features/discovery/ShazPuppetRuntimeConnections.tsx",
   "utf8",
 );
-const formatProofSource = readFileSync("features/discovery/formatProof.server.ts", "utf8");
-const repoPageSource = readFileSync("features/discovery/formatRepoPage.server.ts", "utf8");
+const formatProofSource = readFileSync(
+  "features/discovery/formatProof.server.ts",
+  "utf8",
+);
+const repoPageSource = readFileSync(
+  "features/discovery/formatRepoPage.server.ts",
+  "utf8",
+);
 const formatPageSource = readFileSync("app/formats/[slug]/page.tsx", "utf8");
-const trustSource = readFileSync("features/discovery/shazPuppetRuntimeTrust.server.ts", "utf8");
+const runSummarySource = readFileSync(
+  "features/discovery/FormatRepoRunSummary.tsx",
+  "utf8",
+);
+const trustSource = readFileSync(
+  "features/discovery/shazPuppetRuntimeTrust.server.ts",
+  "utf8",
+);
 const expectedVideoSha =
   "59cef6b0910a9d7f8dfe342c0602e8f1921ec6c837fe0fb26c8d5510fd1d2edf";
 const expectedContactSheetSha =
@@ -270,12 +296,24 @@ const transcriptGuidedValidation = JSON.parse(
   lipSync: { cueSha256: string; cueCount: number };
 };
 assert.equal(transcriptGuidedValidation.status, "pass");
-assert.equal(transcriptGuidedValidation.inputSha256, transcriptGuidedProofHashes["input.json"]);
+assert.equal(
+  transcriptGuidedValidation.inputSha256,
+  transcriptGuidedProofHashes["input.json"],
+);
 assert.equal(transcriptGuidedValidation.totalFrames, 720);
-assert.equal(transcriptGuidedValidation.audio.sha256, transcriptGuidedProofHashes["user-audio.wav"]);
-assert.equal(transcriptGuidedValidation.transcript.sha256, transcriptGuidedProofHashes["transcript.json"]);
+assert.equal(
+  transcriptGuidedValidation.audio.sha256,
+  transcriptGuidedProofHashes["user-audio.wav"],
+);
+assert.equal(
+  transcriptGuidedValidation.transcript.sha256,
+  transcriptGuidedProofHashes["transcript.json"],
+);
 assert.equal(transcriptGuidedValidation.transcript.wordCount, 104);
-assert.equal(transcriptGuidedValidation.lipSync.cueSha256, transcriptGuidedProofHashes["cherry-lipsync.tsv"]);
+assert.equal(
+  transcriptGuidedValidation.lipSync.cueSha256,
+  transcriptGuidedProofHashes["cherry-lipsync.tsv"],
+);
 assert.equal(transcriptGuidedValidation.lipSync.cueCount, 271);
 
 const transcriptGuidedQuality = JSON.parse(
@@ -287,7 +325,10 @@ const transcriptGuidedQuality = JSON.parse(
   failures: unknown[];
 };
 assert.equal(transcriptGuidedQuality.status, "pass");
-assert.equal(transcriptGuidedQuality.outputSha256, transcriptGuidedProofHashes["final.mp4"]);
+assert.equal(
+  transcriptGuidedQuality.outputSha256,
+  transcriptGuidedProofHashes["final.mp4"],
+);
 assert.deepEqual(transcriptGuidedQuality.measured, {
   ...transcriptGuidedQuality.measured,
   frames: 720,
@@ -300,7 +341,10 @@ const transcriptGuidedReview = JSON.parse(
   readFileSync(`${transcriptGuidedShowcase}/human-review.json`, "utf8"),
 ) as { status: string; reviewedOutputSha256: string };
 assert.equal(transcriptGuidedReview.status, "pending");
-assert.equal(transcriptGuidedReview.reviewedOutputSha256, transcriptGuidedProofHashes["final.mp4"]);
+assert.equal(
+  transcriptGuidedReview.reviewedOutputSha256,
+  transcriptGuidedProofHashes["final.mp4"],
+);
 
 const poseShowcaseInput = JSON.parse(
   readFileSync(`${poseShowcase}/input.json`, "utf8"),
@@ -382,7 +426,10 @@ assert.ok(profile);
 assert.equal(profile.name, "Animate Shaz");
 assert.equal(profile.version, "0.4.0");
 assert.deepEqual(
-  profile.proofEntries.map(({ id, format }) => ({ id, version: format.version })),
+  profile.proofEntries.map(({ id, format }) => ({
+    id,
+    version: format.version,
+  })),
   [
     { id: "shaz-puppet-runtime-talking-scene", version: "0.2.0" },
     { id: "shaz-puppet-runtime-transcript-guided-story", version: "0.4.0" },
@@ -398,7 +445,10 @@ assert.match(
   profile.proofEntries[0]?.curatorNote ?? "",
   /five hand-drawn mouth shapes/,
 );
-assert.match(profile.proofEntries[0]?.curatorNote ?? "", /creative review is still pending/);
+assert.match(
+  profile.proofEntries[0]?.curatorNote ?? "",
+  /creative review is still pending/,
+);
 assert.match(profile.promise, /Give Shaz a voice track/);
 assert.match(profile.promise, /pick a room/);
 assert.match(profile.promise, /reads the words locally/);
@@ -413,9 +463,18 @@ assert.equal(
   "/format-repositories/shaz-puppet-runtime-v1/goldens/talking-scene-lipsync-v1/poster.jpg",
 );
 assert.equal(profile.proofEntries[0]?.media.durationLabel, "12 sec");
-assert.equal(profile.proofEntries[1]?.title, "Leo: what puppy parenting taught us");
-assert.match(profile.proofEntries[1]?.curatorNote ?? "", /Think lands on “idea,”/);
-assert.doesNotMatch(profile.proofEntries[1]?.curatorNote ?? "", /review is still pending/);
+assert.equal(
+  profile.proofEntries[1]?.title,
+  "Leo: what puppy parenting taught us",
+);
+assert.match(
+  profile.proofEntries[1]?.curatorNote ?? "",
+  /Think lands on “idea,”/,
+);
+assert.doesNotMatch(
+  profile.proofEntries[1]?.curatorNote ?? "",
+  /review is still pending/,
+);
 assert.equal(
   profile.proofEntries[1]?.media.src,
   "/format-repositories/shaz-puppet-runtime-v1/goldens/transcript-guided-story-v1/final.mp4",
@@ -444,10 +503,19 @@ assert.match(
   profile.handoff.instructions.join(" "),
   /no sequence, durationFrames, or frame math/,
 );
-assert.match(profile.handoff.instructions.join(" "), /present, think, aha, point, and confident/);
+assert.match(
+  profile.handoff.instructions.join(" "),
+  /present, think, aha, point, and confident/,
+);
 assert.match(profile.handoff.instructions.join(" "), /npm run transcribe/);
-assert.match(profile.handoff.instructions.join(" "), /registered recipes are technically runnable reference material/);
-assert.equal(profile.handoff.totalEstimate, "$0 in service fees, usually 2-8 min");
+assert.match(
+  profile.handoff.instructions.join(" "),
+  /registered recipes are technically runnable reference material/,
+);
+assert.equal(
+  profile.handoff.totalEstimate,
+  "$0 in service fees, usually 2-8 min",
+);
 assert.deepEqual(
   getPublishedDiscoveryEntries()
     .filter((entry) => entry.format.slug === "shaz-puppet-runtime")
@@ -469,26 +537,55 @@ assert.equal(
   presentation?.detailedProofId,
   "shaz-puppet-runtime-talking-scene",
 );
-assert.equal(presentation?.copy.runTitle, "Give Shaz a line.");
-assert.match(presentation?.copy.runDescription ?? "", /reads what Shaz is saying/);
-assert.match(presentation?.copy.runDescription ?? "", /artist-reviewed gesture/);
+assert.match(
+  presentation?.copy.runDescription ?? "",
+  /reads what Shaz is saying/,
+);
+assert.match(
+  presentation?.copy.runDescription ?? "",
+  /artist-reviewed gesture/,
+);
 assert.match(presentation?.copy.runDescription ?? "", /lip-syncs the mouth/);
-assert.equal(presentation?.copy.provided, "One voice track + room choice");
 assert.equal(presentation?.copy.examplesTitle, "Examples");
-assert.match(presentation?.copy.examplesDescription ?? "", /new 30-second story/);
-assert.match(presentation?.copy.examplesDescription ?? "", /uses the transcript/);
-assert.match(presentation?.copy.examplesDescription ?? "", /Play both with sound/);
+assert.match(
+  presentation?.copy.examplesDescription ?? "",
+  /new 30-second story/,
+);
+assert.match(
+  presentation?.copy.examplesDescription ?? "",
+  /uses the transcript/,
+);
+assert.match(
+  presentation?.copy.examplesDescription ?? "",
+  /Play both with sound/,
+);
 assert.match(formatPageSource, /examplesTitle === "Examples" \? null/);
-const publicHeroCopy = [profile.name, profile.promise, presentation?.copy.runTitle, presentation?.copy.runDescription].join(" ");
+assert.match(
+  formatPageSource,
+  /<FormatRepoRunSummary[\s\S]*description=\{repoPageCopy\?\.runDescription\}/,
+  "Every Repo page should use the shared detailed bottom run section.",
+);
+assert.match(runSummarySource, /Know the run before you start\./);
+const publicHeroCopy = [
+  profile.name,
+  profile.promise,
+  presentation?.copy.runDescription,
+].join(" ");
 assert.doesNotMatch(publicHeroCopy, /Download Format \d/i);
-assert.doesNotMatch(publicHeroCopy, /checksum|WASI|registered actions|trusted actions|Puppet Runtime/i);
+assert.doesNotMatch(
+  publicHeroCopy,
+  /checksum|WASI|registered actions|trusted actions|Puppet Runtime/i,
+);
 for (const staleCopy of [
   "Download Format 0.3.0 to turn local audio",
   "checksum-registered fixed backgrounds",
   "trusted artist-authored actions",
   "bundled WASI",
 ]) {
-  assert.doesNotMatch(`${formatProofSource}\n${repoPageSource}`, new RegExp(staleCopy, "i"));
+  assert.doesNotMatch(
+    `${formatProofSource}\n${repoPageSource}`,
+    new RegExp(staleCopy, "i"),
+  );
 }
 const trust = await getShazPuppetRuntimeTrustData();
 assert.equal(trust.version, "0.4.0");
@@ -556,7 +653,8 @@ assert.deepEqual(trust.includedAssets.bundledEngines, [
     nativeExecutableBuiltLocally: true,
     networkRequired: false,
     supportedPlatform: "darwin-arm64",
-    purpose: "create an English transcript with word timestamps before body-language planning",
+    purpose:
+      "create an English transcript with word timestamps before body-language planning",
   },
 ]);
 assert.equal(trust.quality.summary[0]?.value, "0.4.0");
@@ -590,7 +688,10 @@ assert.match(trust.quality.note, /generated 100 mouth-timing cues locally/);
 assert.match(trust.quality.note, /5 hand-drawn mouth shapes/);
 assert.match(trust.quality.note, /earlier 0\.2\.0 kit/);
 assert.match(trust.quality.note, /four built-in backgrounds/);
-assert.match(trust.quality.note, /Creative review of this exact video is still pending/);
+assert.match(
+  trust.quality.note,
+  /Creative review of this exact video is still pending/,
+);
 assert.doesNotMatch(
   trustSource,
   /blind proof generated|checksum-registered fixed backgrounds|final checksum-bound creative certification|Body motion and lip-sync stay inside one renderer/i,
@@ -650,13 +751,19 @@ for (const mapping of ["A · X", "B · G · I · J", "C · H", "D", "E · F · K
   );
 }
 assert.match(includedAssetsSource, /swaps between five mouth drawings/);
-assert.match(connectionsSource, /No subscriptions\. No API keys\. It runs on Apple silicon\./);
+assert.match(
+  connectionsSource,
+  /No subscriptions\. No API keys\. It runs on Apple silicon\./,
+);
 assert.match(connectionsSource, /Everything stays local/);
 assert.match(connectionsSource, /It hears the words, too/);
 assert.match(connectionsSource, /same Shaz rig/);
 assert.match(includedAssetsSource, /Understands the dialogue/);
 assert.match(includedAssetsSource, /Local English transcript/);
-assert.doesNotMatch(includedAssetsSource, /Cherry Lip Sync \{engine\.version\}/);
+assert.doesNotMatch(
+  includedAssetsSource,
+  /Cherry Lip Sync \{engine\.version\}/,
+);
 assert.equal(
   trust.receipt.rows.find(({ label }) => label === "Kit version")?.value,
   "0.4.0",
@@ -756,7 +863,8 @@ assert.deepEqual(packagedRequirements.bundledEngines, [
     nativeExecutableBuiltLocally: true,
     networkRequired: false,
     supportedPlatform: "darwin-arm64",
-    purpose: "create an English transcript with word timestamps before body-language planning",
+    purpose:
+      "create an English transcript with word timestamps before body-language planning",
   },
 ]);
 assert.equal(
@@ -765,7 +873,10 @@ assert.equal(
   "The ZIP must not ship a native Cherry executable.",
 );
 assert.equal(
-  entries.some((entry) => entry.includes(".runtime-cache/") || /(^|\/)whisper-cli$/.test(entry)),
+  entries.some(
+    (entry) =>
+      entry.includes(".runtime-cache/") || /(^|\/)whisper-cli$/.test(entry),
+  ),
   false,
   "The ZIP must contain source and model inputs, never the locally compiled Whisper helper.",
 );

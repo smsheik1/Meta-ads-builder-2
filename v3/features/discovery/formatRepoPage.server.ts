@@ -1,3 +1,4 @@
+import { discoveryShelfDefinitions } from "./catalog";
 import type { AnimalConversationsTrustData } from "./animalConversationsTrust.server";
 import { getAnimalConversationsTrustData } from "./animalConversationsTrust.server";
 import type { BikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
@@ -6,10 +7,7 @@ import type { ShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server
 import { getShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server";
 
 type RepoPageCopy = {
-  runTitle: string;
   runDescription: string;
-  provided: string;
-  ready: string;
   examplesTitle: string;
   examplesDescription?: string;
 };
@@ -40,9 +38,24 @@ export const richFormatRepoSlugs = [
   "shaz-puppet-runtime",
 ] as const;
 
-// These formats predate the rich Repo-page standard. Keep this list frozen so
-// a newly published format cannot silently inherit the legacy presentation.
-const legacyFormatRepoSlugs = new Set([
+export function getFormatRepoFamily(slug: string) {
+  const family = discoveryShelfDefinitions.find(
+    (candidate) => candidate.id === "skai-generated",
+  );
+  if (!family?.formats.some((candidate) => candidate === slug)) {
+    return null;
+  }
+
+  return {
+    name: family.title,
+    formatCount: family.formats.length,
+    discoveryHref: "/discover#shelf-skai-generated",
+  };
+}
+
+// These formats use the shared baseline sections without a custom trust module.
+// Keep the list frozen so newly published work cannot bypass a deliberate page review.
+const baselineFormatRepoSlugs = new Set([
   "talking-fish-news",
   "mugsy-explains",
   "three-d-breakdown",
@@ -100,11 +113,8 @@ export async function getFormatRepoPagePresentation(
       kind: slug,
       trust: await getBikiniBottomDanceOffTrustData(),
       copy: {
-        runTitle: "Make your Dance Off.",
         runDescription:
           "Add one song and optionally choose the dances or dialogue. The agent handles everything else.",
-        provided: "One song",
-        ready: "12–30 minutes",
         examplesTitle: "Finished Dance Offs.",
       },
       detailedProofId: "bikini-bottom-dance-off-wiggle",
@@ -116,13 +126,11 @@ export async function getFormatRepoPagePresentation(
       kind: slug,
       trust: await getAnimalConversationsTrustData(),
       copy: {
-        runTitle: "Make your Animal Conversation.",
         runDescription:
           "Send a supported video link or local clip. Your coding agent extracts the audio, prepares the dialogue for your approval, and makes the video. No timestamps to write.",
-        provided: "One video link or local clip",
-        ready: "7–20 minutes after setup",
         examplesTitle: "Finished Conversations.",
-        examplesDescription: "These examples were made with v0.15.1. The current download is v0.16.2, with easier setup and a guided approval-to-export workflow.",
+        examplesDescription:
+          "These examples were made with v0.15.1. The current download is v0.16.2, with easier setup and a guided approval-to-export workflow.",
       },
     };
   }
@@ -132,11 +140,8 @@ export async function getFormatRepoPagePresentation(
       kind: slug,
       trust: await getShazPuppetRuntimeTrustData(),
       copy: {
-        runTitle: "Give Shaz a line.",
         runDescription:
           "Add a voice track and pick a room. The kit reads what Shaz is saying on your Mac, lip-syncs the mouth, and helps place an artist-reviewed gesture on the words that deserve one.",
-        provided: "One voice track + room choice",
-        ready: "2–8 minutes",
         examplesTitle: "Examples",
         examplesDescription:
           "The first video proved Shaz could talk and gesture. In the new 30-second story, a fresh agent uses the transcript to land Think on “idea,” Point on “least,” and Confident on “best.” Play both with sound.",
@@ -145,7 +150,7 @@ export async function getFormatRepoPagePresentation(
     };
   }
 
-  if (legacyFormatRepoSlugs.has(slug)) return null;
+  if (baselineFormatRepoSlugs.has(slug)) return null;
 
   throw new Error(
     `Format "${slug}" requires the shared rich Repo-page presentation before it can be published.`,

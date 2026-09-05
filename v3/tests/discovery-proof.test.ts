@@ -25,7 +25,11 @@ for (const entry of discoveryCatalog) {
 const threeD = getDiscoveryFormatProfile("three-d-breakdown");
 assert.ok(threeD, "3D Breakdown should have a consumer Format proof.");
 assert.equal(threeD.version, "1.5.0");
-assert.equal(threeD.proofEntries.length, 6, "3D Breakdown should show all six real proof outputs separately.");
+assert.equal(
+  threeD.proofEntries.length,
+  6,
+  "3D Breakdown should show all six real proof outputs separately.",
+);
 assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 
 const mugsyExplains = getDiscoveryFormatProfile("mugsy-explains");
@@ -37,18 +41,29 @@ assert.equal(mugsyExplains.technicalHref, "/format-lab/mugsy-explains");
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon, "Cartoon Explainer should have a consumer Format proof.");
 assert.equal(cartoon.version, "1.2.0-experiment");
-assert.ok(cartoon.proofEntries.length >= 3, "Cartoon Explainer should show at least three real proof outputs.");
+assert.ok(
+  cartoon.proofEntries.length >= 3,
+  "Cartoon Explainer should show at least three real proof outputs.",
+);
 assert.equal(cartoon.technicalHref, "/format-lab/cartoon-explainer");
 
 const jingle = getDiscoveryFormatProfile("jingle");
 assert.ok(jingle, "Brand Jingle should have a consumer Format proof.");
 assert.equal(jingle.version, "1.0.0");
-assert.equal(jingle.proofEntries.length, 39, "Brand Jingle proof should include every distinct completed song.");
+assert.equal(
+  jingle.proofEntries.length,
+  39,
+  "Brand Jingle proof should include every distinct completed song.",
+);
 
 const videoMeme = getDiscoveryFormatProfile("video-meme");
 assert.ok(videoMeme, "Video Meme should have a consumer Format proof.");
 assert.equal(videoMeme.version, "1.0.0");
-assert.equal(videoMeme.proofEntries.length, 35, "Video Meme proof should include three canonical templates and every DB import.");
+assert.equal(
+  videoMeme.proofEntries.length,
+  35,
+  "Video Meme proof should include three canonical templates and every DB import.",
+);
 
 for (const slug of [
   "visualizer",
@@ -96,11 +111,16 @@ for (const slug of [
 ]) {
   const profile = getDiscoveryFormatProfile(slug);
   assert.ok(profile, `${slug} should have a consumer Format proof.`);
-  assert.ok(profile.proofEntries.length >= 1, `${slug} should show real saved output.`);
+  assert.ok(
+    profile.proofEntries.length >= 1,
+    `${slug} should show real saved output.`,
+  );
 }
 
 assert.deepEqual(
-  getRelatedDiscoveryEntries(threeD.proofEntries[0]).map((entry) => entry.format.slug),
+  getRelatedDiscoveryEntries(threeD.proofEntries[0]).map(
+    (entry) => entry.format.slug,
+  ),
   ["three-d-breakdown", "three-d-breakdown", "three-d-breakdown"],
   "Related proof should stay inside the exact Format.",
 );
@@ -168,13 +188,16 @@ for (const slug of discoveryFormatSlugs) {
   assert.equal(
     Boolean(await getFormatRepoPagePresentation(slug)),
     richFormatRepoSlugSet.has(slug),
-    `${slug} must use the rich Repo page or remain in the frozen legacy allowlist.`,
+    `${slug} must use specialized rich sections or the frozen shared baseline.`,
   );
 }
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
 
-const discoveryClientSource = readFileSync("app/discover/DiscoveryClient.tsx", "utf8");
+const discoveryClientSource = readFileSync(
+  "app/discover/DiscoveryClient.tsx",
+  "utf8",
+);
 const sharePageSource = readFileSync("app/s/[slug]/page.tsx", "utf8");
 const formatPageSource = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 
@@ -212,6 +235,10 @@ assert.ok(
     formatPageSource.includes("object-contain"),
   "Format pages should be static consumer proof surfaces over existing media and technical pages.",
 );
-assert.equal(existsSync("app/ads"), false, "Discovery must not add a second /ads detail route.");
+assert.equal(
+  existsSync("app/ads"),
+  false,
+  "Discovery must not add a second /ads detail route.",
+);
 
 console.log("discovery proof tests passed");

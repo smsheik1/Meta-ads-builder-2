@@ -18,7 +18,10 @@ import {
 import { FormatRepoRunSummary } from "@/features/discovery/FormatRepoRunSummary";
 import { FormatRepoTrust } from "@/features/discovery/FormatRepoTrust";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
-import { getFormatRepoPagePresentation } from "@/features/discovery/formatRepoPage.server";
+import {
+  getFormatRepoFamily,
+  getFormatRepoPagePresentation,
+} from "@/features/discovery/formatRepoPage.server";
 import {
   discoveryFormatSlugs,
   getDiscoveryFormatProfile,
@@ -60,6 +63,7 @@ export default async function FormatPage({
   const heroIsLandscapeVideo =
     heroProof.media.kind === "video" && heroProof.media.aspectRatio === "16:9";
   const repoPage = await getFormatRepoPagePresentation(slug);
+  const repoFamily = getFormatRepoFamily(slug);
   const repoTrust = repoPage?.trust;
   const repoPageCopy = repoPage?.copy;
   const detailedProof = repoPage?.detailedProofId
@@ -71,13 +75,7 @@ export default async function FormatPage({
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-[#080817]">
       <header className="border-b-2 border-[#080817]">
-        <div
-          className={`mx-auto flex items-center justify-between gap-4 ${
-            repoTrust
-              ? "min-h-[66px] w-[min(100%-32px,980px)]"
-              : "min-h-[76px] w-[min(100%-32px,1380px)]"
-          }`}
-        >
+        <div className="mx-auto flex min-h-[66px] w-[min(100%-32px,980px)] items-center justify-between gap-4">
           <Link
             href="/discover"
             className="inline-flex items-center gap-2 text-sm font-black"
@@ -96,13 +94,7 @@ export default async function FormatPage({
         </div>
       </header>
 
-      <section
-        className={`mx-auto grid ${
-          repoTrust
-            ? "w-[min(100%-32px,980px)] gap-[38px] py-9 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-14"
-            : "w-[min(100%-32px,1380px)] gap-9 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:py-16"
-        }`}
-      >
+      <section className="mx-auto grid w-[min(100%-32px,980px)] gap-[38px] py-9 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-14">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-md border-2 border-[#080817] bg-[#52d6ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]">
@@ -114,27 +106,13 @@ export default async function FormatPage({
             </span>
           </div>
 
-          <h1
-            className={`font-black ${
-              repoTrust
-                ? "mt-6 text-[clamp(42px,6vw,72px)] leading-[0.92] tracking-[-0.055em]"
-                : "mt-7 text-6xl leading-[0.85] tracking-normal sm:text-8xl lg:text-[108px]"
-            }`}
-          >
+          <h1 className="mt-6 text-[clamp(42px,6vw,72px)] font-black leading-[0.92] tracking-[-0.055em]">
             {format.name}
           </h1>
-          <p
-            className={`max-w-2xl text-[#424254] ${
-              repoTrust
-                ? "mt-[18px] text-lg font-bold leading-[1.42]"
-                : "mt-7 text-2xl font-black leading-tight sm:text-3xl"
-            }`}
-          >
+          <p className="mt-[18px] max-w-2xl text-lg font-bold leading-[1.42] text-[#424254]">
             {format.promise}
           </p>
-          <p
-            className={`${repoTrust ? "mt-[18px] text-[13px]" : "mt-6 text-sm"} font-bold text-[#596176]`}
-          >
+          <p className="mt-[18px] text-[13px] font-bold text-[#596176]">
             By{" "}
             {creator ? (
               <Link
@@ -149,20 +127,16 @@ export default async function FormatPage({
             · Updated {format.lastUpdated}
           </p>
 
-          <div
-            className={`${repoTrust ? "mt-6" : "mt-8"} flex flex-wrap gap-3`}
-          >
-            {!repoTrust ? (
-              <a
-                href="#proof"
-                className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white shadow-[4px_4px_0_#52d6ff]"
-              >
-                See the proof
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </a>
-            ) : null}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href="#examples"
+              className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white shadow-[4px_4px_0_#52d6ff]"
+            >
+              See examples
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </a>
             {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
-            {format.technicalHref && !repoTrust ? (
+            {format.technicalHref ? (
               <Link
                 href={format.technicalHref}
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-white px-5 text-sm font-black"
@@ -186,11 +160,7 @@ export default async function FormatPage({
 
         <div
           className={`mx-auto w-full overflow-hidden rounded-[12px] border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817] ${
-            heroIsLandscapeVideo
-              ? "max-w-[760px]"
-              : repoTrust
-                ? "max-w-[310px]"
-                : "max-w-[440px]"
+            heroIsLandscapeVideo ? "max-w-[760px]" : "max-w-[310px]"
           }`}
         >
           <DiscoveryProofMedia
@@ -238,81 +208,150 @@ export default async function FormatPage({
         </section>
       ) : null}
 
-      {repoPage ? <FormatRepoConnections presentation={repoPage} /> : null}
-
-      {repoTrust && repoPageCopy && format.handoff ? (
-        <FormatRepoRunSummary
-          format={format}
-          idPrefix={repoTrust.idPrefix}
-          title={repoPageCopy.runTitle}
-          description={repoPageCopy.runDescription}
-          provided={repoPageCopy.provided}
-          ready={repoPageCopy.ready}
-        />
-      ) : null}
-
-      {repoPage ? <FormatRepoIncludedAssets presentation={repoPage} /> : null}
-
-      {repoTrust && repoPageCopy ? (
+      {repoFamily ? (
         <section
-          id="examples"
-          className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16"
+          aria-labelledby="repo-family-title"
+          className="border-y-2 border-[#080817] bg-[#dff8ff] px-4 py-10 sm:px-8 sm:py-12"
+          data-testid="shared-repo-family"
         >
-          <div className="mx-auto max-w-[980px]">
-            <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-              <div>
-                {repoPageCopy.examplesTitle === "Examples" ? null : (
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-                    Examples
-                  </p>
-                )}
-                <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">
-                  {repoPageCopy.examplesTitle}
-                </h2>
-              </div>
-              <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
-                {repoPageCopy.examplesDescription ??
-                  `${format.proofEntries.length} finished videos made with this Format.`}
+          <div className="mx-auto grid max-w-[980px] gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#31566e]">
+                Shared Wiggly Repo
               </p>
+              <h2
+                id="repo-family-title"
+                className="mt-3 text-4xl font-black leading-[0.92] sm:text-6xl"
+              >
+                One Repo. {repoFamily.formatCount} format recipes.
+              </h2>
             </div>
-
-            <div className="mt-10 grid gap-6 sm:grid-cols-2">
-              {format.proofEntries.map((entry, index) => (
-                <article
-                  key={entry.id}
-                  className="overflow-hidden rounded-lg border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]"
-                >
-                  <DiscoveryProofMedia
-                    entry={entry}
-                    autoPlay={false}
-                    className={
-                      entry.media.aspectRatio === "16:9"
-                        ? "block aspect-video w-full bg-[#080817] object-contain"
-                        : "block aspect-[9/16] w-full bg-[#080817] object-cover"
-                    }
-                  />
-                  <div className="p-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
-                      Example {String(index + 1).padStart(2, "0")} ·{" "}
-                      {entry.brand}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-black leading-none">
-                      {entry.title}
-                    </h3>
-                    <Link
-                      href={`/s/${entry.id}`}
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-black"
-                    >
-                      Open finished ad
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </article>
-              ))}
+            <div>
+              <p className="max-w-2xl text-lg font-bold leading-8 text-[#30374b]">
+                <strong>{format.name}</strong> is one recipe inside the shared{" "}
+                {repoFamily.name} Repo—not a separate Repo to install or
+                explain.
+              </p>
+              <Link
+                href={repoFamily.discoveryHref}
+                className="mt-5 inline-flex items-center gap-2 text-sm font-black"
+              >
+                See the full recipe family
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
         </section>
       ) : null}
+
+      {repoPage ? <FormatRepoConnections presentation={repoPage} /> : null}
+
+      {repoPage ? (
+        <FormatRepoIncludedAssets presentation={repoPage} />
+      ) : (
+        <section className="border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto grid max-w-[980px] gap-5 lg:grid-cols-2">
+            <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8">
+              <p className="text-xs font-black uppercase tracking-[0.18em]">
+                What the Repo keeps
+              </p>
+              <ul className="mt-6 grid gap-4">
+                {format.whatStays.map((item) => (
+                  <li
+                    key={item}
+                    className="border-t-2 border-[#080817] pt-4 text-xl font-black leading-tight"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-lg border-2 border-[#080817] bg-white p-6 shadow-[6px_6px_0_#080817] sm:p-8">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
+                What you change
+              </p>
+              <ul className="mt-6 grid gap-4">
+                {format.whatChanges.map((item) => (
+                  <li
+                    key={item}
+                    className="border-t-2 border-[#080817] pt-4 text-xl font-black leading-tight"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section
+        id="examples"
+        className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16"
+      >
+        <div className="mx-auto max-w-[980px]">
+          <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <div>
+              {repoPageCopy?.examplesTitle === "Examples" ? null : (
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
+                  Examples
+                </p>
+              )}
+              <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">
+                {repoPageCopy?.examplesTitle ?? "Finished examples."}
+              </h2>
+            </div>
+            <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
+              {repoPageCopy?.examplesDescription ??
+                `${format.proofEntries.length} finished ${
+                  format.proofEntries.length === 1
+                    ? "example shows"
+                    : "examples show"
+                } how the same Repo handles a different input.`}
+            </p>
+          </div>
+
+          <div
+            className={`mt-10 grid gap-6 sm:grid-cols-2 ${
+              format.proofEntries.length > 4 ? "lg:grid-cols-3" : ""
+            }`}
+          >
+            {format.proofEntries.map((entry, index) => (
+              <article
+                key={entry.id}
+                className="overflow-hidden rounded-lg border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]"
+              >
+                <DiscoveryProofMedia
+                  entry={entry}
+                  autoPlay={false}
+                  className={
+                    entry.media.kind === "image"
+                      ? "block aspect-[3/4] w-full bg-[#080817] object-cover"
+                      : entry.media.aspectRatio === "16:9"
+                        ? "block aspect-video w-full bg-[#080817] object-contain"
+                        : "block aspect-[9/16] w-full bg-[#080817] object-cover"
+                  }
+                />
+                <div className="p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
+                    Example {String(index + 1).padStart(2, "0")} · {entry.brand}
+                  </p>
+                  <h3 className="mt-2 text-2xl font-black leading-none">
+                    {entry.title}
+                  </h3>
+                  <Link
+                    href={`/s/${entry.id}`}
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-black"
+                  >
+                    Open finished ad
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {repoTrust &&
       detailedProof.media.kind === "video" &&
@@ -324,202 +363,12 @@ export default async function FormatPage({
           repositoryHref={format.repositoryHref}
           videoSrc={detailedProof.media.src}
         />
-      ) : (
-        <section
-          id="proof"
-          className="scroll-mt-6 border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16"
-        >
-          <div className="mx-auto max-w-[1380px]">
-            <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-                  Repeatability proof
-                </p>
-                <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">
-                  Same recipe. New story.
-                </h2>
-              </div>
-              <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
-                {format.proofEntries.length} finished{" "}
-                {format.proofEntries.length === 1
-                  ? "example shows"
-                  : "examples show"}{" "}
-                what the Format can hold onto while the brand and idea change.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {format.proofEntries.map((entry, index) => (
-                <article
-                  key={entry.id}
-                  className="overflow-hidden rounded-lg border-2 border-[#080817] bg-white shadow-[5px_5px_0_#080817]"
-                >
-                  <DiscoveryProofMedia
-                    entry={entry}
-                    autoPlay={false}
-                    className={
-                      entry.media.kind === "image"
-                        ? "block aspect-[3/4] w-full bg-[#080817] object-cover"
-                        : entry.media.aspectRatio === "16:9"
-                          ? "block aspect-video w-full bg-[#080817] object-contain"
-                          : "block aspect-[9/16] w-full bg-[#080817] object-cover"
-                    }
-                  />
-                  <div className="p-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
-                      Proof {String(index + 1).padStart(2, "0")} · {entry.brand}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-black leading-none">
-                      {entry.title}
-                    </h3>
-                    <Link
-                      href={`/s/${entry.id}`}
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-black"
-                    >
-                      Open finished ad
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {!repoTrust ? (
-        <section className="mx-auto grid w-[min(100%-32px,1100px)] gap-5 py-12 sm:py-16 lg:grid-cols-2">
-          <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8">
-            <p className="text-xs font-black uppercase tracking-[0.18em]">
-              What stays the same
-            </p>
-            <ul className="mt-6 grid gap-4">
-              {format.whatStays.map((item) => (
-                <li
-                  key={item}
-                  className="border-t-2 border-[#080817] pt-4 text-2xl font-black leading-tight"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-lg border-2 border-[#080817] bg-white p-6 shadow-[6px_6px_0_#080817] sm:p-8">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-              What changes
-            </p>
-            <ul className="mt-6 grid gap-4">
-              {format.whatChanges.map((item) => (
-                <li
-                  key={item}
-                  className="border-t-2 border-[#080817] pt-4 text-2xl font-black leading-tight"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
       ) : null}
 
-      {repoTrust && format.handoff ? (
-        <section
-          id="run-with-agent"
-          className="scroll-mt-6 border-t-2 border-[#080817] bg-[#080817] px-4 py-10 text-white sm:px-8 sm:py-12"
-        >
-          <div className="mx-auto flex max-w-[980px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#52d6ff]">
-                Run it with a coding agent
-              </p>
-              <h2 className="mt-2 text-[34px] font-black leading-none">
-                Ready to make one?
-              </h2>
-              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/70">
-                The requirements, timing, and exact Repo files are already
-                above.
-              </p>
-            </div>
-            <DiscoveryFormatHandoff format={format} />
-          </div>
-        </section>
-      ) : (
-        <section
-          id="run-with-agent"
-          className="scroll-mt-6 border-t-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16"
-        >
-          <div className="mx-auto max-w-[1100px]">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-              Run it with a coding agent
-            </p>
-            <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
-              <div>
-                <h2 className="text-4xl font-black leading-none sm:text-6xl">
-                  {format.handoff
-                    ? "Know the run before you start."
-                    : "Handoff is not live yet."}
-                </h2>
-                {!repoTrust ? (
-                  <p className="mt-5 max-w-xl text-lg font-bold leading-7 text-[#596176]">
-                    {format.handoff
-                      ? "The task is pinned to this exact public version. Codex asks one short question at a time and names the current step."
-                      : "This Format has public proof, but Wiggly is not offering a broken agent option before the runbook is ready."}
-                  </p>
-                ) : null}
-                {format.handoff ? (
-                  <div className="mt-7">
-                    <DiscoveryFormatHandoff format={format} />
-                  </div>
-                ) : null}
-              </div>
-
-              {format.handoff ? (
-                <div className="rounded-lg border-2 border-[#080817] bg-white shadow-[6px_6px_0_#080817]">
-                  <div className="border-b-2 border-[#080817] px-5 py-4">
-                    <p className="text-xs font-black uppercase tracking-[0.16em]">
-                      Typical run
-                    </p>
-                  </div>
-                  <div className="divide-y-2 divide-[#dbe2ee]">
-                    {format.handoff.estimates.map((estimate) => (
-                      <div
-                        key={estimate.label}
-                        className="grid grid-cols-[1fr_auto] gap-5 px-5 py-4 text-sm"
-                      >
-                        <strong>{estimate.label}</strong>
-                        <span className="text-right font-bold text-[#596176]">
-                          {estimate.cost} · {estimate.time}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="border-t-2 border-[#080817] bg-[#f5f1e8] px-5 py-4 text-sm font-black">
-                    {format.handoff.totalEstimate}
-                  </p>
-                  <div className="grid gap-4 px-5 py-4">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
-                        You provide
-                      </p>
-                      <p className="mt-1 text-sm font-bold text-[#30374b]">
-                        {format.handoff.requiredInputs.join(" · ")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
-                        Output
-                      </p>
-                      <p className="mt-1 text-sm font-bold text-[#30374b]">
-                        {format.handoff.output}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </section>
-      )}
+      <FormatRepoRunSummary
+        format={format}
+        description={repoPageCopy?.runDescription}
+      />
     </main>
   );
 }
