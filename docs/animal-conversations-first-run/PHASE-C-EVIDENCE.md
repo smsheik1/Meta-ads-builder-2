@@ -58,10 +58,16 @@ A new version preserves the immutable 0.16.0 candidate rather than overwriting i
 
 The isolated GitHub Actions workflow tests actual Linux x64 and Ubuntu inside WSL2 with read-only repository permissions, no production secrets, and small sanitized reports only. It tests fresh archives, all profiles, synthetic rendering/export mechanics and two actual CPU intakes with network isolation. It deliberately does not invent real script approval, fresh-agent interaction or perceptual playback.
 
+### Actual platform follow-up
+
+See PLATFORM-ACCEPTANCE.md for retained run/job evidence. Corrected run `33940070769` passed WSL2's full mechanics/setup/offline-intake scope. Diagnostic run `33940815264` then established that **both native Linux intakes also succeeded**; the failing command was the following normal-user `status` call. The harness had run intake as root inside the network namespace, leaving the Python helper's intentionally private `transcript.json` owned by root with mode 0600. The normal runner UID 1001 could not read it and correctly reported `intake-evidence-invalid` / EACCES.
+
+The scoped repair is to preserve the original caller identity inside the isolated namespace. Do not loosen transcript permissions, alter package code, or call the failed status a successful check. The corrected identity must be verified by actual CI before platform mechanics are considered passed. Fresh host-agent approval/playback/export acceptance remains separate.
+
 ### Remaining acceptance
 
 1. Explicit approval of the two newly generated episode reviews, followed by actual rendering and documented playback review plus verified exports.
-2. Finish supported Linux x64 and WSL execution. Initial real CI run `33939590840` passed all 106 Node + 3 Python tests on both; actual WSL2 kernel `6.18.33.2-microsoft-standard-WSL2` was verified. Both then failed optional converter compilation because CI Rust 1.85 cannot compile the locked libflate dependency's let chains. Fixing that toolchain is required; do not skip the tests.
+2. Finish supported-system acceptance. The isolated CI Rust 1.89 correction already passed all converter tests on both platforms. WSL mechanics/offline intake passed; Linux needs the observed harness identity mismatch repaired and its status/evidence checks rerun. Neither CI substitutes for a fresh host-agent real-episode proof.
 3. Final end-to-end acceptance of the packaged artifact, not just independent phase success.
 
 Website promotion is deliberately separate. The existing public ZIP/catalog remain 0.15.1 while source development is 0.16.1. The public-page version/hash assertions must be updated together with a certified release during a separately scoped promotion; do not weaken them or merge this branch as though publication had already occurred.

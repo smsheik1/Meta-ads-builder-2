@@ -84,3 +84,35 @@ The next scoped diagnostic should preserve each intake/status substep's sanitize
 - Reports expire **September 8, 2026 UTC** under the three-day retention policy. No model cache, source/private audio, or run-directory media was uploaded. This checked-in report preserves the observed results beyond artifact expiry.
 - WSL2 **platform mechanics/setup/offline intake** passed. Standalone Linux **offline intake** is unresolved. Neither result substitutes for a fresh host-agent real-episode proof through explicit approval, actual playback assessment, and verified export. The separate Mac real reviews still await user approval.
 - The public stable download/catalog remain at their intentionally unpromoted version; this CI does not publish or certify a public release.
+
+## Diagnostic run — exact Linux cause established
+
+[Run 33940815264](https://github.com/smsheik1/wiggly/actions/runs/33940815264), commit `62500dd4c4d9d619fd23e0979699b20a6387b69a`, ran **2026-09-05 03:03:56–03:10:32 UTC**. WSL2 succeeded again; Linux failed. Package contents remained **0.16.1**; the change only exposed existing command results, selected error fields, and file ownership/modes.
+
+| Named substep | Linux [job 101237753421](https://github.com/smsheik1/wiggly/actions/runs/33940815264/job/101237753421) | WSL2 [job 101237753329](https://github.com/smsheik1/wiggly/actions/runs/33940815264/job/101237753329) |
+| --- | --- | --- |
+| `intake-one` | Exit 0; `needs-script-draft` | Exit 0; `needs-script-draft` |
+| `intake-two` | Exit 0; `needs-script-draft` | Exit 0; `needs-script-draft` |
+| `status-one` | Exit 1; `intake-evidence-invalid`; `EACCES: permission denied` | Exit 0; `needs-script-draft` |
+| `status-two` | Not run after the first failure | Exit 0; `needs-script-draft` |
+
+**Both actual Linux transcriptions succeeded.** The failure was a subsequent read-only status command, not model inference. Linux diagnostics show caller UID/GID **1001:1001**, while the elevated intake produced:
+
+- Run directory owned **0:0**, mode **0755**.
+- `state.json` and `intake.json` owned **0:0**, mode **0644**.
+- `user-audio.wav` owned **0:0**, mode **0644**.
+- `transcript.json` owned **0:0**, mode **0600** (both examples).
+
+The helper's atomic Python temporary-file publication preserves a private 0600 transcript. CI had used `sudo unshare` to run intake as root, then returned to UID 1001 for status/evidence reads. That identity switch made the transcript unreadable to the caller. WSL2's script consistently ran as root, so both subsequent status checks passed. This is a **CI harness identity inconsistency**; the package's private transcript permission should not be relaxed.
+
+The conditional helper diagnostic did not run: no `transcription-failed` result occurred. The true failing exit remained intact. The Linux run therefore proves both actual offline intake commands, but still does not constitute a fully passing same-user acceptance run.
+
+- [Linux diagnostic artifact 9961798349](https://github.com/smsheik1/wiggly/actions/runs/33940815264/artifacts/9961798349), ZIP digest `ecee11c98c2179c4a6be1ff68e980f33087c8f5b1848e6a19f91374b13ab9245`.
+- [WSL2 diagnostic artifact 9961841989](https://github.com/smsheik1/wiggly/actions/runs/33940815264/artifacts/9961841989), ZIP digest `38ddf6fa46fb1c5f0456acd4f5e65317e2e1f2775b8b9117f3c8d2840dee67b4`.
+- Both artifacts expire September 8, 2026 UTC. No private media/model cache was uploaded.
+
+### Identity correction prepared; actual rerun pending
+
+The scoped harness correction creates the network namespace with the existing elevation, then restores the original script UID/GID through `unshare --setgid=<caller-gid> --setuid=<caller-uid>` before executing any offline kit/helper command. The [util-linux documentation](https://man7.org/linux/man-pages/man1/unshare.1.html) and [v2.39 implementation](https://github.com/util-linux/util-linux/blob/v2.39/sys-utils/unshare.c) confirm group/user changes occur in the entered namespace before command execution. WSL2 retains its original root identity; Linux returns to its original unprivileged runner identity.
+
+An explicit offline identity probe now checks actual UID/GID, and each successful intake checks that its transcript remains **0600 and owned by the caller**. No chmod, global permission repair, package changes, or gate bypass was introduced. Local command-assembly tests cover both nonroot Linux and root WSL2; diagnostic tests accept caller-owned 0600 and reject 0644. Shell/embedded-JavaScript syntax and diff checks pass. These local tests do not replace the pending real hosted rerun.

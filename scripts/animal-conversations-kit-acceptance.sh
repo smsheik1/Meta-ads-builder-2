@@ -23,7 +23,9 @@ stage_name=host-setup
 trap 'result=$?; printf "exit=%s\nstage=%s\nscope=platform-mechanics-and-intake-only\n" "$result" "$stage_name" > "$reports/outcome.txt"' EXIT
 stage() { stage_name=$1; printf '%s\n' "$stage_name" | tee -a "$reports/stages.log"; }
 as_root=()
-if [[ $(id -u) != 0 ]]; then as_root=(sudo); fi
+caller_uid=$(id -u)
+caller_gid=$(id -g)
+if [[ $caller_uid != 0 ]]; then as_root=(sudo); fi
 
 stage install-ephemeral-linux-tools
 "${as_root[@]}" apt-get update -qq
@@ -170,6 +172,7 @@ let selected;
 try {
   const value = JSON.parse(stdout);
   selected = { status: value.status, phase: value.phase, completionClaimed: value.completionClaimed,
+    identity: label === 'offline-identity' ? value.identity : undefined,
     blocker: value.blocker && { code: value.blocker.code, message: clean(value.blocker.message) },
     nextAction: value.nextAction && { owner: value.nextAction.owner, action: value.nextAction.action, message: clean(value.nextAction.message) },
     missing: Array.isArray(value.missing) ? value.missing.map(clean) : undefined,
@@ -186,6 +189,14 @@ const report = { schemaVersion: 1, stage: label, exitCode: Number(exitCode), run
   diagnosticCaller: { uid: process.getuid(), gid: process.getgid() },
   stdout: selected, stderr: clean(stderr), access,
   limitation: 'Diagnostic evidence only; a successful helper retry does not override the failed intake/status exit.' };
+if (label.startsWith('intake-') && Number(exitCode) === 0) {
+  const transcript = access.find(file => file.file === 'transcript.json');
+  report.privateTranscriptOwnership = transcript?.uid === process.getuid() && transcript?.gid === process.getgid() && transcript?.mode === '600' ? 'pass' : 'fail';
+  if (report.privateTranscriptOwnership !== 'pass') {
+    report.harnessError = 'Successful intake must leave a private 0600 transcript owned by the original command caller.';
+    process.exitCode = 1;
+  }
+}
 await writeFile(path.join(reports, `diagnostic-${label}.json`), JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify(report, null, 2));
 NODE
@@ -197,7 +208,13 @@ NODE
 
 # The entire local intake runs in a network namespace with no external interfaces/routes.
 # This is stronger than resolving platform wheels or setting HF_HUB_OFFLINE alone.
-offline=("${as_root[@]}" unshare --net -- env PATH="$PATH" PYTHON="$PYTHON" FFMPEG="$FFMPEG" FFPROBE="$FFPROBE")
+# Elevate only to create the network namespace, then restore the original UID/GID.
+# util-linux unshare --setgid drops supplementary groups; --setuid precedes exec.
+# https://man7.org/linux/man-pages/man1/unshare.1.html
+offline=("${as_root[@]}" unshare --net --setgid="$caller_gid" --setuid="$caller_uid" -- env PATH="$PATH" PYTHON="$PYTHON" FFMPEG="$FFMPEG" FFPROBE="$FFPROBE")
+run_diagnostic_step offline-identity ci-example-one "${offline[@]}" node -e \
+  'const [uid,gid]=process.argv.slice(1).map(Number); const identity={uid:process.getuid(),gid:process.getgid()}; console.log(JSON.stringify({status:"identity-check",identity})); if(identity.uid!==uid||identity.gid!==gid)process.exitCode=1' \
+  "$caller_uid" "$caller_gid"
 diagnose_transcription_once() {
   local suffix=$1 helper_json
   local -a helper_args
