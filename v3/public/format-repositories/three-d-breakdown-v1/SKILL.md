@@ -17,7 +17,7 @@ When the user sends only this Repo link:
 4. Ask: `Do you want Guide Me or Turbo?`
 5. Wait for the answer.
 6. Research the site with your web tools.
-7. Save the facts in `research.json` with the provided `StoredWebsiteResearchResult` shape.
+7. Save the facts in `research.json` with the `StoredWebsiteResearchResult` shape shown by the research object in `fixtures/agent-cookie-gift.json`. Replace all fixture facts and URLs.
 8. Ask: `What should the video focus on?`
 9. Offer product, brand story, customer problem, custom idea, or `Pick for me`.
 10. If the user picks product, ask which product in the next message.
@@ -71,7 +71,7 @@ Before `Ready to start?`, check the current provider prices and show:
 ```text
 Run estimate
 
-- Story ideas and plan: 3 NIM calls — about $X
+- Story ideas and plan: your coding agent — no additional provider charge
 - Storyboard: 1 image — about $X
 - Key images: 4 images — about $X
 - Video clips: 2 clips, 10 seconds each — about $X
@@ -98,15 +98,15 @@ Use current prices. Do not guess. If a price is not public, say `price not liste
 - Generate one explicitly approved Fish narration only after both clips pass inspection.
 - Render the final MP4 locally through the packaged Remotion entry and `AdRenderSurface`. Never rebuild or replace the renderer.
 - Never print secret values. Report only missing key names.
-- Fail loudly. Do not switch providers, repair model output, retry automatically, or hide an error.
+- Fail loudly. Do not switch media providers, retry paid calls automatically, or hide an error. Fix validation errors in your own planning JSON and re-import locally; never bypass a validator.
 
 ## Agent loop
 
 1. Run `check --stage=plan`.
-2. Run `init` with the exported Wiggly website research and the chosen story subject.
-3. Use the approval for the three planning calls: one story-slate call, then one script call and one scene-plan call. Run `directions`.
+2. Run `init` with the research you authored (or an existing Wiggly export) and the chosen story subject.
+3. Follow the exact command sequence in README. Run `prompt --stage=directions`, read the saved prompt, author its JSON yourself, then import it with `directions --input`. Do not call a separate LLM or ask for an NVIDIA key.
 4. In Guide Me, show all five directions and let the user choose. In Turbo, pick the strongest saved direction.
-5. Run `select`, then `validate`.
+5. Run `prompt --stage=script --direction=idea-N`, author its JSON, and import with `script --direction=idea-N --input`. Review that script. Then run `prompt --stage=plan --direction=idea-N`, author its JSON, and import with `select --direction=idea-N --input`. Run `validate`. All these commands also need `--run`. Keep the same direction throughout.
 6. Compare the selected direction with the production references. State the concrete hook, the job of the blue explanation world, the visible transformation, the product or subject carried through the story, and the final payoff. If any answer is vague, revise before an image call.
 7. Let the user inspect the script, storyboard plan, image prompts, and CTA. The MVP runner does not edit these fields; if the plan is wrong, stop and start a new run from the saved research instead of spending on media.
 8. In Guide Me, ask before each `image` command. In Turbo, use the approved run estimate.

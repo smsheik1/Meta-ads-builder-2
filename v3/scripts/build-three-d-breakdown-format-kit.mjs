@@ -21,6 +21,7 @@ const copyFromV3 = async (relativePath, targetPath = relativePath) => {
 await rm(stagingParent, { force: true, recursive: true });
 await mkdir(path.join(stagingV3, formatRelative), { recursive: true });
 await mkdir(outputDirectory, { recursive: true });
+await writeFile(path.join(stagingRoot, "AGENTS.md"), "# 3D Breakdown Repo\n\nRead v3/public/format-repositories/three-d-breakdown-v1/SKILL.md and README.md first. All commands run from v3. Use the packaged runtime; never rebuild it. Run the free smoke test before real work. Planning uses your coding agent, not a separate LLM API. Paid media still requires approval.\n");
 
 for (const relativePath of [
   "features/audio",
@@ -34,6 +35,7 @@ for (const relativePath of [
   "scripts/smoke-three-d-breakdown-format.ts",
   "tests/helpers/research.ts",
   "tests/three-d-breakdown-repo.test.ts",
+  "tests/three-d-breakdown-agent-planning.test.ts",
 ]) {
   await copyFromV3(relativePath);
 }
@@ -62,6 +64,7 @@ for (const directory of ["assets", "fixtures", "goldens"]) {
 await copyFromV3(path.join(formatRelative, "kit-smoke.mjs"), "kit-smoke.mjs");
 
 await writeFile(path.join(stagingV3, "package.json"), await readFile(path.join(formatRoot, "kit.package.json")));
+await writeFile(path.join(stagingV3, "tsconfig.json"), await readFile(path.join(formatRoot, "kit.tsconfig.json")));
 
 const fixedDate = new Date("2026-01-01T00:00:00.000Z");
 const normalizeTimes = async (directory) => {

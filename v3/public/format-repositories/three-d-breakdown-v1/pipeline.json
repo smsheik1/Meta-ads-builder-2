@@ -2,13 +2,13 @@
   "stages": [
     {
       "id": "directions",
-      "output": "Exactly five evidence-backed story directions",
+      "output": "Exactly five host-agent-authored, locally validated evidence-backed story directions",
       "paidMedia": false,
       "approvalRequired": true
     },
     {
       "id": "selected-plan",
-      "output": "One selected Style B script, scene contract, and six-frame storyboard plan",
+      "output": "One host-agent-authored Style B script and six-frame scene plan, imported through the shared validators",
       "paidMedia": false,
       "approvalRequired": true
     },

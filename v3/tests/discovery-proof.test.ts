@@ -25,7 +25,7 @@ for (const entry of discoveryCatalog) {
 
 const threeD = getDiscoveryFormatProfile("three-d-breakdown");
 assert.ok(threeD, "3D Breakdown should have a consumer Format proof.");
-assert.equal(threeD.version, "1.5.0");
+assert.equal(threeD.version, "1.6.0");
 assert.equal(
   threeD.proofEntries.length,
   6,

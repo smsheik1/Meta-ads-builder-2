@@ -146,6 +146,9 @@ export function FormatRepoPackageConnections({ format, data }: Props) {
 }
 
 export function FormatRepoPackageAssets({ format, data }: Props) {
+  // Squilliam already presents its characters interactively in the anchor chooser.
+  // Keep the complete inventory in Repo files, not a second gallery of rig textures.
+  if (format.slug === "squilliam-news") return null;
   const visualAssets = data?.assets.filter((asset) => asset.image) ?? [];
   function assetGrid(assets: typeof visualAssets) {
     return (

@@ -1,5 +1,13 @@
 # Real production proof
 
+## v1.6.0 host-agent planning migration
+
+- The Repo's directions, script, and scene are now authored by the host coding agent and imported through the existing shared validators. The separate Wiggly `/create` planning provider is unchanged.
+- Two synthetic offline regression inputs (wooden-toy history and cookie gifting) reach a validated official scene without API keys or network calls. Invalid directions, evidence IDs, scene plans, and mismatched script selections are rejected before media generation.
+- These are planning and runtime checks, not newly generated or creatively approved videos. The production references below keep their original provenance.
+- An independent extracted-package check exposed a missing JSX configuration: source-tree smoke passed by inheriting the app's config, while the standalone renderer reported `React is not defined`. The kit now includes its own `tsconfig.json`, and its commands use `node --import tsx` without an IPC launcher. Archive tests guard against missing config and stale packaged runtime files.
+- After that fix, a fresh extraction passed the standard `npm run smoke` using dependencies installed independently from the kit's package manifest, rather than the Wiggly workspace dependencies.
+
 ## Canonical successful proof
 
 The FinalStraw Day 5 video is the current Style B reproducibility target.

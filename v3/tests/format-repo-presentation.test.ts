@@ -68,6 +68,11 @@ for (const slug of discoveryFormatSlugs) {
     "proof-quality",
     "repo-files",
   ]) {
+    if (slug === "squilliam-news" && id === "included-assets") {
+      assert.doesNotMatch(html, /id="included-assets"|The ingredients behind the format/);
+      assert.ok(format.characterOptions?.length === 4);
+      continue;
+    }
     assert.ok(
       html.includes(`id="${id}"`),
       `${slug}: missing rendered ${id} section.`,
@@ -108,7 +113,7 @@ for (const slug of discoveryFormatSlugs) {
   if (slug === "three-d-breakdown") {
     assert.deepEqual(
       data.services.map((service) => service.name),
-      ["NVIDIA NIM", "Replicate", "Fish Audio"],
+      ["Replicate", "Fish Audio"],
     );
     assert.equal(data.workflow.length, 6);
     assert.ok(

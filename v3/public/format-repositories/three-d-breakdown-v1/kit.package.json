@@ -1,16 +1,16 @@
 {
   "name": "wiggly-three-d-breakdown-format-kit",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.6.0",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "check:kit": "node kit-smoke.mjs",
-    "format:three-d": "tsx scripts/three-d-breakdown-format.ts",
-    "smoke": "tsx scripts/smoke-three-d-breakdown-format.ts",
-    "test": "tsx tests/three-d-breakdown-repo.test.ts && node kit-smoke.mjs"
+    "format:three-d": "node --import tsx scripts/three-d-breakdown-format.ts",
+    "smoke": "node --import tsx scripts/smoke-three-d-breakdown-format.ts",
+    "test": "node --import tsx tests/three-d-breakdown-repo.test.ts && node kit-smoke.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.473",

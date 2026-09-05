@@ -11,9 +11,13 @@ import {
   createGeneratedSceneAudio,
 } from "../features/audio/sceneAudio";
 import {
-  generateThreeDBreakdownStoryDirectionsFromResearch,
-  generateThreeDBreakdownVariantsFromResearch,
-} from "../features/formats/three-d-breakdown/generate";
+  parseDirectorOutput, parseStoryDirectionSlateOutput,
+  parseStyleBScriptPlanOutput, prepareThreeDBreakdownEvidence,
+} from "../features/formats/three-d-breakdown/planning";
+import {
+  buildThreeDBreakdownPrompt, buildThreeDBreakdownStoryDirectionsPrompt,
+  buildThreeDBreakdownStyleBScriptPrompt, type ThreeDBreakdownLockedStyleBScript,
+} from "../features/formats/three-d-breakdown/prompt";
 import {
   buildThreeDProductionFramePrompt,
   buildThreeDSeedancePrompt,
@@ -31,7 +35,7 @@ import {
   type ThreeDBreakdownRepoStage,
 } from "../features/formats/three-d-breakdown/repoRuntime";
 import type { ThreeDBreakdownStoryDirection } from "../features/formats/three-d-breakdown/storyDirections";
-import type { ThreeDBreakdownStorySubject } from "../features/formats/three-d-breakdown/storySubject";
+import { resolveThreeDBreakdownStorySubject, type ThreeDBreakdownStorySubject } from "../features/formats/three-d-breakdown/storySubject";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import {
@@ -57,7 +61,6 @@ const runsRoot = path.join(packageRoot, "agent-runs");
 const narrationTargetMs = 18_100;
 const narrationMaximumMs = 18_500;
 const narrationMaximumRetimeRatio = 1.25;
-const maxPlanningCalls = 3;
 
 type ImageAttempt = {
   asset: "storyboard" | `anchor-${number}`;
@@ -116,8 +119,8 @@ type RunState = {
   status: "draft" | "directions-ready" | "scene-ready" | "images-started" | "ready-for-video" | "video-started" | "clips-ready" | "voice-ready" | "final-ready" | "finalized";
   createdAt: string;
   subject: ThreeDBreakdownStorySubject;
-  planningApprovedAt?: string;
-  planningCalls: number;
+  planningSource: "host-coding-agent";
+  selectedDirectionId?: string;
   imageAttempts: ImageAttempt[];
   videoAttempts?: VideoAttempt[];
   voiceAttempts?: VoiceAttempt[];
@@ -276,8 +279,8 @@ const parseStage = (): ThreeDBreakdownRepoStage => {
 };
 
 async function check() {
-  await loadEnvironment();
   const stage = parseStage();
+  if (["images", "video", "voice"].includes(stage)) await loadEnvironment();
   const manifest = await readJson<ThreeDBreakdownRepoRequirementManifest>(path.join(packageRoot, "requirements.json"));
   const result = evaluateThreeDBreakdownRepoRequirements({
     environment: process.env,
@@ -322,88 +325,92 @@ async function init() {
     status: "draft",
     createdAt: new Date().toISOString(),
     subject: readSubject(),
-    planningCalls: 0,
+    planningSource: "host-coding-agent",
     imageAttempts: [],
     videoAttempts: [],
   });
   console.log(`Created ${path.relative(v3Root, directory)}. No provider was called.`);
 }
 
-async function assertPlanningApproved(state: RunState) {
-  if (hasFlag("approve-planning") && !state.planningApprovedAt) {
-    state.planningApprovedAt = new Date().toISOString();
-    await saveState(state);
-  }
-  if (!state.planningApprovedAt) throw new Error("Planning approval is required. Review the run, then pass --approve-planning.");
+async function planningContext(state: RunState) {
+  const research = await loadResearch(state.id);
+  const storySubject = resolveThreeDBreakdownStorySubject(research, state.subject);
+  return { research, storySubject, ...prepareThreeDBreakdownEvidence(research, Date.now(), storySubject) };
 }
 
-const recordPlanningCall = (state: RunState) => async () => {
-  if (state.planningCalls >= maxPlanningCalls) {
-    throw new Error(`This run already used its ${maxPlanningCalls} planned NIM calls. Start a new run instead of spending silently.`);
-  }
-  state.planningCalls += 1;
-  await saveState(state);
-};
+async function selectedDirection(state: RunState) {
+  if (state.status !== "directions-ready") throw new Error("Import five directions first. Start a new run to change an already assembled scene.");
+  const directionId = requiredArgument("direction");
+  const slate = await readJson<{ directions: ThreeDBreakdownStoryDirection[] }>(path.join(runDirectory(state.id), "story-directions.json"));
+  const direction = slate.directions.find((item) => item.directionId === directionId);
+  if (!direction) throw new Error(`Direction ${directionId} is not in the saved slate.`);
+  return direction;
+}
+
+async function lockedScript(state: RunState, direction: ThreeDBreakdownStoryDirection) {
+  if (state.selectedDirectionId !== direction.directionId) throw new Error("Import a validated script for this direction before planning its scene.");
+  return await readJson<ThreeDBreakdownLockedStyleBScript>(path.join(runDirectory(state.id), "script.json"));
+}
+
+async function prompt() {
+  const state = await loadState(requiredArgument("run"));
+  const { research, storySubject, directorEvidenceItems: evidence } = await planningContext(state);
+  const stage = requiredArgument("stage");
+  let content: string;
+  if (stage === "directions") {
+    if (state.status !== "draft") throw new Error("Directions already exist. Start a new run to change them.");
+    content = buildThreeDBreakdownStoryDirectionsPrompt({ research, evidence, storySubject });
+  } else if (stage === "script" || stage === "plan") {
+    const selectedStoryDirection = await selectedDirection(state);
+    content = stage === "script"
+      ? buildThreeDBreakdownStyleBScriptPrompt({ research, evidence, storySubject, selectedStoryDirection })
+      : buildThreeDBreakdownPrompt({ research, evidence, storySubject, selectedStoryDirection, count: 1, lockedStyleBScript: await lockedScript(state, selectedStoryDirection) });
+  } else throw new Error("Prompt stage must be directions, script, or plan.");
+  const output = path.join(runDirectory(state.id), `${stage}-prompt.md`);
+  await writeFile(output, content, "utf8");
+  console.log(`Read ${output}, author the requested JSON with your coding agent, then import it with --input. No provider was called.`);
+}
 
 async function directions() {
-  await loadEnvironment();
-  const runId = requiredArgument("run");
-  const state = await loadState(runId);
-  await assertPlanningApproved(state);
-  if (state.status !== "draft") {
-    throw new Error("Story directions already ran for this project. Inspect the saved slate instead of calling NIM again.");
-  }
-  const slate = await generateThreeDBreakdownStoryDirectionsFromResearch(await loadResearch(runId), {
-    allowRetries: false,
-    onProviderCall: recordPlanningCall(state),
-    storySubject: state.subject,
-  });
+  const state = await loadState(requiredArgument("run"));
+  if (state.status !== "draft") throw new Error("Story directions already exist. Inspect the saved slate or start a new run.");
+  const { storySubject, directorEvidenceItems } = await planningContext(state);
+  const slate = parseStoryDirectionSlateOutput(await readFile(path.resolve(requiredArgument("input")), "utf8"), directorEvidenceItems, storySubject);
+  await writeJson(path.join(runDirectory(state.id), "story-directions.json"), slate);
   state.status = "directions-ready";
-  await Promise.all([
-    writeJson(path.join(runDirectory(runId), "story-directions.json"), slate),
-    saveState(state),
-  ]);
-  console.log(`Saved five story directions. Show them to the user before selecting one.`);
+  await saveState(state);
+  console.log("Saved five validated host-agent directions. Show them to the user before selecting one. No provider was called.");
+}
+
+async function script() {
+  const state = await loadState(requiredArgument("run"));
+  const direction = await selectedDirection(state);
+  const { research, storySubject, directorEvidenceItems } = await planningContext(state);
+  const plan = parseStyleBScriptPlanOutput(await readFile(path.resolve(requiredArgument("input")), "utf8"), directorEvidenceItems, research, direction, storySubject);
+  await writeJson(path.join(runDirectory(state.id), "script.json"), plan);
+  state.selectedDirectionId = direction.directionId;
+  await saveState(state);
+  console.log("Saved the validated host-agent script. Review it before authoring the scene plan. No provider was called.");
 }
 
 async function select() {
-  await loadEnvironment();
-  const runId = requiredArgument("run");
-  const state = await loadState(runId);
-  await assertPlanningApproved(state);
-  if (state.status !== "directions-ready") {
-    throw new Error("Select a direction only after the saved five-direction slate is ready.");
-  }
-  const directionId = requiredArgument("direction");
-  const slate = await readJson<{ directions: ThreeDBreakdownStoryDirection[] }>(
-    path.join(runDirectory(runId), "story-directions.json"),
-  );
-  const selectedStoryDirection = slate.directions.find((direction) => direction.directionId === directionId);
-  if (!selectedStoryDirection) throw new Error(`Direction ${directionId} is not in the saved slate.`);
-  const research = await loadResearch(runId);
-  const generation = await generateThreeDBreakdownVariantsFromResearch(research, {
-    allowRetries: false,
-    count: 1,
-    onProviderCall: recordPlanningCall(state),
-    selectedStoryDirection,
-    storySubject: state.subject,
-  });
+  const state = await loadState(requiredArgument("run"));
+  const direction = await selectedDirection(state);
+  const { research, storySubject, directorEvidenceItems, evidenceItems } = await planningContext(state);
+  const generation = parseDirectorOutput(await readFile(path.resolve(requiredArgument("input")), "utf8"), directorEvidenceItems, 1, await lockedScript(state, direction), storySubject);
   const variant = generation.variants[0];
   if (!variant) throw new Error("The selected direction returned no scene plan.");
   const scene = createThreeDBreakdownAdScene({
-    candidateIndex: 0,
-    evidenceItems: generation.evidenceItems,
-    generationBatchId: `repo-${runId}`,
-    model: generation.model,
-    provider: generation.provider,
-    research,
-    siteContract: generation.siteContract,
-    storySubject: state.subject,
-    variant,
+    candidateIndex: 0, evidenceItems, generationBatchId: `repo-${state.id}`,
+    model: "host-coding-agent", provider: "deterministic", research,
+    siteContract: generation.siteContract, storySubject: state.subject, variant,
   });
+  const validation = validateThreeDBreakdownScene(scene);
+  if (!validation.valid) throw new Error(validation.errors.join("\n"));
+  await saveScene(state.id, scene);
   state.status = "scene-ready";
-  await Promise.all([saveScene(runId, scene), saveState(state)]);
-  console.log("Saved the selected script, six-frame storyboard plan, and two-clip scene contract. No image or video was generated.");
+  await saveState(state);
+  console.log("Saved the validated script, six-frame storyboard plan, and two-clip scene contract. No provider was called.");
 }
 
 async function validate() {
@@ -1190,6 +1197,8 @@ async function main() {
   const command = process.argv[2];
   if (command === "check") return await check();
   if (command === "init") return await init();
+  if (command === "prompt") return await prompt();
+  if (command === "script") return await script();
   if (command === "directions") return await directions();
   if (command === "select") return await select();
   if (command === "validate") return await validate();
@@ -1201,7 +1210,7 @@ async function main() {
   if (command === "voice") return await voice();
   if (command === "render") return await render();
   if (command === "finalize") return await finalize();
-  throw new Error("Use: check | init | directions | select | validate | review | image | inspect | video | retime-clip | voice | render | finalize");
+  throw new Error("Use: check | init | prompt | script | directions | select | validate | review | image | inspect | video | retime-clip | voice | render | finalize");
 }
 
 main().catch((error) => {

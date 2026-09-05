@@ -1,0 +1,456 @@
+{
+  "note": "Synthetic offline contract fixture derived from existing tests. Not live research or a new media proof. Replace all facts and URLs for a real run.",
+  "subject": "brand",
+  "research": {
+    "sessionId": "session_1",
+    "researchRunId": "research_1",
+    "brandSnapshotId": "brand_1",
+    "websiteUrl": "https://davidscookies.com/",
+    "finalUrl": "https://davidscookies.com/",
+    "host": "davidscookies.com",
+    "brand": {
+      "name": "David's Cookies",
+      "url": "https://davidscookies.com/",
+      "host": "davidscookies.com",
+      "title": "David's Cookies",
+      "description": "Fresh baked cookies and dessert gifts shipped nationwide.",
+      "faviconUrl": null,
+      "logoUrl": null,
+      "ogImageUrl": null,
+      "screenshotUrl": null,
+      "colors": [
+        "#D6001C",
+        "#121212",
+        "#FFFFFF"
+      ],
+      "fonts": {
+        "feel": "sans"
+      },
+      "vibeTags": [
+        "giftable"
+      ]
+    },
+    "brandBrief": {
+      "brandName": "David's Cookies",
+      "offer": "Fresh baked cookies, brownies, and dessert tins shipped as gifts.",
+      "audience": "People sending memorable dessert gifts.",
+      "buyerMoments": [
+        "Sending a birthday gift that should feel thoughtful."
+      ],
+      "proof": [
+        "Fresh cookies arrived fast and tasted homemade.",
+        "Gift tins ship nationwide for birthdays and thank-you moments."
+      ],
+      "siteLanguage": [
+        "fresh baked",
+        "cookie tins",
+        "gift baskets"
+      ],
+      "ctaDirection": "Shop fresh baked gifts",
+      "visualNotes": [],
+      "droppedNoiseSummary": [],
+      "confidence": "high"
+    },
+    "evidence": {
+      "headings": [
+        "Customer reviews"
+      ],
+      "paragraphs": [
+        "Fresh cookies arrived fast and tasted homemade."
+      ],
+      "receipts": {
+        "specificClaims": [
+          "Gift tins ship nationwide for birthdays and thank-you moments."
+        ],
+        "buyerMoments": [
+          "Sending a dessert gift for birthdays."
+        ],
+        "exactSiteLanguage": [
+          "fresh baked",
+          "gift baskets"
+        ],
+        "namedProof": []
+      },
+      "rawMarkdown": "# Customer reviews"
+    },
+    "metadata": {},
+    "branding": {},
+    "adAngles": [],
+    "providerStatus": []
+  },
+  "directions": {
+    "recommendedIndex": 1,
+    "directions": [
+      {
+        "hookLine": "David's Cookies: The beginning.",
+        "subheadline": "See David's Cookies through one documented change.",
+        "shortSummary": "cookie tin fills the missing gift moment",
+        "category": "Evidence-led explanation",
+        "whyCompelling": "The gift works because buyers describe fast delivery and homemade taste.",
+        "adAngle": "birthday gift consequence",
+        "visualEngine": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+        "evidenceIndex": 0,
+        "possibleRevealPatterns": [
+          "impact-chain"
+        ]
+      },
+      {
+        "hookLine": "David's Cookies: The hidden change.",
+        "subheadline": "See David's Cookies through one documented change.",
+        "shortSummary": "cookie tin fills the missing gift moment",
+        "category": "Evidence-led explanation",
+        "whyCompelling": "The gift works because buyers describe fast delivery and homemade taste.",
+        "adAngle": "birthday gift consequence",
+        "visualEngine": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+        "evidenceIndex": 0,
+        "possibleRevealPatterns": [
+          "impact-chain"
+        ]
+      },
+      {
+        "hookLine": "David's Cookies: Follow the object.",
+        "subheadline": "See David's Cookies through one documented change.",
+        "shortSummary": "cookie tin fills the missing gift moment",
+        "category": "Evidence-led explanation",
+        "whyCompelling": "The gift works because buyers describe fast delivery and homemade taste.",
+        "adAngle": "birthday gift consequence",
+        "visualEngine": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+        "evidenceIndex": 0,
+        "possibleRevealPatterns": [
+          "impact-chain"
+        ]
+      },
+      {
+        "hookLine": "David's Cookies: The visible payoff.",
+        "subheadline": "See David's Cookies through one documented change.",
+        "shortSummary": "cookie tin fills the missing gift moment",
+        "category": "Evidence-led explanation",
+        "whyCompelling": "The gift works because buyers describe fast delivery and homemade taste.",
+        "adAngle": "birthday gift consequence",
+        "visualEngine": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+        "evidenceIndex": 0,
+        "possibleRevealPatterns": [
+          "impact-chain"
+        ]
+      },
+      {
+        "hookLine": "David's Cookies: From problem to result.",
+        "subheadline": "See David's Cookies through one documented change.",
+        "shortSummary": "cookie tin fills the missing gift moment",
+        "category": "Evidence-led explanation",
+        "whyCompelling": "The gift works because buyers describe fast delivery and homemade taste.",
+        "adAngle": "birthday gift consequence",
+        "visualEngine": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+        "evidenceIndex": 0,
+        "possibleRevealPatterns": [
+          "impact-chain"
+        ]
+      }
+    ]
+  },
+  "script": {
+    "visualStyle": "presenter-teardown-vsl",
+    "variantAngle": "birthday gift consequence",
+    "customerProblem": "last-minute dessert gifting",
+    "mechanismSummary": "cookie tin fills the missing gift moment",
+    "visualMetaphor": "empty gift table becomes proof-backed gift table",
+    "referenceScript": "When someone sends a cookie tin, they assume the box carries the whole birthday. Through the lid, they picture a polite backup dessert nobody remembers. But a stale backup gift can make the table feel unfinished before anyone says it out loud. Then that backup feeling peels away. A red tin opens into cookies made for passing around. The first test is arrival. The second test is taste. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
+    "ctaLine": "Shop memorable cookie gifts from David's Cookies.",
+    "evidenceIndex": 0,
+    "evidenceUseType": "review",
+    "wowMomentType": "impact-chain",
+    "wowMoment": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+    "viewerLearns": "The gift works because buyers describe fast delivery and homemade taste.",
+    "claimRisk": "low",
+    "claimRiskReason": "Uses only selected review or shipping evidence with no stronger claim.",
+    "scriptBeats": [
+      {
+        "role": "consequence",
+        "narration": "When the birthday started, her gift still had not arrived.",
+        "startMs": 0,
+        "endMs": 3000
+      },
+      {
+        "role": "context",
+        "narration": "Everyone said it was fine, but the table still looked unfinished.",
+        "startMs": 3000,
+        "endMs": 8000
+      },
+      {
+        "role": "mechanism",
+        "narration": "Then a David's Cookies tin showed up, ready to open and share.",
+        "startMs": 8000,
+        "endMs": 13000
+      },
+      {
+        "role": "revelation",
+        "narration": "Buyers describe cookies that arrived fast and tasted homemade when they opened them.",
+        "startMs": 13000,
+        "endMs": 18000
+      },
+      {
+        "role": "punchline",
+        "narration": "Shop David's Cookies gifts.",
+        "startMs": 18000,
+        "endMs": 20000
+      }
+    ],
+    "storyboardBoard": {
+      "frameCount": 6,
+      "imagePrompt": "Six distinct vertical production keyframes in a miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
+      "frames": [
+        {
+          "frameIndex": 1,
+          "role": "problem",
+          "label": "Problem state",
+          "visual": "Hands place a red cookie tin beside an empty birthday table setting while the gift spot feels unresolved.",
+          "camera": "Medium hand-demo shot pushing toward the empty spot.",
+          "motion": "Tin enters frame, the empty gift spot subtly blocks the table flow.",
+          "overlayText": "Gift still missing",
+          "editingNote": "Start immediately with practical product handling and no intro."
+        },
+        {
+          "frameIndex": 2,
+          "role": "escalation",
+          "label": "Escalation",
+          "visual": "The camera dives toward the empty table gap as guest hands stop short of the unfinished place setting.",
+          "camera": "Fast punch-in from tabletop to the empty place setting.",
+          "motion": "Guest hands pause and expose the hidden occasion pressure.",
+          "overlayText": "The gap shows",
+          "editingNote": "Make the hidden social pressure visible without text in the image."
+        },
+        {
+          "frameIndex": 3,
+          "role": "mechanism-setup",
+          "label": "Mechanism setup",
+          "visual": "Hands open the red tin and cookie pieces become the center of a small practical product teardown.",
+          "camera": "Macro tabletop close-up with the tin anchored in frame.",
+          "motion": "Lid lifts and warm cookie pieces spread toward the empty place setting.",
+          "overlayText": "Tin opens",
+          "editingNote": "This is the product detail setup before the impossible reveal."
+        },
+        {
+          "frameIndex": 4,
+          "role": "wow-reveal",
+          "label": "Wow reveal",
+          "visual": "The open cookie tin unfolds into a miniature serving route that carries warm cookies into the empty place setting.",
+          "camera": "Impossible macro cutaway orbit around the tin and moving cookie route.",
+          "motion": "The route unfolds, cookies travel across it, and the empty table gap closes.",
+          "overlayText": "Proof locks in",
+          "editingNote": "Peak impossible-to-film reveal with the tin still central."
+        },
+        {
+          "frameIndex": 5,
+          "role": "payoff",
+          "label": "Evidence payoff",
+          "visual": "The product returns to a practical table moment as guests reach into the open tin and share the cookies.",
+          "camera": "Warm overhead product-use shot returning from the cutaway.",
+          "motion": "Hands move cookies toward guests and the unfinished place setting becomes active.",
+          "overlayText": "Handled",
+          "editingNote": "Connect the proof to a real payoff, not a logo card."
+        },
+        {
+          "frameIndex": 6,
+          "role": "final-state",
+          "label": "Final state",
+          "visual": "Clean final hand-demo frame with the red tin open, cookies visible, and a guest reaching for one.",
+          "camera": "Locked final product shot with enough room for renderer overlays.",
+          "motion": "Hands stop, product holds, and the final frame feels ready for CTA.",
+          "overlayText": "Send the gift",
+          "editingNote": "Hold cleanly for the final overlay and avoid generated text."
+        }
+      ]
+    },
+    "shots": [
+      {
+        "shotIndex": 1,
+        "role": "consequence",
+        "captionText": "The backup gift was failing.",
+        "sceneDescription": "Miniature red gift table diorama cutaway shows one empty spot beside a ghosted red cookie tin outline.",
+        "explainerDevice": "Miniature-world cutaway gift table",
+        "physicalAction": "The empty spot blocks the table while gift pieces pile up.",
+        "imagePrompt": "Cinematic 3D explainer render in a miniature red gift table diorama, cutaway empty gift spot, ghosted red cookie tin outline, brand-red light, no text overlays, no realistic faces.",
+        "animationPrompt": "The empty gift spot subtly glows while the phone vibrates once."
+      },
+      {
+        "shotIndex": 2,
+        "role": "mechanism",
+        "captionText": "The cookie tin solves the moment.",
+        "sceneDescription": "An impact-chain serving route unfolds from the red cookie tin across the miniature gift table.",
+        "explainerDevice": "Impact-chain serving route",
+        "physicalAction": "The route unfolds and warm cookies travel into the empty place setting.",
+        "imagePrompt": "Cinematic 3D explainer render of a serving route unfolding from a red cookie tin inside the miniature red gift table diorama, cinematic product lighting.",
+        "animationPrompt": "The red tin slides into place and stops cleanly."
+      },
+      {
+        "shotIndex": 3,
+        "role": "revelation",
+        "captionText": "Fresh cookies tasted homemade.",
+        "sceneDescription": "Miniature red gift table diorama cutaway shows warm cookies shared from the open red cookie tin.",
+        "explainerDevice": "Cutaway proof payoff",
+        "physicalAction": "Steam curls above the cookies while the proof payoff glows.",
+        "imagePrompt": "Cinematic 3D cutaway of fresh cookies shared from a red tin in the miniature red gift table diorama, warm steam, no captions, no realistic faces.",
+        "animationPrompt": "Steam rises once from the cookies while the tin lid opens slightly."
+      }
+    ]
+  },
+  "plan": {
+    "primarySiteType": "ecommerce",
+    "riskFlags": [],
+    "visualWorld": "blue cyan blueprint grid CGI gift table",
+    "lighting": "warm cookie highlights",
+    "cameraStyle": "macro push-in",
+    "recurringObjects": [
+      "red cookie tin",
+      "gift table"
+    ],
+    "variants": [
+      {
+        "visualStyle": "presenter-teardown-vsl",
+        "variantAngle": "birthday gift consequence",
+        "customerProblem": "last-minute dessert gifting",
+        "mechanismSummary": "cookie tin fills the missing gift moment",
+        "visualMetaphor": "empty gift table becomes proof-backed gift table",
+        "referenceScript": "When someone sends a cookie tin, they assume the box carries the whole birthday. Through the lid, they picture a polite backup dessert nobody remembers. But a stale backup gift can make the table feel unfinished before anyone says it out loud. Then that backup feeling peels away. A red tin opens into cookies made for passing around. The first test is arrival. The second test is taste. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
+        "ctaLine": "Shop memorable cookie gifts from David's Cookies.",
+        "evidenceIndex": 0,
+        "evidenceUseType": "review",
+        "wowMomentType": "impact-chain",
+        "wowMoment": "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
+        "viewerLearns": "The gift works because buyers describe fast delivery and homemade taste.",
+        "claimRisk": "low",
+        "claimRiskReason": "Uses only selected review or shipping evidence with no stronger claim.",
+        "scriptBeats": [
+          {
+            "role": "consequence",
+            "narration": "When the birthday started, her gift still had not arrived.",
+            "startMs": 0,
+            "endMs": 3000
+          },
+          {
+            "role": "context",
+            "narration": "Everyone said it was fine, but the table still looked unfinished.",
+            "startMs": 3000,
+            "endMs": 8000
+          },
+          {
+            "role": "mechanism",
+            "narration": "Then a David's Cookies tin showed up, ready to open and share.",
+            "startMs": 8000,
+            "endMs": 13000
+          },
+          {
+            "role": "revelation",
+            "narration": "Buyers describe cookies that arrived fast and tasted homemade when they opened them.",
+            "startMs": 13000,
+            "endMs": 18000
+          },
+          {
+            "role": "punchline",
+            "narration": "Shop David's Cookies gifts.",
+            "startMs": 18000,
+            "endMs": 20000
+          }
+        ],
+        "storyboardBoard": {
+          "frameCount": 6,
+          "imagePrompt": "Six distinct vertical production keyframes in a miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
+          "frames": [
+            {
+              "frameIndex": 1,
+              "role": "problem",
+              "label": "Problem state",
+              "visual": "Hands place a red cookie tin beside an empty birthday table setting while the gift spot feels unresolved.",
+              "camera": "Medium hand-demo shot pushing toward the empty spot.",
+              "motion": "Tin enters frame, the empty gift spot subtly blocks the table flow.",
+              "overlayText": "Gift still missing",
+              "editingNote": "Start immediately with practical product handling and no intro."
+            },
+            {
+              "frameIndex": 2,
+              "role": "escalation",
+              "label": "Escalation",
+              "visual": "The camera dives toward the empty table gap as guest hands stop short of the unfinished place setting.",
+              "camera": "Fast punch-in from tabletop to the empty place setting.",
+              "motion": "Guest hands pause and expose the hidden occasion pressure.",
+              "overlayText": "The gap shows",
+              "editingNote": "Make the hidden social pressure visible without text in the image."
+            },
+            {
+              "frameIndex": 3,
+              "role": "mechanism-setup",
+              "label": "Mechanism setup",
+              "visual": "Hands open the red tin and cookie pieces become the center of a small practical product teardown.",
+              "camera": "Macro tabletop close-up with the tin anchored in frame.",
+              "motion": "Lid lifts and warm cookie pieces spread toward the empty place setting.",
+              "overlayText": "Tin opens",
+              "editingNote": "This is the product detail setup before the impossible reveal."
+            },
+            {
+              "frameIndex": 4,
+              "role": "wow-reveal",
+              "label": "Wow reveal",
+              "visual": "The open cookie tin unfolds into a miniature serving route that carries warm cookies into the empty place setting.",
+              "camera": "Impossible macro cutaway orbit around the tin and moving cookie route.",
+              "motion": "The route unfolds, cookies travel across it, and the empty table gap closes.",
+              "overlayText": "Proof locks in",
+              "editingNote": "Peak impossible-to-film reveal with the tin still central."
+            },
+            {
+              "frameIndex": 5,
+              "role": "payoff",
+              "label": "Evidence payoff",
+              "visual": "The product returns to a practical table moment as guests reach into the open tin and share the cookies.",
+              "camera": "Warm overhead product-use shot returning from the cutaway.",
+              "motion": "Hands move cookies toward guests and the unfinished place setting becomes active.",
+              "overlayText": "Handled",
+              "editingNote": "Connect the proof to a real payoff, not a logo card."
+            },
+            {
+              "frameIndex": 6,
+              "role": "final-state",
+              "label": "Final state",
+              "visual": "Clean final hand-demo frame with the red tin open, cookies visible, and a guest reaching for one.",
+              "camera": "Locked final product shot with enough room for renderer overlays.",
+              "motion": "Hands stop, product holds, and the final frame feels ready for CTA.",
+              "overlayText": "Send the gift",
+              "editingNote": "Hold cleanly for the final overlay and avoid generated text."
+            }
+          ]
+        },
+        "shots": [
+          {
+            "shotIndex": 1,
+            "role": "consequence",
+            "captionText": "The backup gift was failing.",
+            "sceneDescription": "Miniature red gift table diorama cutaway shows one empty spot beside a ghosted red cookie tin outline.",
+            "explainerDevice": "Miniature-world cutaway gift table",
+            "physicalAction": "The empty spot blocks the table while gift pieces pile up.",
+            "imagePrompt": "Cinematic 3D explainer render in a miniature red gift table diorama, cutaway empty gift spot, ghosted red cookie tin outline, brand-red light, no text overlays, no realistic faces.",
+            "animationPrompt": "The empty gift spot subtly glows while the phone vibrates once."
+          },
+          {
+            "shotIndex": 2,
+            "role": "mechanism",
+            "captionText": "The cookie tin solves the moment.",
+            "sceneDescription": "An impact-chain serving route unfolds from the red cookie tin across the miniature gift table.",
+            "explainerDevice": "Impact-chain serving route",
+            "physicalAction": "The route unfolds and warm cookies travel into the empty place setting.",
+            "imagePrompt": "Cinematic 3D explainer render of a serving route unfolding from a red cookie tin inside the miniature red gift table diorama, cinematic product lighting.",
+            "animationPrompt": "The red tin slides into place and stops cleanly."
+          },
+          {
+            "shotIndex": 3,
+            "role": "revelation",
+            "captionText": "Fresh cookies tasted homemade.",
+            "sceneDescription": "Miniature red gift table diorama cutaway shows warm cookies shared from the open red cookie tin.",
+            "explainerDevice": "Cutaway proof payoff",
+            "physicalAction": "Steam curls above the cookies while the proof payoff glows.",
+            "imagePrompt": "Cinematic 3D cutaway of fresh cookies shared from a red tin in the miniature red gift table diorama, warm steam, no captions, no realistic faces.",
+            "animationPrompt": "Steam rises once from the cookies while the tin lid opens slightly."
+          }
+        ]
+      }
+    ]
+  }
+}

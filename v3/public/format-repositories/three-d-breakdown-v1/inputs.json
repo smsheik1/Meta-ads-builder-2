@@ -4,7 +4,7 @@
       "id": "research",
       "label": "Website research",
       "type": "StoredWebsiteResearchResult",
-      "description": "The brand brief, evidence, and product catalog already produced by Wiggly."
+      "description": "The coding agent researches the website and writes this structure, or imports an existing Wiggly export. See the research object in fixtures/agent-cookie-gift.json for the complete shape. Replace all fixture facts and URLs. No Wiggly account or NIM key is required."
     },
     {
       "id": "storySubject",

@@ -44,7 +44,7 @@ assert.ok(
   threeD?.handoff,
   "3D Breakdown should offer a runnable Codex handoff.",
 );
-assert.equal(threeD.version, "1.5.0");
+assert.equal(threeD.version, "1.6.0");
 assert.equal(
   threeD.handoff.firstQuestion,
   "What brand or website is this for?",
