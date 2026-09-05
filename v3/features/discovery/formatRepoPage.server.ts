@@ -5,6 +5,11 @@ import type { BikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.
 import { getBikiniBottomDanceOffTrustData } from "./bikiniBottomDanceOffTrust.server";
 import type { ShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server";
 import { getShazPuppetRuntimeTrustData } from "./shazPuppetRuntimeTrust.server";
+import { getDiscoveryFormatProfile } from "./formatProof.server";
+import {
+  getFormatRepoPackageData,
+  type FormatRepoPackageData,
+} from "./formatRepoPackage.server";
 
 type RepoPageCopy = {
   runDescription: string;
@@ -13,6 +18,12 @@ type RepoPageCopy = {
 };
 
 export type FormatRepoPagePresentation =
+  | {
+      kind: "shared";
+      package: FormatRepoPackageData | null;
+      copy: RepoPageCopy;
+      detailedProofId?: undefined;
+    }
   | {
       kind: "bikini-bottom-dance-off";
       trust: BikiniBottomDanceOffTrustData;
@@ -53,61 +64,9 @@ export function getFormatRepoFamily(slug: string) {
   };
 }
 
-// These formats use the shared baseline sections without a custom trust module.
-// Keep the list frozen so newly published work cannot bypass a deliberate page review.
-const baselineFormatRepoSlugs = new Set([
-  "talking-fish-news",
-  "mugsy-explains",
-  "three-d-breakdown",
-  "product-photoshoot",
-  "otaku-explainer",
-  "squilliam-news",
-  "jingle",
-  "video-meme",
-  "visualizer",
-  "were-sorry",
-  "text-message",
-  "reviews",
-  "brainrot",
-  "fortnite-filter",
-  "cinematic-photographer",
-  "gta-vi",
-  "selfie-nine-images",
-  "fake-it-till-you-make-it",
-  "dark-studio-portrait",
-  "blue-phosphor",
-  "dusk-effect",
-  "sparkling-effect",
-  "cool-tone-filter",
-  "halo-effect",
-  "doodle-art",
-  "light-silhouette",
-  "rim-portrait-filter",
-  "cyanotype",
-  "lord-of-the-rings",
-  "soft-glow-filter",
-  "paper-outfit",
-  "moody-pink-effect",
-  "cinematic-portrait-pack",
-  "dreamcore-angel",
-  "dark-aesthetic-filter",
-  "2000s-effect",
-  "80s-toon",
-  "rag-doll",
-  "mood-notes",
-  "red-dead-redemption",
-  "old-money-shot",
-  "chrome-void",
-  "ccd-jpeg-filter",
-  "passport-click",
-  "meme",
-  "newsletter-writer",
-  "hybrid-news",
-]);
-
 export async function getFormatRepoPagePresentation(
   slug: string,
-): Promise<FormatRepoPagePresentation | null> {
+): Promise<FormatRepoPagePresentation> {
   if (slug === "bikini-bottom-dance-off") {
     return {
       kind: slug,
@@ -150,7 +109,20 @@ export async function getFormatRepoPagePresentation(
     };
   }
 
-  if (baselineFormatRepoSlugs.has(slug)) return null;
+  const format = getDiscoveryFormatProfile(slug);
+  if (format) {
+    return {
+      kind: "shared",
+      package: getFormatRepoPackageData(format),
+      copy: {
+        runDescription: format.packagePath
+          ? "The agent reads this version’s instructions, checks the requirements, and walks you through the approved workflow. Review the inputs and estimate before starting."
+          : "This collection contains saved examples, but does not yet include a runnable Repo.",
+        examplesTitle: "Examples & references.",
+        examplesDescription: `${format.proofEntries.length} saved examples for this recipe—not ${format.proofEntries.length} separate Repos. Each example keeps its original version and provenance.`,
+      },
+    };
+  }
 
   throw new Error(
     `Format "${slug}" requires the shared rich Repo-page presentation before it can be published.`,

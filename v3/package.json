@@ -25,6 +25,7 @@
     "smoke:research": "tsx scripts/research-smoke.ts",
     "smoke:live": "tsx scripts/live-smoke.ts",
     "smoke:create": "tsx scripts/create-browser-smoke.ts",
+    "smoke:repos": "node --import tsx scripts/smoke-repo-pages.ts",
     "prototype:otaku:prepare": "tsx scripts/prepare-otaku-format.ts",
     "prototype:otaku:render": "tsx scripts/render-otaku-proofs.ts",
     "prototype:otaku": "tsx scripts/otaku-format.ts",

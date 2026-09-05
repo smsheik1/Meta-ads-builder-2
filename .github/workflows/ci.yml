@@ -44,7 +44,7 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Smoke /create
+      - name: Smoke /create and every Repo page
         run: |
           set -euo pipefail
 
@@ -59,6 +59,7 @@ jobs:
           for _ in {1..60}; do
             if curl -fsS "$CREATE_SMOKE_BASE_URL/create" >/dev/null; then
               npm run smoke:create
+              npm run smoke:repos -w @wiggly/v3
               exit 0
             fi
             sleep 1

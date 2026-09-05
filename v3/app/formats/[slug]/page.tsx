@@ -17,6 +17,11 @@ import {
 } from "@/features/discovery/FormatRepoPageSections";
 import { FormatRepoRunSummary } from "@/features/discovery/FormatRepoRunSummary";
 import { FormatRepoTrust } from "@/features/discovery/FormatRepoTrust";
+import {
+  FormatRepoPackageConnections,
+  FormatRepoPackageAssets,
+  FormatRepoPackageEvidence,
+} from "@/features/discovery/FormatRepoPackageSections";
 import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
 import {
   getFormatRepoFamily,
@@ -64,7 +69,7 @@ export default async function FormatPage({
     heroProof.media.kind === "video" && heroProof.media.aspectRatio === "16:9";
   const repoPage = await getFormatRepoPagePresentation(slug);
   const repoFamily = getFormatRepoFamily(slug);
-  const repoTrust = repoPage?.trust;
+  const repoTrust = repoPage.kind === "shared" ? null : repoPage.trust;
   const repoPageCopy = repoPage?.copy;
   const detailedProof = repoPage?.detailedProofId
     ? format.proofEntries.find(
@@ -136,7 +141,7 @@ export default async function FormatPage({
               <ArrowRight className="size-4" aria-hidden="true" />
             </a>
             {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
-            {format.technicalHref ? (
+            {format.technicalHref && repoPage.kind !== "shared" ? (
               <Link
                 href={format.technicalHref}
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-white px-5 text-sm font-black"
@@ -217,20 +222,21 @@ export default async function FormatPage({
           <div className="mx-auto grid max-w-[980px] gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#31566e]">
-                Shared Wiggly Repo
+                Shared recipe family
               </p>
               <h2
                 id="repo-family-title"
                 className="mt-3 text-4xl font-black leading-[0.92] sm:text-6xl"
               >
-                One Repo. {repoFamily.formatCount} format recipes.
+                One family. {repoFamily.formatCount} recipes.
               </h2>
             </div>
             <div>
               <p className="max-w-2xl text-lg font-bold leading-8 text-[#30374b]">
-                <strong>{format.name}</strong> is one recipe inside the shared{" "}
-                {repoFamily.name} Repo—not a separate Repo to install or
-                explain.
+                <strong>{format.name}</strong> belongs to {repoFamily.name}.
+                These recipes share a runtime; adjacent examples are not
+                separate Repos. The download on this page packages this specific
+                recipe.
               </p>
               <Link
                 href={repoFamily.discoveryHref}
@@ -244,45 +250,16 @@ export default async function FormatPage({
         </section>
       ) : null}
 
-      {repoPage ? <FormatRepoConnections presentation={repoPage} /> : null}
+      {repoPage.kind === "shared" ? (
+        <FormatRepoPackageConnections format={format} data={repoPage.package} />
+      ) : (
+        <FormatRepoConnections presentation={repoPage} />
+      )}
 
-      {repoPage ? (
+      {repoPage.kind !== "shared" ? (
         <FormatRepoIncludedAssets presentation={repoPage} />
       ) : (
-        <section className="border-y-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
-          <div className="mx-auto grid max-w-[980px] gap-5 lg:grid-cols-2">
-            <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-6 shadow-[6px_6px_0_#080817] sm:p-8">
-              <p className="text-xs font-black uppercase tracking-[0.18em]">
-                What the Repo keeps
-              </p>
-              <ul className="mt-6 grid gap-4">
-                {format.whatStays.map((item) => (
-                  <li
-                    key={item}
-                    className="border-t-2 border-[#080817] pt-4 text-xl font-black leading-tight"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-lg border-2 border-[#080817] bg-white p-6 shadow-[6px_6px_0_#080817] sm:p-8">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-                What you change
-              </p>
-              <ul className="mt-6 grid gap-4">
-                {format.whatChanges.map((item) => (
-                  <li
-                    key={item}
-                    className="border-t-2 border-[#080817] pt-4 text-xl font-black leading-tight"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
+        <FormatRepoPackageAssets format={format} data={repoPage.package} />
       )}
 
       <section
@@ -352,6 +329,10 @@ export default async function FormatPage({
           </div>
         </div>
       </section>
+
+      {repoPage.kind === "shared" ? (
+        <FormatRepoPackageEvidence format={format} data={repoPage.package} />
+      ) : null}
 
       {repoTrust &&
       detailedProof.media.kind === "video" &&

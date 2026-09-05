@@ -23,7 +23,7 @@ export function buildDiscoveryHandoffPrompt(
     ? `Runnable Repo: ${absoluteUrl(origin, format.repositoryHref)}\n`
     : "";
   const sourceOfTruth = format.repositoryHref
-    ? "Download and extract the Repo into a new workspace. Read its root agent instructions, then follow the packaged SKILL.md and contracts as the source of truth. Report the exact Format version recorded in KIT-MANIFEST.json before beginning its intake flow."
+    ? "Download and extract into a new workspace. Follow the root agent instructions, SKILL.md, and contracts. Report the exact published Format version from KIT-MANIFEST.json or format.json before intake."
     : "Open the Format page and follow its published files and technical instructions as the source of truth. Report the exact published Format version before beginning its intake flow.";
 
   return `CODING AGENT REQUIRED: If you cannot access this computer's terminal, filesystem, and media files, do not analyze or simulate. Reply only: "Open this in Codex, Claude Code, Antigravity, Cursor, or Copilot CLI."

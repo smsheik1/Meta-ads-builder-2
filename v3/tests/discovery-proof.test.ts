@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import "./format-repo-presentation.test";
 import { existsSync, readFileSync } from "node:fs";
 import {
   discoveryCatalog,
@@ -183,13 +184,8 @@ await assert.rejects(
   /requires the shared rich Repo-page presentation/,
   "A future Format cannot render through the legacy Repo-page fallback.",
 );
-const richFormatRepoSlugSet = new Set<string>(richFormatRepoSlugs);
 for (const slug of discoveryFormatSlugs) {
-  assert.equal(
-    Boolean(await getFormatRepoPagePresentation(slug)),
-    richFormatRepoSlugSet.has(slug),
-    `${slug} must use specialized rich sections or the frozen shared baseline.`,
-  );
+  assert.ok(await getFormatRepoPagePresentation(slug), `${slug} must have a complete presentation, never a null baseline.`);
 }
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
