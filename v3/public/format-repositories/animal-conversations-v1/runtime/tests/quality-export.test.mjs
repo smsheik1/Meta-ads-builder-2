@@ -256,6 +256,10 @@ test("finalize and export fail closed, remain idempotent, preserve private evide
   assert.equal((await exportRun({ ...args, output })).manifestHash, exported.manifestHash);
   assert.deepEqual(await readFile(path.join(runDirectory, "script-review.json")), before);
   const html = await readFile(path.join(output, "index.html"), "utf8");
+  assert.match(html, /h1\{[^}]*overflow-wrap:anywhere/);
+  assert.match(html, /<a href="final\.mp4">Open video file<\/a>/);
+  assert.match(html, /The MP4 is already included in this folder/);
+  assert.equal(html.includes("Download the finished video"), false);
   assert.equal(html.includes("<audio"), false);
   assert.equal(html.includes("<script"), false);
   assert.equal(html.includes("token=private"), false);

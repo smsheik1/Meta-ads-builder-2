@@ -43,6 +43,23 @@ Fresh operator extraction: `/private/tmp/wiggly-fresh-acceptance.COGnI2`. It ver
 
 ## Required work still not claimed complete
 
+### Export QA follow-up: current candidate 0.16.1
+
+Actual offline export-page QA caught a long-heading overflow at 390 px and Chrome opening the local MP4 rather than honoring its download attribute. The small repair wraps the heading and labels the link **Open video file**, with a note that the MP4 is already included. Wide/narrow, hostile-text, native MP4 and optional WAV playback checks pass; see EXPORT-PAGE-QA.md. These are presentation changes, not a new renderer or approval rule.
+
+A new version preserves the immutable 0.16.0 candidate rather than overwriting it:
+
+- Current ZIP: `tmp/animal-conversations-candidate-0.16.1/wiggly-animal-conversations-format-kit-0.16.1.zip`
+- Bytes: **18,921,637**
+- SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`
+- Inventory SHA-256: `d3c1b03a6c036e4a6e31265a06408b0e961477140ee5191c4b24677053804a06`
+- Final 0.16.1 release profile: 106/106 Node, 3/3 optional Python converter and 7/7 Rust tests pass.
+- Fresh extraction/intake/review replay for 0.16.1 is in progress. Previously generated agent drafts are reused as drafts, never as approvals.
+
+The isolated GitHub Actions workflow tests actual Linux x64 and Ubuntu inside WSL2 with read-only repository permissions, no production secrets, and small sanitized reports only. It tests fresh archives, all profiles, synthetic rendering/export mechanics and two actual CPU intakes with network isolation. It deliberately does not invent real script approval, fresh-agent interaction or perceptual playback.
+
+### Remaining acceptance
+
 1. Explicit approval of the two newly generated episode reviews, followed by actual rendering and documented playback review plus verified exports.
 2. Actual supported Linux x64 and WSL execution; local Mac tests are not a substitute.
 3. Final end-to-end acceptance of the packaged artifact, not just independent phase success.

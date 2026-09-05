@@ -1,0 +1,100 @@
+name: Animal Conversations kit platform acceptance
+
+on:
+  push:
+    branches: [feat/animal-conversations-first-run]
+    paths:
+      - .github/workflows/animal-conversations-kit-acceptance.yml
+      - scripts/animal-conversations-kit-acceptance.sh
+      - v3/public/format-repositories/animal-conversations-v1/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: animal-conversations-kit-${{ github.ref }}
+  cancel-in-progress: true
+
+# Preserve source bytes on Windows too; do not let Git rewrite packaged scripts to CRLF.
+env:
+  GIT_CONFIG_COUNT: '1'
+  GIT_CONFIG_KEY_0: core.autocrlf
+  GIT_CONFIG_VALUE_0: 'false'
+
+jobs:
+  linux-x64:
+    name: Fresh ZIP — actual Linux x64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test platform mechanics and two real local intakes
+        run: bash scripts/animal-conversations-kit-acceptance.sh linux-x64 "$RUNNER_TEMP/kit-reports" "$GITHUB_SHA"
+      - name: Upload sanitized acceptance reports only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: animal-conversations-linux-x64
+          path: |
+            ${{ runner.temp }}/kit-reports/stages.log
+            ${{ runner.temp }}/kit-reports/outcome.txt
+            ${{ runner.temp }}/kit-reports/inventory.json
+            ${{ runner.temp }}/kit-reports/summary.json
+          if-no-files-found: warn
+          retention-days: 3
+
+  wsl2-x64:
+    name: Fresh ZIP — actual Ubuntu in WSL2 x64
+    runs-on: windows-2025
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify WSL2 and prepare standard Ubuntu without rebooting
+        shell: pwsh
+        timeout-minutes: 10
+        run: |
+          $ErrorActionPreference = 'Stop'
+          wsl --version
+          if ($LASTEXITCODE -ne 0) { throw 'WSL acceptance blocked: WSL is unavailable on this hosted runner.' }
+          wsl --status
+          wsl --set-default-version 2
+          if ($LASTEXITCODE -ne 0) { throw 'WSL acceptance blocked: WSL2 requires unavailable host setup or a reboot.' }
+          $distros = ((wsl --list --quiet) -join "`n").Replace("`0", '')
+          if ($distros -notmatch '(?m)^Ubuntu-24\.04\s*$') {
+            wsl --install --distribution Ubuntu-24.04 --web-download --no-launch
+            if ($LASTEXITCODE -ne 0) { throw 'WSL acceptance blocked: standard Ubuntu installation failed; no reboot or alternate native-Linux substitution attempted.' }
+          }
+          wsl --list --verbose
+          $kernel = (wsl --distribution Ubuntu-24.04 --user root --exec uname -r) -join ''
+          if ($LASTEXITCODE -ne 0 -or $kernel -notmatch '(?i)microsoft.*wsl2') {
+            throw 'WSL acceptance blocked: Ubuntu did not execute with a WSL2 Linux kernel. WSL1/native Windows are not substitutes.'
+          }
+          Write-Output "Verified WSL2 kernel: $kernel"
+      - name: Run the same acceptance inside WSL using Linux binaries
+        shell: pwsh
+        timeout-minutes: 45
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = (wsl -d Ubuntu-24.04 -u root --exec wslpath -a "$env:GITHUB_WORKSPACE/scripts/animal-conversations-kit-acceptance.sh").Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'Could not resolve the checked-out acceptance script inside WSL.' }
+          $reports = (wsl -d Ubuntu-24.04 -u root --exec wslpath -a "$env:RUNNER_TEMP/kit-reports").Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'Could not resolve the report directory inside WSL.' }
+          wsl -d Ubuntu-24.04 -u root --exec env GITHUB_ACTIONS=true bash "$script" wsl2-x64 "$reports" "$env:GITHUB_SHA"
+          if ($LASTEXITCODE -ne 0) { throw 'Actual WSL2 kit acceptance failed. See the failed stage; this is not a native-Linux pass.' }
+      - name: Upload sanitized acceptance reports only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: animal-conversations-wsl2-x64
+          path: |
+            ${{ runner.temp }}/kit-reports/stages.log
+            ${{ runner.temp }}/kit-reports/outcome.txt
+            ${{ runner.temp }}/kit-reports/inventory.json
+            ${{ runner.temp }}/kit-reports/summary.json
+          if-no-files-found: warn
+          retention-days: 3
