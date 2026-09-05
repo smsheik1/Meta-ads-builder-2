@@ -43,6 +43,7 @@ jobs:
             ${{ runner.temp }}/kit-reports/outcome.txt
             ${{ runner.temp }}/kit-reports/inventory.json
             ${{ runner.temp }}/kit-reports/rust-toolchain.json
+            ${{ runner.temp }}/kit-reports/diagnostic-*.json
             ${{ runner.temp }}/kit-reports/summary.json
           if-no-files-found: warn
           retention-days: 3
@@ -97,6 +98,7 @@ jobs:
             ${{ runner.temp }}/kit-reports/outcome.txt
             ${{ runner.temp }}/kit-reports/inventory.json
             ${{ runner.temp }}/kit-reports/rust-toolchain.json
+            ${{ runner.temp }}/kit-reports/diagnostic-*.json
             ${{ runner.temp }}/kit-reports/summary.json
           if-no-files-found: warn
           retention-days: 3

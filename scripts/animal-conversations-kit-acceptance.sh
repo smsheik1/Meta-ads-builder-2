@@ -147,15 +147,104 @@ node runner.mjs smoke --run=ci-mechanics > "$scratch/smoke.json"
 
 stage actual-pinned-cpu-intake-setup
 node runner.mjs setup-intake > "$scratch/setup.json"
-stage two-real-approved-examples-with-os-network-disabled
+
+# Keep command exits authoritative; diagnostics never turn a failed gate into success.
+run_diagnostic_step() {
+  local label=$1 run_id=$2 code
+  shift 2
+  stage "$label"
+  if "$@" > "$scratch/$label.stdout" 2> "$scratch/$label.stderr"; then code=0; else code=$?; fi
+  if ! node --input-type=module - "$scratch" "$reports" "$label" "$run_id" "$code" <<'NODE'
+import { readFile, writeFile, stat } from 'node:fs/promises';
+import path from 'node:path';
+const [scratch, reports, label, run, exitCode] = process.argv.slice(2);
+const clean = value => String(value ?? '')
+  .replace(/\u001b\[[0-9;]*m/g, '')
+  .replace(/https?:\/\/[^\s"'<>]+/g, '<url omitted>')
+  .replace(/\/(?:tmp|home|root|mnt|private|Users)\/[^\s"'<>:]+/g, '<path omitted>')
+  .replace(/(authorization|api[-_]?key|token|password)\s*[:=]\s*[^\s,;]+/gi, '$1=<redacted>')
+  .slice(-5000);
+const stdout = await readFile(path.join(scratch, `${label}.stdout`), 'utf8');
+const stderr = await readFile(path.join(scratch, `${label}.stderr`), 'utf8');
+let selected;
+try {
+  const value = JSON.parse(stdout);
+  selected = { status: value.status, phase: value.phase, completionClaimed: value.completionClaimed,
+    blocker: value.blocker && { code: value.blocker.code, message: clean(value.blocker.message) },
+    nextAction: value.nextAction && { owner: value.nextAction.owner, action: value.nextAction.action, message: clean(value.nextAction.message) },
+    missing: Array.isArray(value.missing) ? value.missing.map(clean) : undefined,
+    helper: label.startsWith('helper-') ? { ok: value.ok, segments: value.segments, uncertain: value.uncertain } : undefined };
+} catch { selected = { json: false, preview: clean(stdout) }; }
+const access = [];
+for (const file of ['', 'state.json', 'intake.json', 'transcript.json', 'user-audio.wav']) {
+  try {
+    const info = await stat(path.join('agent-runs', run, file));
+    access.push({ file: file || '(run directory)', uid: info.uid, gid: info.gid, mode: (info.mode & 0o777).toString(8), bytes: info.size });
+  } catch (error) { access.push({ file: file || '(run directory)', error: error.code }); }
+}
+const report = { schemaVersion: 1, stage: label, exitCode: Number(exitCode), run,
+  diagnosticCaller: { uid: process.getuid(), gid: process.getgid() },
+  stdout: selected, stderr: clean(stderr), access,
+  limitation: 'Diagnostic evidence only; a successful helper retry does not override the failed intake/status exit.' };
+await writeFile(path.join(reports, `diagnostic-${label}.json`), JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify(report, null, 2));
+NODE
+  then
+    if (( code != 0 )); then return "$code"; else return 1; fi
+  fi
+  return "$code"
+}
+
 # The entire local intake runs in a network namespace with no external interfaces/routes.
 # This is stronger than resolving platform wheels or setting HF_HUB_OFFLINE alone.
-"${as_root[@]}" unshare --net -- env PATH="$PATH" PYTHON="$PYTHON" FFMPEG="$FFMPEG" FFPROBE="$FFPROBE" \
-  node runner.mjs intake --run=ci-example-one --source="$PWD/goldens/we-listen-dont-judge.mp4" > "$scratch/intake-one.json"
-"${as_root[@]}" unshare --net -- env PATH="$PATH" PYTHON="$PYTHON" FFMPEG="$FFMPEG" FFPROBE="$FFPROBE" \
-  node runner.mjs intake --run=ci-example-two --source="$PWD/examples/i-made-a-mistake/evidence/final.mp4" > "$scratch/intake-two.json"
-node runner.mjs status --run=ci-example-one > "$scratch/status-one.json"
-node runner.mjs status --run=ci-example-two > "$scratch/status-two.json"
+offline=("${as_root[@]}" unshare --net -- env PATH="$PATH" PYTHON="$PYTHON" FFMPEG="$FFMPEG" FFPROBE="$FFPROBE")
+diagnose_transcription_once() {
+  local suffix=$1 helper_json
+  local -a helper_args
+  # Only inspect the helper after an actually observed transcription-failed result.
+  node -e 'const r=JSON.parse(require("fs").readFileSync(process.argv[1])); process.exit(r.status === "transcription-failed" ? 0 : 1)' \
+    "$scratch/intake-$suffix.stdout" 2>/dev/null || return 0
+  helper_json=$(node --input-type=module - "ci-example-$suffix" "$scratch/helper-$suffix.transcript.json" <<'NODE'
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { sha256 } from './runtime/common.mjs';
+try {
+  const dir = path.resolve('agent-runs', process.argv[2]);
+  const intake = JSON.parse(await readFile(path.join(dir, 'intake.json')));
+  const release = JSON.parse(await readFile('release-files.json'));
+  assert.equal(intake.status, 'transcription-failed');
+  assert.ok(release.approvedMedia.some(file => file.sha256 === intake.source.sha256));
+  const audio = path.resolve(dir, intake.asrAudio.file);
+  assert.ok(audio.startsWith(dir + path.sep));
+  assert.equal(await sha256(audio), intake.asrAudio.sha256);
+  assert.ok(Number.isFinite(intake.source.sourceAudioStartSeconds));
+  // Exact production helper interface, writing only a separate diagnostic output.
+  console.log(JSON.stringify([path.resolve('.intake-env/bin/python'), path.resolve('scripts/intake.py'),
+    '--requirements', path.resolve('scripts/intake-requirements.lock'), '--audio', audio,
+    '--model', path.resolve('.intake-models/small.en'), '--manifest', path.resolve('scripts/intake-model.json'),
+    '--source-offset', String(intake.source.sourceAudioStartSeconds), '--output', process.argv[3]]));
+} catch (error) { console.error(`Public-source diagnostic prerequisites not verified (${error.code || error.name}).`); process.exitCode = 1; }
+NODE
+  ) || return 1
+  mapfile -d '' -t helper_args < <(node -e 'for (const arg of JSON.parse(process.argv[1])) process.stdout.write(arg + "\0")' "$helper_json")
+  run_diagnostic_step "helper-$suffix" "ci-example-$suffix" "${offline[@]}" "${helper_args[@]}"
+}
+
+sources=("$PWD/goldens/we-listen-dont-judge.mp4" "$PWD/examples/i-made-a-mistake/evidence/final.mp4")
+for suffix in one two; do
+  if [[ $suffix == one ]]; then source_file=${sources[0]}; else source_file=${sources[1]}; fi
+  if run_diagnostic_step "intake-$suffix" "ci-example-$suffix" "${offline[@]}" \
+    node runner.mjs intake --run="ci-example-$suffix" --source="$source_file"; then :
+  else
+    failed_code=$?
+    diagnose_transcription_once "$suffix" || true
+    exit "$failed_code"
+  fi
+done
+for suffix in one two; do
+  run_diagnostic_step "status-$suffix" "ci-example-$suffix" node runner.mjs status --run="ci-example-$suffix"
+done
 
 stage verify-intake-evidence-and-no-invented-approval
 node --input-type=module - "$scratch" <<'NODE'
@@ -174,7 +263,7 @@ for (const suffix of ['one', 'two']) {
   const intake = await read(path.join(dir, 'intake.json'));
   const transcript = await read(path.join(dir, 'transcript.json'));
   assert.equal(intake.status, 'needs-script-draft');
-  assert.equal((await read(path.join(scratch, `status-${suffix}.json`))).phase, 'needs-script-draft');
+  assert.equal((await read(path.join(scratch, `status-${suffix}.stdout`))).phase, 'needs-script-draft');
   assert.equal(transcript.engine.device, 'cpu');
   assert.equal(transcript.engine.computeType, 'int8');
   assert.equal(transcript.uncertain, true);
