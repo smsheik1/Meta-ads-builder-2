@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { getDiscoveryEntriesByFormat } from "./catalog";
 import type {
@@ -2270,6 +2270,14 @@ export function getDiscoveryFormatProfile(slug: string): DiscoveryFormatProfile 
   if (!identity) return null;
 
   const manifest = config.manifestPath ? readFormatManifest(config.manifestPath) : null;
+  const packagePath = config.manifestPath ? path.posix.dirname(config.manifestPath) : undefined;
+  let repositoryHref = config.repositoryHref;
+  if (packagePath && !repositoryHref) {
+    const archives = readdirSync(path.join(process.cwd(), "public", packagePath, "downloads"))
+      .filter((file) => file.endsWith(".zip"));
+    if (archives.length !== 1) throw new Error(`${slug} must identify one downloadable Repo archive.`);
+    repositoryHref = `/${packagePath}/downloads/${archives[0]}`;
+  }
   const allowedProofVersions = new Set(
     manifest
       ? [manifest.version, ...(config.historicalProofVersions ?? [])]
@@ -2297,7 +2305,8 @@ export function getDiscoveryFormatProfile(slug: string): DiscoveryFormatProfile 
     promise: config.promise,
     lastUpdated: config.lastUpdated,
     technicalHref: config.technicalHref,
-    repositoryHref: config.repositoryHref,
+    repositoryHref,
+    packagePath,
     proofEntries,
     whatStays: config.whatStays,
     whatChanges: config.whatChanges,

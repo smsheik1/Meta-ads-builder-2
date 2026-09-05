@@ -280,7 +280,7 @@ assert.match(repoPageSections, /<BikiniBottomDanceOffIncludedAssets/);
 assert.doesNotMatch(consumerRoute, /variant="inline"/);
 assert.match(consumerRoute, /getFormatRepoPagePresentation/);
 assert.match(repoPageRegistrySource, /slug === "bikini-bottom-dance-off"/);
-assert.match(consumerRoute, /repoPage \? \(/);
+assert.match(consumerRoute, /repoPage\.kind !== "shared" \? \(/);
 assert.match(consumerRoute, /w-\[min\(100%-32px,980px\)\]/);
 assert.match(consumerRoute, /md:grid-cols-\[1\.15fr_0\.85fr\]/);
 assert.match(consumerRoute, /text-\[clamp\(42px,6vw,72px\)\]/);
@@ -487,7 +487,7 @@ assert.match(
 );
 assert.match(
   consumerRoute,
-  /repoPage \? \([\s\S]*<FormatRepoIncludedAssets[\s\S]*\) : \([\s\S]*What the Repo keeps[\s\S]*What you change/,
+  /repoPage\.kind !== "shared" \? \([\s\S]*<FormatRepoIncludedAssets[\s\S]*\) : \([\s\S]*<FormatRepoPackageAssets/,
   "Every Repo should use a consistent included-assets slot without duplicating Dance Off's data.",
 );
 

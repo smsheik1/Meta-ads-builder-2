@@ -9,7 +9,7 @@ import type { FormatRepoPagePresentation } from "./formatRepoPage.server";
 export function FormatRepoConnections({
   presentation,
 }: {
-  presentation: FormatRepoPagePresentation;
+  presentation: Exclude<FormatRepoPagePresentation, { kind: "shared" }>;
 }) {
   if (presentation.kind === "bikini-bottom-dance-off") {
     return <BikiniBottomDanceOffConnections data={presentation.trust} />;
@@ -23,7 +23,7 @@ export function FormatRepoConnections({
 export function FormatRepoIncludedAssets({
   presentation,
 }: {
-  presentation: FormatRepoPagePresentation;
+  presentation: Exclude<FormatRepoPagePresentation, { kind: "shared" }>;
 }) {
   if (presentation.kind === "bikini-bottom-dance-off") {
     return <BikiniBottomDanceOffIncludedAssets data={presentation.trust} />;

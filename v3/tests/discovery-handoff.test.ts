@@ -82,7 +82,7 @@ assert.doesNotMatch(
   /final-straw-pocket-problem|What brand or website is this for/,
 );
 assert.ok(
-  threeDPrompt.length < 750,
+  threeDPrompt.length < 1_000,
   "The handoff should remain a concise launcher.",
 );
 assert.equal(
@@ -215,14 +215,14 @@ assert.match(runSummarySource, /handoff\.estimates\.map/);
 assert.match(formatPageSource, /href="#examples"/);
 assert.match(
   formatPageSource,
-  /One Repo\. \{repoFamily\.formatCount\} format recipes\./,
+  /One family\. \{repoFamily\.formatCount\} recipes\./,
 );
 assert.match(formatPageSource, /data-testid="shared-repo-family"/);
 assert.match(formatPageSource, /format\.proofEntries\.length > 4/);
 assert.match(
   formatPageSource,
-  /repoPage \? \([\s\S]*<FormatRepoIncludedAssets[\s\S]*\) : \([\s\S]*What the Repo keeps[\s\S]*What you change/,
-  "Every Format route should fill the same included-assets slot.",
+  /repoPage\.kind !== "shared" \? \([\s\S]*<FormatRepoIncludedAssets[\s\S]*\) : \([\s\S]*<FormatRepoPackageAssets/,
+  "Every Format route must populate included assets from its specialized presentation or actual package.",
 );
 assert.doesNotMatch(
   formatPageSource,

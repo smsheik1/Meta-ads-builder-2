@@ -37,6 +37,7 @@ export type DiscoveryFormatProfile = {
   lastUpdated: string;
   technicalHref?: string;
   repositoryHref?: string;
+  packagePath?: string;
   proofEntries: DiscoveryEntry[];
   whatStays: string[];
   whatChanges: string[];
