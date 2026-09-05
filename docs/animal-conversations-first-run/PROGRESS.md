@@ -70,7 +70,7 @@ Do not replace a pending row with “done” merely because code exists or tests
 - ZIP: `tmp/animal-conversations-candidate-0.16.1/wiggly-animal-conversations-format-kit-0.16.1.zip`
 - SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`; 18,921,637 bytes.
 - Fresh extracted kit: `/private/tmp/wiggly-fresh-0161.ykivnk`; report: `acceptance-evidence/FRESH-ACCEPTANCE-0161.md`.
-- We Listen: `fresh-0161-we-listen-20260904`, 16 beats, living room, 31.137959s. Review ID `ac0b93474534d1d13526613cb3924916a52580a5d443437d73efb0299fc8d05e`.
+- We Listen: `fresh-0161-we-listen-20260904`, 16 beats, living room, 31.137959s. Current review ID after the user's opening-chorus correction: `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175`. Previous ID `ac0b93474534d1d13526613cb3924916a52580a5d443437d73efb0299fc8d05e` is superseded, not approved.
 - Mistake: `fresh-0161-mistake-20260904`, 20 beats, backyard, 30.023401s. Review ID `fea5365cc1fbaa4958f6a54b995fec65751cf2851b67a5e4e0c5598e787c73cc`.
 - Both runs are `needs-script-approval`, owner user. Neither contains real approval, final MP4, playback receipt or delivery. Recheck current hashes/status before resuming. Reused drafts/evidence are not reused approval.
 - Supporting checked-in evidence: PHASE-A-B-EVIDENCE.md, ASR-PREFLIGHT.md, PHASE-C-EVIDENCE.md, REVIEW-PAGE-QA.md, EXPORT-PAGE-QA.md and PLATFORM-ACCEPTANCE.md. Private media/review artifacts are intentionally not committed.
@@ -82,17 +82,17 @@ The original implementation turn and the next two goal continuations all retaine
 ### Resumed review-gate audit — 2026-09-05
 
 - The intervening design discussion made no implementation or acceptance progress. The user asked to move on from redesigning the review page; leave that presentation unchanged. This is the first resumed goal-blocker audit, not permission to reuse the previous three-turn blocked count.
-- Re-ran both official `status` commands: the exact review IDs above remain unchanged, both phases remain `needs-script-approval`, and neither has a real render or approval. The clean development checkpoint is `ed8672e6`; no active CI job needs polling.
+- At this audit, both official `status` commands returned the original unchanged review IDs and `needs-script-approval`; neither had a real render or approval. The development checkpoint was `ed8672e6`. See the subsequent opening correction below for the new current ID.
 - Read-only inspection of the current drafts and `runtime/speaker-review.mjs` narrowed the pending evidence to the following decisions. This is an evidence/approval blocker, not a need for the user to author timing or for another page redesign.
 
 | Draft / line | Current proposal | Unresolved evidence |
 |---|---|---|
-| We Listen / 1 | Dog: “We listen and we don't judge.” | Speaker is not confirmed; source pictures suggest a possible chorus but do not establish simultaneous audible speech. |
+| We Listen / 1 | Dog + Bunny: “We listen and we don't judge.” | Resolved by the user's explicit source-audio confirmation; see correction evidence below. |
 | We Listen / 15 | No speaker after the Walmart line | Closed-mouth source pictures and missing ASR words do not establish that this interval has no vocal reaction. |
 | Mistake / 10 and 12 | Dog, “Unclear voiced reaction” | These are placeholders, not identified sounds; possible overlap with Bunny's “No” also remains unresolved. |
 | Mistake / 18 | No speaker before “No, if I make a mistake” | Technical silence is interrupted by a short above-threshold sound; its source/type is unconfirmed. |
 
-- `confirmedSpeaker` is null on the two proposed no-speaker intervals and We Listen's opening. Broad assent alone must not manufacture those observations. The validator also cannot determine whether an arbitrary reaction label is perceptually correct; accepting a placeholder string is not proof that the required review is resolved.
+- At the initial audit, `confirmedSpeaker` was null on the two proposed no-speaker intervals and We Listen's opening. The opening is now confirmed; the two proposed pauses remain unresolved. The validator also cannot determine whether an arbitrary reaction label is perceptually correct; accepting a placeholder string is not proof that the required review is resolved.
 - Obtain the specific source/character corrections, then let the agent update the evidence/draft, regenerate the review, and obtain approval of the resulting complete displayed plan. Changes to evidence may change the review ID; do not approve an old ID after editing. The user's “move on, it's fine” was in the page-design discussion and has not been recorded as either episode's approval.
 
 1. User listens to the two `script-review.html` pages above and confirms/corrects the displayed words, casting and marked uncertainty. The agent handles timestamps and edits.
@@ -100,6 +100,14 @@ The original implementation turn and the next two goal continuations all retaine
 3. Use the packaged approval and run commands. If required speaker/overlap evidence remains unresolved, show that specific issue; do not infer it from ASR or a generic receipt.
 4. Complete real rendering, current technical inspection and both required documented playback passes. Unresolved required checks still block completion; only the policy's permitted unavailable auditory criteria may be unscored.
 5. Finalize and verify the clean exports, show the actual generated videos, finish the fresh host-agent supported-system acceptance, and update this ledger. Preserve the explicit separate-PR/release-sequencing deviation above for final handoff; no public promotion is authorized by this checkpoint.
+
+### User-confirmed opening chorus — 2026-09-05
+
+- The user explicitly confirmed both characters say “We listen and we don't judge.” The agent disclosed that its earlier draft used transcripts/source frames, not direct hearing. Record this as `user-provided-label`, never as agent audio perception or diarization.
+- Preserved input/review/state in the private fresh kit's `acceptance-evidence/we-listen-before-opening-confirmation-20260905.json`. Imported `we-listen-draft-opening-both-20260905.json` through the official `review-script --input` command with opening `speaker=both`, `captionSpeaker=both`, and the actual user-confirmation evidence. Restored unchanged observation fields after import, recorded opening `overlapConfirmed=true`, then regenerated through `review-script`. No approval command was run.
+- Verified all 15 other input/review beats unchanged; opening words, boundaries and camera unchanged; full soundtrack and all 17 review WAV hashes unchanged; approval and attempt history unchanged. The generated role sheet now shows Dog + Bunny for the opening performance and caption ownership. This was file/data verification, not new browser QA. Package source, renderer, review-page design and Mistake draft remain unchanged.
+- Current We Listen review ID is `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175`; the episode still needs complete-review approval and the remaining pause evidence. This line-specific correction is not approval of either complete episode.
+- Observed package instruction mismatch for follow-up: `input-contract.json` describes `overlapEvidence` as written only by `approve-script`, while draft import's `validateTimeline` requires it before importing `speaker=both`. This correction supplied only the user's genuine overlap evidence through the official importer; it did not weaken validation or manufacture a receipt. Clarify the draft-versus-approval wording and protect the intended import path in the next scoped package checkpoint. Do not alter the immutable 0.16.1 candidate in place.
 
 ## Final report format
 
