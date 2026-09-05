@@ -2,6 +2,7 @@
 
 ## Current checkpoint
 
+- **Concise repo handoff:** [HANDOFF.md](HANDOFF.md). Implementation is handed off with incomplete release acceptance disclosed; no further video polishing is planned. This is not a goal-completion or publication claim.
 - **Goal:** implement the approved first-run package workflow and verify the packaged result.
 - **Status:** implementation delivered on a pushed development branch; platform mechanics/setup/offline intake passed. We Listen is complete at the episode level: explicitly approved, rendered with 17/17 technical gates on the first cycle, user-reviewed visually, and exported with verified hashes; permitted auditory limitations are disclosed. Mistake still awaits clarification/approval. Not a certified public release.
 - **Baseline:** kit 0.15.1; upstream Wiggly commit `356a1b06`.
