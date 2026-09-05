@@ -11,6 +11,10 @@
     "smoke": "node --import tsx scripts/lego-music-video-format.ts smoke",
     "test": "node --import tsx tests/lego-music-video-contract.test.ts && node --import tsx tests/lego-music-video-runtime.test.ts"
   },
+  "overrides": {
+    "ws": "8.21.0",
+    "@remotion/bundler": { "esbuild": "0.28.1" }
+  },
   "dependencies": {
     "@remotion/bundler": "4.0.473",
     "@remotion/media": "4.0.473",

@@ -34,6 +34,8 @@ const manifest = JSON.parse(await zip.file(`${prefix}KIT-MANIFEST.json`)!.async(
 assert.equal(manifest.version, profile.version);
 const kitPackage = JSON.parse(await zip.file(`${prefix}v3/package.json`)!.async("string"));
 assert.ok(kitPackage.dependencies.tailwindcss, "The official renderer imports Tailwind CSS; the standalone artifact must declare it.");
+assert.equal(kitPackage.overrides.ws, "8.21.0", "Keep the patched WebSocket dependency in the consumer kit.");
+assert.equal(kitPackage.overrides["@remotion/bundler"].esbuild, "0.28.1", "Keep the patched bundler dependency in the consumer kit.");
 for (const item of manifest.inventory) {
   const asset = await zip.file(prefix + item.path)!.async("nodebuffer");
   assert.equal(createHash("sha256").update(asset).digest("hex"), item.sha256, item.path);

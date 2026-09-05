@@ -26,6 +26,7 @@ jobs:
         working-directory: ${{ runner.temp }}/lego-kit/wiggly-lego-music-video-format-kit/v3
         run: |
           npm install
+          npm audit
           npm test
           npm run format:lego -- check
           npm run smoke

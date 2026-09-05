@@ -29,7 +29,8 @@ The existing implementation is the baseline: brand research → song/lyrics → 
 - Added a separate rich Repo profile, two Discover cards on one Lego shelf, source media and a 62 MB self-contained ZIP. Brand Jingle remains audio-only and separate.
 - The full test suite and typecheck pass. Desktop/mobile QA passed, including the real ZIP download hash and 1080 × 1920 video playback. In-app mobile captures were blank; the documented Playwright fallback provided inspectable screenshots.
 - Blind consumer proof caught an undeclared Tailwind dependency. The corrected archive declares the exact dependency and setup checks resolve it. Isolated install/tests/check passed; its second render attempt hit host ENOSPC. Attempt state was preserved. CI now checks the actual ZIP with paid calls disabled; no media artifact upload is configured.
-- Still required: finish artifact-render acceptance, deploy and verify production. Direct audiovisual creative review remains a separate acceptance limit.
+- CI run [33992486041](https://github.com/smsheik1/wiggly/actions/runs/33992486041) passed both the app build/all-page browser checks and the actual ZIP smoke plus second-input render on Linux. Both package renders passed all eight checks; the smoke reported zero paid calls.
+- The final candidate additionally pins patched `ws` 8.21.0 and the bundler's `esbuild` 0.28.1, leaving Remotion 4.0.473 unchanged. A fresh consumer install and explicit audit reported zero vulnerabilities; tests/check passed and the earlier local attempt ledger stayed intact. These address [the ws advisory](https://github.com/advisories/GHSA-96hv-2xvq-fx4p) and [the esbuild advisory](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr). Final candidate CI, deployment and production verification remain.
 - Historical finished media may predate the current image/video model defaults. Record historical provider provenance accurately; do not relabel old examples as newly generated runs.
 
 ## Acceptance ledger
@@ -40,10 +41,12 @@ The existing implementation is the baseline: brand research → song/lyrics → 
 | Standalone runnable kit with host-agent planning | Implemented, packaged, contract-tested |
 | Shared official render path | Two local exports passed eight technical checks |
 | Paid approval and resumable job gates | Mock tests passed; no fresh paid end-to-end certification |
-| Free actual-render package smoke | CI acceptance pending; local attempt blocked by disk |
+| Free actual-render package smoke | Passed on clean CI; final dependency-patched candidate being rechecked |
 | Fresh-agent operation from artifact | Install/tests/check passed; renderer reached, then disk blocked |
 | Standardized separate page and Discover listing | Local desktop/mobile/controls/download/playback passed |
 | Production page and archive verification | Pending |
+
+First successful isolated CI evidence: cookie fixture input `474f61bd73f13b34e8da34d9a398a781b1a910c5ab55b9c986a25b7f739eeee7`, output `842635829e1ca47beefa53f6b16361ba4f7bc352aaa72359b963ad7a9665b39d`; cheesecake input `aefebb36a3c934eaac4282e59e3b4d8c6c84f561e5d3fa7a3f5ca2223b0a730b`, output `30938a444e455f0dd7a32af45884f0cf6fdf796c1147e8b9c98c3b28241b5dea`. These are technical results, not audiovisual creative approvals. CI media was not uploaded as an artifact; local source exports and evidence remain reviewable.
 
 ## Proof limits and cleanup
 
