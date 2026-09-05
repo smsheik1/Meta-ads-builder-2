@@ -1,0 +1,31 @@
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+const v3 = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const root = path.join(v3, "public/format-repositories/lego-music-video-v1");
+for (const name of ["cheesecake", "cookies"]) {
+  const source = path.join(v3, "tmp/lego-recovery", name);
+  const run = path.join(root, "agent-runs", `${name}-recovery`);
+  const state = JSON.parse(await readFile(path.join(run, "state.json"), "utf8"));
+  const quality = JSON.parse(await readFile(path.join(run, "quality.json"), "utf8"));
+  if (!quality.technicalPassed || quality.renderSha256 !== state.render.sha256) throw new Error(`Inspect ${name} first.`);
+  const output = path.join(root, "goldens", name);
+  await mkdir(path.join(output, "media"), { recursive: true });
+  const input = JSON.parse(await readFile(path.join(source, "input.json"), "utf8"));
+  const files = [input.media.song, input.media.reference, ...input.media.shots.flatMap(shot => [shot.image, shot.video])];
+  if (input.scene.brand.logoUrl) files.push(input.scene.brand.logoUrl);
+  for (const file of files) await cp(path.join(source, file), path.join(output, file));
+  await cp(path.join(source, "input.json"), path.join(output, "input.json"));
+  const provenance = JSON.parse(await readFile(path.join(source, "provenance.json"), "utf8"));
+  provenance.assets = provenance.assets.filter(asset => files.includes(asset.path));
+  await writeFile(path.join(output, "provenance.json"), JSON.stringify(provenance, null, 2) + "\n");
+  await cp(path.join(run, state.render.output), path.join(output, "final.mp4"));
+  await cp(path.join(run, quality.contactSheet), path.join(output, "contact-sheet.jpg"));
+  await cp(path.join(run, "quality.json"), path.join(output, "quality.json"));
+  await cp(path.join(run, path.dirname(state.render.output), "evidence.json"), path.join(output, "render-evidence.json"));
+  const bytes = await readFile(path.join(output, "final.mp4"));
+  if (createHash("sha256").update(bytes).digest("hex") !== state.render.sha256) throw new Error("Copied render hash mismatch.");
+  await writeFile(path.join(output, "README.md"), `# ${name === "cheesecake" ? "Cheesecake surprise" : "Fresh-baked cookie tin"}\n\nExisting David's Cookies song and Lego imagery, recovered September 5, 2026. The standalone v0.1.0 runtime reassembled these sources locally. No new media generation was performed. This proves another input through the same renderer; both examples advertise the same brand, so cross-brand creative generalization is not claimed.\n\nAll eight technical checks passed. Creative/audio review remains unreviewed, not passed. The stored historical stitched video was silent; this MP4 is a new local export using the recovered song, section-level lyric captions, and original source clips.\n`);
+  console.log(`Prepared ${name} source assets and verified local export.`);
+}

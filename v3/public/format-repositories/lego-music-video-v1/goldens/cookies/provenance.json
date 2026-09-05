@@ -1,0 +1,58 @@
+{
+  "recoveredAt": "2026-09-05T20:29:46.075Z",
+  "historicalStoryboardId": "kd70sqvw2368fyszaa0s8bqp5189f1yv",
+  "historicalImageModel": "google/nano-banana-2",
+  "historicalVideoModel": "not recorded on these stored clip records",
+  "historicalFinalExportFound": false,
+  "source": "existing Wiggly production records and matching local downloads",
+  "assets": [
+    {
+      "path": "media/song.mp3",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/764b1b4d-9c25-4a25-8e85-bee6a407fc6b",
+      "sha256": "1a2fcf719d359db757e59b037db423f4c2558ad477a5523d5fa4516a71e55581",
+      "bytes": 320619
+    },
+    {
+      "path": "media/reference.jpg",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/41e60fbd-c3c1-4aea-809a-b7f4fd8f2c5b",
+      "sha256": "43bb023b156b9efbb3a8438a001bbd10c2c2487a1b172267afb18e412e7bd169",
+      "bytes": 146228
+    },
+    {
+      "path": "media/shot-1.jpg",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/a3acfc9c-0029-4e00-98c3-58e17ec691b3",
+      "sha256": "bc7891b80ffcc6d1d8d0bca4e75f8f52a546896c165e81634982c4ee7d8bbe0b",
+      "bytes": 148212
+    },
+    {
+      "path": "media/clip-1.mp4",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/3ba81af4-8dd7-4bbf-b257-39635109d556",
+      "sha256": "057e3df7340def4b8ec17fb78e6c5a04284f8ff2d1272fe59ac53cb5d7f95490",
+      "bytes": 3228012
+    },
+    {
+      "path": "media/shot-2.jpg",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/3b72cf0d-3474-4788-bd3e-27b8328f2736",
+      "sha256": "82489da3e804f51d3891d325161920d2380cb37084ec5678b858f3b7fcd8164c",
+      "bytes": 168605
+    },
+    {
+      "path": "media/clip-2.mp4",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/6ca81cb9-f411-44d3-91a5-fd1e161f3e5a",
+      "sha256": "8fd7b4c4f247c230a0bd2f4c056354edfd34c6d42040864ff10312f563f2176b",
+      "bytes": 3850346
+    },
+    {
+      "path": "media/shot-3.jpg",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/d44bfa7f-8b97-420e-b62d-f752e1700263",
+      "sha256": "3b92ef3064d5cddc7e35a9cb0cb6f1febb89cef365ec2b94c1de86ea6b2ce0f0",
+      "bytes": 183155
+    },
+    {
+      "path": "media/clip-3.mp4",
+      "sourceUrl": "https://wry-viper-639.convex.cloud/api/storage/51ca32b0-69f3-4aa6-8870-322b2918235d",
+      "sha256": "377bdc0edff03df4090d08afd7a9ac524f3bbd875866121dceb30d1ca73e3c58",
+      "bytes": 3976507
+    }
+  ]
+}

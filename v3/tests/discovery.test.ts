@@ -386,7 +386,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 16, "Current Discovery proof should organize into sixteen focused shelves.");
+assert.equal(shelves.length, 17, "Lego Music Video has its own shelf, separate from audio-only Brand Jingle.");
 assert.equal(
   shelves[0]?.id,
   "two-d-character-animation",

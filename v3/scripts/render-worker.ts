@@ -11,6 +11,7 @@ import type { Id } from "../convex/_generated/dataModel";
 import { getWorkerRendererVersion } from "../features/render/rendererVersion";
 import type { AdScene, JingleMusicVideoClip } from "../features/scene/types";
 import { adSceneCompositionId, adSceneFps, getAdSceneDurationInFrames } from "../remotion-entry/Root";
+import { buildJingleStitchFilter } from "../features/formats/jingle/stitch";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -164,12 +165,7 @@ async function stitchVideoJob(client: ConvexHttpClient, job: ClaimedStitchJob) {
       progress: 35,
     });
 
-    const filterParts = sortedClips.map((clip, index) => {
-      const durationSeconds = Math.max(0.1, (clip.endMs - clip.startMs) / 1000).toFixed(3);
-      return `[${index}:v]fps=30,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,tpad=stop_mode=clone:stop_duration=${durationSeconds},trim=duration=${durationSeconds},setpts=PTS-STARTPTS[v${index}]`;
-    });
-    const concatInputs = sortedClips.map((_, index) => `[v${index}]`).join("");
-    const filterComplex = `${filterParts.join(";")};${concatInputs}concat=n=${sortedClips.length}:v=1:a=0[outv]`;
+    const filterComplex = buildJingleStitchFilter(sortedClips);
     await runProcess("ffmpeg", [
       "-y",
       ...inputArgs,

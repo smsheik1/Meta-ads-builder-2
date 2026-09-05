@@ -347,7 +347,7 @@ export function extractBrickStoryboardStoryPlan(
   content: string,
   slots: BrickStoryboardSlot[],
   providerLabel = "Story Director",
-  options: { ctaDirection?: string; brandName?: string } = {},
+  options: { ctaDirection?: string; brandName?: string; authorizedLegoBranding?: boolean } = {},
 ): BrickStoryboardStoryPlan {
   const payload = parseJsonObject(content, providerLabel);
   const unexpectedTopLevelKeys = Object.keys(payload).filter((key) => !["recurringHeroObject", "shots"].includes(key));
@@ -420,7 +420,10 @@ export function extractBrickStoryboardStoryPlan(
     if (!sceneDescription || !motionHint) {
       throw new Error(`${providerLabel} returned an incomplete B-roll story shot.`);
     }
-    if (bannedStoryPattern.test(combined)) {
+    const storyLanguage = options.authorizedLegoBranding
+      ? combined.replace(/\blego\b|\bminifigures?\b/gi, "")
+      : combined;
+    if (bannedStoryPattern.test(storyLanguage)) {
       throw new Error(`${providerLabel} used banned stage, caption, or fake-claim language.`);
     }
     if (productOnlyScenePattern.test(combined)) {

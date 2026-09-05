@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "required": [
+    "Brand URL or source-grounded brief",
+    "One ad angle and approved lyrics in three song sections",
+    "One recurring hero object and three distinct lyric-led Lego events"
+  ],
+  "optional": [
+    "Existing 10–30 second song",
+    "Existing world reference, three separate full-quality stills and three moving clips",
+    "Authorized brand logo"
+  ],
+  "file": "agent-runs/<run>/input.json",
+  "template": "npm run format:lego -- init --run=my-ad --brief='Your brief'",
+  "contract": "scene-contract.json",
+  "media": "All media must be local relative files inside the input directory. No remote URLs, parent traversal, or external symlinks. Import copies and measures them."
+}

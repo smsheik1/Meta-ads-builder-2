@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "scene": {
+    "audio": {
+      "captions": [
+        {
+          "endMs": 6000,
+          "startMs": 0,
+          "text": "Fresh-baked delivery, no stress David's Cookies, hit send, impress"
+        },
+        {
+          "endMs": 14000,
+          "startMs": 6000,
+          "text": "Store-bought snacks look cold on the table Tin shows up fresh, now you're able To serve up love, it's more than stable"
+        },
+        {
+          "endMs": 20000,
+          "startMs": 14000,
+          "text": "Fresh-baked delivery, no stress David's Cookies, hit send, impress David's Cookies"
+        }
+      ],
+      "durationMs": 20000,
+      "durationSeconds": 20,
+      "generatedAt": 1782594847949,
+      "mimeType": "audio/mpeg",
+      "model": "music_v2",
+      "provider": "elevenlabs",
+      "status": "generated",
+      "storageId": "kg2bszv1f6th1q0y4tmxwqkga589f9zn",
+      "transcript": "Fresh-baked delivery, no stress\nDavid's Cookies, hit send, impress\nStore-bought snacks look cold on the table\nTin shows up fresh, now you're able\nTo serve up love, it's more than stable\nFresh-baked delivery, no stress\nDavid's Cookies, hit send, impress\nDavid's Cookies",
+      "url": "media/song.mp3"
+    },
+    "brand": {
+      "colors": [
+        "#D6001C",
+        "#C42929",
+        "#FFFFFF",
+        "#121212",
+        "#097DB3"
+      ],
+      "description": "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+      "faviconUrl": null,
+      "fonts": {
+        "body": "Open Sans",
+        "feel": "sans",
+        "heading": "AvenirBlack"
+      },
+      "host": "davidscookies.com",
+      "logoUrl": null,
+      "name": "David's Cookies",
+      "ogImageUrl": null,
+      "receipts": {
+        "buyerMoments": [
+          "Needing a thoughtful gift for a birthday, thank-you, or get-well occasion without visiting a bakery.",
+          "Wanting fresh-baked cookies or desserts delivered instead of store-bought options.",
+          "Looking for a dessert assortment to serve at gatherings or events.",
+          "Craving specialty items like butter pecan meltaways or marshmallow chocolate chip cake."
+        ],
+        "exactSiteLanguage": [
+          "our top sellers",
+          "Fresh Baked",
+          "shop everyday occasions",
+          "Butter Pecan Meltaways",
+          "Signature Cookie Brownie Assortment",
+          "Marshmallow Chocolate Chip Cake"
+        ],
+        "namedProof": [],
+        "specificClaims": [
+          "Butter Pecan Meltaways: 4.7 out of 5 stars, 2268 reviews.",
+          "Fresh Baked Assorted Cookies Tin: 4.6 out of 5 stars, 1499 reviews.",
+          "Fresh Baked Mini Cookies Tin: 4.7 out of 5 stars, 444 reviews.",
+          "Signature Cookie Brownie Assortment: 4.3 out of 5 stars, 88 reviews."
+        ]
+      },
+      "screenshotUrl": null,
+      "title": "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+      "url": "https://davidscookies.com/",
+      "vibeTags": [
+        "David's Cookies"
+      ]
+    },
+    "creative": {
+      "angleId": "jingle-1",
+      "ctaText": "Shop fresh baked",
+      "headline": "Fresh-baked delivery, no stress",
+      "headlineType": "callout",
+      "selectedPain": "fear of serving store-bought items that look impersonal and unappreciated at office celebrations, solved by fresh-baked specialty desserts delivered",
+      "selectedProof": "fear of serving store-bought items that look impersonal and unappreciated at office celebrations, solved by fresh-baked specialty desserts delivered",
+      "subheadline": "fear of serving store-bought items that look impersonal and unappreciated at office celebrations, solved by fresh-baked specialty desserts delivered"
+    },
+    "format": "jingle",
+    "layout": {
+      "angle": "fear of serving store-bought items that look impersonal and unappreciated at office celebrations, solved by fresh-baked specialty desserts delivered",
+      "brandPhonetic": "David's Cookies",
+      "compositionPlan": {
+        "chunks": [
+          {
+            "context_adherence": "high",
+            "duration_ms": 6000,
+            "negative_styles": [
+              "sad",
+              "slow",
+              "lo-fi",
+              "distorted",
+              "off-key"
+            ],
+            "positive_styles": [
+              "modern hip hop",
+              "90 BPM",
+              "confident vocal delivery",
+              "punchy 808 bass",
+              "crisp hi-hats",
+              "clean trap drums",
+              "polished studio production"
+            ],
+            "text": "[Hook]\nFresh-baked delivery, no stress\nDavid's Cookies, hit send, impress"
+          },
+          {
+            "context_adherence": "high",
+            "duration_ms": 8000,
+            "negative_styles": [
+              "sad",
+              "slow",
+              "lo-fi",
+              "distorted",
+              "off-key"
+            ],
+            "positive_styles": [
+              "modern hip hop",
+              "90 BPM",
+              "confident vocal delivery",
+              "punchy 808 bass",
+              "crisp hi-hats",
+              "clean trap drums",
+              "polished studio production"
+            ],
+            "text": "[Verse]\nStore-bought snacks look cold on the table\nTin shows up fresh, now you're able\nTo serve up love, it's more than stable"
+          },
+          {
+            "context_adherence": "high",
+            "duration_ms": 6000,
+            "negative_styles": [
+              "sad",
+              "slow",
+              "lo-fi",
+              "distorted",
+              "off-key"
+            ],
+            "positive_styles": [
+              "modern hip hop",
+              "90 BPM",
+              "confident vocal delivery",
+              "punchy 808 bass",
+              "crisp hi-hats",
+              "clean trap drums",
+              "polished studio production"
+            ],
+            "text": "[Hook]\nFresh-baked delivery, no stress\nDavid's Cookies, hit send, impress\nDavid's Cookies"
+          }
+        ]
+      },
+      "lyrics": [
+        "Fresh-baked delivery, no stress",
+        "David's Cookies, hit send, impress",
+        "Store-bought snacks look cold on the table",
+        "Tin shows up fresh, now you're able",
+        "To serve up love, it's more than stable",
+        "Fresh-baked delivery, no stress",
+        "David's Cookies, hit send, impress",
+        "David's Cookies"
+      ],
+      "musicLengthMs": 20000,
+      "preset": "jingle-lyrics",
+      "selfCheckPassed": "syllable count per line: Hook lines 8/8, Verse lines 9/9/9, final Hook lines 8/8/4; durations sum to 20000; final line is brandPhonetic; no invented claims"
+    },
+    "metadata": {
+      "candidateIndex": 0,
+      "generationBatchId": "recovered-cookies",
+      "researchRunId": "recovered-public-proof",
+      "brandSnapshotId": "recovered-public-proof",
+      "model": "historical-production",
+      "provider": "deterministic",
+      "generatedAt": 1782594927101
+    },
+    "style": {
+      "accentColor": "#D6001C",
+      "backgroundColor": "#07111F",
+      "fontFeel": "sans",
+      "textColor": "#FFFFFF"
+    },
+    "version": 1
+  },
+  "story": {
+    "recurringHeroObject": "red brick cookie tin with domed lid",
+    "shots": [
+      {
+        "funMechanism": "dramatic_reveal",
+        "lyricLine": "Fresh-baked delivery, no stress",
+        "motionHint": "the tin tilts forward, steam curling off its lid as it begins to slide",
+        "sceneDescription": "oven door blasts golden light as block-figures shield their eyes, the red tin emerging on a rising steam cloud",
+        "shotIndex": 0
+      },
+      {
+        "funMechanism": "tiny_disaster",
+        "lyricLine": "Store-bought snacks look cold on the table",
+        "motionHint": "the tin's warmth melts a tiny icicle on a wilted snack display",
+        "sceneDescription": "gray plastic wrappers frost over and crack while the red tin glides past on a warm brick path",
+        "shotIndex": 1
+      },
+      {
+        "funMechanism": "crowd_reaction",
+        "lyricLine": "Fresh-baked delivery, no stress",
+        "motionHint": "tiny block-hands push open the shop door, reaching toward the steaming tin",
+        "sceneDescription": "block-figures crowd a brick storefront window, pressing noses to glass as the red tin spins on a fresh-baked display pedestal",
+        "shotIndex": 2
+      }
+    ]
+  },
+  "media": {
+    "song": "media/song.mp3",
+    "reference": "media/reference.jpg",
+    "shots": [
+      {
+        "image": "media/shot-1.jpg",
+        "video": "media/clip-1.mp4"
+      },
+      {
+        "image": "media/shot-2.jpg",
+        "video": "media/clip-2.mp4"
+      },
+      {
+        "image": "media/shot-3.jpg",
+        "video": "media/clip-3.mp4"
+      }
+    ]
+  }
+}

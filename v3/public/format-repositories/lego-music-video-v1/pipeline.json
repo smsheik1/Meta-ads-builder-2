@@ -1,0 +1,49 @@
+{
+  "stages": [
+    {
+      "id": "check-and-smoke",
+      "output": "Install the kit and render the included fixture locally. No provider calls."
+    },
+    {
+      "id": "research-and-song-plan",
+      "output": "Your coding agent grounds one buyer truth, writes a hook and three song sections, and proposes the Lego story."
+    },
+    {
+      "id": "approve-song",
+      "approvalRequired": true,
+      "output": "Approve lyrics, music direction and current per-call quote, or supply an existing song."
+    },
+    {
+      "id": "music",
+      "paid": true,
+      "output": "Generate one song or import existing audio; measure actual duration and align all three sections."
+    },
+    {
+      "id": "world-reference",
+      "paid": true,
+      "approvalRequired": true,
+      "output": "Create or import one coherent Lego world reference; inspect it before production stills."
+    },
+    {
+      "id": "production-stills",
+      "paid": true,
+      "approvalRequired": true,
+      "output": "Create or import three separate full-quality shots; inspect each exact still before animation."
+    },
+    {
+      "id": "animated-shots",
+      "paid": true,
+      "approvalRequired": true,
+      "output": "Create or import three silent moving shots; save and resume original prediction IDs."
+    },
+    {
+      "id": "render-and-inspect",
+      "output": "Prepare the clips with FFmpeg and render through the shared AdRenderSurface/Remotion path. Decode and inspect the final MP4."
+    },
+    {
+      "id": "direct-review-and-finalize",
+      "approvalRequired": true,
+      "output": "Watch the motion and hear the song; finalize only after an honest review of this exact render passes."
+    }
+  ]
+}

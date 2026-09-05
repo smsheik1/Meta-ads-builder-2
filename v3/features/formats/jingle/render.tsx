@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { getVisibleCaptionText } from "../../audio/sceneAudio";
 import { useRenderAssetComponents } from "../../render/RenderAssetContext";
-import type { JingleAdScene } from "../../scene/types";
+import type { JingleAdScene, LegoMusicVideoAdScene } from "../../scene/types";
 import type { FormatRenderProps } from "../types";
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -27,7 +27,7 @@ export function JingleFormatRenderer({
   motionMode = "auto",
   timeSeconds = 0,
   rerollFlash,
-}: FormatRenderProps<JingleAdScene>) {
+}: FormatRenderProps<JingleAdScene | LegoMusicVideoAdScene>) {
   const { Image, Video } = useRenderAssetComponents();
   const activeLyric = getVisibleCaptionText(scene.audio, timeSeconds)
     || scene.layout.lyrics[0]
@@ -89,7 +89,7 @@ export function JingleFormatRenderer({
 
   return (
     <div
-      data-format="jingle"
+      data-format={scene.format}
       data-jingle-brand-phonetic={scene.layout.brandPhonetic}
       data-jingle-music-length-ms={scene.layout.musicLengthMs}
       data-jingle-music-video={hasMusicVideo ? "true" : undefined}

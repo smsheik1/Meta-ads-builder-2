@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "scene": {
+    "audio": {
+      "captions": [
+        {
+          "endMs": 6000,
+          "startMs": 0,
+          "text": "David's Cookies, fresh and right Ship it fast, make their night"
+        },
+        {
+          "endMs": 14000,
+          "startMs": 6000,
+          "text": "No time to bake, no time to run Last minute gift but still want fun Fresh baked tin, the party's won"
+        },
+        {
+          "endMs": 20000,
+          "startMs": 14000,
+          "text": "David's Cookies, fresh and right David's Cookies"
+        }
+      ],
+      "durationMs": 20000,
+      "durationSeconds": 20,
+      "generatedAt": 1782965930291,
+      "mimeType": "audio/mpeg",
+      "model": "music_v2",
+      "provider": "elevenlabs",
+      "status": "generated",
+      "storageId": "kg2cy20aqzfzdkvsedt1s9hm9n89rwyx",
+      "transcript": "David's Cookies, fresh and right\nShip it fast, make their night\nNo time to bake, no time to run\nLast minute gift but still want fun\nFresh baked tin, the party's won\nDavid's Cookies, fresh and right\nDavid's Cookies",
+      "url": "media/song.mp3"
+    },
+    "brand": {
+      "colors": [
+        "#D6001C",
+        "#C42929",
+        "#FFFFFF",
+        "#121212",
+        "#097DB3"
+      ],
+      "description": "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+      "faviconUrl": null,
+      "fonts": {
+        "body": "Open Sans",
+        "feel": "sans",
+        "heading": "AvenirBlack"
+      },
+      "host": "davidscookies.com",
+      "logoUrl": null,
+      "name": "David's Cookies",
+      "ogImageUrl": null,
+      "receipts": {
+        "buyerMoments": [
+          "Needing a last-minute birthday gift that feels thoughtful and delicious.",
+          "Wanting to send a thank-you that is more memorable than a card.",
+          "Looking for fresh-baked cookies to serve at a gathering without baking yourself.",
+          "Searching for a get-well gift that comforts and surprises.",
+          "Wanting monthly dessert deliveries as a recurring treat or gift.",
+          "Craving high-quality bakery items that are not available locally."
+        ],
+        "exactSiteLanguage": [
+          "Fresh Baked",
+          "our top sellers",
+          "shop everyday occasions",
+          "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts."
+        ],
+        "namedProof": [],
+        "specificClaims": [
+          "Butter Pecan Meltaways: 4.7 out of 5 stars from 2291 reviews.",
+          "Fresh Baked Assorted Cookies Tin: 4.6 out of 5 stars from 1516 reviews.",
+          "Fresh Baked Mini Cookies Tin: 4.7 out of 5 stars from 451 reviews.",
+          "Signature Cookie Brownie Assortment: 4.3 out of 5 stars from 100 reviews."
+        ]
+      },
+      "screenshotUrl": null,
+      "title": "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+      "url": "https://davidscookies.com/",
+      "vibeTags": [
+        "David's Cookies"
+      ]
+    },
+    "creative": {
+      "angleId": "jingle-1",
+      "ctaText": "Shop fresh baked",
+      "headline": "David's Cookies, fresh and right",
+      "headlineType": "callout",
+      "selectedPain": "last-minute birthday gift that feels thoughtful and delicious instead of store-bought and impersonal",
+      "selectedProof": "last-minute birthday gift that feels thoughtful and delicious instead of store-bought and impersonal",
+      "subheadline": "last-minute birthday gift that feels thoughtful and delicious instead of store-bought and impersonal"
+    },
+    "format": "jingle",
+    "layout": {
+      "angle": "last-minute birthday gift that feels thoughtful and delicious instead of store-bought and impersonal",
+      "brandPhonetic": "David's Cookies",
+      "compositionPlan": {
+        "chunks": [
+          {
+            "context_adherence": "high",
+            "duration_ms": 6000,
+            "negative_styles": [
+              "sad",
+              "slow",
+              "lo-fi",
+              "distorted",
+              "off-key"
+            ],
+            "positive_styles": [
+              "modern hip hop",
+              "90 BPM",
+              "confident vocal delivery",
+              "punchy 808 bass",
+              "crisp hi-hats",
+              "clean trap drums",
+              "polished studio production"
+            ],
+            "text": "[Hook]\nDavid's Cookies, fresh and right\nShip it fast, make their night"
+          },
+          {
+            "context_adherence": "high",
+            "duration_ms": 8000,
+            "negative_styles": [
+              "sad",
+              "slow",
+              "lo-fi",
+              "distorted",
+              "off-key"
+            ],
+            "positive_styles": [
+              "modern hip hop",
+              "90 BPM",
+              "confident vocal delivery",
+              "punchy 808 bass",
+              "crisp hi-hats",
+              "clean trap drums",
+              "polished studio production"
+            ],
+            "text": "[Verse]\nNo time to bake, no time to run\nLast minute gift but still want fun\nFresh baked tin, the party's won"
+          },
+          {
+            "context_adherence": "high",
+            "duration_ms": 6000,
+            "negative_styles": [
+              "sad",
+              "slow",
+              "lo-fi",
+              "distorted",
+              "off-key"
+            ],
+            "positive_styles": [
+              "modern hip hop",
+              "90 BPM",
+              "confident vocal delivery",
+              "punchy 808 bass",
+              "crisp hi-hats",
+              "clean trap drums",
+              "polished studio production"
+            ],
+            "text": "[Hook]\nDavid's Cookies, fresh and right\nDavid's Cookies"
+          }
+        ]
+      },
+      "lyrics": [
+        "David's Cookies, fresh and right",
+        "Ship it fast, make their night",
+        "No time to bake, no time to run",
+        "Last minute gift but still want fun",
+        "Fresh baked tin, the party's won",
+        "David's Cookies, fresh and right",
+        "David's Cookies"
+      ],
+      "musicLengthMs": 20000,
+      "preset": "jingle-lyrics",
+      "selfCheckPassed": "syllable count per line; durations sum to 20000; final line is brandPhonetic; no invented claims"
+    },
+    "metadata": {
+      "candidateIndex": 0,
+      "generationBatchId": "recovered-cheesecake",
+      "researchRunId": "recovered-public-proof",
+      "brandSnapshotId": "recovered-public-proof",
+      "model": "historical-production",
+      "provider": "deterministic",
+      "generatedAt": 1782965977158
+    },
+    "style": {
+      "accentColor": "#D6001C",
+      "backgroundColor": "#07111F",
+      "fontFeel": "sans",
+      "textColor": "#FFFFFF"
+    },
+    "version": 1
+  },
+  "story": {
+    "recurringHeroObject": "red round cheesecake dome on white platter",
+    "shots": [
+      {
+        "funMechanism": "dramatic_reveal",
+        "lyricLine": "David's Cookies, fresh and right",
+        "motionHint": "dome rises on hidden platform as fridge light flares",
+        "sceneDescription": "block-figure gasps as fridge door swings open, red cheesecake dome glowing against gray leftover containers",
+        "shotIndex": 0
+      },
+      {
+        "funMechanism": "chase_or_motion",
+        "lyricLine": "No time to bake, no time to run",
+        "motionHint": "dome overtakes the cart, coasting toward finish ribbon",
+        "sceneDescription": "flour-dusted block-figure chases runaway shopping cart while red cheesecake dome glides past on conveyor belt",
+        "shotIndex": 1
+      },
+      {
+        "funMechanism": "crowd_reaction",
+        "lyricLine": "David's Cookies, fresh and right",
+        "motionHint": "dome lands, candles auto-ignite, crowd leans in together",
+        "sceneDescription": "birthday table crowd freezes mid-cheer as red cheesecake dome descends from ceiling on tiny crane hook",
+        "shotIndex": 2
+      }
+    ]
+  },
+  "media": {
+    "song": "media/song.mp3",
+    "reference": "media/reference.jpg",
+    "shots": [
+      {
+        "image": "media/shot-1.jpg",
+        "video": "media/clip-1.mp4"
+      },
+      {
+        "image": "media/shot-2.jpg",
+        "video": "media/clip-2.mp4"
+      },
+      {
+        "image": "media/shot-3.jpg",
+        "video": "media/clip-3.mp4"
+      }
+    ]
+  }
+}

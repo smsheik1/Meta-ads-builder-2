@@ -4,7 +4,7 @@ import type { ThreeDBreakdownStorySubject } from "../formats/three-d-breakdown/s
 export const AD_SCENE_VERSION = 1 as const;
 
 export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews" | "motion-story" | "three-d-breakdown";
-export type RenderableAdFormatId = AdFormatId | "static-package" | "talking-fish-news";
+export type RenderableAdFormatId = AdFormatId | "static-package" | "talking-fish-news" | "lego-music-video";
 
 export type HeadlineType =
   | "painful_moment"
@@ -223,6 +223,13 @@ export type JingleAdScene = AdSceneBase<
     selfCheckPassed: string;
   }
 >;
+
+// Separate Repo identity, shared music-video composition. This does not add a
+// new /create choice or duplicate the existing lyric/video renderer.
+export type LegoMusicVideoAdScene = Omit<JingleAdScene, "format" | "layout"> & {
+  format: "lego-music-video";
+  layout: Omit<JingleAdScene["layout"], "preset"> & { preset: "lego-music-video" };
+};
 
 export type TextMessageAdScene = AdSceneBase<
   "text-message",
@@ -625,4 +632,4 @@ export type AdScene =
   | MotionStoryAdScene
   | ThreeDBreakdownAdScene;
 
-export type RenderableAdScene = AdScene | StaticPackageAdScene | TalkingFishNewsProofScene;
+export type RenderableAdScene = AdScene | StaticPackageAdScene | TalkingFishNewsProofScene | LegoMusicVideoAdScene;

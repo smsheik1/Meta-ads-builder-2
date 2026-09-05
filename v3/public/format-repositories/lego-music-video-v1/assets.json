@@ -1,0 +1,23 @@
+{
+  "fixed": [
+    {
+      "path": "goldens/cheesecake/media/reference.jpg",
+      "label": "Cheesecake world reference",
+      "purpose": "Recovered example of one coherent Lego world. Replace it for your brand."
+    },
+    {
+      "path": "goldens/cookies/media/shot-1.jpg",
+      "label": "Full-quality production still",
+      "purpose": "A separate source image for animation, never an enlarged storyboard panel."
+    },
+    {
+      "path": "goldens/cookies/contact-sheet.jpg",
+      "label": "Composed-output contact sheet",
+      "purpose": "Technical inspection evidence; not a substitute for watching and hearing the final video."
+    }
+  ],
+  "sourceReference": {
+    "verification": "Recovered from existing Wiggly media and matching Downloads. New local exports reuse the original footage and songs; no paid generation was performed.",
+    "referenceNote": "Lego naming is authorized by the operator. These are brand ads in a Lego visual style, not a claim of an official Lego partnership. Source usage and hashes accompany each example."
+  }
+}

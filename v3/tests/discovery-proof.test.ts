@@ -170,7 +170,8 @@ assert.ok(
     discoveryFormatSlugs.includes("bikini-bottom-dance-off") &&
     discoveryFormatSlugs.includes("animal-conversations") &&
     discoveryFormatSlugs.includes("shaz-puppet-runtime") &&
-    discoveryFormatSlugs.length === 50 &&
+    discoveryFormatSlugs.includes("lego-music-video") &&
+    discoveryFormatSlugs.length === 51 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
 

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "format": "lego-music-video",
+  "scene": "Complete LegoMusicVideoAdScene; see features/formats/lego-music-video/contract.ts for executable validation.",
+  "song": {
+    "actualDurationMs": [
+      10000,
+      30500
+    ],
+    "sections": 3,
+    "maximumSectionMs": 15000,
+    "lyrics": "Every complete sung line; chunk.text may include [Hook] or [Verse].",
+    "captions": "Section-derived phrase display, not word alignment; directly review timing against the song."
+  },
+  "story": {
+    "recurringHeroObject": "One specific object, present in all three scenes.",
+    "shots": "Exactly three numbered shotIndex slots, each with the slot's lyricLine, funMechanism, sceneDescription and motionHint; npm run format:lego -- prompt prints the full schema and scene grammar."
+  },
+  "media": {
+    "song": "relative path or null",
+    "reference": "relative path or null",
+    "shots": [
+      {
+        "image": "Full-quality production still, not a storyboard crop",
+        "video": "Silent animated shot matching measured section duration"
+      }
+    ]
+  },
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "audio": "AAC mixed from the supplied/generated song",
+    "duration": "Measured song rounded up to the next frame; no added tail",
+    "retiming": "Source/target duration ratio must be 0.75–1.35, recorded explicitly; no freeze padding."
+  }
+}

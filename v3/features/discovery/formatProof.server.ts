@@ -23,6 +23,28 @@ type FormatProfileConfig = {
 
 const formatConfigs: FormatProfileConfig[] = [
   {
+    slug: "lego-music-video",
+    promise: "Turn your brand into a Lego music video: one original song, a miniature world, and three cinematic scenes.",
+    lastUpdated: "September 2026",
+    manifestPath: "format-repositories/lego-music-video-v1/format.json",
+    whatStays: ["A brand ad told through a song", "One coherent Lego world and recurring hero object", "Three lyric-led moving scenes", "Vertical video with brand identity and lyric captions"],
+    whatChanges: ["The brand and buyer truth", "The music direction and lyrics", "The miniature world and its characters", "The three visual events and final payoff"],
+    handoff: {
+      requiredInputs: ["A brand website or brief", "A music direction, or an existing song", "Optional existing Lego imagery and clips"],
+      deliverables: ["One approved song and three-scene story", "World reference, three production stills and three animated clips", "One vertical MP4, contact sheet, checks and source provenance"],
+      instructions: ["Read the packaged skill and run the free local smoke", "Plan with your coding agent; no separate LLM key", "Reuse existing media or quote and approve each paid batch", "Inspect and directly review the complete audiovisual output before finalizing"],
+      estimates: [
+        { label: "Research + lyrics + story", cost: "Your coding agent · no extra provider", time: "depends on brief" },
+        { label: "Song", cost: "$0 supplied · ElevenLabs if generated", time: "provider queue varies" },
+        { label: "World + 3 stills + 3 clips", cost: "$0 supplied · Replicate if generated", time: "provider queue varies" },
+        { label: "Local render + inspection", cost: "$0 provider cost", time: "about 2–6 min on tested Mac" },
+      ],
+      totalEstimate: "$0 provider cost with supplied media. New media requires a current quote and your approval.",
+      output: "One vertical 1080 × 1920 MP4, usually 20 seconds, with song and lyric captions",
+      firstQuestion: "What brand or website is this music video for?",
+    },
+  },
+  {
     slug: "talking-fish-news",
     promise: "Turn one real current story into a short deadpan fish report built from source proof.",
     lastUpdated: "August 2026",

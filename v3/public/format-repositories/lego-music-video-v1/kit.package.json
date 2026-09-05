@@ -1,0 +1,30 @@
+{
+  "name": "wiggly-lego-music-video-format-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "format:lego": "node --import tsx scripts/lego-music-video-format.ts",
+    "smoke": "node --import tsx scripts/lego-music-video-format.ts smoke",
+    "test": "node --import tsx tests/lego-music-video-contract.test.ts && node --import tsx tests/lego-music-video-runtime.test.ts"
+  },
+  "overrides": {
+    "ws": "8.21.0",
+    "@remotion/bundler": { "esbuild": "0.28.1" }
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.473",
+    "@remotion/media": "4.0.473",
+    "@remotion/renderer": "4.0.473",
+    "jpeg-js": "0.4.4",
+    "lucide-react": "0.546.0",
+    "react": "19.0.1",
+    "react-dom": "19.0.1",
+    "remotion": "4.0.473",
+    "tailwindcss": "4.2.4",
+    "tsx": "4.20.6"
+  }
+}
