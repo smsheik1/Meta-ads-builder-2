@@ -1,5 +1,7 @@
 # Animal Conversations — Linux and WSL2 acceptance evidence
 
+**Latest result: both actual platforms passed** [run 33941276524](https://github.com/smsheik1/wiggly/actions/runs/33941276524). The earlier failures below are retained as history; platform mechanics/setup/offline intake are now verified, while real agent approval/playback acceptance remains separate.
+
 ## Scope
 
 These are actual GitHub-hosted **Linux x64** and **Ubuntu running inside WSL2 x64** executions, not cross-platform dependency resolution. The shared harness builds the source candidate, freshly extracts its ZIP, checks the exact source inventory, installs dependencies, and exercises the packaged runtime.
@@ -111,8 +113,32 @@ The conditional helper diagnostic did not run: no `transcription-failed` result 
 - [WSL2 diagnostic artifact 9961841989](https://github.com/smsheik1/wiggly/actions/runs/33940815264/artifacts/9961841989), ZIP digest `38ddf6fa46fb1c5f0456acd4f5e65317e2e1f2775b8b9117f3c8d2840dee67b4`.
 - Both artifacts expire September 8, 2026 UTC. No private media/model cache was uploaded.
 
-### Identity correction prepared; actual rerun pending
+### Identity correction — verified on both actual platforms
 
 The scoped harness correction creates the network namespace with the existing elevation, then restores the original script UID/GID through `unshare --setgid=<caller-gid> --setuid=<caller-uid>` before executing any offline kit/helper command. The [util-linux documentation](https://man7.org/linux/man-pages/man1/unshare.1.html) and [v2.39 implementation](https://github.com/util-linux/util-linux/blob/v2.39/sys-utils/unshare.c) confirm group/user changes occur in the entered namespace before command execution. WSL2 retains its original root identity; Linux returns to its original unprivileged runner identity.
 
-An explicit offline identity probe now checks actual UID/GID, and each successful intake checks that its transcript remains **0600 and owned by the caller**. No chmod, global permission repair, package changes, or gate bypass was introduced. Local command-assembly tests cover both nonroot Linux and root WSL2; diagnostic tests accept caller-owned 0600 and reject 0644. Shell/embedded-JavaScript syntax and diff checks pass. These local tests do not replace the pending real hosted rerun.
+An explicit offline identity probe now checks actual UID/GID, and each successful intake checks that its transcript remains **0600 and owned by the caller**. No chmod, global permission repair, package changes, or gate bypass was introduced. Local command-assembly tests cover both nonroot Linux and root WSL2; diagnostic tests accept caller-owned 0600 and reject 0644. Shell/embedded-JavaScript syntax and diff checks pass.
+
+[Run 33941276524](https://github.com/smsheik1/wiggly/actions/runs/33941276524), commit `9474a55bdc309048a0bb17b64c689d2a80bfcef9`, ran **2026-09-05 03:13:57–03:20:33 UTC** and completed **success**. Candidate contents remained **0.16.1**.
+
+| Final observed check | Linux [job 101239069808](https://github.com/smsheik1/wiggly/actions/runs/33941276524/job/101239069808) | Actual WSL2 [job 101239069998](https://github.com/smsheik1/wiggly/actions/runs/33941276524/job/101239069998) |
+| --- | --- | --- |
+| Job conclusion | Success | Success |
+| Kernel | `6.17.0-1022-azure` | `6.18.33.2-microsoft-standard-WSL2` |
+| Offline child UID:GID = original caller | `1001:1001`, asserted | `0:0`, asserted |
+| Both private transcripts | `0600`, owner `1001:1001`, asserted | `0600`, owner `0:0`, asserted |
+| Fresh archive/inventory, doctor, npm install | Passed | Passed |
+| Default / explicit Node suites | 98 passed + 8 opt-in skips / 106 passed, no skips | 98 passed + 8 opt-in skips / 106 passed, no skips |
+| Optional converter profile | 3 Python-dependent + 7 Rust tests passed | 3 Python-dependent + 7 Rust tests passed |
+| Synthetic render/inspect smoke; fresh isolated setup | Passed | Passed |
+| `intake-one` / `intake-two`, external network disabled | Both exit 0 | Both exit 0 |
+| `status-one` / `status-two` | Both exit 0, `needs-script-draft` | Both exit 0, `needs-script-draft` |
+| Final exact inventory and intake evidence hashes | Passed | Passed |
+
+Both final summaries independently report the same approved sources, durations, segment counts, source/audio/transcript hashes, model settings, and inventory hash recorded above. This equality was observed, not imposed as a cross-platform ZIP or MP4 byte-identity requirement. Both runs deliberately stopped before drafting or approving a real script; no real approval, perceptual review, or delivery was fabricated.
+
+- [Linux final artifact 9961942886](https://github.com/smsheik1/wiggly/actions/runs/33941276524/artifacts/9961942886), ZIP digest `98b4b19a5ac8b636cc8ef900b92f1effc792fd6b1b0d20ca5cf00409c0dc2b7d`.
+- [WSL2 final artifact 9961990764](https://github.com/smsheik1/wiggly/actions/runs/33941276524/artifacts/9961990764), ZIP digest `2cfb6db0cf96f68a02101094c9b7840197fb9d1604d6333d05e45e4818e70ac6`.
+- Both small sanitized artifacts expire **September 8, 2026 UTC**; no private media or model cache was uploaded.
+
+**Remaining boundary:** this closes Linux and WSL2 platform mechanics/setup/offline-intake acceptance, not a fresh host-agent real episode through explicit user approval, actual playback assessment, and verified export. The separate Mac real reviews still await user approval. Public stable download/catalog **0.15.1** remain intentionally unpromoted; this CI did not publish candidate **0.16.1**.

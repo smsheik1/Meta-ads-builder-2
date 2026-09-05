@@ -62,12 +62,12 @@ The isolated GitHub Actions workflow tests actual Linux x64 and Ubuntu inside WS
 
 See PLATFORM-ACCEPTANCE.md for retained run/job evidence. Corrected run `33940070769` passed WSL2's full mechanics/setup/offline-intake scope. Diagnostic run `33940815264` then established that **both native Linux intakes also succeeded**; the failing command was the following normal-user `status` call. The harness had run intake as root inside the network namespace, leaving the Python helper's intentionally private `transcript.json` owned by root with mode 0600. The normal runner UID 1001 could not read it and correctly reported `intake-evidence-invalid` / EACCES.
 
-The scoped repair is to preserve the original caller identity inside the isolated namespace. Do not loosen transcript permissions, alter package code, or call the failed status a successful check. The corrected identity must be verified by actual CI before platform mechanics are considered passed. Fresh host-agent approval/playback/export acceptance remains separate.
+Commit `9474a55b` preserves the original caller identity inside the isolated namespace. Final actual CI run `33941276524` passed **both Linux and WSL2**, including observed UID/GID, both private 0600 transcript ownership checks, both offline intakes, both `needs-script-draft` status checks and exact inventory/evidence verification. No transcript permission or package source was changed. Fresh host-agent approval/playback/export acceptance remains separate.
 
 ### Remaining acceptance
 
 1. Explicit approval of the two newly generated episode reviews, followed by actual rendering and documented playback review plus verified exports.
-2. Finish supported-system acceptance. The isolated CI Rust 1.89 correction already passed all converter tests on both platforms. WSL mechanics/offline intake passed; Linux needs the observed harness identity mismatch repaired and its status/evidence checks rerun. Neither CI substitutes for a fresh host-agent real-episode proof.
+2. Finish the fresh host-agent supported-system end-to-end acceptance. Linux and actual WSL2 now pass the full mechanics/setup/offline-intake CI scope; this does not establish real script approval, perceptual playback or real-episode delivery.
 3. Final end-to-end acceptance of the packaged artifact, not just independent phase success.
 
 Website promotion is deliberately separate. The existing public ZIP/catalog remain 0.15.1 while source development is 0.16.1. The public-page version/hash assertions must be updated together with a certified release during a separately scoped promotion; do not weaken them or merge this branch as though publication had already occurred.
