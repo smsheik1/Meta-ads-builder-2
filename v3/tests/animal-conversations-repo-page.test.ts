@@ -88,20 +88,29 @@ assert.ok(
   profile?.handoff,
   "Animal Conversations should offer a runnable agent handoff.",
 );
-assert.equal(profile.version, "0.15.1");
+assert.equal(profile.version, "0.16.2");
+assert.ok(profile.proofEntries.every((entry) => entry.format.version === "0.15.1"),
+  "Earlier example videos must not be relabeled as new-release proof.");
 assert.equal(
   profile.repositoryHref,
   "/format-repositories/animal-conversations-v1/downloads/wiggly-animal-conversations-format-kit.zip",
 );
-assert.match(profile.handoff.firstQuestion, /Attach the conversation audio/);
-assert.match(profile.handoff.instructions.join(" "), /one-to-three-word cards/);
+assert.match(profile.handoff.firstQuestion, /video link or local clip/);
+assert.match(profile.handoff.requiredInputs.join(" "), /no user-authored timestamps required/);
+assert.match(profile.handoff.instructions.join(" "), /one-to-three-word captions/);
+assert.match(profile.handoff.instructions.join(" "), /SKILL\.md as the single workflow/);
 
 assert.ok(existsSync(download), "The stable public Repo download must exist.");
 assert.equal(
   createHash("sha256").update(readFileSync(download)).digest("hex"),
-  "786b25542e867293d43d388c56dbced161e7105ebb132d686d26879dafd182a3",
-  "The public download must match the exact published v0.15.1 kit.",
+  "0762a04c20c8229d98427a158debf09063512c65bb54c95a90e28f24ce56565d",
+  "The public download must match the exact tested v0.16.2 kit.",
 );
+const release = JSON.parse(readFileSync(`${repositoryRoot}/downloads/latest-release.json`, "utf8"));
+assert.equal(release.formatVersion, profile.version);
+assert.equal(release.archive.sha256, createHash("sha256").update(readFileSync(download)).digest("hex"));
+assert.deepEqual(readFileSync(`${repositoryRoot}/downloads/${release.archive.file}`), readFileSync(download),
+  "The immutable versioned ZIP and stable download must be identical.");
 const archive = await JSZip.loadAsync(readFileSync(download));
 const zipEntries = Object.keys(archive.files).join("\n");
 for (const expected of [
@@ -111,6 +120,10 @@ for (const expected of [
   "KIT-MANIFEST.json",
   "SKILL.md",
   "runtime/render.mjs",
+  "runtime/intake.mjs",
+  "runtime/workflow.mjs",
+  "runtime/export.mjs",
+  "RELEASE-CONTENTS.json",
   "fixtures/smoke/input.json",
   "fixtures/regression/overlapping-reassurance/input.json",
   "examples/i-made-a-mistake/evidence/final.mp4",
@@ -128,9 +141,18 @@ const archivedManifest = JSON.parse(
 ) as { formatVersion: string; canonicalSkill: string };
 assert.deepEqual(archivedManifest, {
   ...archivedManifest,
-  formatVersion: "0.15.1",
+  formatVersion: "0.16.2",
   canonicalSkill: "SKILL.md",
 });
+const archivedFormat = JSON.parse(await archive.file("format.json")!.async("string"));
+assert.equal(archivedFormat.version, profile.version);
+const inventory = JSON.parse(await archive.file("RELEASE-CONTENTS.json")!.async("string"));
+for (const file of inventory.files) {
+  const bytes = await archive.file(file.path)!.async("nodebuffer");
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), file.sha256);
+  assert.deepEqual(bytes, readFileSync(`${repositoryRoot}/${file.path}`),
+    `The public ZIP and source must match for ${file.path}.`);
+}
 
 const prompt = buildDiscoveryHandoffPrompt(
   profile,
@@ -176,7 +198,7 @@ assert.match(
 assert.match(formatPageSource, /<FormatRepoRunSummary/);
 assert.match(formatPageSource, /<FormatRepoTrust/);
 assert.match(repoPageRegistrySource, /Make your Animal Conversation\./);
-assert.match(repoPageRegistrySource, /One conversation audio file/);
+assert.match(repoPageRegistrySource, /One video link or local clip/);
 assert.match(repoPageRegistrySource, /Finished Conversations\./);
 assert.match(formatPageSource, /w-\[min\(100%-32px,980px\)\]/);
 assert.match(formatPageSource, /md:grid-cols-\[1\.15fr_0\.85fr\]/);
@@ -197,9 +219,11 @@ assert.ok(
   "Included assets should appear before proof and technical details.",
 );
 assert.match(connectionsSource, /Services &amp; costs/);
-assert.match(connectionsSource, /0 accounts · \$0 provider cost/);
-assert.match(connectionsSource, /You provide the audio\./);
-assert.match(connectionsSource, /No API key or paid service is required/);
+assert.match(connectionsSource, /0 media APIs · \$0 provider cost/);
+assert.match(connectionsSource, /You provide the clip\./);
+assert.match(connectionsSource, /No AI image or video credits needed/);
+assert.match(connectionsSource, /Python 3\.12/);
+assert.match(connectionsSource, /coding agent may have its own fees/);
 assert.match(includedAssetsSource, /The cast, rooms, and camera grammar\./);
 assert.match(includedAssetsSource, /Complete character poses/);
 assert.match(includedAssetsSource, /Three camera angles included/);
@@ -216,14 +240,14 @@ assert.doesNotMatch(
 );
 
 const trustData = await getAnimalConversationsTrustData();
-assert.equal(trustData.version, "0.15.1");
+assert.equal(trustData.version, profile.version);
 assert.deepEqual(trustData.stats, {
   backgrounds: 5,
   cameras: 3,
   characters: 2,
 });
 assert.equal(trustData.requirements.providers.length, 0);
-assert.equal(trustData.requirements.environmentVariables.length, 0);
+assert.deepEqual(trustData.requirements.environmentVariables, ["FFMPEG", "FFPROBE", "PYTHON"]);
 assert.deepEqual(
   trustData.includedAssets.characters.map(({ id, label, poseCount }) => ({
     id,
@@ -247,15 +271,15 @@ assert.deepEqual(
   trustData.annotations.map(({ timeLabel }) => timeLabel),
   ["00:00", "00:07", "00:10", "00:28"],
 );
-assert.match(trustData.assembly.path, /Audio setup → Speaker review/);
+assert.match(trustData.assembly.path, /Clip → Dialogue draft → Your approval/);
 assert.ok(
   trustData.assembly.commands.includes(
-    "node runner.mjs init --run=<id> --audio=/absolute/path/audio.wav --input=/absolute/path/input.json",
+    "node runner.mjs intake --run=<id> --source=<link-or-local-file>",
   ),
 );
 assert.ok(
   trustData.assembly.commands.includes(
-    "node runner.mjs approve-script --run=<id>",
+    "node runner.mjs run --run=<id>",
   ),
 );
 assert.ok(
@@ -266,7 +290,10 @@ assert.ok(
   "The public Repo page should expose the overlap regression fixture.",
 );
 assert.match(trustData.quality.note, /never claims automatic diarization/);
-assert.equal(trustData.quality.criteria.length, 12);
+assert.equal(trustData.quality.criteria.length, 14);
+assert.equal(trustData.quality.summary[0]?.value, "17");
+assert.equal(trustData.quality.summary[0]?.label, "Required technical checks");
+assert.match(trustData.receipt.note, /fresh-agent acceptance of this exact release remains incomplete/);
 assert.match(
   trustData.receipt.note,
   /Raw audio and review clips from new runs remain user-supplied/,

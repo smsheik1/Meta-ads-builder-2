@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kit": "wiggly-animal-conversations-format-kit",
+  "formatVersion": "0.16.2",
+  "archive": {
+    "file": "wiggly-animal-conversations-format-kit-0.16.2.zip",
+    "bytes": 18922042,
+    "sha256": "0762a04c20c8229d98427a158debf09063512c65bb54c95a90e28f24ce56565d"
+  },
+  "stableArchive": {
+    "file": "wiggly-animal-conversations-format-kit.zip",
+    "sha256": "0762a04c20c8229d98427a158debf09063512c65bb54c95a90e28f24ce56565d"
+  },
+  "contentsManifest": {
+    "file": "RELEASE-CONTENTS.json",
+    "sha256": "758efbb4943c722008247e48f55ae3c7564d47a5d58074283048435d7fe4b9fa"
+  },
+  "fileCount": 137,
+  "archiveIntegrityVerified": true,
+  "acceptanceStatus": "not-certified-by-packaging",
+  "publication": "local-only"
+}

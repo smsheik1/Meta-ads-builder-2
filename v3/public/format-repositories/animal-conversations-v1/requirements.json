@@ -1,15 +1,59 @@
 {
-  "localTools": ["node", "npm", "ffmpeg", "ffprobe", "sharp"],
-  "optionalAssetRebuildTools": ["cargo"],
+  "localTools": [
+    "node",
+    "npm",
+    "ffmpeg",
+    "ffprobe",
+    "sharp"
+  ],
+  "optionalAssetRebuildTools": [
+    "cargo",
+    "python3"
+  ],
   "formatRepoDependencies": [],
   "providers": [],
-  "environmentVariables": [],
+  "environmentVariables": [
+    "FFMPEG",
+    "FFPROBE",
+    "PYTHON"
+  ],
   "notes": [
-    "The episode audio is always supplied by the user as a local file.",
-    "The generated timed-role-sheet.md is shown to and approved by the user before rendering. It contains every exact time range, spoken line, named nonverbal vocalization, silence, Dog/Bunny assignment, caption owner, and overlap. Direct review, documented local analysis, user labels, or a checksum-matched approved reference may draft the beats, but transcription and diarization never approve character roles. A speaker handoff occurs after the current speaker's last audible word and no later than the next speaker's first audible word; elongated phrases, internal dramatic pauses, and trailing words remain with the current speaker but never absorb the next character's words. speaker=both requires documented simultaneous-speech evidence and captioned overlap identifies captionSpeaker; uncertainty must stop for review and alternating voices must be split into single-speaker beats.",
-    "For local audio analysis, each stable detected voice ID is mapped once to the user-confirmed character for the whole episode. Never infer a character from a fixed mentor, lead, questioner, or foil archetype, and never recast a voice at a caption or apparent dialogue-turn boundary.",
-    "No speech, music, image, or video provider call occurs at runtime.",
-    "The smoke proof synthesizes a local tone only to exercise audio muxing without requiring episode content.",
-    "Cargo is required only when rebuilding PNG character poses from Toon Boom Harmony projects; normal video rendering uses the packaged PNG poses."
-  ]
+    "Node >=20.9.0 is the initial prerequisite. Run node runner.mjs doctor before installation; it reports missing tools, pinned Sharp, FFmpeg capabilities, and packaged-asset checksums without changing global installations. Install kit-local dependencies explicitly with npm ci.",
+    "FFMPEG, FFPROBE, and PYTHON select executable paths, not shell command strings. Node subprocesses use the running Node executable.",
+    "npm test includes JavaScript/runtime/packaged-asset checks without Python or Cargo. Optional converter tests need Python and Cargo; archive verification is an explicit zip/unzip profile documented in PACKAGING.md.",
+    "The user provides a supported accessible source link or local media file; user-authored timestamps are optional. The host agent drafts and corrects the complete dialogue from source/transcription evidence.",
+    "Optional setup creates a kit-local Python 3.12 environment and verifies about 486 MB of pinned model files. Ordinary intake returns setup-required instead of downloading missing dependencies or weights. Native Windows is deferred.",
+    "Keep original source media and full-duration full-resolution render audio separate from the 16 kHz mono ASR derivative. URL failures offer a user-supplied local file; no automatic cookies, credentials, or paid services.",
+    "The generated script-review.html and timed-role-sheet.md must be shown to the user before approval. They include every exact time range, spoken line, named nonverbal vocalization, silence, Dog/Bunny assignment, caption owner, and overlap, plus cameras, emphasis, background, title, episode label, exact WAV playback, evidence, and uncertainty. Transcription, timing evidence, casting evidence, and genuine diarization are distinct; automated transcription never approves roles.",
+    "speaker=both requires documented simultaneous-speech evidence and explicit caption ownership; uncertainty must stop for review, and alternating voices must be split into single-speaker beats rather than animated as overlap.",
+    "At each speaker handoff, retain the current speaker through the last audible word and hand over no later than the next speaker's first audible word; elongated phrases, internal dramatic pauses, and trailing words remain with their performer but must never absorb the next character's words.",
+    "Only when genuine diarization identifies distinct stable people, each stable detected voice ID maps to one user-confirmed character throughout the episode. Never infer a character from a fixed mentor, lead, questioner, or foil archetype, or recast at a caption boundary. A single performer playing multiple characters cannot be forced into one real person per character; user-approved performance and honest source evidence remain authoritative.",
+    "Explicit approval records the displayed review ID, actual approver, and confirmation. Changed approved choices or audio require fresh approval. Three technical cycles are allowed per content-and-audio revision; unchanged reapproval and explanatory notes do not reset retries.",
+    "Required technical checks and direct visual playback review must pass. Permitted unavailable auditory judgments remain explicitly unscored, never silently passed. Review receipts bind the current MP4, render identity, and quality policy; recorded attestations cannot prove perception.",
+    "Completion requires a verified export and host-agent handoff showing the actual video. Private source data and original evidence stay in the run; sanitized presentation never rewrites canonical receipts. A modified exported file invalidates completion.",
+    "No AI speech, music, image, or video API call occurs in this runtime. Local rendering and CPU transcription need no dedicated GPU; the host coding agent may have its own subscription or usage limits.",
+    "The sine-tone smoke proof exercises mechanics only and cannot finalize arbitrary episode content. Cargo is used only for rebuilding the packaged poses or optional converter/release proofs."
+  ],
+  "optionalIntakeTools": [
+    "python3.12"
+  ],
+  "optionalReleaseTools": [
+    "zip",
+    "unzip"
+  ],
+  "localIntake": {
+    "setupCommand": "node runner.mjs setup-intake",
+    "dependencyLock": "scripts/intake-requirements.lock",
+    "modelManifest": "scripts/intake-model.json",
+    "language": "en",
+    "device": "cpu",
+    "computeType": "int8",
+    "platformTargets": [
+      "macOS ARM64",
+      "Linux x64",
+      "WSL with Linux binaries"
+    ],
+    "nativeWindowsSupported": false,
+    "execution": "Prepared local-file transcription is offline; supported URL retrieval needs network access."
+  }
 }

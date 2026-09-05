@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { access, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export function requireEpisodeInputSource(input) {
@@ -25,7 +25,13 @@ export async function readJson(file) {
 
 export async function writeJson(file, value) {
   await mkdir(path.dirname(file), { recursive: true });
-  await writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
+  const temporary = `${file}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, { flag: "wx" });
+    await rename(temporary, file);
+  } finally {
+    await rm(temporary, { force: true });
+  }
 }
 
 export async function sha256(file) {
@@ -36,21 +42,33 @@ export function hashValue(value) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
-export function execute(program, args, { capture = false, cwd } = {}) {
+export function toolExecutable(program, env = process.env) {
+  if (program === "node") return process.execPath;
+  const override = { ffmpeg: "FFMPEG", ffprobe: "FFPROBE", python: "PYTHON", python3: "PYTHON" }[program];
+  return (override && env[override]) || program;
+}
+
+export function execute(program, args, { capture = false, cwd, env = process.env, timeoutMs, stdoutOnly = false } = {}) {
+  const executable = toolExecutable(program, env);
   return new Promise((resolve, reject) => {
-    const child = spawn(program, args, {
-      cwd,
+    const child = spawn(executable, args, {
+      cwd, env,
+      ...(timeoutMs ? { timeout: timeoutMs, killSignal: "SIGKILL" } : {}),
       stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
     });
     let output = "";
+    let errors = "";
     if (capture) {
       child.stdout.on("data", (chunk) => { output += chunk; });
-      child.stderr.on("data", (chunk) => { output += chunk; });
+      child.stderr.on("data", (chunk) => {
+        errors += chunk;
+        if (!stdoutOnly) output += chunk;
+      });
     }
     child.on("error", reject);
     child.on("close", (code) => {
       if (code === 0) resolve(output);
-      else reject(new Error(`${program} exited ${code}\n${output.slice(-8000)}`));
+      else reject(new Error(`${executable} exited ${code}\n${(stdoutOnly ? errors : output).slice(-8000)}`));
     });
   });
 }

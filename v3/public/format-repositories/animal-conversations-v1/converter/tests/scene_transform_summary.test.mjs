@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolExecutable } from "../../runtime/common.mjs";
 
 const converterRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -24,7 +25,7 @@ test("transform summary accepts compact frame ranges", async () => {
   </nodeslist></rootgroup></scene></scenes>
 </project>`);
 
-  const result = spawnSync("python3", [path.join(converterRoot, "scene_transform_summary.py"), scene, "Head-P"], {
+  const result = spawnSync(toolExecutable("python3"), [path.join(converterRoot, "scene_transform_summary.py"), scene, "Head-P"], {
     encoding: "utf8",
   });
   await rm(directory, { recursive: true });

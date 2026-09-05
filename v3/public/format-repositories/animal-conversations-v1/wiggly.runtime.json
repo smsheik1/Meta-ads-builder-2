@@ -1,10 +1,13 @@
 {
   "schemaVersion": 1,
   "entry": "runner.mjs",
-  "commands": ["check", "smoke", "init", "review-script", "approve-script", "validate", "render", "inspect", "finalize"],
+  "commands": ["doctor", "check", "setup-intake", "intake", "smoke", "init", "status", "run", "review-script", "approve-script", "validate", "render", "inspect", "record-playback-review", "finalize", "export", "upgrade-run"],
   "officialRenderer": "runtime/render.mjs",
   "freeSmokeCommand": "npm run smoke -- --run=smoke-proof",
   "providerSpend": "none",
   "runDirectory": "agent-runs/<run-id>",
-  "finalOutput": "agent-runs/<run-id>/final.mp4"
+  "previewOutput": "agent-runs/<run-id>/final.mp4",
+  "finalOutput": "outputs/<run-id>/final.mp4",
+  "completionRule": "Current approval, technical and required playback review, finalization and verified export must all pass.",
+  "attemptRule": "At most three technical cycles per content-and-audio revision; unchanged reapproval never resets the budget."
 }

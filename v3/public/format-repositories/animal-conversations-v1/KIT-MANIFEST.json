@@ -1,12 +1,15 @@
 {
   "schemaVersion": 1,
   "kit": "wiggly-animal-conversations-format-kit",
-  "formatVersion": "0.15.1",
+  "formatVersion": "0.16.2",
   "officialFormat": ".",
   "canonicalSkill": "SKILL.md",
-  "install": "npm install",
+  "install": "npm ci",
   "check": "npm run check",
   "smoke": "npm run smoke",
+  "episodeStart": "node runner.mjs intake --run=<new-id> --source=<supported-accessible-link-or-local-file>",
+  "episodeStatus": "node runner.mjs status --run=<id>",
+  "releaseAcceptance": "Candidate implementation; consult the release acceptance report. Packaging integrity alone does not certify platforms or playback.",
   "excluded": [
     "secrets",
     "node_modules",
