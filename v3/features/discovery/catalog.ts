@@ -2735,7 +2735,7 @@ export type DiscoveryShelf = {
   entries: DiscoveryEntry[];
 };
 
-const discoveryShelfDefinitions = [
+export const discoveryShelfDefinitions = [
   {
     id: "two-d-character-animation",
     title: "2D Character Animation",

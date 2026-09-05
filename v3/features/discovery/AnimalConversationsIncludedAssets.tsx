@@ -42,7 +42,7 @@ export function AnimalConversationsIncludedAssets({
               id="included-assets-title"
               className="mt-3 max-w-[720px] text-[clamp(34px,5vw,54px)] font-black leading-[0.96] tracking-[-0.04em]"
             >
-              The cast, rooms, and camera grammar.
+              The cast, backgrounds, and camera grammar.
             </h2>
           </div>
           <p className="text-sm font-black min-[701px]:pb-1 min-[701px]:text-right">

@@ -261,12 +261,17 @@ assert.match(
   /<FormatRepoIncludedAssets presentation=\{repoPage\} \/>/,
 );
 assert.ok(
-  consumerRoute.indexOf("<FormatRepoRunSummary") <
-    consumerRoute.indexOf("<FormatRepoIncludedAssets"),
-  "Included assets should follow the short run summary.",
+  consumerRoute.indexOf("<FormatRepoIncludedAssets") <
+    consumerRoute.indexOf("<FormatRepoRunSummary"),
+  "The detailed run summary should close the Repo page after its proof.",
 );
 assert.ok(
   consumerRoute.indexOf("<FormatRepoIncludedAssets") <
+    consumerRoute.indexOf('id="examples"'),
+  "Included assets should appear before the shared examples section.",
+);
+assert.ok(
+  consumerRoute.indexOf('id="examples"') <
     consumerRoute.indexOf("<FormatRepoTrust"),
   "Included assets should appear before the proof and technical details.",
 );
@@ -275,15 +280,15 @@ assert.match(repoPageSections, /<BikiniBottomDanceOffIncludedAssets/);
 assert.doesNotMatch(consumerRoute, /variant="inline"/);
 assert.match(consumerRoute, /getFormatRepoPagePresentation/);
 assert.match(repoPageRegistrySource, /slug === "bikini-bottom-dance-off"/);
-assert.match(consumerRoute, /!repoTrust/);
+assert.match(consumerRoute, /repoPage \? \(/);
 assert.match(consumerRoute, /w-\[min\(100%-32px,980px\)\]/);
 assert.match(consumerRoute, /md:grid-cols-\[1\.15fr_0\.85fr\]/);
 assert.match(consumerRoute, /text-\[clamp\(42px,6vw,72px\)\]/);
 assert.match(consumerRoute, /max-w-\[310px\]/);
 assert.match(
   consumerRoute,
-  /\{!repoTrust \? \(\s*<a\s+href="#proof"/,
-  "Dance Off should not show the redundant hero proof button once proof is inline.",
+  /href="#examples"/,
+  "Every Repo hero should link to the shared examples section.",
 );
 assert.match(
   trustComponent,
@@ -382,20 +387,14 @@ assert.doesNotMatch(connectionsComponent, /Current estimate/);
 assert.doesNotMatch(connectionsComponent, /No API key needed for/);
 assert.doesNotMatch(connectionsComponent, /valid dialogue is already cached/);
 assert.match(convexProvider, /pathname\.startsWith\("\/formats\/"\)/);
-assert.match(repoPageRegistrySource, /Make your Dance Off\./);
 assert.match(
   repoPageRegistrySource,
   /Add one song and optionally choose the dances or dialogue\.[\s\S]*The\s+agent handles everything else\./,
 );
-assert.match(repoPageRegistrySource, /provided: "One song"/);
-assert.match(
-  runSummaryComponent,
-  /<SummaryFact label="You get">\{format\.handoff\.output\}/,
-);
-assert.match(repoPageRegistrySource, /ready: "12–30 minutes"/);
-assert.match(runSummaryComponent, /max-w-\[980px\]/);
-assert.match(runSummaryComponent, /min-\[701px\]:grid-cols-3/);
-assert.doesNotMatch(runSummaryComponent, /shadow-\[5px_5px_0_#080817\]/);
+assert.match(runSummaryComponent, /\{handoff\.output\}/);
+assert.match(runSummaryComponent, /max-w-\[1100px\]/);
+assert.match(runSummaryComponent, /lg:grid-cols-\[1fr_1\.1fr\]/);
+assert.match(runSummaryComponent, /shadow-\[6px_6px_0_#080817\]/);
 assert.match(includedAssetsComponent, /The cast, stages, and moves\./);
 assert.doesNotMatch(includedAssetsComponent, /already inside/);
 assert.doesNotMatch(includedAssetsComponent, /Production-ready Repo assets/);
@@ -418,30 +417,42 @@ assert.match(characterModelViewerComponent, /Voice pending/);
 assert.match(characterModelViewerComponent, /character-voice-preview/);
 assert.match(characterModelViewerComponent, /aria-pressed/);
 assert.match(characterModelViewerComponent, /voicePreview\.line/);
-assert.match(characterModelViewerComponent, /const MIN_CAMERA_ORBIT = "auto 65deg auto"/);
-assert.match(characterModelViewerComponent, /const MAX_CAMERA_ORBIT = "auto 85deg auto"/);
-assert.match(characterModelViewerComponent, /"min-camera-orbit": MIN_CAMERA_ORBIT/);
-assert.match(characterModelViewerComponent, /"max-camera-orbit": MAX_CAMERA_ORBIT/);
-assert.match(characterPreviewGenerator, /function applyDisplayRules\(character, characterPack\)/);
+assert.match(
+  characterModelViewerComponent,
+  /const MIN_CAMERA_ORBIT = "auto 65deg auto"/,
+);
+assert.match(
+  characterModelViewerComponent,
+  /const MAX_CAMERA_ORBIT = "auto 85deg auto"/,
+);
+assert.match(
+  characterModelViewerComponent,
+  /"min-camera-orbit": MIN_CAMERA_ORBIT/,
+);
+assert.match(
+  characterModelViewerComponent,
+  /"max-camera-orbit": MAX_CAMERA_ORBIT/,
+);
+assert.match(
+  characterPreviewGenerator,
+  /function applyDisplayRules\(character, characterPack\)/,
+);
 assert.match(characterPreviewGenerator, /mesh\.visible = false/);
-assert.match(characterPreviewGenerator, /characterPack\.restPoseAdjustments \|\| \[\]/);
+assert.match(
+  characterPreviewGenerator,
+  /characterPack\.restPoseAdjustments \|\| \[\]/,
+);
 assert.match(characterPreviewGenerator, /onlyVisible: true/);
 assert.doesNotMatch(
   characterPreviewGenerator,
   /characterPack\.id === ["'](?:sandy|mario|sonic-modern|larry)["']/,
 );
-assert.match(
-  voicePreviewGenerator,
-  /readNamedEnvironmentValue/,
-);
+assert.match(voicePreviewGenerator, /readNamedEnvironmentValue/);
 assert.match(
   voicePreviewGenerator,
   /BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID|operatorReferenceEnvironmentVariable/,
 );
-assert.doesNotMatch(
-  voicePreviewGenerator,
-  /\.env\.local|process\.loadEnvFile/,
-);
+assert.doesNotMatch(voicePreviewGenerator, /\.env\.local|process\.loadEnvFile/);
 assert.match(
   voicePreviewGenerator,
   /!\(await fileMatchesHash\(output, preview\.sha256\)\)/,
@@ -464,24 +475,20 @@ assert.equal(
 assert.doesNotMatch(runSummaryComponent, /checked episode plan/i);
 assert.doesNotMatch(runSummaryComponent, /preview contact sheet/i);
 assert.doesNotMatch(runSummaryComponent, /Final output/);
-assert.doesNotMatch(runSummaryComponent, /format\.handoff\.estimates\.map/);
+assert.match(runSummaryComponent, /handoff\.estimates\.map/);
 assert.doesNotMatch(runSummaryComponent, /validated episode input/);
 assert.doesNotMatch(runSummaryComponent, /provider cost/);
 assert.doesNotMatch(runSummaryComponent, /A-F eval/);
-assert.match(consumerRoute, /Ready to make one\?/);
+assert.match(runSummaryComponent, /Know the run before you start\./);
 assert.match(
   consumerRoute,
-  /The requirements, timing, and exact Repo files are already\s+above\./,
+  /<FormatRepoRunSummary[\s\S]*description=\{repoPageCopy\?\.runDescription\}/,
+  "Dance Off should use the same detailed bottom run section as every Repo page.",
 );
 assert.match(
   consumerRoute,
-  /repoTrust && format\.handoff \? \([\s\S]*Ready to make one\?[\s\S]*\) : \(/,
-  "Dance Off should end with a compact CTA instead of repeating the full run breakdown.",
-);
-assert.match(
-  consumerRoute,
-  /\{!repoTrust \? \([\s\S]*What stays the same[\s\S]*What changes[\s\S]*\) : null\}/,
-  "Dance Off should omit the redundant fixed-versus-changeable wall of text.",
+  /repoPage \? \([\s\S]*<FormatRepoIncludedAssets[\s\S]*\) : \([\s\S]*What the Repo keeps[\s\S]*What you change/,
+  "Every Repo should use a consistent included-assets slot without duplicating Dance Off's data.",
 );
 
 assert.match(trustStyles, /width: min\(100%, 980px\)/);
@@ -520,10 +527,7 @@ assert.deepEqual(trustData.stats, {
   voicePreviewReadyCharacters: 20,
 });
 const voicePreviewManifest = JSON.parse(
-  readFileSync(
-    `${repositoryRoot}/assets/voice-previews/manifest.json`,
-    "utf8",
-  ),
+  readFileSync(`${repositoryRoot}/assets/voice-previews/manifest.json`, "utf8"),
 ) as {
   previews: Array<{
     characterId: string;
@@ -626,7 +630,11 @@ for (const character of trustData.includedAssets.characters) {
   assert.ok(previewModel.byteLength > 250_000);
   const poster = readFileSync(`public${character.posterSrc}`);
   assert.ok(poster.byteLength > 5_000);
-  assert.deepEqual(imageSize(poster), { width: 800, height: 1000, type: "png" });
+  assert.deepEqual(imageSize(poster), {
+    width: 800,
+    height: 1000,
+    type: "png",
+  });
 
   const preview = voicePreviewManifest.previews.find(
     (candidate) => candidate.characterId === character.id,
@@ -713,7 +721,10 @@ assert.match(
   previewProvenance.method,
   new RegExp(`All ${motionReadyCharacterCatalog.length} browser-ready GLBs`),
 );
-assert.equal(previewProvenance.previews.length, motionReadyCharacterCatalog.length);
+assert.equal(
+  previewProvenance.previews.length,
+  motionReadyCharacterCatalog.length,
+);
 for (const character of trustData.includedAssets.characters) {
   const preview = previewProvenance.previews.find(
     (candidate) => candidate.characterId === character.id,
@@ -820,15 +831,15 @@ assert.equal(trustData.requirements.providers[0]?.name, "Fish Audio");
 assert.deepEqual(trustData.requirements.environmentVariables, [
   "FISH_STUDIO_APIKEY",
 ]);
-assert.deepEqual(
-  trustData.requirements.optionalOperatorEnvironmentVariables,
-  [{
+assert.deepEqual(trustData.requirements.optionalOperatorEnvironmentVariables, [
+  {
     name: "BIKINI_BOTTOM_DANCE_OFF_OLAF_VOICE_ID",
-    purpose: "Use Wiggly's approved private Olaf clone instead of the packaged transferable public fallback.",
+    purpose:
+      "Use Wiggly's approved private Olaf clone instead of the packaged transferable public fallback.",
     valuePackaged: false,
     requiredForPublicKit: false,
-  }],
-);
+  },
+]);
 assert.equal(
   trustData.commands.includes(
     "npm run render -- --run=episode-01 --approve-provider",
