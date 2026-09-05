@@ -1,0 +1,24 @@
+{
+  "automatic": [
+    "Input, asset and output hashes are current",
+    "1080 × 1920 H.264 video with audio",
+    "Output duration matches measured song within 100ms",
+    "Entire output decodes",
+    "Audio is not entirely silent",
+    "No full-frame freeze lasting 2.5 seconds",
+    "Three source clips span the actual song without hidden hold padding"
+  ],
+  "creative": [
+    "Directly see the full moving video and hear its audio; screenshots, captions and player controls do not count",
+    "Brand identity and buyer truth are accurate; no invented Lego endorsement",
+    "One coherent Lego world and hero motif, with three distinct readable events",
+    "Lyrics are audible and captions readable without hiding the product",
+    "Technical success is not creative approval; missing perception means unreviewed"
+  ],
+  "limits": [
+    "Three render attempts per run and three paid submissions per slot",
+    "Failed or uncertain provider submissions never silently restart",
+    "Smoke fixtures cannot generate or finalize as real creative work",
+    "The two packaged examples passed technical checks; direct audiovisual creative review remains pending"
+  ]
+}

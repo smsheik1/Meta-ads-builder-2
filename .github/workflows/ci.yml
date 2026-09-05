@@ -7,6 +7,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  lego-kit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LEGO_DISABLE_PAID_CALLS: "1"
+      LEGO_BROWSER_EXECUTABLE: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install local media tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Extract only the published consumer archive
+        run: unzip -q v3/public/format-repositories/lego-music-video-v1/downloads/wiggly-lego-music-video-format-kit.zip -d "$RUNNER_TEMP/lego-kit"
+      - name: Install and prove the actual package without provider calls
+        working-directory: ${{ runner.temp }}/lego-kit/wiggly-lego-music-video-format-kit/v3
+        run: |
+          npm install
+          npm test
+          npm run format:lego -- check
+          npm run smoke
+          npm run format:lego -- import --run=cheesecake-ci --input="$PWD/public/format-repositories/lego-music-video-v1/goldens/cheesecake/input.json"
+          npm run format:lego -- render --run=cheesecake-ci
+          npm run format:lego -- inspect --run=cheesecake-ci
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15

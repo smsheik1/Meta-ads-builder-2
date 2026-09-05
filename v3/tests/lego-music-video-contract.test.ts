@@ -1,0 +1,64 @@
+import assert from "node:assert/strict";
+import { applyMeasuredSong, asJingleScene, asLegoScene, createLegoDraft, legoMediaPrompts, legoStoryPrompt, validateLegoMusicVideoScene } from "../features/formats/lego-music-video/contract";
+import { deriveBrickStoryboardShots } from "../features/formats/jingle/storyboard";
+import { buildJingleStitchFilter } from "../features/formats/jingle/stitch";
+import { getAdSceneDimensions, getAdSceneDurationInFrames } from "../remotion-entry/Root";
+import { formatRegistry } from "../features/formats/registry";
+import { JingleFormatRenderer } from "../features/formats/jingle/render";
+import { buildLegoProviderRequest } from "../features/formats/lego-music-video/providers";
+
+const scene = createLegoDraft("Local synthetic contract fixture; not a real ad proof.");
+assert.equal(validateLegoMusicVideoScene(scene).valid, false, "Real init must not silently inherit smoke content.");
+scene.brand.name = "Fixture Bakery";
+scene.brand.description = "Cookies delivered from the bakery.";
+scene.brand.receipts.specificClaims = ["User-supplied test brief: cookies delivered from the bakery."];
+scene.creative.headline = "Fresh to your door";
+scene.layout.brandPhonetic = "Fixture Bakery";
+scene.layout.angle = "A delivery surprise";
+scene.layout.lyrics = ["Fresh to your door", "Skip the stale aisle", "Fresh to your door"];
+scene.layout.compositionPlan.chunks.forEach((chunk, index) => {
+  chunk.text = `[${index === 1 ? "Verse" : "Hook"}]\n${scene.layout.lyrics[index]}`;
+  chunk.positive_styles = ["upbeat pop"];
+});
+assert.deepEqual(validateLegoMusicVideoScene(scene), { valid: true, errors: [] });
+assert.equal(validateLegoMusicVideoScene(null).valid, false);
+assert.equal(validateLegoMusicVideoScene({}).valid, false);
+assert.equal(validateLegoMusicVideoScene(scene, { ready: true }).valid, false);
+assert.deepEqual(asLegoScene(asJingleScene(scene)), scene);
+assert.equal(formatRegistry["lego-music-video"].RenderComponent, JingleFormatRenderer, "Reuse one renderer, not an almost-the-same composition.");
+assert.deepEqual(getAdSceneDimensions(scene), { width: 1080, height: 1920 });
+assert.deepEqual(getAdSceneDimensions(asJingleScene(scene)), { width: 1080, height: 1350 }, "Do not change old Brand Jingle outputs.");
+assert.equal(getAdSceneDurationInFrames(scene, 30), 600, "No unexplained trailing padding.");
+const measured = applyMeasuredSong(scene, 20_070, "media/song.mp3");
+assert.equal(measured.layout.musicLengthMs, 20_070);
+assert.equal(measured.layout.compositionPlan.chunks.reduce((sum, c) => sum + c.duration_ms, 0), 20_070);
+assert.equal(measured.audio.status === "generated" && measured.audio.captions.at(-1)?.endMs, 20_070);
+assert.throws(() => applyMeasuredSong(scene, NaN, "media/song.mp3"));
+assert.throws(() => applyMeasuredSong(scene, 45_000, "media/song.mp3"));
+const multiLine = structuredClone(scene);
+multiLine.layout.lyrics = ["Fresh to your door", "Fixture Bakery", "Skip the stale aisle", "Cookies in a tin", "Fresh to your door"];
+multiLine.layout.compositionPlan.chunks[1]!.text = "[Verse]\nSkip the stale aisle\nCookies in a tin";
+const multiSong = applyMeasuredSong(multiLine, 20_070, "media/song.mp3");
+assert.equal(multiSong.audio.status === "generated" && multiSong.audio.captions[1]?.text, "Skip the stale aisle Cookies in a tin", "Retain complete verse captions from the existing music-video workflow.");
+const story = {
+  recurringHeroObject: "red cookie tin",
+  shots: deriveBrickStoryboardShots(asJingleScene(scene)).map((slot, index) => ({ shotIndex: index, lyricLine: slot.lyricLine, funMechanism: ["dramatic_reveal", "tiny_disaster", "crowd_reaction"][index], sceneDescription: "Lego minifigures gasp as the red cookie tin rolls past a crumbling shelf", motionHint: "the red cookie tin rolls forward" })),
+};
+assert.match(legoStoryPrompt(scene), /Lego music-video director/);
+assert.doesNotMatch(legoStoryPrompt(scene), /Do not use trademarked toy names/);
+const prompts = legoMediaPrompts(scene, story);
+assert.equal(prompts.shots.length, 3);
+assert.ok(prompts.shots.every(shot => shot.shotPrompt.includes("Lego") && shot.shotPrompt.includes("One single full-frame")));
+assert.throws(() => legoMediaPrompts(scene, { ...story, shots: story.shots.slice(1) }));
+const shortSong = applyMeasuredSong(scene, 10_000, "media/song.mp3");
+assert.throws(() => buildLegoProviderRequest("clip-1", { version: 1, scene: shortSong, story, media: { song: "media/song.mp3", reference: null, shots: [{ image: "shot.jpg", video: null }, { image: null, video: null }, { image: null, video: null }] } }, { image: "data:image/jpeg;base64,fixture" }), /minimum clip length/, "Reject clips that cannot fit the measured section before any provider spend.");
+const clips = [{ startMs: 0, endMs: 6000 }, { startMs: 6000, endMs: 14000 }, { startMs: 14000, endMs: 20000 }];
+assert.match(buildJingleStitchFilter(clips), /tpad=stop_mode=clone/);
+assert.doesNotMatch(buildJingleStitchFilter(clips, [6, 8, 6]), /tpad/, "The Repo must not quietly fill missing motion with frozen frames.");
+assert.throws(() => buildJingleStitchFilter(clips, [1, 8, 6]), /retiming/);
+assert.throws(() => buildJingleStitchFilter(clips, [6, 8]), /Probe every/);
+assert.throws(() => buildJingleStitchFilter([{ startMs: 0, endMs: 0 }]));
+const invalid = structuredClone(scene);
+invalid.layout.compositionPlan.chunks[1]!.duration_ms = -10;
+assert.equal(validateLegoMusicVideoScene(invalid).valid, false);
+console.log("Lego Music Video contracts, measured timing, shared renderer, and host-agent planning passed.");

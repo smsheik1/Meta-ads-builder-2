@@ -1,0 +1,50 @@
+{
+  "version": "0.1.0",
+  "inputHash": "aefebb36a3c934eaac4282e59e3b4d8c6c84f561e5d3fa7a3f5ca2223b0a730b",
+  "inventory": [
+    {
+      "path": "media/song.mp3",
+      "sha256": "2e4f880935681f9485f031b8c0b8a336c85b61c7458159cbcf11f3569c69473b"
+    },
+    {
+      "path": "media/reference.jpg",
+      "sha256": "a0b436eeb464930a89611b017aa743026d0d1c2d7b961637fb0ff1f9ad0334e3"
+    },
+    {
+      "path": "media/shot-1.jpg",
+      "sha256": "13d6c2f28155212b7fe0cc4a440336184d88985f6c2bd855760ac07ed25049a0"
+    },
+    {
+      "path": "media/clip-1.mp4",
+      "sha256": "61f8e7ed5a033014de92c5920eb0c87057aef14f37029a6ff4bfaf88f6e2acf5"
+    },
+    {
+      "path": "media/shot-2.jpg",
+      "sha256": "f7a3e52c856c90291e6beff7c238be314d62af43eaf55145c281097d6032bc42"
+    },
+    {
+      "path": "media/clip-2.mp4",
+      "sha256": "72a9943e6ccb6250bebdcb017db902378264891c4c82406c1f668f34e3bf6c28"
+    },
+    {
+      "path": "media/shot-3.jpg",
+      "sha256": "edd7f164d9fa07035ef2717ae2f9f27fa0e9eadacb2fa80eee2da8316ed59ba7"
+    },
+    {
+      "path": "media/clip-3.mp4",
+      "sha256": "ffa882ce579eebc8381b52c7404e1e0685b9d7c8a996e12d44ee16b9a10d5599"
+    }
+  ],
+  "sourceDurationsSeconds": [
+    6.041667,
+    8.041667,
+    6.041667
+  ],
+  "retiming": [
+    1.005101813342206,
+    1.0034523334165213,
+    1.005101813342206
+  ],
+  "renderer": "AdRenderSurface → JingleFormatRenderer → RemotionAdScene",
+  "paidGenerationCalls": 0
+}

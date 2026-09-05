@@ -2132,6 +2132,23 @@ const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
 }));
 
 export const discoveryCatalog: DiscoveryEntry[] = [
+  ...(["cheesecake", "cookies"] as const).map((example, index): DiscoveryEntry => ({
+    id: `lego-music-video-${example}`,
+    status: "published",
+    order: 11.8 + index / 100,
+    brand: "David's Cookies",
+    title: example === "cheesecake" ? "A cheesecake surprise, built in Lego" : "Fresh-baked delivery, in a Lego world",
+    curatorNote: "An existing song and three Lego scenes, reassembled with the standalone runtime. Technical checks passed; direct audiovisual creative review is pending. No new paid generation.",
+    goal: "sell",
+    media: {
+      kind: "video",
+      src: `/format-repositories/lego-music-video-v1/goldens/${example}/final.mp4`,
+      poster: `/format-repositories/lego-music-video-v1/goldens/${example}/media/shot-1.jpg`,
+      durationLabel: "20 sec",
+      aspectRatio: "9:16",
+    },
+    format: { slug: "lego-music-video", name: "Lego Music Video", version: "0.1.0", owner: "Wiggly Studio" },
+  })),
   {
     id: "talking-fish-news-mars-tiles",
     status: "published",
@@ -2785,6 +2802,12 @@ export const discoveryShelfDefinitions = [
     title: "Songs People Remember",
     description: "Brand jingles built around one sharp buyer truth.",
     formats: ["jingle"],
+  },
+  {
+    id: "lego-music-videos",
+    title: "Lego Music Videos",
+    description: "Your brand, an original song, and a cinematic Lego world. Two examples of one standalone Repo.",
+    formats: ["lego-music-video"],
   },
   {
     id: "video-memes",

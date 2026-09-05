@@ -1,0 +1,34 @@
+{
+  "purpose": "Two distinct songs, hero objects and stories through the same standalone runtime. Both advertise David's Cookies; this does not certify cross-brand creative generalization or current provider execution.",
+  "canonicalContactSheet": "goldens/cookies/contact-sheet.jpg",
+  "examples": [
+    {
+      "id": "cheesecake",
+      "title": "Cheesecake surprise",
+      "role": "Existing song and footage; new local export",
+      "whyItWorks": [
+        "A red cheesecake dome connects the refrigerator reveal, storefront delivery and birthday payoff.",
+        "All eight technical checks passed."
+      ],
+      "knownWeaknesses": [
+        "Direct audiovisual creative review is pending.",
+        "Section-derived captions are not word-aligned.",
+        "Historical video model was not recorded."
+      ]
+    },
+    {
+      "id": "cookies",
+      "title": "Fresh-baked cookie tin",
+      "role": "Second existing input through the same runtime",
+      "whyItWorks": [
+        "A red cookie tin connects a bakery launch, a collapsing stale aisle and a fresh delivery.",
+        "All eight technical checks passed."
+      ],
+      "knownWeaknesses": [
+        "Direct audiovisual creative review is pending.",
+        "Same brand as the first example; not a cross-brand proof.",
+        "Current provider defaults were not exercised with paid generation."
+      ]
+    }
+  ]
+}

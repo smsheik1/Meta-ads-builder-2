@@ -1,0 +1,34 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "binaries": [
+      "ffmpeg",
+      "ffprobe",
+      "Chrome (installed or Remotion-managed)"
+    ]
+  },
+  "providers": [
+    {
+      "name": "ElevenLabs",
+      "environmentVariable": "ELEVENLABS_API_KEY",
+      "model": "music_v2",
+      "purpose": "Optional: one new song, only after explicit approval. A supplied song needs no provider."
+    },
+    {
+      "name": "Replicate",
+      "environmentVariable": "REPLICATE_API_TOKEN",
+      "models": [
+        "google/nano-banana-2-lite",
+        "bytedance/seedance-2.0-mini"
+      ],
+      "purpose": "Optional: one world reference, three full-quality stills and three silent animated clips, only after approval. Supplied media needs no provider."
+    }
+  ],
+  "notes": [
+    "Your coding agent handles research, lyrics and storytelling; no separate LLM key, NVIDIA NIM, Wiggly login or database is required.",
+    "Free smoke and supplied-media runs make zero paid calls. New music and visuals use your provider accounts; get current quotes before approving a batch.",
+    "Current provider defaults are inherited from the existing workflow; no new paid end-to-end generation was performed for this package. Historical examples used older media, with provenance included.",
+    "Set LEGO_BROWSER_EXECUTABLE to an installed Chrome if automatic browser download is unavailable. Browser execution requires permission in sandboxed coding agents.",
+    "Set LEGO_DISABLE_PAID_CALLS=1 to prohibit generation. Never paste keys in chat. Environment variables or an ignored root secrets.env are the only credential sources."
+  ]
+}

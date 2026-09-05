@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "inputHash": "aefebb36a3c934eaac4282e59e3b4d8c6c84f561e5d3fa7a3f5ca2223b0a730b",
+  "renderSha256": "1107aefb6b2bffe9328926b0a7cd7906e49aea09a94e1a585f898a1d7d6dbfcc",
+  "checks": {
+    "currentOutputHash": true,
+    "portrait1080": true,
+    "h264": true,
+    "audioPresent": true,
+    "durationMatchesSong": true,
+    "audioNotEntirelySilent": true,
+    "noLongFullFrameFreeze": true,
+    "decodesCompletely": true
+  },
+  "technicalPassed": true,
+  "creativeReview": "unreviewed",
+  "perception": {
+    "video": "sampled frames only until directly reviewed",
+    "audio": "technical evidence only until directly heard"
+  },
+  "source": "local run",
+  "contactSheet": "render-3/contact-sheet.jpg"
+}
