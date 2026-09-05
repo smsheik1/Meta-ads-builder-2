@@ -48,6 +48,8 @@ Original media stays private. `user-audio.wav` is the full-resolution/full-durat
 
 At `needs-script-draft`, inspect the source and uncertain `transcript.json`, then author a candidate following `input-contract.json`. Do not ask the user for timing JSON, copy sample timings into real content, or mistake ASR for approval.
 
+For a `speaker=both` draft, include the actual simultaneous-speech basis in `overlapEvidence` and identify `captionSpeaker` when there are captioned words. Use `captionSpeaker=both` only for a synchronized chorus. A draft evidence note does not confirm or approve the review; section 4 still applies.
+
 Import into the **same intake run**, without calling init again:
 
 ```sh
@@ -80,6 +82,8 @@ node runner.mjs run --run=<id>
 ```
 
 The runtime computes hashes. Changed review evidence may require a new displayed review ID. Changed audio or creative choices invalidate approval. For changed choices in a progressed run, import with `review-script --input=/absolute/revised.json --new-revision`; previous outputs/receipts are preserved. A different source/audio uses fresh intake, not in-place file replacement. Unchanged review regeneration is idempotent.
+
+Importing changed draft content regenerates all beat evidence. Preserve the previous input/review first, carry forward only observations still valid for unchanged content and audio, then record corrections and regenerate the review. Never copy approval fields, fingerprints, review IDs, or receipts into the new review.
 
 ## 5. Render and repair only observed failures
 

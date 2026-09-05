@@ -69,7 +69,7 @@ async function fixture(t) {
   return { directory, root, audio, input, content, runId: "synthetic-workflow", runDirectory: path.join(root, "agent-runs/synthetic-workflow") };
 }
 
-test("prepared intake imports an agent draft into the existing run without reinitialization", mediaProfile, async (t) => {
+test("prepared intake imports an evidence-backed chorus without reinitialization or inferred approval", mediaProfile, async (t) => {
   const args = await fixture(t);
   await startIntake({ ...args, source: args.audio });
   const audioFile = path.join(args.runDirectory, "user-audio.wav");
@@ -84,9 +84,26 @@ test("prepared intake imports an agent draft into the existing run without reini
     transcript: { file: "transcript.json", sha256: await sha256(path.join(args.runDirectory, "transcript.json")) },
   });
   assert.equal((await workflowStatus(args)).phase, "needs-script-draft");
+  const draft = structuredClone(args.content);
+  Object.assign(draft.timeline[0], { speaker: "both", captionSpeaker: "both" });
+  await writeJson(args.input, draft);
+  await assert.rejects(importDraft(args), /overlapEvidence is required/);
+  assert.equal((await readdir(args.runDirectory)).includes("input.json"), false);
+  draft.timeline[0].overlapEvidence = "Synthetic chorus label for import testing; no actual user or perceptual approval.";
+  await writeJson(args.input, draft);
   await importDraft(args);
   assert.equal((await workflowStatus(args)).phase, "needs-script-approval");
-  assert.equal((await readJson(path.join(args.runDirectory, "input.json"))).audioFile, "user-audio.wav");
+  const imported = await readJson(path.join(args.runDirectory, "input.json"));
+  assert.equal(imported.audioFile, "user-audio.wav");
+  assert.deepEqual(imported.timeline, draft.timeline);
+  const review = await readJson(path.join(args.runDirectory, "script-review.json"));
+  assert.equal(review.beats[0].proposedSpeaker, "both");
+  assert.equal(review.beats[0].captionSpeaker, "both");
+  assert.equal(review.beats[0].confirmedSpeaker, null);
+  assert.equal(review.beats[0].overlapConfirmed, null);
+  assert.equal(review.approval.approved, false);
+  assert.equal((await runWorkflow(args)).phase, "needs-script-approval");
+  await assert.rejects(technicalCycle(args), /unapproved/);
   await assert.rejects(startIntake({ ...args, source: args.audio }), /already exists/);
 });
 

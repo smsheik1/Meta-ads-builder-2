@@ -1,7 +1,7 @@
 {
   "name": "wiggly-animal-conversations-format-kit",
   "private": true,
-  "version": "0.16.1",
+  "version": "0.16.2",
   "type": "module",
   "scripts": {
     "test": "node --test converter/tests/manifests.test.mjs converter/tests/render_tvg.test.mjs converter/tests/runtime_channels.test.mjs converter/tests/scene_transforms.test.mjs runtime/tests/*.test.mjs",

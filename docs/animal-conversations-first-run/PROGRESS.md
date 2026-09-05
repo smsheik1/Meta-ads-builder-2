@@ -8,8 +8,8 @@
 - **Branch:** `feat/animal-conversations-first-run`.
 - **Worktree:** `/Users/shaz/.codex/worktrees/e3ba/Meta-ads-builder-2/.goal-worktrees/animal-conversations-first-run`.
 - **Source kit:** `v3/public/format-repositories/animal-conversations-v1`.
-- **Current candidate:** 0.16.1, source checkpoint `c62e02b4ce590b5b371786e0404a87a829060571`; public ZIP/catalog intentionally remain 0.15.1.
-- **Current acceptance work:** full local release profile passed (106 Node + 3 Python-dependent converter tests + 7 Rust); fresh 0.16.1 Mac extraction/setup, smoke and two real intakes passed. Actual Linux and WSL2 fresh-artifact profiles, smoke, setup, both offline intakes and status/inventory checks passed in run `33941276524`, commit `9474a55b`. Both real Mac reviews still correctly stop at user approval.
+- **Current candidate:** 0.16.2, scoped chorus instruction/test correction; see CHORUS-IMPORT-FIX.md. Previous 0.16.1 evidence and archive are preserved; public ZIP/catalog intentionally remain 0.15.1.
+- **Current acceptance work:** 0.16.2 source/fresh-archive all-Node release profiles passed 106/106, default profiles passed 98 with 8 explicit skips, and fresh Mac setup/check/smoke/inventory passed. Previous 0.16.1 full local profile (106 Node + 3 Python-dependent converter tests + 7 Rust), two real Mac intakes and actual Linux/WSL run `33941276524` remain scoped to that version. Both real Mac reviews still correctly stop at user approval; their files remain in the original fresh workspace.
 - **Next:** obtain corrections/explicit approval of the two displayed reviews; resolve marked uncertainties honestly; render, perform required technical and actual playback review, finalize and verify exports. Complete the required fresh host-agent supported-system end-to-end proof; the successful CI is mechanics/intake evidence, not that proof. Never substitute synthetic approval/playback attestations.
 
 ## Planned versus delivered
@@ -67,6 +67,8 @@ Do not replace a pending row with “done” merely because code exists or tests
 
 ## Exact candidate and resumable real proofs
 
+- Current 0.16.2 ZIP: `tmp/animal-conversations-candidate-0.16.2/wiggly-animal-conversations-format-kit-0.16.2.zip`; SHA-256 `0762a04c20c8229d98427a158debf09063512c65bb54c95a90e28f24ce56565d`; 18,922,042 bytes. Fresh mechanics extraction: `/private/tmp/wiggly-fresh-0162.9Gl3J7`. Full evidence and precise acceptance limits: CHORUS-IMPORT-FIX.md.
+- The following 0.16.1 archive and real-review workspace are preserved, not replaced:
 - ZIP: `tmp/animal-conversations-candidate-0.16.1/wiggly-animal-conversations-format-kit-0.16.1.zip`
 - SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`; 18,921,637 bytes.
 - Fresh extracted kit: `/private/tmp/wiggly-fresh-0161.ykivnk`; report: `acceptance-evidence/FRESH-ACCEPTANCE-0161.md`.
@@ -107,7 +109,7 @@ The original implementation turn and the next two goal continuations all retaine
 - Preserved input/review/state in the private fresh kit's `acceptance-evidence/we-listen-before-opening-confirmation-20260905.json`. Imported `we-listen-draft-opening-both-20260905.json` through the official `review-script --input` command with opening `speaker=both`, `captionSpeaker=both`, and the actual user-confirmation evidence. Restored unchanged observation fields after import, recorded opening `overlapConfirmed=true`, then regenerated through `review-script`. No approval command was run.
 - Verified all 15 other input/review beats unchanged; opening words, boundaries and camera unchanged; full soundtrack and all 17 review WAV hashes unchanged; approval and attempt history unchanged. The generated role sheet now shows Dog + Bunny for the opening performance and caption ownership. This was file/data verification, not new browser QA. Package source, renderer, review-page design and Mistake draft remain unchanged.
 - Current We Listen review ID is `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175`; the episode still needs complete-review approval and the remaining pause evidence. This line-specific correction is not approval of either complete episode.
-- Observed package instruction mismatch for follow-up: `input-contract.json` describes `overlapEvidence` as written only by `approve-script`, while draft import's `validateTimeline` requires it before importing `speaker=both`. This correction supplied only the user's genuine overlap evidence through the official importer; it did not weaken validation or manufacture a receipt. Clarify the draft-versus-approval wording and protect the intended import path in the next scoped package checkpoint. Do not alter the immutable 0.16.1 candidate in place.
+- Observed package instruction mismatch: `input-contract.json` described `overlapEvidence` as written only by `approve-script`, while draft import's `validateTimeline` requires it before importing `speaker=both`. The episode correction supplied only the user's genuine overlap evidence through the official importer; it did not weaken validation or manufacture a receipt. The subsequent 0.16.2 checkpoint clarifies the wording and protects the intended import path in the existing integration test; see CHORUS-IMPORT-FIX.md. The immutable 0.16.1 candidate was not altered.
 
 ## Final report format
 

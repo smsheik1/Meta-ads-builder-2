@@ -25,7 +25,7 @@
           "caption": {"type": "string", "maxLength": 180, "description": "Complete spoken line for this beat. The renderer automatically presents it as progressive one-to-three-word caption cards."},
           "captionSpeaker": {"enum": ["cat", "bunny", "both"], "description": "Required only when speaker=both and caption contains words. Identifies whose words the caption represents while both performances remain active; use both only for a true synchronized chorus."},
           "vocalization": {"type": "string", "minLength": 1, "maxLength": 120, "description": "Named audible nonverbal performance such as an emotional gasp or shriek. It is approval evidence, not displayed caption text. Split it into its own contiguous beat instead of hiding it inside a spoken line."},
-          "overlapEvidence": {"type": "string", "minLength": 1, "description": "Written only by approve-script for a confirmed speaker=both beat. It records why simultaneous speech—not uncertainty or alternating voices—was confirmed."},
+          "overlapEvidence": {"type": "string", "minLength": 1, "description": "Required on a speaker=both draft: describe actual evidence of simultaneous speech, not uncertainty or alternating voices. This note is not approval. After explicit complete-review approval, approve-script replaces it with the separately confirmed review evidenceNote."},
           "bounceAt": {
             "type": "array",
             "description": "Optional explicit emphasis events, expressed as strictly increasing second offsets from this beat's start. Omit for neutral talking, which uses mouth motion only.",
