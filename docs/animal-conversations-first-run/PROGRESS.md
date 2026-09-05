@@ -73,7 +73,7 @@ Do not replace a pending row with “done” merely because code exists or tests
 - SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`; 18,921,637 bytes.
 - Fresh extracted kit: `/private/tmp/wiggly-fresh-0161.ykivnk`; report: `acceptance-evidence/FRESH-ACCEPTANCE-0161.md`.
 - We Listen: `fresh-0161-we-listen-20260904`, 16 beats, living room, 31.137959s. Current explicitly approved review ID after the user's chorus and pause confirmations: `9f0d76ccc3344d5a0702fe329812b77cb15df8fd670fab4bc9b67df869be67d3`. Earlier IDs `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175` and `ac0b93474534d1d13526613cb3924916a52580a5d443437d73efb0299fc8d05e` are superseded, not approved.
-- Mistake: `fresh-0161-mistake-20260904`, 20 beats, backyard, 30.023401s. Current review ID after the user's crying clarification: `2081d184622db36260b8b29b2359b397196f80f3edfd4b9750c949f88313715a`. Earlier `fea5365cc1fbaa4958f6a54b995fec65751cf2851b67a5e4e0c5598e787c73cc` is superseded, not approved.
+- Mistake: `fresh-0161-mistake-20260904`, 20 beats, backyard, 30.023401s. Current review ID after the user's crying and Bunny-reassurance clarifications: `708a52c413affca2a578a946232079ada0d47665954e01fa62583fa5d5eaa1fc`. Earlier `2081d184622db36260b8b29b2359b397196f80f3edfd4b9750c949f88313715a` and `fea5365cc1fbaa4958f6a54b995fec65751cf2851b67a5e4e0c5598e787c73cc` are superseded, not approved.
 - We Listen is `complete` at the episode level with verified export and unchanged MP4; attempt count remains 1. Mistake remains `needs-script-approval`, owner user. Recheck current hashes/status before resuming; script/playback approvals are episode-specific.
 - Supporting checked-in evidence: PHASE-A-B-EVIDENCE.md, ASR-PREFLIGHT.md, PHASE-C-EVIDENCE.md, REVIEW-PAGE-QA.md, EXPORT-PAGE-QA.md and PLATFORM-ACCEPTANCE.md. Private media/review artifacts are intentionally not committed.
 
@@ -133,6 +133,11 @@ The original implementation turn and the next two goal continuations all retaine
 - User explained the premise: one person asks about mistakes, the answerer supports others but cries and spirals when asked about their own mistakes. The existing role sheet identifies Bunny as questioner and Dog as answerer. Replaced only lines 10 and 12's unclear vocalization placeholders with **Crying**, with `user-provided-label` evidence attributed to this explanation. No agent hearing, confirmed overlap, tears asset or new expression system was invented.
 - Preserved the previous draft/review/state, imported through official `review-script --input`, restored only still-valid observations, and regenerated. Verified the other 18 beats, all timing/audio/media hashes, and state unchanged. Current review ID: `2081d184622db36260b8b29b2359b397196f80f3edfd4b9750c949f88313715a`; no script approval or render. Private snapshot and candidate: `acceptance-evidence/mistake-before-crying-confirmation-20260905.json` and `mistake-draft-crying-20260905.json`.
 - Remaining: settle whether crying overlaps Bunny's reassurance and the proposed line-18 pause; obtain explicit complete-review approval, then render/review/export. The story clarification is not blanket approval of the whole episode.
+
+### Mistake reassurance role confirmed — 2026-09-05
+
+- User explicitly confirmed mentor Bunny says the repeated “no” to calm mentee Dog. Recorded `user-provided-label` evidence for review lines 9 and 11. Only their evidence method/note changed; verified input, timing, state, review-media identities and the other 18 beat records unchanged. This clarifies speaking role and intent, not exact overlap or complete-script approval.
+- Official `review-script` regenerated review ID `708a52c413affca2a578a946232079ada0d47665954e01fa62583fa5d5eaa1fc`. Private snapshot: `acceptance-evidence/mistake-before-reassurance-confirmation-20260905.json`. Crying overlap, the proposed final pause and full approval remain unresolved; no render was started.
 
 ## Final report format
 
