@@ -29,7 +29,7 @@ stage install-ephemeral-linux-tools
 "${as_root[@]}" apt-get update -qq
 "${as_root[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
   ca-certificates curl xz-utils zip unzip ffmpeg python3.12 python3.12-venv \
-  build-essential pkg-config libssl-dev util-linux cargo-1.85 rustc-1.85
+  build-essential pkg-config libssl-dev util-linux
 
 # Use an official Linux Node 22 distribution in this disposable directory, never Windows Node.
 node_dist=https://nodejs.org/dist/latest-v22.x
@@ -41,17 +41,61 @@ node_version=${node_version%-linux-x64.tar.xz}
 curl --fail --silent --show-error --location --max-time 180 "https://nodejs.org/dist/$node_version/$node_file" -o "$scratch/$node_file"
 (cd "$scratch" && awk -v file="$node_file" '$2 == file' SHASUMS256.txt | sha256sum --check --strict)
 tar -xJf "$scratch/$node_file" -C "$scratch"
-export PATH="$scratch/${node_file%.tar.xz}/bin:/usr/bin:/bin"
+
+stage install-pinned-rust-in-disposable-directory
+# libflate 2.3 uses let chains, stable since Rust 1.88; the package lock stays unchanged.
+# https://blog.rust-lang.org/2025/06/26/Rust-1.88.0/
+# Pins read from each official static.rust-lang.org/dist/<archive>.sha256.
+rust_version=1.89.0
+rust_target=x86_64-unknown-linux-gnu
+rust_components=(
+  rustc:b42c254e1349df86bd40bc28fdf386172a1a46f2eeabe3c7a08a75cf1fb60e27
+  cargo:99fc10be2aeedf2c23a484f217bfa76458494495a0eee33e280d3616bb08282d
+  rust-std:2719470dcd78b3f97d78b978c8f85a1a58d84ff11b62558294621c01bca34d49
+)
+for pinned in "${rust_components[@]}"; do
+  component=${pinned%%:*}
+  checksum=${pinned#*:}
+  component_name="$component-$rust_version-$rust_target"
+  component_archive="$component_name.tar.xz"
+  curl --fail --silent --show-error --location --max-time 300 \
+    "https://static.rust-lang.org/dist/$component_archive" -o "$scratch/$component_archive"
+  (cd "$scratch" && printf '%s  %s\n' "$checksum" "$component_archive" | sha256sum --check --strict)
+  tar -xJf "$scratch/$component_archive" -C "$scratch"
+  # Official standalone installer; no rustup/global toolchain, profile edits, or ldconfig.
+  bash "$scratch/$component_name/install.sh" --prefix="$scratch/rust" --disable-ldconfig
+done
+export PATH="$scratch/${node_file%.tar.xz}/bin:$scratch/rust/bin:/usr/bin:/bin"
 export PYTHON=/usr/bin/python3.12 FFMPEG=/usr/bin/ffmpeg FFPROBE=/usr/bin/ffprobe
-export CARGO=/usr/bin/cargo-1.85 RUSTC=/usr/bin/rustc-1.85 RUSTDOC=/usr/bin/rustdoc-1.85
+export CARGO="$scratch/rust/bin/cargo" RUSTC="$scratch/rust/bin/rustc" RUSTDOC="$scratch/rust/bin/rustdoc"
 export npm_config_cache="$scratch/npm-cache" CARGO_HOME="$scratch/cargo-cache" CARGO_TARGET_DIR="$scratch/cargo-target"
 node -e 'if (process.platform !== "linux" || process.arch !== "x64") throw Error("Linux x64 Node is required"); console.log(process.version, process.platform, process.arch)'
 "$PYTHON" -c 'import sys; assert sys.version_info[:2] == (3,12); print(sys.version)'
 uname -srm
-command -v node npm python3.12 ffmpeg ffprobe cargo-1.85 rustc-1.85 rustdoc-1.85
-"$CARGO" --version
-"$RUSTC" --version
-"$RUSTDOC" --version
+command -v node npm python3.12 ffmpeg ffprobe cargo rustc rustdoc
+export ACCEPTANCE_RUST_VERSION="$rust_version" ACCEPTANCE_RUST_TARGET="$rust_target"
+export ACCEPTANCE_RUST_COMPONENTS="$(printf '%s\n' "${rust_components[@]}")"
+node --input-type=module - "$reports" <<'NODE'
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
+const version = process.env.ACCEPTANCE_RUST_VERSION, target = process.env.ACCEPTANCE_RUST_TARGET;
+const versions = {};
+for (const [name, executable] of [['cargo', process.env.CARGO], ['rustc', process.env.RUSTC], ['rustdoc', process.env.RUSTDOC]]) {
+  versions[name] = execFileSync(executable, ['--version'], { encoding: 'utf8' }).trim();
+  assert.ok(versions[name].startsWith(`${name} ${version} `), `${name} must use the pinned version`);
+}
+const compiler = execFileSync(process.env.RUSTC, ['--version', '--verbose'], { encoding: 'utf8' });
+assert.ok(compiler.split('\n').includes(`host: ${target}`), 'Rust must execute natively on Linux x64');
+const components = process.env.ACCEPTANCE_RUST_COMPONENTS.trim().split('\n').map(pin => {
+  const [component, sha256] = pin.split(':');
+  return { component, sha256, url: `https://static.rust-lang.org/dist/${component}-${version}-${target}.tar.xz` };
+});
+const provenance = { version, target, versions, components, checksumsVerified: true, installation: 'disposable CI directory only' };
+await writeFile(path.join(process.argv[2], 'rust-toolchain.json'), JSON.stringify(provenance, null, 2) + '\n');
+console.log(JSON.stringify(provenance, null, 2));
+NODE
 
 stage build-and-freshly-extract-candidate
 node "$source_kit/build-kit.mjs" --output="$scratch/release" > "$scratch/build.json"
@@ -147,6 +191,7 @@ for (const suffix of ['one', 'two']) {
 assert.notEqual(examples[0].sourceSha256, examples[1].sourceSha256);
 const summary = { schemaVersion: 1, status: 'pass', platform: process.env.ACCEPTANCE_PLATFORM,
   commit: process.env.ACCEPTANCE_COMMIT, kernel: os.release(), node: process.version,
+  rustToolchain: await read(path.join(process.env.ACCEPTANCE_REPORTS, 'rust-toolchain.json')),
   formatVersion: inventory.formatVersion, inventorySha256: await sha256('RELEASE-CONTENTS.json'),
   sourceArchiveInventoryVerified: true, freshInstall: true, defaultTests: 'pass',
   explicitReleaseProfile: 'pass — includes synthetic receipt/export mechanics, not real approval',

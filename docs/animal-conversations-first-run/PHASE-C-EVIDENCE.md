@@ -54,17 +54,17 @@ A new version preserves the immutable 0.16.0 candidate rather than overwriting i
 - SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`
 - Inventory SHA-256: `d3c1b03a6c036e4a6e31265a06408b0e961477140ee5191c4b24677053804a06`
 - Final 0.16.1 release profile: 106/106 Node, 3/3 optional Python converter and 7/7 Rust tests pass.
-- Fresh extraction/intake/review replay for 0.16.1 is in progress. Previously generated agent drafts are reused as drafts, never as approvals.
+- Fresh extraction/intake/review replay for 0.16.1 passed at `/private/tmp/wiggly-fresh-0161.ykivnk`. All 136 package sizes/hashes stayed unchanged. Fresh npm ci, doctor/check, default tests (98 pass/8 explicit skips) and 17/17 smoke passed. A new Python environment with verified cached public model files processed both real clips again; full soundtrack and transcript hashes match. All 38 newly generated review WAVs decode and verify. This was cached-model setup, not a cold download. Both real runs correctly stop at user approval. Reused agent drafts/evidence are never reused approval.
 
 The isolated GitHub Actions workflow tests actual Linux x64 and Ubuntu inside WSL2 with read-only repository permissions, no production secrets, and small sanitized reports only. It tests fresh archives, all profiles, synthetic rendering/export mechanics and two actual CPU intakes with network isolation. It deliberately does not invent real script approval, fresh-agent interaction or perceptual playback.
 
 ### Remaining acceptance
 
 1. Explicit approval of the two newly generated episode reviews, followed by actual rendering and documented playback review plus verified exports.
-2. Actual supported Linux x64 and WSL execution; local Mac tests are not a substitute.
+2. Finish supported Linux x64 and WSL execution. Initial real CI run `33939590840` passed all 106 Node + 3 Python tests on both; actual WSL2 kernel `6.18.33.2-microsoft-standard-WSL2` was verified. Both then failed optional converter compilation because CI Rust 1.85 cannot compile the locked libflate dependency's let chains. Fixing that toolchain is required; do not skip the tests.
 3. Final end-to-end acceptance of the packaged artifact, not just independent phase success.
 
-Website promotion is deliberately separate. The existing public ZIP/catalog remain 0.15.1 while source development is 0.16.0. The public-page version/hash assertions must be updated together with a certified release during a separately scoped promotion; do not weaken them or merge this branch as though publication had already occurred.
+Website promotion is deliberately separate. The existing public ZIP/catalog remain 0.15.1 while source development is 0.16.1. The public-page version/hash assertions must be updated together with a certified release during a separately scoped promotion; do not weaken them or merge this branch as though publication had already occurred.
 
 ## Bounded reviews
 
