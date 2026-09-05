@@ -4,11 +4,11 @@
     "Harmony-free Toon Boom pose conversion",
     "complete-layer character compositing and checksum receipts",
     "three-angle conversation renderer",
-    "audio-hash-bound complete-script approval, speaker mouth switching, blinks, reactions, captions, audio muxing, inspection, and finalization"
+    "explicit local extraction/transcription setup, agent-authored draft, content-and-audio-bound approval, speaker mouth switching, blinks, reactions, captions, audio muxing, technical and playback review, and verified export"
   ],
   "packagedReplaceableContent": ["five supplied backgrounds", "cat and bunny idle, talking, and blink poses"],
-  "episodeInputs": ["user-owned or user-authorized audio file", "timed complete role script with named nonverbal events and silence", "explicit user approval of the whole role script", "packaged background ID", "episode label"],
+  "episodeInputs": ["supported accessible link or local media the user is authorized to use", "agent-authored complete role script with named nonverbal events and silence; optional user timestamps accepted but never required", "explicit user approval of the whole playable role script", "packaged background ID", "episode label"],
   "providerCalls": [],
   "sourceRigPolicy": "The source Harmony projects are operator inputs to the converter and are not redistributed by this Repo.",
-  "audioPolicy": "The Repo never generates or uploads dialogue. It copies the user-supplied file into the local ignored run folder, extracts local script-review clips, and encodes the original stream as AAC in the final MP4."
+  "audioPolicy": "The Repo never generates or uploads dialogue. It preserves acquired media privately, extracts a full-channel full-rate soundtrack and a separate 16 kHz mono ASR derivative, creates exact local review WAVs, and encodes the soundtrack as AAC in the final MP4. Standalone source/review media is omitted from export by default."
 }

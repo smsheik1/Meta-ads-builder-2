@@ -1,146 +1,130 @@
 #!/usr/bin/env node
 
-import { copyFile, mkdir } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { execute, exists, hashValue, parseArgs, readJson, requireEpisodeInputSource, resolveRunDirectory, sha256, writeJson } from "./runtime/common.mjs";
+import { execute, exists, parseArgs, readJson, resolveRunDirectory, sha256, writeJson } from "./runtime/common.mjs";
 import { checkDependencies } from "./runtime/doctor.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const command = process.argv[2];
 const args = parseArgs(process.argv.slice(3));
-let inspectRun, renderRun, approveScriptReview, createScriptReview, reviewedScriptHash, validateRun;
+const commands = ["doctor", "check", "setup-intake", "intake", "init", "review-script", "approve-script", "status", "run", "validate", "render", "inspect", "record-playback-review", "finalize", "export", "upgrade-run", "smoke"];
 
-async function initializeRun({ runId, audio, input }) {
-  if (!audio || !path.isAbsolute(audio)) throw new Error("Pass the user's audio as an absolute --audio=/path/file.");
-  if (!(await exists(audio))) throw new Error(`Audio file does not exist: ${audio}`);
-  const inputSource = requireEpisodeInputSource(input);
-  if (!path.isAbsolute(inputSource) || !(await exists(inputSource))) throw new Error("Pass an absolute existing --input=/path/timing.json.");
+function flag(name) {
+  const value = args[name];
+  if (value === undefined || value === false || value === "false") return false;
+  if (value === true || value === "true") return true;
+  throw new Error(`--${name} must be a flag or true/false.`);
+}
+
+async function smoke({ runId, workflow, stateApi }) {
   const runDirectory = resolveRunDirectory(root, runId);
-  await mkdir(runDirectory, { recursive: true });
-  const extension = path.extname(audio).toLowerCase() || ".audio";
-  const audioName = `user-audio${extension}`;
-  await copyFile(audio, path.join(runDirectory, audioName));
-  const runInput = await readJson(inputSource);
-  runInput.audioFile = audioName;
-  await writeJson(path.join(runDirectory, "input.json"), runInput);
-  await writeJson(path.join(runDirectory, "state.json"), {
-    schemaVersion: 1,
-    status: "initialized",
-    initializedAt: new Date().toISOString(),
-    userAudio: { file: audioName, sourceBasename: path.basename(audio), sha256: await sha256(path.join(runDirectory, audioName)) },
-    inputTemplate: path.basename(inputSource),
-  });
-  await createScriptReview({ runDirectory });
-  return runDirectory;
-}
-
-async function check() {
-  const report = await checkDependencies({ root });
-  console.log(JSON.stringify(report, null, 2));
-  if (report.status !== "pass") process.exitCode = 1;
-}
-
-async function smoke() {
-  const runId = args.run || "smoke-proof";
-  const runDirectory = resolveRunDirectory(root, runId);
-  await mkdir(runDirectory, { recursive: true });
-  const audio = path.join(runDirectory, "smoke-audio.wav");
-  await execute("ffmpeg", ["-y", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=4.5", "-c:a", "pcm_s16le", audio]);
-  await copyFile(path.join(root, "fixtures", "smoke", "input.json"), path.join(runDirectory, "input.json"));
-  const review = await createScriptReview({ runDirectory });
-  review.beats.forEach((beat) => {
-    beat.confirmedSpeaker = beat.proposedSpeaker;
-    beat.evidence = beat.proposedSpeaker === "none" ? "silence" : "user-provided-label";
-    if (beat.proposedSpeaker === "both") {
-      beat.overlapConfirmed = true;
-      beat.evidenceNote = "The smoke fixture explicitly labels this mechanics-only beat as simultaneous dialogue.";
-    }
-  });
-  const smokeInput = await readJson(path.join(runDirectory, "input.json"));
-  review.approval = {
-    approved: true,
-    basis: "packaged-smoke-fixture",
-    approvedBy: "packaged smoke fixture",
-    approvalNote: "The bundled mechanics-only smoke script is fixed and approved solely for the free runtime check.",
-    scriptHash: reviewedScriptHash(smokeInput, review),
-  };
-  await writeJson(path.join(runDirectory, "script-review.json"), review);
-  await approveScriptReview({ runDirectory });
-  await validateRun({ root, runDirectory });
-  await renderRun({ root, runDirectory });
-  const report = await inspectRun({ runDirectory });
-  console.log(JSON.stringify({ run: runId, status: report.status, output: path.join(runDirectory, "final.mp4") }, null, 2));
-}
-
-async function finalize(runDirectory) {
-  await validateRun({ root, runDirectory });
-  const quality = await readJson(path.join(runDirectory, "quality-report.json"));
-  if (quality.status !== "pass") throw new Error("The quality report must pass before finalization.");
+  const { createScriptReview, approveScriptReview } = await import("./runtime/speaker-review.mjs");
+  const { canonicalHash, semanticContent } = await import("./runtime/identity.mjs");
+  const fixture = await readJson(path.join(root, "fixtures", "smoke", "input.json"));
+  if (!await exists(runDirectory)) {
+    await mkdir(runDirectory);
+    const state = stateApi.newWorkflowState(runId, "mechanics-smoke");
+    await stateApi.saveWorkflowState(runDirectory, state);
+    await writeJson(path.join(runDirectory, "input.json"), fixture);
+    const audio = path.join(runDirectory, fixture.audioFile);
+    await execute("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", `sine=frequency=440:sample_rate=48000:duration=${fixture.timeline.at(-1).end}`, "-c:a", "pcm_s16le", audio], { capture: true });
+    state.sourceAudioSha256 = await sha256(audio);
+    await stateApi.saveWorkflowState(runDirectory, state);
+  }
+  const state = await stateApi.readWorkflowState(runDirectory);
+  if (state.kind !== "mechanics-smoke") throw new Error("Smoke refuses an existing episode run. Use a separate new run ID; no episode was overwritten.");
   const input = await readJson(path.join(runDirectory, "input.json"));
-  const output = path.join(runDirectory, "final.mp4");
-  const outputSha256 = await sha256(output);
-  if (quality.measured?.inputHash !== hashValue(input)) throw new Error("The quality report is stale because the episode input changed after inspection.");
-  if (quality.measured?.outputSha256 !== outputSha256) throw new Error("The quality report is stale because the final video changed after inspection.");
-  const delivery = {
-    schemaVersion: 1,
-    status: "ready",
-    finalizedAt: new Date().toISOString(),
-    finalVideo: "final.mp4",
-    sha256: outputSha256,
-    qualityReport: "quality-report.json",
-    contactSheet: "contact-sheet.png",
-    scriptApprovalReceipt: ".script-approval.json",
-    timedRoleSheet: "timed-role-sheet.md",
-    audioPolicy: "user-supplied audio copied locally and muxed into the final AAC track; no voice provider calls",
+  if (input.audioFile !== fixture.audioFile || state.sourceAudioSha256 !== await sha256(path.join(runDirectory, fixture.audioFile))) throw new Error("Smoke audio is missing or changed. Preserve this run and choose a fresh smoke ID.");
+  const approvalFile = path.join(runDirectory, ".script-approval.json");
+  if (await exists(approvalFile)) {
+    if ((await readJson(approvalFile)).scope !== "fixture") throw new Error("Smoke only resumes mechanics-only fixture approval.");
+  } else {
+    if (canonicalHash(semanticContent(input)) !== canonicalHash(semanticContent(fixture))) throw new Error("The unapproved smoke input differs from the packaged fixture; use a fresh smoke ID.");
+    let review = await createScriptReview({ root, runDirectory });
+    for (const beat of review.beats) {
+      beat.confirmedSpeaker = beat.proposedSpeaker;
+      beat.evidence = beat.proposedSpeaker === "none" ? "silence" : "user-provided-label";
+      beat.evidenceNote = "Fixed synthetic mechanics fixture only; not user approval or perceptual review of an episode.";
+      if (beat.proposedSpeaker === "both") {
+        beat.overlapConfirmed = true;
+        beat.evidenceNote = "The packaged smoke fixture explicitly labels this mechanics-only beat as simultaneous dialogue.";
+      }
+    }
+    await writeJson(path.join(runDirectory, "script-review.json"), review);
+    review = await createScriptReview({ root, runDirectory });
+    await approveScriptReview({ root, runDirectory, reviewId: review.reviewId, fixtureProof: "smoke" });
+  }
+  const report = await workflow.technicalCycle({ root, runId });
+  return {
+    schemaVersion: 2, status: report.status, scope: "mechanics-only", run: runId,
+    output: path.join(runDirectory, "final.mp4"),
+    limitation: "This is a synthetic runtime/asset proof, not episode approval or playback review. It does not finalize or export an episode.",
   };
-  await writeJson(path.join(runDirectory, "delivery.json"), delivery);
-  console.log(JSON.stringify(delivery, null, 2));
 }
 
 async function main() {
-  if (command === "check" || command === "doctor") return check();
-  // Never load the rendering graph (including native Sharp) before the bootstrap command.
-  ({ inspectRun } = await import("./runtime/inspect.mjs"));
-  ({ renderRun } = await import("./runtime/render.mjs"));
-  ({ approveScriptReview, createScriptReview, reviewedScriptHash } = await import("./runtime/speaker-review.mjs"));
-  ({ validateRun } = await import("./runtime/validate.mjs"));
-  if (command === "smoke") return smoke();
-  if (command === "init") {
-    const runDirectory = await initializeRun({ runId: args.run, audio: args.audio, input: args.input });
-    console.log(`Initialized ${runDirectory}\nReview timed-role-sheet.md and every clip in script-review/, show that complete timed role sheet to the user, complete script-review.json only after approval, then run approve-script.`);
-    return;
+  if (command === "--help" || command === "help") return { status: "help", commands, usage: "node runner.mjs <command> --run=<id> [--source=<URL-or-file>] [--input=/absolute/draft.json]" };
+  if (!commands.includes(command)) throw new Error(`Usage: node runner.mjs <${commands.join("|")}> [--run=id].`);
+  // Bootstrap must not import the rendering graph or depend on node_modules.
+  if (command === "check" || command === "doctor") return checkDependencies({ root });
+  if (command === "setup-intake") {
+    const { setupIntake } = await import("./runtime/intake.mjs");
+    return setupIntake({ root }); // The dedicated setup lock protects the kit-local environment/cache.
   }
-  const runDirectory = resolveRunDirectory(root, args.run);
-  if (command === "review-script") {
-    const review = await createScriptReview({ runDirectory });
-    console.log(JSON.stringify({ status: review.status, review: path.join(runDirectory, "script-review.json"), timedRoleSheet: path.join(runDirectory, "timed-role-sheet.md"), clips: review.beats.length }, null, 2));
-    return;
+  const workflow = await import("./runtime/workflow.mjs");
+  const stateApi = await import("./runtime/workflow-state.mjs");
+  const runId = command === "smoke" ? args.run || "smoke-proof" : args.run;
+  const runDirectory = resolveRunDirectory(root, runId);
+  if (command === "status") return workflow.workflowStatus({ root, runId });
+  if (command === "upgrade-run") {
+    const newRunId = args["new-run"];
+    resolveRunDirectory(root, newRunId);
+    if (runId === newRunId) throw new Error("Upgrade requires a different --new-run ID.");
+    const [first, second] = [runId, newRunId].sort();
+    return stateApi.withRunLock({ root, runId: first }, () => stateApi.withRunLock({ root, runId: second }, () => workflow.upgradeRun({ root, runId, newRunId })));
   }
-  if (command === "approve-script") {
-    console.log(JSON.stringify(await approveScriptReview({ runDirectory }), null, 2));
-    return;
-  }
-  if (command === "validate") {
-    const result = await validateRun({ root, runDirectory });
-    console.log(JSON.stringify(result.receipt, null, 2));
-    return;
-  }
-  if (command === "render") {
-    const result = await renderRun({ root, runDirectory });
-    console.log(JSON.stringify(result.report, null, 2));
-    return;
-  }
-  if (command === "inspect") {
-    await validateRun({ root, runDirectory });
-    console.log(JSON.stringify(await inspectRun({ runDirectory }), null, 2));
-    return;
-  }
-  if (command === "finalize") return finalize(runDirectory);
-  throw new Error("Usage: node runner.mjs <doctor|check|smoke|init|review-script|approve-script|validate|render|inspect|finalize> [--run=id] [--audio=/abs/file] [--input=/abs/input.json]");
+  return stateApi.withRunLock({ root, runId }, async () => {
+    if (command === "smoke") return smoke({ runId, workflow, stateApi });
+    if (command === "intake") return workflow.startIntake({ root, runId, source: args.source });
+    if (command === "init") return workflow.initializeEpisode({ root, runId, audio: args.audio, input: args.input });
+    if (command === "review-script") return workflow.importDraft({ root, runId, input: args.input, newRevision: flag("new-revision") });
+    if (command === "approve-script") return workflow.approveEpisode({ root, runId, reviewId: args["review-id"], approvedBy: args["approved-by"], note: args.note });
+    if (command === "run") return workflow.runWorkflow({ root, runId, source: args.source, output: args.output, includeReviewMedia: flag("include-review-media") });
+    if (command === "render" || command === "inspect") return workflow.technicalCycle({ root, runId, renderOnly: command === "render" });
+    if (command === "validate") {
+      const { validateRun } = await import("./runtime/validate.mjs");
+      return (await validateRun({ root, runDirectory })).receipt;
+    }
+    if (command === "record-playback-review") {
+      if (typeof args.input !== "string" || !args.input) throw new Error("Pass --input=/path/playback-review-record.json containing the current review observations.");
+      const { recordPlaybackReview } = await import("./runtime/quality.mjs");
+      return recordPlaybackReview({ root, runDirectory, review: await readJson(path.resolve(args.input)) });
+    }
+    if (command === "finalize") {
+      const { finalizeRun } = await import("./runtime/quality.mjs");
+      return finalizeRun({ root, runDirectory });
+    }
+    if (command === "export") return workflow.exportEpisode({ root, runId, output: args.output, includeReviewMedia: flag("include-review-media") });
+  });
 }
 
-main().catch((error) => {
-  console.error(error.stack || error.message);
+main().then((result) => {
+  console.log(JSON.stringify(result, null, 2));
+  const failureStates = new Set(["blocked", "fail", "setup-required", "invalid-source", "source-inaccessible", "login-required", "network-error", "missing-audio", "transcription-failed", "attempt-limit", "repair-required", "export-invalid", "input-or-setup-invalid", "intake-evidence-invalid"]);
+  if (failureStates.has(result?.status) || failureStates.has(result?.phase)) process.exitCode = 1;
+}).catch(async (error) => {
+  let checkpoint = null;
+  try {
+    const runDirectory = resolveRunDirectory(root, args.run || (command === "smoke" ? "smoke-proof" : undefined));
+    if (await exists(runDirectory)) checkpoint = { runDirectory, state: path.join(runDirectory, "state.json"), resume: `node runner.mjs status --run=${path.basename(runDirectory)}` };
+  } catch { /* A malformed/new run may not have any resumable checkpoint. */ }
+  console.error(JSON.stringify({
+    schemaVersion: 2, status: "blocked", command: command || null,
+    blocker: { code: error.code || "action-required", message: error.message || String(error) },
+    checkpoint, nextAction: { owner: /lock|setup|install|attempt limit|No relevant repair/i.test(error.message || "") ? "operator" : "agent", action: checkpoint ? "inspect-status-and-resolve-blocker" : "resolve-blocker-before-starting" },
+    completionClaimed: false,
+  }, null, 2));
   process.exitCode = 1;
 });

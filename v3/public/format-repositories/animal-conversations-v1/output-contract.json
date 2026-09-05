@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "video": {
     "container": "mp4",
     "videoCodec": "h264",
@@ -16,9 +16,19 @@
     "timedRoleSheet": "timed-role-sheet.md",
     "renderReport": "render-report.json",
     "qualityReport": "quality-report.json",
+    "playbackReview": "playback-review.json",
+    "playableScriptReview": "script-review.html",
     "contactSheet": "contact-sheet.png",
     "manifest": "delivery.json",
-    "rule": "finalize writes delivery.json only after every automated technical gate passes"
+    "rule": "finalize writes a current hash-bound delivery.json only after episode-scope user approval, current render identity, every required technical gate, and documented current playback review pass. Fixture approval cannot finalize an episode. Finalization alone is not export completion."
   },
-  "evidence": ["input.json", "script-review.json", "timed-role-sheet.md", ".script-approval.json", ".validation.json", "render-report.json", "quality-report.json", "contact-sheet.png", "delivery.json"]
+  "evidence": ["input.json", "script-review.json", "script-review.html", "timed-role-sheet.md", ".script-approval.json", ".validation.json", "render-report.json", "quality-report.json", "playback-review.json", "contact-sheet.png", "delivery.json"],
+  "export": {
+    "defaultDirectory": "outputs/<run-id>",
+    "requiredFiles": ["final.mp4", "index.html", "checksums.json", "evidence/review-summary.json", "evidence/contact-sheet.png"],
+    "optionalReviewMedia": "--include-review-media copies exact WAVs into review-media/source.wav and review-media/beat-NNN.wav; the static export page references only files that are actually present",
+    "privateByDefault": ["original source media", "source/review audio", "raw downloader metadata", "source URLs", "credentials", "absolute machine paths", "free-text source assertions and reviewer notes"],
+    "evidenceRule": "Canonical evidence stays unchanged in the private run. The exported summary is explicitly a sanitized presentation, not an edited canonical receipt; it lists canonical evidence hashes and omissions.",
+    "completionRule": "Complete requires current finalization and a verified export containing every required declared file. Missing, extra, or modified exported files invalidate completion. Export does not assert that the user received or watched the video; the host agent must show the actual result."
+  }
 }

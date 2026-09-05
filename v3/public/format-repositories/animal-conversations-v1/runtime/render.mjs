@@ -1,7 +1,9 @@
-import { link, mkdir, readFile } from "node:fs/promises";
+import { link, mkdir, readFile, rename, rm } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import sharp from "sharp";
-import { execute, exists, hashValue, writeJson } from "./common.mjs";
+import { execute, exists, hashValue, sha256, writeJson } from "./common.mjs";
+import { assertMatchingIdentity, canonicalHash, collectRenderIdentity } from "./identity.mjs";
 import { validateRun } from "./validate.mjs";
 
 const WIDTH = 1080;
@@ -342,8 +344,10 @@ async function renderState({ prepared, cacheDirectory, beat, beatIndex, state, e
 export async function renderRun({ root, runDirectory }) {
   const validated = await validateRun({ root, runDirectory });
   const { input, durationSeconds, background, assets, audioFile } = validated;
+  const identity = await collectRenderIdentity({ root, runDirectory });
   const renderHash = hashValue({
     renderer: RENDERER_VERSION,
+    identityHash: canonicalHash(identity),
     input,
     audio: validated.receipt.audio.sha256,
     background: background.sha256,
@@ -386,6 +390,8 @@ export async function renderRun({ root, runDirectory }) {
   }
 
   const output = path.join(runDirectory, "final.mp4");
+  const temporaryOutput = path.join(runDirectory, `.final-${randomUUID()}.mp4`);
+  try {
   await execute("ffmpeg", [
     "-y",
     "-framerate", String(FPS),
@@ -402,11 +408,14 @@ export async function renderRun({ root, runDirectory }) {
     "-b:a", "192k",
     "-t", durationSeconds.toFixed(6),
     "-movflags", "+faststart",
-    output,
+    temporaryOutput,
   ]);
+  assertMatchingIdentity(identity, await collectRenderIdentity({ root, runDirectory }));
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: "pass",
+    identity,
+    outputSha256: await sha256(temporaryOutput),
     renderedAt: new Date().toISOString(),
     rendererVersion: RENDERER_VERSION,
     width: WIDTH,
@@ -433,6 +442,10 @@ export async function renderRun({ root, runDirectory }) {
     timelineBeatFrames: Object.fromEntries(eventUsage),
     output: "final.mp4",
   };
+  await rename(temporaryOutput, output);
   await writeJson(path.join(runDirectory, "render-report.json"), report);
   return { output, report };
+  } finally {
+    await rm(temporaryOutput, { force: true });
+  }
 }

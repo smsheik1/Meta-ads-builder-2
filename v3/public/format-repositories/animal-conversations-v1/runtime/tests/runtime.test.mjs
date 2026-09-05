@@ -385,7 +385,9 @@ test("quality review requires complete-script approval and honest perception dis
 
 test("format kit build strips nondeterministic ZIP metadata", async () => {
   const buildSource = await readFile(path.join(formatRoot, "build-kit.mjs"), "utf8");
-  assert.match(buildSource, /"-X", "-r"/);
+  assert.match(buildSource, /"-X", "-q"/);
+  assert.doesNotMatch(buildSource, /"-r"/);
+  assert.match(buildSource, /staged\.files\.map/);
 });
 
 test("conversation staging preserves inward orientation and a clear two-shot gap", async () => {

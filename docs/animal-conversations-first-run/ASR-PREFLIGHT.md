@@ -40,7 +40,7 @@ The packaged `PROVENANCE.md` explicitly permits distribution of these existing s
 | i-made-a-mistake | 30.023401 s | 5.35 s | Completed, word timestamps from beginning through end; known emotional/overlap errors below. |
 | we-listen-dont-judge | 31.137959 s | 5.95 s | Completed past the 30-second boundary; word timestamps extend to 30.96 s. |
 
-Offline protection during these real executions: `HF_HUB_OFFLINE=1`, implicit-token/telemetry disabling, local model path, `local_files_only=True`, and Python socket connection methods replaced with a failing guard. Neither run attempted a guarded connection. This is application-level offline proof, not an OS packet trace. Source offset was zero; nonzero stream-offset acceptance is **not** proven by these fixtures.
+Offline protection during these real executions: `HF_HUB_OFFLINE=1`, implicit-token/telemetry disabling, local model path, `local_files_only=True`, and Python socket connection methods replaced with a failing guard. Neither run attempted a guarded connection. This is application-level offline proof, not an OS packet trace. These first two source offsets were zero; a later explicit offset test is recorded below.
 
 Evidence remains in ignored `tmp/asr-preflight/`: `asr-proof.json`, `model-receipt.json`, both fixture `transcript.json` files, separate WAVs, scripts, venv, and complete platform locks. The production lock and model manifest should be copied into the package deliberately; no private proof media or model weights belong in a release archive.
 
@@ -68,6 +68,17 @@ Official references checked: [faster-whisper usage and lazy generator](https://g
 
 ## Remaining acceptance, not claimed complete
 
-- Fresh packaged setup and intake wrapper tests, including missing model files and media with nonzero source timestamps.
+- Full extracted-release acceptance beyond the intake-only proof below.
 - Actual fresh-agent inference and video production on Linux x64 and WSL. This host has neither Docker nor Podman available; cross-platform dependency resolution alone is not execution.
 - Source playback review and approved corrected dialogue through the integrated gate-driven episode path. The two transcription runs do not themselves count as episode approval, video review, or export acceptance.
+
+## Implemented intake module proof
+
+Implemented only `runtime/intake.mjs`, `scripts/intake.py`, the committed `scripts/intake-requirements.lock`, `scripts/intake-model.json`, and `runtime/tests/intake.test.mjs`. The root runner owns run creation/locks and the rest of the workflow.
+
+- **10 fast mocked contract tests passed** with Node's test runner. They cover source/audio separation, nonzero-offset propagation, agent-owned drafting, no implicit setup downloads, corrupted weights, missing decoder, source errors, signed-query sanitization, URL isolation flags, safe local fallback, idempotence, stale media rejection, reusing acquired media after ASR failure, and setup checksum failure cleanup. These are not portrayed as perceptual review or live website tests.
+- The actual `setupIntake` function created a **second fresh Python 3.12 venv** and installed all 24 pinned dependencies using pip with hashes, isolated configuration, and binary wheels. It accepted an explicitly pre-staged checksum-verified model copy; real remote model download was proven separately above, not redownloaded needlessly.
+- Actual `intakeMedia` plus the shipped Python helper processed both examples, returning `needs-script-draft` and agent-owned next actions. Complete invocation times (including checks, extraction, and Python launch) were **13.31 s** and **7.12 s**. Source/render/ASR hashes match the earlier isolated proof. This runs from ignored `tmp/asr-preflight/intake-kit`, not a claimed final release archive.
+- A real Matroska fixture used the approved example audio with an explicit **+2.5-second source timestamp offset**. Intake preserved `sourceAudioStartSeconds: 2.5`, produced 5.572789 s of full-resolution audio, and emitted ASR times starting at zero with a documented mapping back to source time. The recorded source container spans 2.5–8.073 s; it did not turn the offset into invented leading soundtrack silence. Evidence: `tmp/asr-preflight/intake-kit/agent-runs/offset-proof/`.
+- Original media remains under per-source private run folders; full-quality `user-audio.wav` is distinct from the 16 kHz mono derivative. Raw download metadata and requests remain private. Public source assertions omit signed query strings and preserve safe YouTube video IDs.
+- `needs-script-draft` is intentionally **not approval or completion**. Uncertainty and the absence of diarization/casting are recorded explicitly; source correction and user approval remain mandatory downstream.

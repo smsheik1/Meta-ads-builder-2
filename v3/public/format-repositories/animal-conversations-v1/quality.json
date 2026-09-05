@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "rubricVersion": "1.0.0",
+  "schemaVersion": 3,
+  "rubricVersion": "1.1.0",
   "automatic": {
     "width": 1080,
     "height": 1920,
@@ -12,6 +12,7 @@
     "minimumMeanVolumeDb": -55,
     "maximumAttempts": 3
   },
+  "requiredTechnicalGates": ["width", "height", "fps", "duration", "videoCodec", "audioCodec", "audibleAudio", "approvedCamerasOnly", "completeScriptApproved", "nonverbalEventsApproved", "stableVoiceCastingConfirmed", "simultaneousSpeechConfirmed", "renderMatchesInput", "captionsPresent", "speechActivityAnalyzed", "mouthAnimationAnalyzed", "pauseClosuresStable"],
   "technicalGates": [
     {"id": "dimensions", "threshold": "exactly 1080x1920", "measurementPath": "measured.width,height"},
     {"id": "fps", "threshold": "24 fps +/- 0.01", "measurementPath": "measured.fps"},
@@ -29,20 +30,38 @@
   ],
   "blindReview": {
     "watchPasses": ["uninterrupted playback with audio when perceptible, otherwise uninterrupted visual playback plus audio technical checks", "caption-camera-character inspection"],
-    "requiredPlayback": {"completedPasses": 2, "perceptionMode": "best-available-with-explicit-disclosure"},
+    "requiredPlayback": {"completedPasses": 2, "passIds": ["uninterrupted-playback", "caption-camera-character-inspection"], "perceptionMode": "best-available-with-explicit-disclosure"},
+    "criterionRules": [
+      {"id": "character-framing", "index": 0, "channel": "visual", "required": true},
+      {"id": "two-shot-orientation", "index": 1, "channel": "visual", "required": true},
+      {"id": "two-shot-separation", "index": 2, "channel": "visual", "required": true},
+      {"id": "bunny-camera-orientation", "index": 3, "channel": "visual", "required": true},
+      {"id": "mouth-motion", "index": 4, "channel": "visual", "required": true},
+      {"id": "blinks", "index": 5, "channel": "visual", "required": true},
+      {"id": "emphasis-motion", "index": 6, "channel": "visual", "required": true},
+      {"id": "complete-script-approval", "index": 7, "channel": "evidence", "required": true},
+      {"id": "approved-casting", "index": 8, "channel": "evidence", "required": true},
+      {"id": "camera-grammar", "index": 9, "channel": "visual", "required": true},
+      {"id": "caption-layout", "index": 10, "channel": "visual", "required": true},
+      {"id": "audio-technical-integrity", "index": 11, "channel": "technical-audio", "required": true},
+      {"id": "audio-intelligibility", "index": 12, "channel": "perceptual-audio", "required": false, "allowUnscored": true},
+      {"id": "audio-performance-sync", "index": 13, "channel": "perceptual-audio", "required": false, "allowUnscored": true}
+    ],
     "criteria": [
       "cat and bunny remain complete, colored, recognizable, and correctly framed",
       "both characters visibly face inward toward each other in every two-shot",
       "two-shot character silhouettes remain clearly separated without touching or overlap",
       "the bunny-only camera faces right, matching the supplied reference",
-      "the visible speaker receives audio-envelope-paced mouth motion during audible speech, slow sustained sounds do not flap at a fixed rate, sustained pauses close naturally, elongated phrases and trailing words stay with the same speaker through the last audible word without swallowing the next character's first audible word, and a listener remains still",
+      "the approved visible speaker receives varied mouth motion, visible sustained pauses close naturally, and a listener remains still; auditory timing and performance judgments are separately scored under audio-performance-sync",
       "three-frame blinks look naturally irregular, favor conversational boundaries, and do not repeatedly synchronize the two characters",
       "neutral talking remains vertically still and any jump is brief, intentional, and attached to an explicit emphasis event",
       "the user has seen and approved the generated timed role sheet containing every exact time range, spoken line, named nonverbal vocalization, silence, character assignment, caption owner, and overlap; automated transcription, diarization, captions, and cameras may propose but never approve roles",
       "mentor, lead, questioner, and foil are episode-specific roles taken only from the user-approved complete script; when local diarization represents distinct real speakers, a stable detected voice never jumps characters, while a user-approved character performance can override an inadequate anonymous cluster map",
       "camera cuts follow the supplied three-angle grammar",
-      "captions progress in readable one-to-three-word chunks, stay in the lower bottom-third lane below character faces and above the episode label without a background panel, remain synchronized, and stay speaker-associated",
-      "the original user-provided audio remains complete; intelligibility is reviewed when sound is perceptible and otherwise explicitly left unscored"
+      "captions progress in readable one-to-three-word chunks, stay in the lower bottom-third lane below character faces and above the episode label without a background panel, and stay associated with the approved speaker; auditory synchronization is separately scored under audio-performance-sync",
+      "technical checks confirm the original render-audio identity, complete duration, AAC audio stream, and non-silent level; metadata does not establish intelligibility or perceived synchronization",
+      "intelligibility is reviewed when sound is directly perceptible and otherwise explicitly left unscored with a reason and disclosure",
+      "direct audiovisual review confirms audible speech and captions remain synchronized, slow sustained sounds do not flap at a fixed rate, and elongated phrases and trailing words stay with the same speaker through the last audible word without swallowing the next character's first audible word; unavailable auditory perception remains explicitly unscored"
     ]
   }
 }

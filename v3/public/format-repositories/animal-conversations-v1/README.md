@@ -1,72 +1,81 @@
-# Animal Conversations Wiggly Repo
+# Animal Conversations
 
-This runnable format kit turns user-supplied audio plus a timed dialogue file into a 1080x1920 blue-dog-and-bunny conversation video. It includes the fixed characters, five supplied backgrounds, three camera angles, captions, speaker-driven mouths, deterministic blinks/reactions, validation, render inspection, and delivery receipts. It does not call a voice provider.
+Give a coding agent a supported, accessible video link or downloaded clip. It drafts the dialogue, shows you a playable plan to approve, then renders, reviews, and delivers a 1080×1920 talking-animal video.
 
-The blue dog uses the legacy runtime ID `cat`; the pink bunny uses `bunny`. Narrative roles are episode-specific: either character may be the mentor, questioner, lead, or foil. The user-approved complete script is the only role authority. Diarization supplies anonymous voice clusters only and cannot decide character or narrative role.
+You do **not** need to write timestamps. A transcript/timeline is optional if you already have one. A regular chat window without local file and command access is not enough.
 
-## Quick start
+## What's included
 
-Node >=20.9.0 is the initial prerequisite. The doctor works before `node_modules` exists and lists missing dependencies together; it never changes global installations. Python and Cargo are not required for normal rendering from the packaged poses.
+The blue Dog and pink Bunny, five backgrounds, three camera angles, progressive captions, audio-driven mouths, deterministic blinks, and sparse emphasis motion. The existing local engine is preserved: no AI image/video/voice API calls and no dedicated GPU required. Your coding agent may have its own plan, limits, or costs.
 
-```bash
+The Dog's internal ID remains `cat` for compatibility. Neither character has a fixed narrative role; your approved script decides who performs each part.
+
+## First-time setup
+
+Node >=20.9.0 is the first prerequisite. The doctor runs before dependencies are installed and reports missing tools together without changing global installations.
+
+```sh
 node runner.mjs doctor
 npm ci
 npm test
-npm run check
-npm run smoke -- --run=smoke-proof
+node runner.mjs doctor
+node runner.mjs smoke --run=first-smoke
 ```
 
-The initial doctor can report `setup-required` until the listed prerequisites are installed. `npm run check` remains an alias for the same read-only report. Optional executable overrides are `FFMPEG`, `FFPROBE`, and `PYTHON`; set each to an executable path, not a shell command. Node subprocesses reuse the running Node executable.
+Normal rendering needs Node, FFmpeg/FFprobe, and kit-local Sharp—not Python or Cargo. `FFMPEG`, `FFPROBE`, and `PYTHON` optionally select executable paths. `check` is another name for the read-only doctor.
 
-`npm test` includes the JavaScript runtime, converter logic, and packaged-asset tests. The Python converter tests and Cargo proof are kept in `npm run test:converter`; `npm run test:release` runs both profiles.
+Optional local transcription uses Python 3.12. Explicit setup installs locked dependencies into `.intake-env/` and about 486 MB of pinned `small.en` model files into `.intake-models/`:
 
-Start a real episode with an absolute audio path and an absolute timing JSON path:
-
-```bash
-node runner.mjs init --run=my-episode --audio=/absolute/path/dialogue.wav --input=/absolute/path/input.json
-node runner.mjs approve-script --run=my-episode
-node runner.mjs validate --run=my-episode
-node runner.mjs render --run=my-episode
-node runner.mjs inspect --run=my-episode
-node runner.mjs finalize --run=my-episode
+```sh
+node runner.mjs setup-intake
 ```
 
-The timing JSON follows [input-contract.json](input-contract.json). Copy `fixtures/sample/input.json` as a starting point. Its timeline must begin at zero, stay contiguous, and finish at the measured audio duration. The only camera values are `two-shot`, `cat-close`, and `bunny-close`; provisional speakers are `cat`, `bunny`, `both`, or `none`. Each active beat contains exactly one of `caption` for spoken words or `vocalization` for a named nonverbal performance. Split a gasp, shriek, laugh, or other audible reaction into its own contiguous beat instead of hiding it in a neighboring line. `both` means proven simultaneous speech only. When a `both` beat contains captioned words, `captionSpeaker` identifies whether the caption belongs to the dog, bunny, or a true synchronized chorus.
+It runs on CPU, is English-first, and processes local files offline after setup. Missing tools or weights return `setup-required`; intake does not silently download them. Setup targets Apple Silicon macOS and Linux x64, including Linux tools inside WSL. Native Windows is not supported. Platform targets are not a substitute for the documented release acceptance results.
 
-Neutral talking uses mouth movement only. The renderer measures the supplied audio locally, derives mouth-open changes from syllable-sized energy rises and falls, and holds the verified speaker's mouth closed during sustained pauses. Slow sustained sounds hold a pose instead of flapping on a fixed clock; faster syllabic speech produces more frequent changes. A two-frame minimum pose suppresses jitter. This is automatic and has no authoring field, model, transcription step, or provider call.
+## Make an episode
 
-Vertical jumping is reserved for explicit emphasis events: add an optional `bounceAt` array to a beat with one or two offsets in seconds from that beat's start. Use one cue for a punchline, interruption, or strong reaction; use two only for an intentionally frantic line. Omitting `bounceAt` guarantees that the speaker remains vertically still.
+Your coding agent follows [SKILL.md](SKILL.md), the single complete workflow. These are its checkpoints, not technical work you must do:
 
-The renderer automatically turns each spoken beat's full caption into progressive one-to-three-word chunks. They stay in a dedicated lower lane inside the bottom third—below character faces and above the episode label—as outlined text without a background panel. Keep `caption` as the complete spoken line; a `vocalization` is recorded for approval and animation but is not shown as caption text.
+| Checkpoint | What happens |
+| --- | --- |
+| Intake | `intake --run=<fresh-id> --source=<link-or-local-file>` preserves the original, extracts full-quality audio, and creates an uncertain transcript. |
+| Draft | The agent writes dialogue, character assignments, timing, and creative choices, then imports with `review-script --run=<id> --input=/absolute/draft.json`. |
+| Review | Open `agent-runs/<id>/script-review.html`. Hear exact clips, check the full plan and uncertainty, and ask the agent for corrections. No server is needed. |
+| Approve | After you approve the displayed version, the agent records its review ID, your name, and your actual confirmation using `approve-script`. |
+| Produce | `run --run=<id>` renders and inspects, then stops for actual playback review. |
+| Deliver | Once required reviews pass, `run` finalizes and verifies the export, and the agent shows you the video. |
 
-Blinking is automatic and has no authoring field. Each character follows an independent deterministic cadence with irregular three-to-six-second gaps; due blinks move to a nearby dialogue boundary when possible, offscreen blinks are skipped, and near-simultaneous two-shot blinks are staggered. Each blink lasts three frames at 24 fps. Do not add manual blink cues or runtime randomness.
+All commands use `node runner.mjs` as their prefix. [SKILL.md](SKILL.md) gives the exact approval/playback arguments, required observation fields, and current media/render/policy identities. For existing work, start with `node runner.mjs status --run=<id> --json`.
 
-`init` requires both the actual user audio and an absolute real-episode timing JSON. It never falls back to the bundled sample. It extracts every beat into `agent-runs/<run>/script-review/` and creates `script-review.json` plus `timed-role-sheet.md`. Prefer listening to each clip. External ASR or diarization may draft words, timing, and anonymous voice clusters, but the agent must show the user the generated sheet containing every exact time range, line, named nonverbal vocalization, silence, character assignment, caption owner, and overlap. Keep elongated phrases, internal dramatic pauses, and trailing words with the same speaker through the final audible word; slow delivery is not a speaker boundary, but the next character's first audible word is. After corrections, regenerate with `review-script`, complete each beat's evidence, and set the top-level `approval` only after explicit whole-sheet approval. `approve-script` rewrites the sheet as approved and writes `.script-approval.json`, both bound to the audio checksum and complete performance timeline. `validate`, `render`, `inspect`, and `finalize` reject missing or stale approval. Any change to audio, timing, words, caption owner, vocalization, camera, or role requires review and approval again.
+If a link is blocked or needs login, provide a downloaded file: `node runner.mjs run --run=<id> --source=/absolute/downloaded-video.mp4`. The kit does not automatically access cookies or credentials, and it cannot retrieve every link.
 
-When local diarization genuinely identifies distinct stable people, `voiceCharacterMap` prevents one anonymous voice from jumping characters at a caption boundary. Do not use that constraint when one performer voices multiple characters or when a nonverbal reaction breaks the clustering assumption; the user-approved role script is authoritative. A confirmed `both` still requires mapped dog and bunny voices, `overlapConfirmed: true`, and written simultaneous-speech evidence.
+Transcription is a draft, not proof of who spoke. Overlaps, emotional sounds, and elongated words need particular care. The agent prepares and corrects timing; you approve the content. Use a clip you have permission to remix.
 
-## Audio policy
+## Changes and honest completion
 
-Episode audio is always supplied by the user. `init` copies it into the ignored run folder and extracts local review clips; nothing is uploaded by the official runtime. Rendering maps the original audio stream into the MP4 as AAC; it does not synthesize, rewrite, transcribe, or guess voice identity. An operator may use an external local or explicitly approved BYOK transcription/diarization tool to draft the timing JSON, but the kit intentionally ships no model, provider dependency, or second media pipeline. Those tools never replace whole-script approval. The smoke command creates a local sine tone solely to prove approval and muxing mechanics without provider spend.
+- Changed words, timing, roles, background, cameras, emphasis, title, or audio invalidate the relevant approval/results. For changed creative choices in a progressed run, `review-script --input=... --new-revision` preserves prior outputs. New source audio uses fresh intake.
+- There are **three render/inspection cycles per content-and-audio revision**, including the first. Reapproving unchanged content does not reset the budget. Interrupted work resumes; a note alone cannot unlock an unchanged failed retry.
+- Required technical and direct visual review must pass. Only policy-permitted auditory judgments may be explicitly unscored when sound cannot be perceived. Disclosure is not permission to skip required checks.
+- `complete` means the current finalized export verifies—not that a file merely rendered, or that you watched it. Missing access/approval, exhausted retries, and required review limitations remain blockers.
 
-## Included examples
+An advanced agent with prepared real audio and an input JSON may use `init --run=<fresh-id> --audio=/absolute/audio.wav --input=/absolute/draft.json`. Displayed review and explicit approval still apply. `upgrade-run --run=<old-id> --new-run=<fresh-id>` preserves old work and requires a new expanded review, approval, render, and quality evidence.
 
-- `goldens/we-listen-dont-judge.mp4` is the original fixed proof.
-- `examples/i-made-a-mistake/evidence/final.mp4` is the corrected unseen-audio proof with the Dog reaction, Bunny reassurance overlaps, complete elongated Dog line, and Bunny handoff preserved by the v0.15 approval rules.
+## Your files
 
-Both public examples intentionally retain their approved soundtracks. Raw audio and review clips from new runs remain excluded.
+Private work stays in `agent-runs/<id>/`. Full-quality `user-audio.wav` is separate from the lower-resolution ASR derivative; the derivative never replaces the soundtrack.
 
-## Toon Boom conversion
+The verified public export defaults to `outputs/<id>/`: `final.mp4`, a viewing page, sanitized review evidence, and checksums. Source video, downloader metadata, credentials, and machine paths stay private. Review WAVs are omitted unless requested with `--include-review-media`. Export refuses unrelated existing folders; changed exported files invalidate completion.
 
-The packaged character PNGs came from the supplied Harmony projects through the official local converter:
+The intentionally distributable examples are `goldens/we-listen-dont-judge.mp4` and `examples/i-made-a-mistake/evidence/final.mp4`, with their approved soundtracks. The sine-tone smoke test is only a mechanics proof, never user approval or playback review of a real episode.
 
-```bash
+## Developer and converter checks
+
+`npm test` covers JavaScript runtime/converter logic and packaged assets. `npm run test:converter` adds Python converter tests and Cargo; these are unnecessary for normal episodes. [PACKAGING.md](PACKAGING.md) describes exact-file release selection and the explicit real-ZIP test profile. Archive integrity does not certify fresh-agent or supported-platform acceptance.
+
+To rebuild a pose from an operator-supplied Harmony rig:
+
+```sh
 npm run convert -- --rig=/absolute/path/CAT_LOOP_1 --manifest=cat-frame1 --mouth=2 --eyes=1 --output=/absolute/path/cat.png
-npm run convert -- --rig=/absolute/path/BUN_LOOP_1 --manifest=bunny-frame1 --mouth=2 --eyes=1 --output=/absolute/path/bunny.png
 ```
 
-The converter requires Cargo, Node, and Sharp but not Harmony. It writes a checksum receipt beside each PNG. Character manifests define required opaque interior points, and tests verify those points in every packaged idle, blink, and mouth-open pose. See `converter/RECOVERY.md` for the recovered TGCO fill behavior and pose-manifest details.
-
-## Output
-
-Every run stays under `agent-runs/<run-id>/`. A successful inspection proves dimensions, frame rate, duration, H.264/AAC codecs, an audible audio stream, approved cameras, captions, and a current complete-script approval covering all spoken, nonverbal, silent, and overlapping beats. `finalize` then writes a hash-bound `delivery.json` beside `final.mp4` and the approved `timed-role-sheet.md`.
+The optional converter uses Cargo, Node, and Sharp without Harmony. See `converter/RECOVERY.md`. Normal episodes keep the shipped assets and renderer.

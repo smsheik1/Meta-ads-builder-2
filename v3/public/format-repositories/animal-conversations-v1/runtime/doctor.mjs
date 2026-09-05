@@ -7,8 +7,8 @@ import { pathToFileURL } from "node:url";
 import { execute, readJson, sha256, toolExecutable } from "./common.mjs";
 
 export const REQUIRED_FFMPEG_CAPABILITIES = {
-  encoders: ["libx264", "aac", "pcm_s16le"],
-  decoders: ["png", "pcm_s16le"],
+  encoders: ["libx264", "aac", "pcm_s16le", "pcm_s24le"],
+  decoders: ["png", "pcm_s16le", "pcm_s24le"],
   filters: ["sine", "volumedetect", "fps", "scale", "tile", "aresample"],
   muxers: ["mp4", "wav", "s16le", "null", "image2"],
   demuxers: ["image2", "wav"],

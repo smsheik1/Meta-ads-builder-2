@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { audioDuration, exists, hashValue, probe, readJson, sha256, writeJson } from "./common.mjs";
-import { scriptApprovalHash } from "./speaker-review.mjs";
+import { reviewMediaErrors, scriptApprovalHash, scriptReviewId } from "./speaker-review.mjs";
+import { approvedRevisionId, canonicalHash } from "./identity.mjs";
 
 export const CAMERAS = new Set(["two-shot", "cat-close", "bunny-close"]);
 export const SPEAKERS = new Set(["cat", "bunny", "both", "none"]);
@@ -68,12 +69,9 @@ export function validateTimeline(timeline, durationSeconds) {
   return errors;
 }
 
-export async function validateRun({ root, runDirectory }) {
-  const inputPath = path.join(runDirectory, "input.json");
-  if (!(await exists(inputPath))) throw new Error(`Missing run input: ${inputPath}`);
-  const input = await readJson(inputPath);
-  const assets = await readJson(path.join(root, "assets.json"));
+export function validateEpisodeInput({ input, assets, durationSeconds }) {
   const errors = [];
+  if (!input || typeof input !== "object" || Array.isArray(input)) return ["Episode input must be an object."];
   const allowedFields = new Set(["schemaVersion", "title", "episodeLabel", "audioFile", "background", "timeline"]);
   Object.keys(input).forEach((field) => {
     if (!allowedFields.has(field)) errors.push(`Unknown input field: ${field}`);
@@ -84,6 +82,18 @@ export async function validateRun({ root, runDirectory }) {
 
   const background = assets.backgrounds.find((entry) => entry.id === input.background);
   if (!background) errors.push(`Unknown packaged background: ${input.background}`);
+  if (typeof input.audioFile !== "string" || !input.audioFile || path.basename(input.audioFile) !== input.audioFile || input.audioFile.includes("\\")) errors.push("audioFile must name a file directly inside the run folder.");
+  errors.push(...validateTimeline(input.timeline, durationSeconds));
+  return errors;
+}
+
+export async function validateRun({ root, runDirectory, writeReceipt = true, requireApproval = true }) {
+  const inputPath = path.join(runDirectory, "input.json");
+  if (!(await exists(inputPath))) throw new Error(`Missing run input: ${inputPath}`);
+  const input = await readJson(inputPath);
+  const assets = await readJson(path.join(root, "assets.json"));
+  const errors = [];
+  const background = assets.backgrounds.find((entry) => entry.id === input.background);
   const audioFile = path.resolve(runDirectory, input.audioFile || "");
   if (path.dirname(audioFile) !== path.resolve(runDirectory)) errors.push("audioFile must name a file directly inside the run folder.");
   if (!input.audioFile || !(await exists(audioFile))) errors.push(`User audio is missing: ${input.audioFile || "(unset)"}`);
@@ -98,18 +108,27 @@ export async function validateRun({ root, runDirectory }) {
     if (!audioProbe.streams.some((stream) => stream.codec_type === "audio")) errors.push("The supplied file has no audio stream.");
     if (!(durationSeconds > 0)) errors.push("The supplied audio duration could not be measured.");
   }
-  errors.push(...validateTimeline(input.timeline, durationSeconds));
+  errors.push(...validateEpisodeInput({ input, assets, durationSeconds }));
 
   const scriptApprovalPath = path.join(runDirectory, ".script-approval.json");
   const timedRoleSheetPath = path.join(runDirectory, "timed-role-sheet.md");
   let scriptApproval = null;
-  if (!(await exists(scriptApprovalPath))) {
+  if (requireApproval && !(await exists(scriptApprovalPath))) {
     errors.push("The complete role script is unapproved. Complete script-review.json and run approve-script before validation.");
-  } else {
+  } else if (requireApproval) {
     scriptApproval = await readJson(scriptApprovalPath);
+    if (scriptApproval.schemaVersion !== 2) errors.push("Legacy approval receipt: use upgrade-run to preserve the old run and obtain fresh expanded approval.");
     if (scriptApproval.status !== "pass") errors.push("Script approval receipt must pass.");
     if (scriptApproval.audioSha256 !== audioSha256) errors.push("Script approval is stale because the user audio changed.");
     if (scriptApproval.scriptHash !== scriptApprovalHash(input)) errors.push("Script approval is stale because the timing, words, caption ownership, vocalizations, cameras, or roles changed.");
+    if (scriptApproval.revisionId !== approvedRevisionId(input, audioSha256)) errors.push("Script approval is stale because approved content or audio changed.");
+    const reviewPath = path.join(runDirectory, "script-review.json");
+    if (!(await exists(reviewPath))) errors.push("The expanded script review is missing.");
+    else {
+      const review = await readJson(reviewPath);
+      if (review.schemaVersion !== 2 || review.status !== "applied" || review.reviewId !== scriptApproval.reviewId || scriptReviewId(input, review, audioSha256) !== scriptApproval.reviewId) errors.push("Script approval is stale because the displayed review or its evidence changed.");
+      errors.push(...await reviewMediaErrors({ runDirectory, review, beatCount: input.timeline.length }));
+    }
     if (!(await exists(timedRoleSheetPath))) errors.push("The approved timed-role-sheet.md is missing.");
     else if (scriptApproval.timedRoleSheetHash !== hashValue(await readFile(timedRoleSheetPath, "utf8"))) errors.push("The timed role sheet is stale because it changed after approval.");
     if (scriptApproval.reviewedBeats !== input.timeline.length) errors.push("Script approval must cover every timeline beat.");
@@ -134,8 +153,8 @@ export async function validateRun({ root, runDirectory }) {
   }
   if (errors.length) throw new Error(`Validation failed:\n- ${errors.join("\n- ")}`);
 
-  const receipt = {
-    schemaVersion: 1,
+  let receipt = {
+    schemaVersion: 2,
     status: "pass",
     validatedAt: new Date().toISOString(),
     input: "input.json",
@@ -149,6 +168,9 @@ export async function validateRun({ root, runDirectory }) {
     timelineBeats: input.timeline.length,
     camerasUsed: [...new Set(input.timeline.map((beat) => beat.camera))],
     scriptApproval: scriptApproval && {
+      scope: scriptApproval.scope,
+      revisionId: scriptApproval.revisionId,
+      reviewId: scriptApproval.reviewId,
       method: scriptApproval.method,
       approval: scriptApproval.approval,
       reviewedBeats: scriptApproval.reviewedBeats,
@@ -158,10 +180,20 @@ export async function validateRun({ root, runDirectory }) {
       evidenceCounts: scriptApproval.evidenceCounts,
       voiceCharacterMap: scriptApproval.voiceCharacterMap,
       voiceBoundBeats: scriptApproval.voiceBoundBeats,
+      diarizedBeats: scriptApproval.diarizedBeats,
       confirmedOverlapBeats: scriptApproval.confirmedOverlapBeats,
     },
     verifiedAssets,
   };
-  await writeJson(path.join(runDirectory, ".validation.json"), receipt);
+  if (writeReceipt) {
+    const file = path.join(runDirectory, ".validation.json");
+    const previous = await exists(file) ? await readJson(file) : null;
+    if (previous) {
+      const { validatedAt: previousTime, ...previousContent } = previous;
+      const { validatedAt: currentTime, ...currentContent } = receipt;
+      if (canonicalHash(previousContent) === canonicalHash(currentContent)) receipt = previous;
+    }
+    await writeJson(file, receipt);
+  }
   return { input, audioFile, durationSeconds, assets, background, receipt };
 }

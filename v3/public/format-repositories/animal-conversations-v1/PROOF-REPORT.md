@@ -1,5 +1,7 @@
 # Animal Conversations proof report
 
+This document records historical renderer and approved-example evidence through 0.15.1. It does not certify the new 0.16.0 workflow, intake, approval schemas, playback review, export, or supported-platform matrix. Historical instructions below are not the current workflow; follow SKILL.md. New release acceptance is recorded separately.
+
 ## Converter proof
 
 The Harmony-free converter generated complete colored cat and bunny idle poses plus mouth-open and blink substitutions from the supplied Toon Boom projects. Converter tests assert the complete 12-layer order, exact palette recovery, source PEG placement, detached bunny fill nodes, expression drawing substitutions, transparent borders, and required opaque interior points. The six packaged character PNGs are checksum-bound in `assets.json`; each has a colocated conversion receipt.

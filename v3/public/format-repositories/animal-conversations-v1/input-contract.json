@@ -37,17 +37,20 @@
     }
   },
   "timingRules": [
-    "beats are contiguous from zero",
+    "schema-1 beat boundaries retain the existing 20 ms tolerance from zero and between consecutive beats; new drafts use exactly shared boundaries, and the playable review exposes any discrepancy before approval",
     "the final beat ends within 0.08 seconds of measured user-audio duration",
     "every active-speaker beat contains exactly one of spoken caption text or a named nonverbal vocalization; words and nonverbal performance are split into separate contiguous beats",
     "each beat stores the complete spoken line; the renderer, not the operator, splits it into progressive one-to-three-word caption cards",
     "a speaker boundary occurs after the current speaker's last audible word and no later than the next speaker's first audible word; elongated phrases, internal dramatic pauses, and trailing words remain one speaker performance when the delivery slows down but never swallow the next character's words",
     "every beat speaker is explicitly confirmed through direct audio, documented local audio analysis, a user label, a checksum-matched documented reference video, or silence, and the user sees and approves the complete written role script before validation",
-    "local audio analysis defines each detected voice ID once in voiceCharacterMap and uses detectedVoices on every analyzed beat; a detected voice cannot change characters at a caption or dialogue-turn boundary",
+    "when genuine diarization supplies stable distinct voices, local audio analysis defines each detected voice ID once in voiceCharacterMap and uses detectedVoices on every diarized beat; a detected voice cannot change characters at a caption or dialogue-turn boundary; transcription-only evidence requires no fabricated voice map",
     "speaker=both is valid only for explicitly confirmed simultaneous speech with documented overlap evidence; uncertainty must stop for review, and alternating voices must be split into contiguous single-speaker beats",
     "every captioned speaker=both beat identifies captionSpeaker as cat, bunny, or both; captionSpeaker is omitted from all other beats",
     "init and review-script generate timed-role-sheet.md with every exact time range, active Dog/Bunny performance, caption owner, spoken line or named vocalization, overlap, and review clip; the user approves that full sheet before rendering",
-    "complete-script approval becomes stale whenever the audio, timing, caption, vocalization, camera, or speaker assignment changes",
+    "complete-script approval covers audio bytes, title, episode label, background, timing, caption, caption ownership, vocalization, camera, speaker assignment, overlap, and bounce emphasis; changes invalidate approval, while cosmetic review-page changes do not",
+    "script-review.html works through file:// and plays the complete soundtrack plus exact per-beat WAV clips at the source sample rate and channel count; its displayed review ID binds creative content, audio, evidence, and uncertainty",
+    "approve-script requires the displayed review-id, approved-by, and explicit chat-confirmation note; runtime hashes are computed internally; transcription, timing, casting, diarization, and overlap evidence are separate and never self-approve the episode",
+    "approved revision identity is based on semantic content and audio bytes; reapproving unchanged content does not reset its three-attempt budget",
     "neutral talking has mouth motion only; vertical bounce occurs only at an explicit bounceAt emphasis event",
     "bounceAt contains no more than two strictly increasing offsets inside its beat"
   ]
