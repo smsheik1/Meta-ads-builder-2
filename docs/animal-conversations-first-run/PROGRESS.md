@@ -73,7 +73,7 @@ Do not replace a pending row with “done” merely because code exists or tests
 - SHA-256: `0c4e8fcad2533aa05bc7c49454e18c4d65996d6793e1677c735c171833a5ea5b`; 18,921,637 bytes.
 - Fresh extracted kit: `/private/tmp/wiggly-fresh-0161.ykivnk`; report: `acceptance-evidence/FRESH-ACCEPTANCE-0161.md`.
 - We Listen: `fresh-0161-we-listen-20260904`, 16 beats, living room, 31.137959s. Current explicitly approved review ID after the user's chorus and pause confirmations: `9f0d76ccc3344d5a0702fe329812b77cb15df8fd670fab4bc9b67df869be67d3`. Earlier IDs `00c8244697737ef1ee9245f9ac7272eca38cfd2d4f7b87a46506bea2415e8175` and `ac0b93474534d1d13526613cb3924916a52580a5d443437d73efb0299fc8d05e` are superseded, not approved.
-- Mistake: `fresh-0161-mistake-20260904`, 20 beats, backyard, 30.023401s. Review ID `fea5365cc1fbaa4958f6a54b995fec65751cf2851b67a5e4e0c5598e787c73cc`.
+- Mistake: `fresh-0161-mistake-20260904`, 20 beats, backyard, 30.023401s. Current review ID after the user's crying clarification: `2081d184622db36260b8b29b2359b397196f80f3edfd4b9750c949f88313715a`. Earlier `fea5365cc1fbaa4958f6a54b995fec65751cf2851b67a5e4e0c5598e787c73cc` is superseded, not approved.
 - We Listen is `complete` at the episode level with verified export and unchanged MP4; attempt count remains 1. Mistake remains `needs-script-approval`, owner user. Recheck current hashes/status before resuming; script/playback approvals are episode-specific.
 - Supporting checked-in evidence: PHASE-A-B-EVIDENCE.md, ASR-PREFLIGHT.md, PHASE-C-EVIDENCE.md, REVIEW-PAGE-QA.md, EXPORT-PAGE-QA.md and PLATFORM-ACCEPTANCE.md. Private media/review artifacts are intentionally not committed.
 
@@ -91,7 +91,7 @@ The original implementation turn and the next two goal continuations all retaine
 |---|---|---|
 | We Listen / 1 | Dog + Bunny: “We listen and we don't judge.” | Resolved by the user's explicit source-audio confirmation; see correction evidence below. |
 | We Listen / 15 | No speaker after the Walmart line | Resolved: user explicitly answered "just a pause"; recorded as user-provided evidence, not inferred from ASR/frames. |
-| Mistake / 10 and 12 | Dog, “Unclear voiced reaction” | These are placeholders, not identified sounds; possible overlap with Bunny's “No” also remains unresolved. |
+| Mistake / 10 and 12 | Dog, crying | User identified the answerer's emotional spiral as crying. Labels updated; exact overlap with Bunny's “No” remains unconfirmed. |
 | Mistake / 18 | No speaker before “No, if I make a mistake” | Technical silence is interrupted by a short above-threshold sound; its source/type is unconfirmed. |
 
 - At the initial audit, `confirmedSpeaker` was null on the two proposed no-speaker intervals and We Listen's opening. The opening and We Listen pause are now user-confirmed; Mistake's proposed pause remains unresolved. The validator also cannot determine whether an arbitrary reaction label is perceptually correct; accepting a placeholder string is not proof that the required review is resolved.
@@ -127,6 +127,12 @@ The original implementation turn and the next two goal continuations all retaine
 - Persistent output directory: `tmp/verified-deliveries/we-listen-0.16.1-20260905` in this task worktree. Export manifest hash: `d85c9c59914334ecafe1860101f0e769d808d4ca21757ecb439cdad0fb1f46f3`. Listed output contains only `final.mp4`, `index.html`, `checksums.json`, `evidence/contact-sheet.png` and sanitized `evidence/review-summary.json`; no original video, raw transcript or private review audio was exported.
 - This completes one actual episode, not the full repository goal: Mistake still requires source clarification/approval; complete fresh-agent proof on the latest candidate and supported systems is not established by this user-assisted Mac 0.16.1 delivery. No tutorial edits, package publication, source/model change, attempt reset or gate weakening occurred.
 
+
+### Mistake reaction clarified — 2026-09-05
+
+- User explained the premise: one person asks about mistakes, the answerer supports others but cries and spirals when asked about their own mistakes. The existing role sheet identifies Bunny as questioner and Dog as answerer. Replaced only lines 10 and 12's unclear vocalization placeholders with **Crying**, with `user-provided-label` evidence attributed to this explanation. No agent hearing, confirmed overlap, tears asset or new expression system was invented.
+- Preserved the previous draft/review/state, imported through official `review-script --input`, restored only still-valid observations, and regenerated. Verified the other 18 beats, all timing/audio/media hashes, and state unchanged. Current review ID: `2081d184622db36260b8b29b2359b397196f80f3edfd4b9750c949f88313715a`; no script approval or render. Private snapshot and candidate: `acceptance-evidence/mistake-before-crying-confirmation-20260905.json` and `mistake-draft-crying-20260905.json`.
+- Remaining: settle whether crying overlaps Bunny's reassurance and the proposed line-18 pause; obtain explicit complete-review approval, then render/review/export. The story clarification is not blanket approval of the whole episode.
 
 ## Final report format
 
