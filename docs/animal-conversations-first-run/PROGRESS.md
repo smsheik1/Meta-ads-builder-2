@@ -79,6 +79,22 @@ Do not replace a pending row with “done” merely because code exists or tests
 
 The original implementation turn and the next two goal continuations all retained the same unmet real-user review/approval. Independent CI diagnosis/repairs have now finished. No real episode approval, render, playback attestation or delivery was fabricated to pass acceptance.
 
+### Resumed review-gate audit — 2026-09-05
+
+- The intervening design discussion made no implementation or acceptance progress. The user asked to move on from redesigning the review page; leave that presentation unchanged. This is the first resumed goal-blocker audit, not permission to reuse the previous three-turn blocked count.
+- Re-ran both official `status` commands: the exact review IDs above remain unchanged, both phases remain `needs-script-approval`, and neither has a real render or approval. The clean development checkpoint is `ed8672e6`; no active CI job needs polling.
+- Read-only inspection of the current drafts and `runtime/speaker-review.mjs` narrowed the pending evidence to the following decisions. This is an evidence/approval blocker, not a need for the user to author timing or for another page redesign.
+
+| Draft / line | Current proposal | Unresolved evidence |
+|---|---|---|
+| We Listen / 1 | Dog: “We listen and we don't judge.” | Speaker is not confirmed; source pictures suggest a possible chorus but do not establish simultaneous audible speech. |
+| We Listen / 15 | No speaker after the Walmart line | Closed-mouth source pictures and missing ASR words do not establish that this interval has no vocal reaction. |
+| Mistake / 10 and 12 | Dog, “Unclear voiced reaction” | These are placeholders, not identified sounds; possible overlap with Bunny's “No” also remains unresolved. |
+| Mistake / 18 | No speaker before “No, if I make a mistake” | Technical silence is interrupted by a short above-threshold sound; its source/type is unconfirmed. |
+
+- `confirmedSpeaker` is null on the two proposed no-speaker intervals and We Listen's opening. Broad assent alone must not manufacture those observations. The validator also cannot determine whether an arbitrary reaction label is perceptually correct; accepting a placeholder string is not proof that the required review is resolved.
+- Obtain the specific source/character corrections, then let the agent update the evidence/draft, regenerate the review, and obtain approval of the resulting complete displayed plan. Changes to evidence may change the review ID; do not approve an old ID after editing. The user's “move on, it's fine” was in the page-design discussion and has not been recorded as either episode's approval.
+
 1. User listens to the two `script-review.html` pages above and confirms/corrects the displayed words, casting and marked uncertainty. The agent handles timestamps and edits.
 2. Revalidate the current audio/content/review IDs. Any changed displayed choices need a new displayed review and approval; unchanged approval never resets the content-and-audio attempt budget.
 3. Use the packaged approval and run commands. If required speaker/overlap evidence remains unresolved, show that specific issue; do not infer it from ASR or a generic receipt.
