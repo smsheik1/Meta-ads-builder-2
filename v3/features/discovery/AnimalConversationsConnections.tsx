@@ -27,7 +27,7 @@ export function AnimalConversationsConnections({
             </h2>
           </div>
           <p className="text-sm font-black text-[#31566e]">
-            0 accounts · $0 provider cost
+            0 media APIs · $0 provider cost
           </p>
         </div>
 
@@ -36,10 +36,10 @@ export function AnimalConversationsConnections({
             <li className="grid grid-cols-2 gap-x-4 gap-y-3 px-[18px] py-[18px] min-[701px]:grid-cols-[1.15fr_1fr_0.72fr_0.9fr] min-[701px]:items-center min-[701px]:gap-[18px]">
               <ServiceValue label="Input">
                 <strong className="text-xl font-black">
-                  Conversation audio
+                  Conversation clip
                 </strong>
                 <small className="mt-1 block text-xs font-bold text-[#667087]">
-                  Local file
+                  Supported link or local file
                 </small>
               </ServiceValue>
               <ServiceValue label="Used for">
@@ -55,7 +55,7 @@ export function AnimalConversationsConnections({
                 </span>
               </ServiceValue>
               <ServiceValue label="Cost">
-                <strong>Your supplied file</strong>
+                <strong>Your supplied clip</strong>
               </ServiceValue>
             </li>
 
@@ -88,17 +88,16 @@ export function AnimalConversationsConnections({
         <p className="mt-4 flex items-start gap-2 text-sm font-bold leading-6">
           <FileAudio className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
           <span>
-            <strong>You provide the audio.</strong> The Repo copies it locally,
-            never uploads it to a provider, and keeps it out of the runnable
-            download.
+            <strong>You provide the clip.</strong> The agent extracts the audio
+            and writes the dialogue timing. If a link can’t be downloaded, send
+            the local file instead. Source media stays local and private.
           </span>
         </p>
         <p className="mt-3 flex items-start gap-2 text-sm font-bold leading-6 text-[#31566e]">
           <ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-          No API key or paid service is required for a normal run.{" "}
-          {data.requirements.optionalAssetRebuildTools.join(" and ")} is
-          optional and used only if an operator rebuilds the packaged poses from
-          source rigs.
+          No AI image or video credits needed, and no dedicated GPU. Local
+          transcription uses Python 3.12 and a one-time download of about 486 MB.
+          Your coding agent may have its own fees or usage limits.
         </p>
       </div>
     </section>

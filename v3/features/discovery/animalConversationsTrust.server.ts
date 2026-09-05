@@ -30,6 +30,7 @@ type QualityContract = {
   rubricVersion: string;
   automatic: { width: number; height: number; fps: number };
   technicalGates: Array<{ id: string }>;
+  requiredTechnicalGates: string[];
   blindReview: { criteria: string[] };
 };
 
@@ -137,6 +138,9 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
       { label: "Video renderer", path: "runtime/render.mjs" },
       { label: "Output inspection", path: "runtime/inspect.mjs" },
       { label: "Speaker review", path: "runtime/speaker-review.mjs" },
+      { label: "Audio intake", path: "runtime/intake.mjs" },
+      { label: "Guided workflow", path: "runtime/workflow.mjs" },
+      { label: "Verified export", path: "runtime/export.mjs" },
     ].map(async (file) => ({
       ...file,
       content: await readFile(path.join(repoRoot, file.path), "utf8"),
@@ -148,30 +152,30 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
     version: format.version,
     assembly: {
       title: "The assembly line",
-      path: "Audio setup → Speaker review → Episode plan → Render → Deliver",
+      path: "Clip → Dialogue draft → Your approval → Render → Review & export",
       ariaLabel:
-        "Five steps from supplied conversation audio to final delivery",
+        "Five steps from a source clip to a reviewed, verified video",
       commandsLabel: "What the coding agent runs",
       commandsAriaLabel: "Exact Animal Conversations runtime commands",
       steps: [
         {
-          title: "Audio setup",
+          title: "Send a clip",
           cost: "Free",
           description:
-            "Copies your local conversation audio into an ignored run folder.",
+            "Send a supported link or local file. The agent extracts the full soundtrack locally; blocked links need a local file instead.",
         },
         {
-          title: "Speaker review",
+          title: "Agent drafts",
           cost: "Free",
           description:
-            "Generates one timed role sheet with exact ranges, Dog/Bunny assignments, caption owners, vocalizations, and overlaps, then binds its approval to the audio checksum.",
-          waiting: "Waits for explicit evidence",
+            "The agent writes the dialogue, works out the timing, and proposes who says each line. Uncertain words and reactions stay visible.",
         },
         {
-          title: "Episode plan",
+          title: "You approve",
           cost: "Free",
           description:
-            "Validates timing, captions, three approved cameras, and any intentional emphasis cues.",
+            "Check the words, Dog/Bunny assignments, and background. Tell the agent what to change, then approve the complete plan.",
+          waiting: "Waits for your approval",
         },
         {
           title: "Render",
@@ -180,30 +184,30 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
             "Builds one 1080 × 1920 conversation with the supplied audio.",
         },
         {
-          title: "Review and deliver",
+          title: "Review & export",
           cost: "Free",
           description:
-            "Inspects the MP4, approved timed role sheet, contact sheet, and technical report before finalizing.",
+            "Required technical and playback checks must pass before the agent exports the video, review summary, and checksums.",
           waiting: "Waits for your review",
         },
       ],
       commands: [
+        "node runner.mjs doctor",
+        "npm ci",
         "npm test",
-        "npm run check",
-        "npm run smoke -- --run=<id>",
-        "node runner.mjs init --run=<id> --audio=/absolute/path/audio.wav --input=/absolute/path/input.json",
-        "node runner.mjs approve-script --run=<id>",
-        "node runner.mjs validate --run=<id>",
-        "node runner.mjs render --run=<id>",
-        "node runner.mjs inspect --run=<id>",
-        "node runner.mjs finalize --run=<id>",
+        "node runner.mjs smoke --run=<fresh-smoke-id>",
+        "node runner.mjs setup-intake  # one-time, with your permission",
+        "node runner.mjs intake --run=<id> --source=<link-or-local-file>",
+        "node runner.mjs status --run=<id> --json",
+        "# The agent follows SKILL.md for drafting, your approval, and playback review.",
+        "node runner.mjs run --run=<id>",
       ],
     },
     proof: {
       durationTimeLabel: timestamp(durationSeconds),
     },
     proofCopy: {
-      eyebrow: "02 · Finished example",
+      eyebrow: "02 · Finished example · v0.15.1",
       title: "Watch the final conversation.",
     },
     annotations: [
@@ -245,14 +249,14 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
       title: "How your finished video is checked.",
       summary: [
         {
-          value: `${quality.technicalGates.length}/${quality.technicalGates.length}`,
-          label: "Technical gates pass in the proof",
+          value: `${quality.requiredTechnicalGates.length}`,
+          label: "Required technical checks",
         },
         { value: "0", label: "Provider calls at runtime" },
         { value: "3", label: "Approved camera angles" },
       ],
       noteTitle: "Evidence stays explicit.",
-      note: "Speaker identity must come from direct audio review, a user label, a checksum-matched reference video, or silence. The Repo never claims automatic diarization.",
+      note: "The agent proposes the words and characters; you approve them. Transcription never approves casting, and this Repo never claims automatic diarization. The examples are earlier-version proof, not a new v0.16.2 review.",
       criteriaTitle: `The playback review checks ${quality.blindReview.criteria.length} things`,
       criteriaSubtitle:
         "Character, speaker, caption, camera, motion, and audio evidence",
@@ -260,15 +264,16 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
         id: `criterion-${index + 1}`,
         label,
       })),
-      rule: "A render ships only after the dimensions, duration, codecs, audio, camera grammar, speaker receipt, input parity, captions, and speech-activity checks all pass. Any perceptual limit must be disclosed instead of guessed.",
+      rule: "Required technical and visual playback checks must pass before export. Unavailable sound judgments may be left unscored only where the policy permits, with a reason. Missing required checks still block completion.",
     },
     receipt: {
       rows: [
         { label: "Renderer", value: format.renderer },
-        { label: "Quality", value: "Pass · published proof report" },
+        { label: "Examples", value: "Published v0.15.1 proof" },
+        { label: "Download", value: `v${format.version}` },
         {
           label: "Technical",
-          value: `${quality.technicalGates.length}/${quality.technicalGates.length} gates`,
+          value: `${quality.requiredTechnicalGates.length} required checks before export`,
         },
         { label: "Speakers", value: "Explicit confirmation per beat" },
         {
@@ -276,7 +281,7 @@ export async function getAnimalConversationsTrustData(): Promise<AnimalConversat
           value: `${quality.automatic.width} × ${quality.automatic.height} · ${durationSeconds.toFixed(3)}s MP4`,
         },
       ],
-      note: "The approved example MP4s intentionally retain their distributable soundtracks. Raw audio and review clips from new runs remain user-supplied, local, and excluded from the downloadable kit.",
+      note: "The example MP4s retain their approved soundtracks. Raw audio and review clips from new runs remain user-supplied, local, and excluded from the download. Version 0.16.2 passed automated and platform checks; full fresh-agent acceptance of this exact release remains incomplete.",
     },
     commands,
     files,

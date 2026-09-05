@@ -1,5 +1,9 @@
 # Animal Conversations — Repo handoff
 
+**Publication update — September 5, 2026:** The user subsequently authorized publishing the existing 0.16.2 candidate, updating the website instructions/download, and merging PR #470 with automatic deployment. The page distinguishes the 0.15.1 examples from the 0.16.2 download. The rebuilt archive matches the tested candidate checksum below exactly. Prior acceptance limitations remain disclosed; publication does not claim missing fresh-agent review passed. Merge/deployment status is tracked in [PR #470](https://github.com/smsheik1/wiggly/pull/470).
+
+The following is the preserved pre-publication implementation checkpoint.
+
 **Implementation checkpoint: 0.16.2. Not a fully accepted or published release.**
 
 The repo changes are built and pushed. Video examples were verification fixtures—not additional tutorial-production deliverables. Further clip polishing is stopped. The remaining release-acceptance gaps are listed below, not silently waived.

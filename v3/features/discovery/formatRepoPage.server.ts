@@ -118,10 +118,11 @@ export async function getFormatRepoPagePresentation(
       copy: {
         runTitle: "Make your Animal Conversation.",
         runDescription:
-          "Add one conversation audio file and, when available, its transcript or speaker labels. The agent handles the staged performance.",
-        provided: "One conversation audio file",
-        ready: "7–20 minutes",
+          "Send a supported video link or local clip. Your coding agent extracts the audio, prepares the dialogue for your approval, and makes the video. No timestamps to write.",
+        provided: "One video link or local clip",
+        ready: "7–20 minutes after setup",
         examplesTitle: "Finished Conversations.",
+        examplesDescription: "These examples were made with v0.15.1. The current download is v0.16.2, with easier setup and a guided approval-to-export workflow.",
       },
     };
   }

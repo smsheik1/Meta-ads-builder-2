@@ -1,5 +1,13 @@
 # Animal Conversations — Feature delivery tracker
 
+## Publication follow-up — September 5, 2026
+
+The user approved publishing 0.16.2 and merging PR #470, including automatic website deployment. The public page and copied launcher now point to the same exact 0.16.2 package; historical example versions remain 0.15.1. Archive SHA-256: `0762a04c20c8229d98427a158debf09063512c65bb54c95a90e28f24ce56565d`. A new regression compares every allowlisted source file with the ZIP inventory, plus page/manifest/versioned/stable parity. The prior fresh-agent acceptance limits remain disclosed, not silently marked passed. No additional video work is included. See [PR #470](https://github.com/smsheik1/wiggly/pull/470) for merge/CI/deployment status.
+
+The checkpoint below records the earlier pre-publication handoff.
+
+Publication checks: focused Animal Conversations page, Discovery proof, and handoff tests passed. Isolated headless Chrome verified HTTP 200, the actual “Copy for another coding agent” control and clipboard content, the copied link’s exact ZIP checksum, no page errors, and no horizontal overflow at 390 px. Desktop/mobile screenshots were inspected. The in-app browser timed out, so the repo’s Playwright fallback was used. Scoped ponytail review: lean existing components, no new dependency or abstraction. Merge CI remains the final pre-merge check.
+
 ## Current checkpoint
 
 - **Concise repo handoff:** [HANDOFF.md](HANDOFF.md). Implementation is handed off with incomplete release acceptance disclosed; no further video polishing is planned. This is not a goal-completion or publication claim.
