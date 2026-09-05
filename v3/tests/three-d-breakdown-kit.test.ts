@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
+
+assert.doesNotMatch(
+  readFileSync("tests/three-d-breakdown-kit.test.ts", "utf8"),
+  /from ["']node:child_process["']/,
+  "Archive checks must run without an OS unzip utility on the deployment host.",
+);
 
 const archivePath = path.resolve(
   "public",
@@ -11,16 +17,13 @@ const archivePath = path.resolve(
   "wiggly-three-d-breakdown-format-kit.zip",
 );
 const archive = readFileSync(archivePath);
-const entries: string[] = [];
-for (let offset = 0; offset <= archive.length - 46;) {
-  offset = archive.indexOf("PK\u0001\u0002", offset, "binary");
-  if (offset < 0) break;
-  const nameLength = archive.readUInt16LE(offset + 28);
-  const extraLength = archive.readUInt16LE(offset + 30);
-  const commentLength = archive.readUInt16LE(offset + 32);
-  entries.push(archive.subarray(offset + 46, offset + 46 + nameLength).toString());
-  offset += 46 + nameLength + extraLength + commentLength;
-}
+const zip = await JSZip.loadAsync(archive);
+const entries = Object.keys(zip.files);
+const readArchivedText = async (relative: string) => {
+  const entry = zip.file(`wiggly-three-d-breakdown-format-kit/v3/${relative}`);
+  assert.ok(entry, `${relative} must be in the downloadable ZIP.`);
+  return await entry.async("string");
+};
 assert.ok(entries.length > 0);
 const listing = entries.join("\n");
 for (const required of [
@@ -59,7 +62,7 @@ for (const relative of [
   "public/format-repositories/three-d-breakdown-v1/requirements.json",
   "public/format-repositories/three-d-breakdown-v1/format.json",
 ]) {
-  const archived = execFileSync("unzip", ["-p", archivePath, `wiggly-three-d-breakdown-format-kit/v3/${relative}`], { encoding: "utf8" });
+  const archived = await readArchivedText(relative);
   assert.equal(archived, readFileSync(relative, "utf8"), `${relative}: downloadable ZIP must match the source, not an older NIM runner.`);
 }
 
@@ -71,7 +74,7 @@ assert.match(packageJson.scripts["format:three-d"], /three-d-breakdown-format\.t
 assert.match(packageJson.scripts.smoke, /smoke-three-d-breakdown-format\.ts/);
 assert.equal(packageJson.dependencies["@remotion/renderer"], "4.0.473");
 assert.equal(packageJson.dependencies.remotion, "4.0.473");
-const archivedTsconfig = JSON.parse(execFileSync("unzip", ["-p", archivePath, "wiggly-three-d-breakdown-format-kit/v3/tsconfig.json"], { encoding: "utf8" }));
+const archivedTsconfig = JSON.parse(await readArchivedText("tsconfig.json"));
 assert.equal(archivedTsconfig.compilerOptions.jsx, "react-jsx", "The extracted kit must render without inheriting the app's JSX settings.");
 
 const skill = readFileSync(
