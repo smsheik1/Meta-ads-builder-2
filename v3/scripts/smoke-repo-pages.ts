@@ -8,6 +8,11 @@ import {
   getDiscoveryFormatProfile,
 } from "../features/discovery/formatProof.server";
 import { richFormatRepoSlugs } from "../features/discovery/formatRepoPage.server";
+import {
+  filterDiscoveryEntries,
+  getPublishedDiscoveryEntries,
+  groupDiscoveryEntriesByShelf,
+} from "../features/discovery/catalog";
 
 const baseUrl = process.env.REPO_SMOKE_BASE_URL || "http://localhost:3020";
 const screenshots = mkdtempSync(path.join(tmpdir(), "wiggly-repo-pages-"));
@@ -18,6 +23,51 @@ const browser = await chromium.launch({
 });
 const specialized = new Set<string>(richFormatRepoSlugs);
 try {
+  const discovery = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  await discovery.route(/\.(mp4|mp3|wav|glb)(\?.*)?$/i, (route) => route.abort());
+  const entries = getPublishedDiscoveryEntries();
+  const shelves = groupDiscoveryEntriesByShelf(entries);
+  const response = await discovery.goto(`${baseUrl}/discover`, { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200, "Discover must load.");
+  await discovery.locator('h3[id^="shelf-"]').first().waitFor();
+  assert.deepEqual(
+    await discovery.locator('h3[id^="shelf-"]').allTextContents(),
+    shelves.map((shelf) => shelf.title),
+    "Discover must render the approved Repo order.",
+  );
+  for (const shelf of shelves) {
+    const section = discovery.locator(`section[aria-labelledby="shelf-${shelf.id}"]`);
+    assert.deepEqual(
+      await section.locator("article").evaluateAll((cards) => cards.map((card) => card.id)),
+      shelf.entries.map((entry) => entry.id),
+      `${shelf.title}: all examples must remain together and in order.`,
+    );
+    assert.deepEqual(
+      await section.getByRole("link", { name: "Open format", exact: true }).evaluateAll((links) => links.map((link) => link.getAttribute("href"))),
+      shelf.entries.map((entry) => `/formats/${entry.format.slug}`),
+      `${shelf.title}: Repo links must be preserved.`,
+    );
+  }
+  await discovery.screenshot({ path: path.join(screenshots, "discover-top.png") });
+  await discovery.getByRole("button", { name: "Sell a product", exact: true }).click();
+  const sellingShelves = groupDiscoveryEntriesByShelf(filterDiscoveryEntries(entries, "", "sell"));
+  await discovery.waitForFunction(
+    (ids) => JSON.stringify([...document.querySelectorAll('h3[id^="shelf-"]')].map((heading) => heading.id)) === JSON.stringify(ids),
+    sellingShelves.map((shelf) => `shelf-${shelf.id}`),
+  );
+  await discovery.getByRole("button", { name: "For you", exact: true }).click();
+  await discovery.getByRole("searchbox", { name: "Search finished ads" }).fill("Lego Music Video");
+  await discovery.waitForFunction(() => document.querySelectorAll('h3[id^="shelf-"]').length === 1 && document.querySelectorAll("article").length === 2);
+  assert.deepEqual(await discovery.locator('h3[id^="shelf-"]').allTextContents(), ["Lego Music Video"]);
+  await discovery.getByRole("searchbox", { name: "Search finished ads" }).fill("");
+  await discovery.waitForFunction((count) => document.querySelectorAll('h3[id^="shelf-"]').length === count, shelves.length);
+  await discovery.setViewportSize({ width: 390, height: 844 });
+  await discovery.locator("#shelf-skai-generated").scrollIntoViewIfNeeded();
+  const discoveryDimensions = await discovery.evaluate(() => ({ width: innerWidth, content: document.documentElement.scrollWidth }));
+  assert.ok(discoveryDimensions.content <= discoveryDimensions.width + 1, "Discover must not overflow on mobile.");
+  await discovery.screenshot({ path: path.join(screenshots, "discover-image-filters-mobile.png") });
+  await discovery.close();
+  console.log(`PASS: Discover's ${shelves.length} ordered groups, all example links, filters, search, and mobile layout.`);
   const pending = [...discoveryFormatSlugs];
   let checked = 0;
   await Promise.all(

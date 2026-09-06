@@ -30,11 +30,11 @@ assert.ok(getDiscoveryEntriesByCreator("Shaz").length >= 3);
 assert.equal(getDiscoveryCreatorByHandle("unknown"), null);
 
 const skaiRepoFamily = getFormatRepoFamily("cinematic-portrait-pack");
-assert.equal(skaiRepoFamily?.name, "SKAI Image Transformations");
+assert.equal(skaiRepoFamily?.name, "Image Filters");
 assert.equal(skaiRepoFamily?.formatCount, 31);
 assert.equal(
   getFormatRepoFamily("cool-tone-filter")?.name,
-  "SKAI Image Transformations",
+  "Image Filters",
 );
 assert.equal(getFormatRepoFamily("animal-conversations"), null);
 

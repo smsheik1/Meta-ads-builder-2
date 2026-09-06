@@ -79,9 +79,9 @@ const shelf = discoveryShelves.find(
 );
 assert.equal(shelf?.entries[0]?.format.slug, "animal-conversations");
 assert.equal(
-  discoveryShelves[1],
+  discoveryShelves[3],
   shelf,
-  "Animal Conversations should stay directly below the featured 2D Character Animation shelf.",
+  "Animal Conversations should be fourth in the approved Discover Repo order.",
 );
 assert.equal(shelf?.title, "Animal Conversations");
 
