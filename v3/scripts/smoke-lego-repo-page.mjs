@@ -36,8 +36,8 @@ try {
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${base}/discover#shelf-lego-music-videos`);
-  const shelf = page.getByRole("region", { name: "Lego Music Videos", exact: true });
-  await shelf.getByRole("heading", { name: "Lego Music Videos", exact: true }).waitFor();
+  const shelf = page.getByRole("region", { name: "Lego Music Video", exact: true });
+  await shelf.getByRole("heading", { name: "Lego Music Video", exact: true }).waitFor();
   assert.equal(await shelf.getByRole("link", { name: "Open Lego Music Video format", exact: true }).count(), 2);
   await shelf.screenshot({ path: path.join(evidence, "discover.png") });
   await page.goto(`${base}/s/lego-music-video-cookies`);

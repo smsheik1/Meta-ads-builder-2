@@ -386,12 +386,46 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 17, "Lego Music Video has its own shelf, separate from audio-only Brand Jingle.");
-assert.equal(
-  shelves[0]?.id,
-  "two-d-character-animation",
-  "Animate Shaz should be the first visible Discover shelf.",
+const approvedRepoOrder = [
+  ["two-d-character-animation", "Animate Shaz"],
+  ["product-stories", "3D Breakdown"],
+  ["lego-music-videos", "Lego Music Video"],
+  ["character-conversations", "Animal Conversations"],
+  ["character-dance-offs", "Bikini Bottom Dance Off"],
+  ["product-photoshoots", "Product Photoshoot"],
+  ["character-explainers", "Cartoon Explainer"],
+  ["character-news", "Squilliam News"],
+  ["talking-fish-news", "Talking Fish News"],
+  ["mugsy-explains", "Mugsy Explains"],
+  ["brand-jingles", "Brand Jingle"],
+  ["brainrot", "Minecraft Brainrot"],
+  ["video-memes", "Video Meme"],
+  ["skai-generated", "Image Filters"],
+  ["audio-visualizer", "Audio Visualizer"],
+  ["hybrid-news", "Hybrid News"],
+  ["static-hooks", "Meme"],
+  ["conversations", "iMessage Ad"],
+  ["written-content", "Newsletter Writer"],
+];
+assert.deepEqual(
+  shelves.map((shelf) => [shelf.id, shelf.title]),
+  approvedRepoOrder,
+  "Discover must follow the approved Repo order, with one combined Image Filters category.",
 );
+for (const shelf of shelves) {
+  const formats = new Set(shelf.entries.map((entry) => entry.format.slug));
+  assert.equal(formats.size, shelf.id === "skai-generated" ? 31 : 1,
+    "Only Image Filters may group multiple Repos; repeated examples stay under their own Repo.");
+}
+for (const goal of ["all", "sell", "explain", "story", "teach", "entertain"] as const) {
+  const filteredShelves = groupDiscoveryEntriesByShelf(filterDiscoveryEntries(published, "", goal));
+  const visibleIds = new Set(filteredShelves.map((shelf) => shelf.id));
+  assert.deepEqual(
+    filteredShelves.map((shelf) => [shelf.id, shelf.title]),
+    approvedRepoOrder.filter(([id]) => visibleIds.has(id)),
+    "Filtering must preserve the approved relative Repo order.",
+  );
+}
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -424,7 +458,7 @@ assert.deepEqual(
     .filter((entry) => entry.format.slug === "text-message")
     .map((entry) => entry.id),
   ["scene-j57cr2xv8py1b30waepejjm5wh8axj7d"],
-  "Conversations That Sell should show one iMessage proof instead of repeating the format.",
+  "iMessage Ad should show one proof on its own shelf.",
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "character-explainers")?.entries.map((entry) => entry.id),
@@ -435,7 +469,7 @@ assert.deepEqual(
   shelves.find((shelf) => shelf.id === "character-news"),
   {
     id: "character-news",
-    title: "Character Newsrooms",
+    title: "Squilliam News",
     description: "Real stories and promotions delivered as full-frame character broadcasts.",
     layout: "landscape",
     entries: [published.find((entry) => entry.id === "squilliam-news-artistic-emergency")],
@@ -459,7 +493,7 @@ assert.deepEqual(
   shelves.find((shelf) => shelf.id === "two-d-character-animation"),
   {
     id: "two-d-character-animation",
-    title: "2D Character Animation",
+    title: "Animate Shaz",
     description: "A reusable 2D character who can speak, react, and stay on-model from scene to scene.",
     layout: "landscape",
     entries: [
