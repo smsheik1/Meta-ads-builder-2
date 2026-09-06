@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "localTools": [
+    "Node.js >=22",
+    "FFmpeg",
+    "FFprobe",
+    "zip",
+    "unzip"
+  ],
+  "optionalTools": [
+    "yt-dlp for permitted YouTube audio/video downloads; no integrated subtitle retrieval",
+    "Already-installed whisper.cpp CLI and an existing local model for optional English-only transcription"
+  ],
+  "providers": [],
+  "paidApprovalRequired": true,
+  "automaticInstallation": false,
+  "notes": [
+    "The baseline makes no paid provider calls and does not install tools or models.",
+    "Optional local transcription uses supplied absolute executable/model paths; it does not build tools, download models, or access credentials.",
+    "Machine transcript text and timings are uncertain evidence, not speaker identification, voice/music analysis, or direct audio review.",
+    "The host coding agent authors the child runtime; its own usage and pricing are separate from this package.",
+    "Direct moving-video and audio review require a capable host or an accurately attributed human reviewer.",
+    "A generated child Repo declares its additional tools, assets, and any provider requirements separately."
+  ]
+}

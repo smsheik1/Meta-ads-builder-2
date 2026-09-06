@@ -1,0 +1,11 @@
+node_modules/
+agent-runs/
+runs/
+private/
+outputs/
+*.zip
+*.zip.sha256
+secrets.env
+.env
+.env.*
+.DS_Store
