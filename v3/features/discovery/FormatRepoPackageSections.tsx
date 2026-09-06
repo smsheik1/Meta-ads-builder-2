@@ -108,6 +108,12 @@ export function FormatRepoPackageConnections({ format, data }: Props) {
               </p>
             </article>
           </div>
+          {data.optionalTools.length ? (
+            <div className="mt-5 text-sm font-bold text-[#31566e]">
+              <h3 className="font-black">Optional local tools</h3>
+              <BulletList values={data.optionalTools} />
+            </div>
+          ) : null}
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div className="rounded-lg border-2 border-[#080817] bg-[#c9ff55] p-5">
               <p className="text-xs font-black uppercase tracking-wider">
@@ -311,7 +317,7 @@ export function FormatRepoPackageEvidence({ format, data }: Props) {
         {data ? (
           <>
             <div className="mt-7 grid gap-4 sm:grid-cols-2">
-              {data.proof.examples.slice(0, 2).map((example, index) => (
+              {data.proof.examples.slice(0, format.slug === "repo-builder" ? 3 : 2).map((example, index) => (
                 <article key={index} className={`${card} p-6`}>
                   <p className="text-xs font-black uppercase tracking-wider text-[#596176]">
                     {example.role || "Saved reference"}

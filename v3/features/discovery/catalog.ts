@@ -2132,6 +2132,22 @@ const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
 }));
 
 export const discoveryCatalog: DiscoveryEntry[] = [
+  {
+    id: "repo-builder-overview",
+    status: "published",
+    order: 100,
+    brand: "Agent-operated authoring kit · baseline",
+    title: "A reference becomes a reusable Repo",
+    curatorNote: "Workflow illustration, not a generated video. Your coding agent inspects the reference, reviews the blueprint with you, and authors a reusable runtime. The Batman interpretation was user-assisted. A fresh agent then rendered a new real-gameplay conversation from the child ZIP without code changes; voice recognition and direct audiovisual creative acceptance remain pending.",
+    role: "workflow-illustration",
+    goal: "teach",
+    media: {
+      kind: "image",
+      src: "/format-repositories/repo-builder-v1/assets/repo-builder-overview.svg",
+      durationLabel: "Authoring kit",
+    },
+    format: { slug: "repo-builder", name: "Wiggly Repo Builder", version: "0.1.1", owner: "Wiggly Studio" },
+  },
   ...(["cheesecake", "cookies"] as const).map((example, index): DiscoveryEntry => ({
     id: `lego-music-video-${example}`,
     status: "published",
@@ -2900,6 +2916,12 @@ export const discoveryShelfDefinitions = [
     title: "Newsletter Writer",
     description: "Brand-voice writing grounded in real company proof.",
     formats: ["newsletter-writer"],
+  },
+  {
+    id: "repo-builder",
+    title: "Wiggly Repo Builder",
+    description: "Bring a reference video. Work with your coding agent to turn its recipe into a reusable Wiggly Repo. Assisted-authoring baseline.",
+    formats: ["repo-builder"],
   },
   {
     id: "more",

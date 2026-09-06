@@ -115,11 +115,15 @@ export async function getFormatRepoPagePresentation(
       kind: "shared",
       package: getFormatRepoPackageData(format),
       copy: {
-        runDescription: format.packagePath
+        runDescription: slug === "repo-builder"
+          ? "Bring a reference and review the blueprint with your coding agent. This baseline guides analysis and Repo authoring; it does not promise an exact clone or automatically publish the result. Existing gameplay is sourced or supplied, not recreated."
+          : format.packagePath
           ? "The agent reads this version’s instructions, checks the requirements, and walks you through the approved workflow. Review the inputs and estimate before starting."
           : "This collection contains saved examples, but does not yet include a runnable Repo.",
-        examplesTitle: "Examples & references.",
-        examplesDescription: `${format.proofEntries.length} saved examples for this recipe—not ${format.proofEntries.length} separate Repos. Each example keeps its original version and provenance.`,
+        examplesTitle: slug === "repo-builder" ? "The workflow & its evidence." : "Examples & references.",
+        examplesDescription: slug === "repo-builder"
+          ? "The diagram explains the workflow. The benchmark below records what was actually tested—and what still needs creative validation. It is not a finished Batman recreation."
+          : `${format.proofEntries.length} saved examples for this recipe—not ${format.proofEntries.length} separate Repos. Each example keeps its original version and provenance.`,
       },
     };
   }

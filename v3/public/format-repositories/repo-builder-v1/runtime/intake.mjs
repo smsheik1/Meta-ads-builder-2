@@ -7,6 +7,7 @@ import path from 'node:path';
 export const INTAKE_LIMITS = Object.freeze({ maxBytes: 100_000_000, maxSeconds: 600, maxFrames: 24 });
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.m4v', '.mov', '.mkv', '.webm', '.avi']);
 const INPUT_FLAGS = ['-protocol_whitelist', 'file,pipe', '-format_whitelist', 'mov,matroska,webm,avi'];
+const TESTED_YTDLP_VERSION = '2026.08.19';
 const LIMITATIONS = [
   'Uniformly sampled still frames can miss cuts, brief effects, motion, and timing; direct playback remains necessary.',
   'Frame atSeconds values are requested seek times; decoded frame timestamps can differ by frame granularity.',
@@ -210,7 +211,20 @@ export async function doctor({ execute = runTool } = {}) {
     } catch { return { name, required, available: false, version: null }; }
   }));
   const nodeSupported = Number(process.versions.node.split('.')[0]) >= 22;
-  return { ok: nodeSupported && tools.every((tool) => !tool.required || tool.available), nodeVersion: process.versions.node, nodeSupported, tools, limits: INTAKE_LIMITS };
+  const downloaderVersion = tools.find((tool) => tool.name === 'yt-dlp')?.version;
+  const warnings = /^\d{4}\.\d{2}\.\d{2}$/.test(downloaderVersion ?? '') && downloaderVersion < TESTED_YTDLP_VERSION
+    ? [`yt-dlp ${downloaderVersion} predates tested ${TESTED_YTDLP_VERSION}. Older YouTube clients can read metadata but fail media downloads with HTTP 403. Check official yt-dlp releases before URL intake; local-file intake is unaffected.`] : [];
+  return { ok: nodeSupported && tools.every((tool) => !tool.required || tool.available), nodeVersion: process.versions.node, nodeSupported, tools, warnings, limits: INTAKE_LIMITS };
+}
+
+async function youtubeTool(args, options, execute) {
+  try { return await execute('yt-dlp', args, options); }
+  catch (cause) {
+    if (!/\b403\b/.test(String(cause.message))) throw cause;
+    const error = new Error(`YouTube refused this request (HTTP 403 Forbidden); this does not establish that the video is missing. Run doctor and check https://github.com/yt-dlp/yt-dlp/releases/latest for a current downloader (tested ${TESTED_YTDLP_VERSION}), within your setup permissions. Metadata access alone does not prove media access. No automatic retry, cookie access or installation was attempted; an authorized local file is also supported.`, { cause });
+    error.code = 'YOUTUBE_ACCESS_FORBIDDEN';
+    throw error;
+  }
 }
 
 /** Acquire one bounded reference and produce evidence without analysis or paid calls. */
@@ -230,7 +244,7 @@ export async function intake({ source, runDirectory, allowDownload = false, maxS
     // yt-dlp's dictionary projection prints only these scalar checks. Full
     // metadata can exceed the output bound because of formats and captions.
     const preflightTemplate = '%(.{duration,is_live,live_status,_type,filesize,n_entries})j';
-    const { stdout } = await execute('yt-dlp', [...common, '--print', preflightTemplate, '--skip-download', '--', url], { timeoutMs: 45_000, maxBufferBytes: 2_000_000 });
+    const { stdout } = await youtubeTool([...common, '--print', preflightTemplate, '--skip-download', '--', url], { timeoutMs: 45_000, maxBufferBytes: 2_000_000 }, execute);
     let metadata;
     try { metadata = JSON.parse(stdout); } catch { throw new Error('YouTube preflight did not return valid metadata; supply a local video.'); }
     invariant(!['playlist', 'multi_video'].includes(metadata._type) && !(metadata.n_entries > 1) && !metadata.entries && !metadata.is_live && metadata.live_status !== 'is_upcoming', 'Playlists, live streams, and upcoming videos are unsupported.');
@@ -249,10 +263,10 @@ export async function intake({ source, runDirectory, allowDownload = false, maxS
   if (remote) {
     // Adaptive video + audio is normal on YouTube. The directory watchdog also
     // counts temporary source tracks and the merge output against one budget.
-    await execute('yt-dlp', [...common, '--fragment-retries', '0', '--abort-on-unavailable-fragments', '--max-filesize', String(INTAKE_LIMITS.maxBytes),
+    await youtubeTool([...common, '--fragment-retries', '0', '--abort-on-unavailable-fragments', '--max-filesize', String(INTAKE_LIMITS.maxBytes),
       '--match-filters', `duration > 0 & duration <= ${maxSeconds} & !is_live`,
       '--no-progress', '--no-part', '--no-overwrites', '--output', path.join(privateDirectory, 'source.%(ext)s'), '--', url],
-    { timeoutMs: 180_000, maxBufferBytes: 1_000_000, budgetDirectory: privateDirectory });
+    { timeoutMs: 180_000, maxBufferBytes: 1_000_000, budgetDirectory: privateDirectory }, execute);
     invariant(await directoryBytes(privateDirectory) <= INTAKE_LIMITS.maxBytes, 'Download exceeded the 100 MB file budget.');
     const names = await readdir(privateDirectory);
     invariant(names.length === 1 && /^source\.(?:mp4|m4v|mov|mkv|webm|avi)$/.test(names[0]), 'YouTube did not produce one supported complete video; supply a local video.');

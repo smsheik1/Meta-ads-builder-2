@@ -8,7 +8,7 @@
     "unzip"
   ],
   "optionalTools": [
-    "yt-dlp for permitted YouTube audio/video downloads; no integrated subtitle retrieval",
+    "Current yt-dlp for permitted YouTube audio/video downloads (tested 2026.08.19); no integrated subtitle retrieval",
     "Already-installed whisper.cpp CLI and an existing local model for optional English-only transcription"
   ],
   "providers": [],

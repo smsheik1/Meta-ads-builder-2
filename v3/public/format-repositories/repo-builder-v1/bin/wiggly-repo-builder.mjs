@@ -13,7 +13,7 @@ const definitions = {
   inspect: ["media", "output"], "check-repo": ["repo"],
   "package-repo": ["repo", "output"], smoke: [],
 };
-const help = `Wiggly Repo Builder 0.1.0 (local baseline; no paid calls)
+const help = `Wiggly Repo Builder 0.1.1 (local baseline; no paid calls)
 Usage: node bin/wiggly-repo-builder.mjs <command> [options]
   doctor
   intake --source <file|YouTube URL> --run <new directory> [--allow-download] [--max-seconds 180]

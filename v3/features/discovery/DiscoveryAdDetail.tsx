@@ -12,6 +12,7 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
   const format = getDiscoveryFormatProfile(entry.format.slug);
   const related = getRelatedDiscoveryEntries(entry);
   const creator = getDiscoveryCreatorByName(entry.format.owner);
+  const isWorkflowIllustration = entry.role === "workflow-illustration";
   const isLandscapeVideo =
     entry.media.kind === "video" && entry.media.aspectRatio === "16:9";
 
@@ -40,7 +41,9 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
             entry={entry}
             autoPlay={entry.media.kind === "video"}
             className={
-              isLandscapeVideo
+              isWorkflowIllustration
+                ? "block aspect-[3/4] w-full object-contain"
+                : isLandscapeVideo
                 ? "block aspect-video w-full bg-[#080817] object-contain"
                 : "block aspect-[9/16] w-full object-cover"
             }
@@ -50,7 +53,7 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
         <aside className="rounded-lg border-2 border-[#080817] bg-white p-6 shadow-[8px_8px_0_#080817] sm:p-9">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md border-2 border-[#080817] bg-[#52d6ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]">
-              Finished ad
+              {isWorkflowIllustration ? "Workflow illustration" : "Finished ad"}
             </span>
             <span className="rounded-md border-2 border-[#080817] bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]">
               {entry.media.durationLabel}
@@ -69,11 +72,11 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
               >
                 <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.15em] text-[#667087]">
                   <BadgeCheck className="size-4 text-[#00a7d6]" aria-hidden="true" />
-                  Made with {format.name} · v{format.version}
+                  {isWorkflowIllustration ? "About" : "Made with"} {format.name} · v{format.version}
                 </span>
                 <strong className="mt-3 block text-xl leading-tight">{format.promise}</strong>
                 <span className="mt-4 inline-flex items-center gap-2 text-sm font-black">
-                  See why it repeats
+                  {isWorkflowIllustration ? "Open the authoring kit" : "See why it repeats"}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </span>
               </Link>
@@ -81,7 +84,7 @@ export function DiscoveryAdDetail({ entry }: { entry: DiscoveryEntry }) {
           ) : null}
 
           <div className="mt-8 border-t-2 border-[#080817] pt-6">
-            <p className="text-xs font-black uppercase tracking-[0.15em] text-[#667087]">Why it works</p>
+            <p className="text-xs font-black uppercase tracking-[0.15em] text-[#667087]">{isWorkflowIllustration ? "What this shows—and its limits" : "Why it works"}</p>
             <p className="mt-3 text-lg font-bold leading-7 text-[#30374b]">{entry.curatorNote}</p>
           </div>
 

@@ -2,7 +2,7 @@
 
 Give your coding agent a reference video and a brief. Build a reusable video format whose subject, script, and assets can change—not just a copy of one clip.
 
-Version: **0.1.0 baseline**. The package provides local evidence extraction, blueprint and approval checks, an incomplete child scaffold, technical media inspection, and allowlisted ZIP packaging. Your agent supplies the analysis, implementation, and judgment. It does not contain a general-purpose video understanding model or an automatic renderer generator.
+Version: **0.1.1 baseline**. The package provides local evidence extraction, blueprint and approval checks, an incomplete child scaffold, technical media inspection, and allowlisted ZIP packaging. Your agent supplies the analysis, implementation, and judgment. It does not contain a general-purpose video understanding model or an automatic renderer generator.
 
 ## Start with your agent
 
@@ -17,7 +17,7 @@ Attach a local video or provide an accessible YouTube URL. A local file is the f
 - Node.js 22 or newer.
 - FFmpeg and FFprobe for evidence and output inspection.
 - `zip` and `unzip` for packaging and verification.
-- Optional `yt-dlp` for permitted YouTube acquisition.
+- Optional current `yt-dlp` for permitted YouTube acquisition; tested with 2026.08.19. `doctor` warns about older dated releases. HTTP 403 means the request was refused, not that the video is missing. Check the [official releases](https://github.com/yt-dlp/yt-dlp/releases/latest) within your setup permissions before trying another source. A successful title lookup is not a successful media download; an authorized local file remains supported.
 - Optional already-installed `whisper.cpp` CLI and existing local model for English speech transcription.
 - A coding agent able to edit files and run local commands. Direct video/audio review depends on that agent's capabilities or a human reviewer.
 

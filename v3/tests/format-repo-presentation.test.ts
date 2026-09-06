@@ -137,7 +137,7 @@ for (const slug of discoveryFormatSlugs) {
 }
 assert.equal(
   packaged,
-  49,
+  50,
   "Count real downloadable packages, not Discovery cards.",
 );
 assert.deepEqual(referenceOnly, ["product-photoshoot", "hybrid-news"]);
@@ -158,5 +158,5 @@ assert.doesNotMatch(
   "Remove the incomplete two-box fallback.",
 );
 console.log(
-  "all 51 Repo presentations checked: 49 packages, 2 explicitly reference-only collections",
+  "all 52 Repo presentations checked: 50 packages, 2 explicitly reference-only collections",
 );

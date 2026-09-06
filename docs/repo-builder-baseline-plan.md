@@ -2,6 +2,8 @@
 
 ## Current completion checklist
 
+Publication checkpoint (2026-09-06): Creator **0.1.1** is frozen, SHA-256 `7cf18546f887516dc2420ed443d43bddf49f316a49e13e6d40e04f46ee3dc3dc`, 68,377 bytes. Its clean extraction passed all 47 tests, smoke and all 31 inventoried source-file comparisons. The release adds tested yt-dlp guidance and clear HTTP 403 diagnostics; it does not install tools or make paid calls. The standardized page, Discover entry, optional-tools display and version-pinned handoff now pass local browser QA. Full app tests, typecheck and production build passed; the browser sweep passed all 52 Repo routes, 20 Discover groups, downloads and representative desktop/mobile controls. In-app browser inspection also confirmed the Builder page, honest illustration labels, evidence link and copied 0.1.1 handoff. Screenshots: `/var/folders/y_/pb62snr9069bqz1wlj8lj9lc0000gn/T/wiggly-repo-pages-MhGiWe`. The new smoke test initially omitted an async hash-navigation wait; the link worked in the in-app browser and the corrected test passed. No public deployment or public-download consumer pass is claimed at this checkpoint. Next: PR/CI, deploy, live-browser QA and a clean consumer starting from the actual public ZIP. Direct audiovisual acceptance remains pending as recorded below.
+
 Work sequentially, as requested. No parallel agents. Steps 2–3 now have real-media execution evidence: the refined child rendered Batman/Sonic, and a fresh agent rendered a different Batman/SpongeBob episode from the frozen child ZIP on its first attempt with zero package edits. Current step: **4 — direct audiovisual acceptance remains pending; save the completed execution evidence and finish the public baseline integration without representing that pending review as a pass**. The blind agent has completed; no concurrent implementation work is running.
 
 Step 1 complete: Creator 0.1.0 ZIP SHA-256 `80d1c9fd65922cc21795a851940660b79e495be35a835b9955e20fc784000e41`, 65,188 bytes, 32 files. Clean extraction `/private/tmp/wiggly-creator-freeze.kHIISP/kit`: 45 tests, doctor and no-network/no-provider smoke passed; source-release parity verified for all 31 inventoried files. No runtime functionality was added during publication preparation. The previous ZIP is preserved alongside this extraction.
@@ -24,7 +26,7 @@ After two failed attempts at the same issue, reassess and report the actual bloc
 
 Scope: a standalone, agent-operated local package, not a video-understanding model, editor, automatic publisher, or universal renderer. No paid calls. Preserve the existing internal skill and app surfaces.
 
-Package: `v3/public/format-repositories/repo-builder-v1`, version `0.1.0`.
+Package: `v3/public/format-repositories/repo-builder-v1`, current release candidate `0.1.1`; the historical authoring benchmark started with `0.1.0`.
 
 The host agent interprets the reference and authors the new Format runtime. The package provides executable evidence extraction, blueprint/approval validation, a draft scaffold, technical media inspection, and allowlisted release packaging. A scaffold is never a completed Format. Sampled frames cannot certify motion or audio. Missing direct review remains explicit.
 

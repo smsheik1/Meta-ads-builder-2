@@ -6,7 +6,7 @@
       "title": "Builder machinery",
       "role": "Local technical baseline",
       "whyItWorks": [
-        "45 local tests and a clean-extraction smoke passed.",
+        "47 local tests cover the baseline, including explicit YouTube access diagnostics.",
         "Evidence, approvals, release boundaries and archive checks are explicit."
       ],
       "knownWeaknesses": [
@@ -17,27 +17,27 @@
     {
       "id": "reviewed-authoring",
       "title": "Reviewed authoring proof",
-      "role": "User-assisted mechanical proof",
+      "role": "User-assisted authoring and real-media refinement",
       "whyItWorks": [
         "A standalone child composed two different conversations with one unchanged runtime.",
         "Its clean extraction reproduced both final proof outputs byte-for-byte."
       ],
       "knownWeaknesses": [
         "The user corrected the missing creative hook, and root review caught implementation issues.",
-        "Original diagnostic video and tones prove composition only; real gameplay, speech, voice identity and fidelity remain unproved."
+        "Early synthetic proofs did not establish the creative hook. Later real-media tests still lack direct voice-identity and audiovisual acceptance."
       ]
     },
     {
       "id": "new-content-consumer",
-      "title": "Fresh-consumer proof",
-      "role": "New inputs through the packaged child",
+      "title": "Fresh-agent real-media proof",
+      "role": "New Batman/SpongeBob episode from the frozen child ZIP",
       "whyItWorks": [
-        "A separate agent created two new content inputs from the child ZIP without editing its runtime.",
-        "The new outputs passed stream, decoding, fixture-audio and sampled-frame checks."
+        "A fresh agent rendered a new 16.76-second conversation using independent Arkham gameplay and six supplied voice clips, with no code changes or coaching.",
+        "Package setup, 11 child tests, both smoke proofs, full decoding and 18 sampled caption frames passed; the real episode rendered on its first attempt."
       ],
       "knownWeaknesses": [
-        "The consumer used the child's declared original fixture assets.",
-        "Direct audiovisual creative acceptance and unrelated-format generalization remain pending."
+        "The maintainer prepared gameplay and new free-model dialogue before handoff; the child consumes supplied media and does not generate voices.",
+        "Direct voice recognition, performance, caption synchronization and unrelated-format generalization remain unverified."
       ]
     }
   ]

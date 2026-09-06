@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kit": "wiggly-repo-builder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "kind": "format-authoring-kit",
   "status": "baseline",
   "entrypoint": "SKILL.md",

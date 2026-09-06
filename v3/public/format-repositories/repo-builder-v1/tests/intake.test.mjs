@@ -67,6 +67,30 @@ test('real offline intake hashes original, timestamped frames, and audio without
   await assert.rejects(intake({ source: voiced, runDirectory }), /already exists/);
 });
 
+test('old downloader warning does not block free local-file operation', async () => {
+  for (const [version, expectedWarnings] of [['2026.07.04', 1], ['2026.08.19', 0], ['2026.09.01', 0]]) {
+    const report = await doctor({ execute: async (command) => ({ stdout: command === 'yt-dlp' ? version : 'test version' }) });
+    assert.equal(report.ok, true);
+    assert.equal(report.warnings.length, expectedWarnings);
+  }
+});
+
+test('YouTube 403 is an access failure, not a missing video or a retry loop', async () => {
+  for (const stage of ['preflight', 'download']) {
+    let calls = 0;
+    const cause = new Error('HTTP Error 403: Forbidden');
+    const runDirectory = path.join(root, `forbidden-${stage}`);
+    const execute = async (command, args) => {
+      assert.equal(command, 'yt-dlp'); calls += 1;
+      if (stage === 'download' && args.includes('--skip-download')) return { stdout: JSON.stringify({ duration: 1, is_live: false }) };
+      throw cause;
+    };
+    await assert.rejects(intake({ source: 'https://youtu.be/1AFsqhV8lss', runDirectory, allowDownload: true, execute }), (error) => error.code === 'YOUTUBE_ACCESS_FORBIDDEN' && error.cause === cause);
+    assert.equal(calls, stage === 'preflight' ? 1 : 2, 'No automatic retry or alternate-client request');
+    assert.equal(await exists(path.join(runDirectory, 'evidence.json')), false, 'Metadata must not become a completed intake receipt');
+  }
+});
+
 test('one-frame silent references remain valid and do not fabricate audio', async () => {
   const receipt = await intake({ source: silent, runDirectory: path.join(root, 'silent-run') });
   assert.equal(receipt.source.hasAudio, false);

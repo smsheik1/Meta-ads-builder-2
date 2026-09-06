@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -59,6 +60,30 @@ try {
   await discovery.getByRole("searchbox", { name: "Search finished ads" }).fill("Lego Music Video");
   await discovery.waitForFunction(() => document.querySelectorAll('h3[id^="shelf-"]').length === 1 && document.querySelectorAll("article").length === 2);
   assert.deepEqual(await discovery.locator('h3[id^="shelf-"]').allTextContents(), ["Lego Music Video"]);
+  await discovery.getByRole("searchbox", { name: "Search finished ads" }).fill("Wiggly Repo Builder");
+  await discovery.waitForFunction(() => document.querySelectorAll('h3[id^="shelf-"]').length === 1 && document.querySelectorAll("article").length === 1);
+  assert.deepEqual(await discovery.locator('h3[id^="shelf-"]').allTextContents(), ["Wiggly Repo Builder"]);
+  assert.equal(await discovery.getByText("1 authoring kit", { exact: true }).count(), 1);
+  assert.equal(await discovery.getByText("1 ad", { exact: true }).count(), 0);
+  await discovery.getByRole("link", { name: "Open format", exact: true }).click();
+  await discovery.waitForURL("**/formats/repo-builder");
+  assert.equal(await discovery.getByText("Baseline authoring kit", { exact: true }).count(), 1);
+  await discovery.locator("#examples").getByRole("link", { name: "See proof & limits" }).click();
+  await discovery.waitForURL("**/formats/repo-builder#proof-quality");
+  assert.match(discovery.url(), /#proof-quality$/);
+  assert.equal(await discovery.getByText("Fresh-agent real-media proof", { exact: true }).count(), 1);
+  assert.match(await discovery.locator("#proof-quality").innerText(), /remain unverified/);
+  assert.equal(await discovery.getByRole("link", { name: "Open finished ad" }).count(), 0);
+  const builder = getDiscoveryFormatProfile("repo-builder")!;
+  const archive = await discovery.request.get(`${baseUrl}${builder.repositoryHref}`);
+  assert.equal(archive.status(), 200);
+  assert.equal(createHash("sha256").update(await archive.body()).digest("hex"), "7cf18546f887516dc2420ed443d43bddf49f316a49e13e6d40e04f46ee3dc3dc");
+  await discovery.goto(`${baseUrl}/s/repo-builder-overview`, { waitUntil: "domcontentloaded" });
+  assert.equal(await discovery.getByText("Workflow illustration", { exact: true }).count(), 1);
+  assert.equal(await discovery.getByText("Finished ad", { exact: true }).count(), 0);
+  await discovery.getByRole("link", { name: /Open the authoring kit/ }).click();
+  await discovery.waitForURL("**/formats/repo-builder");
+  await discovery.goto(`${baseUrl}/discover`, { waitUntil: "domcontentloaded" });
   await discovery.getByRole("searchbox", { name: "Search finished ads" }).fill("");
   await discovery.waitForFunction((count) => document.querySelectorAll('h3[id^="shelf-"]').length === count, shelves.length);
   await discovery.setViewportSize({ width: 390, height: 844 });
@@ -147,6 +172,7 @@ try {
     "jingle",
     "newsletter-writer",
     "otaku-explainer",
+    "repo-builder",
   ]) {
     await page.goto(`${baseUrl}/formats/${slug}`, {
       waitUntil: "domcontentloaded",

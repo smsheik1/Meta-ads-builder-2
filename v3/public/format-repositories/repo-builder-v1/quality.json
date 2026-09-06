@@ -1,6 +1,6 @@
 {
   "automatedChecks": [
-    "Run the 45 packaged tests for evidence hashes, transcript uncertainty, stale approvals, bounded inputs, release declarations and archive integrity.",
+    "Run the 47 packaged tests for evidence hashes, transcript uncertainty, stale approvals, bounded inputs, YouTube access diagnostics, release declarations and archive integrity.",
     "Run the free smoke test from a clean extraction. It exercises evidence-to-draft mechanics and rejects incomplete child releases.",
     "Bind each technical inspection to actual media bytes and measured stream properties.",
     "Verify released source parity, explicit file inventory, executable modes and reproducible archive content."
@@ -18,7 +18,7 @@
   ],
   "baselineLimits": [
     "The initial independent analysis missed the reference's fictional-character and cloned-voice premise; the user supplied that context.",
-    "Local author and fresh-consumer tests passed with diagnostic video and tones, not recognizable character voices or real gameplay.",
+    "The refined child passed a fresh-agent real-gameplay and supplied-dialogue execution test without code changes. Direct voice recognition, performed quality and caption synchronization remain pending.",
     "Generalization to unrelated genres, broad platform support and public-page launch verification are not established by this local baseline."
   ]
 }

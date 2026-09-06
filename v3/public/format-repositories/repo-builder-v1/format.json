@@ -2,7 +2,7 @@
   "id": "repo-builder",
   "title": "Wiggly Repo Builder",
   "name": "Wiggly Repo Builder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "kind": "format-authoring-kit",
   "status": "baseline",
   "description": "Give your coding agent a reference video and a brief. It gathers evidence, proposes a blueprint for your review, authors a reusable Format runtime, tests different inputs, and packages the result. The agent supplies the interpretation and implementation; this is not automatic video cloning.",
