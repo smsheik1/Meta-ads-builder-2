@@ -1,5 +1,19 @@
 # Repo Builder baseline
 
+## Current completion checklist
+
+Work sequentially, as requested. No parallel agents. Current step: **2 — finish the Batman-derived child using real supplied media**. Publication edits are parked until the media proof is evaluated.
+
+Step 1 complete: Creator 0.1.0 ZIP SHA-256 `80d1c9fd65922cc21795a851940660b79e495be35a835b9955e20fc784000e41`, 65,188 bytes, 32 files. Clean extraction `/private/tmp/wiggly-creator-freeze.kHIISP/kit`: 45 tests, doctor and no-network/no-provider smoke passed; source-release parity verified for all 31 inventoried files. No runtime functionality was added during publication preparation. The previous ZIP is preserved alongside this extraction.
+
+1. Freeze one tested Creator ZIP. Record its checksum and clean-extraction result before using it.
+2. Use that package and the supplied Batman reference to finish a standalone character-gameplay Repo. Preserve user-supplied creative context; reuse existing gameplay, never recreate Gotham.
+3. Give only that child package, a new brief, and real supplied footage/audio to a fresh agent. It must make a different video without editing the runtime or receiving implementation coaching. Synthetic fixtures do not pass this gate.
+4. Review the output against the reference: gameplay, character exchange, voice delivery, captions, and pacing. Record direct audiovisual review separately from technical inspection. Missing media or reviewer capability is a named blocker, not a pass.
+5. Publish the Creator's standardized Repo page and Discover listing; browser-test the live page, exact download and handoff, and run the public package with a fresh agent.
+
+After two failed attempts at the same issue, reassess and report the actual blocker rather than repeat. Keep one current step and its concrete artifact/evidence. The goal is not complete until both the requested creative benchmark and live publication are verified.
+
 Scope: a standalone, agent-operated local package, not a video-understanding model, editor, automatic publisher, or universal renderer. No paid calls. Preserve the existing internal skill and app surfaces.
 
 Package: `v3/public/format-repositories/repo-builder-v1`, version `0.1.0`.
@@ -26,6 +40,6 @@ Blueprint shape: `schemaVersion:1`, `slug`, `title`, `referenceSha256`, `summary
 
 Child manifest `FORMAT-REPO.json`: `schemaVersion:1`, `kind:"wiggly-format"`, `slug`, `version`, `status:"draft"|"ready-for-review"`, `runtime` (official relative entrypoint), `releaseFiles:[]`, `assets` (same usage declarations as blueprint), `proofs:[{id,input,output,inspection}]`; `review:{status:"pending"|"approved",reviewer,notes}`. Required files: root `SKILL.md`, `README.md`, `AGENTS.md`, `requirements.json`, `blueprint.json`, manifest, official runtime. `requirements.json` declares `localTools`, `providers`, and `paidApprovalRequired:true`. Pending creative review must remain visible in archive metadata. No finalized/creative-approved claim from technical checks alone.
 
-Verification: adversarial contract/path/hash tests, no-network local smoke, clean extraction with no source-tree dependencies, fresh-agent authoring from only package+reference, separate consumer proof on two content inputs without runtime edits, skill validation, correctness/overengineering review. Record actual evidence and limitations; do not claim live YouTube retrieval or direct audiovisual perception without performing it. Commit and push the clean baseline; public app listing/deployment is a separate step.
+Verification: adversarial contract/path/hash tests, no-network local smoke, clean extraction with no source-tree dependencies, fresh-agent authoring from only package+reference, separate consumer proof on two content inputs without runtime edits, skill validation, correctness/overengineering review. Record actual evidence and limitations; do not claim live YouTube retrieval or direct audiovisual perception without performing it. Commit and push clean checkpoints; public listing and deployment are required later steps of this goal, not optional follow-up work.
 
 Actual benchmark: the supplied YouTube Short `1AFsqhV8lss`. Initial analysis identified layout and dialogue but missed the fan-conversation premise. User clarification established the role of recognizable cloned character voices, game footage, and same-universe/crossover appeal. Preserve this as user-assisted interpretation. The child must accept real supplied gameplay/audio; original synthetic fixtures only test that real composition path, never substitute for proof of voice recognition or finished creative quality.

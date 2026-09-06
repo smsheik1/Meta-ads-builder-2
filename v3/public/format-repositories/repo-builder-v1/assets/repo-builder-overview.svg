@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="960" viewBox="0 0 720 960" role="img" aria-labelledby="title description">
+  <title id="title">Reference to blueprint to reusable Repo</title>
+  <desc id="description">Workflow illustration for Wiggly Repo Builder. An agent studies a reference, proposes a blueprint for review, and writes a reusable repository with two tested inputs. This diagram is not a finished media proof.</desc>
+  <rect width="720" height="960" rx="28" fill="#101628"/>
+  <circle cx="645" cy="95" r="130" fill="#203345"/>
+  <circle cx="665" cy="90" r="88" fill="#2a4a50"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="44" y="65" fill="#9fe8d1" font-size="17" font-weight="700" letter-spacing="3">WIGGLY / AGENT TOOLKIT</text>
+    <text x="44" y="132" fill="#ffffff" font-size="51" font-weight="700">Repo Builder</text>
+    <text x="46" y="177" fill="#ced5e7" font-size="22">Turn a reference into a format</text>
+    <text x="46" y="207" fill="#ced5e7" font-size="22">your agent can run again.</text>
+
+    <rect x="40" y="260" width="640" height="146" rx="18" fill="#f7f9fd"/>
+    <rect x="64" y="288" width="88" height="88" rx="14" fill="#dcebe7"/>
+    <rect x="76" y="307" width="64" height="49" rx="7" fill="#2b6d61"/>
+    <path d="M102 319L121 332L102 345Z" fill="#fff"/>
+    <text x="178" y="304" fill="#4c6771" font-size="14" font-weight="700" letter-spacing="2">01 / OBSERVE</text>
+    <text x="178" y="342" fill="#132338" font-size="34" font-weight="700">Reference</text>
+    <text x="178" y="376" fill="#45556a" font-size="19">Your video, brief and source evidence</text>
+
+    <path d="M360 414V440M350 430L360 440L370 430" fill="none" stroke="#9fe8d1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="40" y="450" width="640" height="146" rx="18" fill="#f7f9fd"/>
+    <rect x="64" y="478" width="88" height="88" rx="14" fill="#e5dff3"/>
+    <rect x="86" y="491" width="46" height="61" rx="5" fill="#7760a9"/>
+    <path d="M96 507H122M96 519H122M96 531H112" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    <text x="178" y="494" fill="#705994" font-size="14" font-weight="700" letter-spacing="2">02 / INTERPRET AND REVIEW</text>
+    <text x="178" y="532" fill="#132338" font-size="34" font-weight="700">Blueprint</text>
+    <text x="178" y="566" fill="#45556a" font-size="19">Fixed rules. Replaceable inputs. Your decision.</text>
+
+    <path d="M360 604V630M350 620L360 630L370 620" fill="none" stroke="#9fe8d1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="40" y="640" width="640" height="146" rx="18" fill="#f7f9fd"/>
+    <rect x="64" y="668" width="88" height="88" rx="14" fill="#f5e6cd"/>
+    <path d="M78 691H102L110 700H140V738H78Z" fill="#aa7935"/>
+    <path d="M102 711L93 719L102 727M117 711L126 719L117 727" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="178" y="684" fill="#85602c" font-size="14" font-weight="700" letter-spacing="2">03 / AUTHOR AND TEST</text>
+    <text x="178" y="722" fill="#132338" font-size="34" font-weight="700">Reusable Repo</text>
+    <text x="178" y="756" fill="#45556a" font-size="19">One runtime. Two inputs. A verified package.</text>
+
+    <text x="360" y="842" text-anchor="middle" fill="#9fe8d1" font-size="19" font-weight="700">Reference → Blueprint → Reusable Repo</text>
+    <path d="M44 872H676" stroke="#354258"/>
+    <text x="44" y="905" fill="#ced5e7" font-size="16" font-weight="700">WORKFLOW ILLUSTRATION</text>
+    <text x="44" y="929" fill="#99a8c0" font-size="15">Explains the process. Not a finished media proof.</text>
+  </g>
+</svg>

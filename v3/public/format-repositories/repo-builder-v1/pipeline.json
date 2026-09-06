@@ -1,0 +1,44 @@
+{
+  "stages": [
+    {
+      "id": "gather-reference-evidence",
+      "output": "Check local tools, ingest an authorized video, and preserve private source hashes, sampled frames and available audio evidence. Optional local transcription remains uncertain.",
+      "approvalRequired": false,
+      "paid": false
+    },
+    {
+      "id": "interpret-the-format",
+      "output": "The coding agent separates direct observations, user-provided context and inference, then writes the audience promise, fixed rules, replaceable inputs and two proof briefs.",
+      "approvalRequired": false,
+      "paid": false
+    },
+    {
+      "id": "review-the-blueprint",
+      "output": "The user decides whether the interpretation captures the intended format. A benchmark attestation is recorded separately and never presented as user or creative approval.",
+      "approvalRequired": true,
+      "paid": false
+    },
+    {
+      "id": "author-and-test-the-repo",
+      "output": "The agent implements the draft child with one official runtime, declared assets and requirements, then runs two different content inputs through unchanged code.",
+      "approvalRequired": false,
+      "paid": false
+    },
+    {
+      "id": "inspect-and-review-outputs",
+      "output": "Measure the actual outputs and review their motion, audio and creative fit. Missing perception or real assets stays visible; technical success does not imply creative acceptance.",
+      "approvalRequired": true,
+      "paid": false
+    },
+    {
+      "id": "package-and-reproduce",
+      "output": "Check the child, create an allowlisted local ZIP, verify its inventory and rerun its commands in a clean extraction. Publication is a separate user decision.",
+      "approvalRequired": false,
+      "paid": false
+    }
+  ],
+  "notes": [
+    "The builder baseline calls no paid media providers. The user's coding-agent usage is separate.",
+    "Additional child requirements, installations, provider calls or media acquisition need their own explicit scope and authorization."
+  ]
+}

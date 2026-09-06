@@ -1,7 +1,8 @@
 {
   "files": [
     ".gitignore", "AGENTS.md", "CLAUDE.md", "KIT-MANIFEST.json", "README.md", "SKILL.md", "PROOF-REPORT.md",
-    "package.json", "requirements.json", "release-files.json", "build-kit.mjs", "verify-kit.mjs",
+    "package.json", "requirements.json", "format.json", "pipeline.json", "assets.json", "quality.json", "goldens.json",
+    "assets/repo-builder-overview.svg", "release-files.json", "build-kit.mjs", "verify-kit.mjs",
     "bin/wiggly-repo-builder.mjs", "runtime/contracts.mjs", "runtime/intake.mjs",
     "runtime/package.mjs", "runtime/smoke.mjs", "runtime/transcribe.mjs",
     "references/reference-analysis.md", "references/format-authoring.md",
