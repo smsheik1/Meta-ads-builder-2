@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-06",
+  "scope": "User-assisted Batman reference authoring, maintainer refinement, and independent real-media child-package execution",
+  "creator": {
+    "version": "0.1.0",
+    "frozenZipSha256": "80d1c9fd65922cc21795a851940660b79e495be35a835b9955e20fc784000e41",
+    "reference": "https://www.youtube.com/watch?v=1AFsqhV8lss",
+    "interpretation": "User supplied the missed fan-character/cloned-voice/same-universe/crossover premise. This is not an unaided discovery pass."
+  },
+  "child": {
+    "archive": "character-gameplay-conversations-0.1.1.zip",
+    "zipSha256": "11dd2d78226101fb7c6aca9f950e61bf41443a746e4932d24eb7622e8bca5972",
+    "bytes": 2377823,
+    "files": 28,
+    "runtimeSha256": "23a39095a50150d67930b5d8b318481f422fdc772dc41e38e12971aceb30f929",
+    "change": "Replace visibly crude bitmap text with antialiased, measured Sharp overlays through the same FFmpeg compositor; declare and pin Sharp 0.34.5 setup.",
+    "contractTestsPassed": 11,
+    "syntheticProofs": ["same-universe: 8 seconds", "crossover: 6 seconds"],
+    "skillValidation": "Frontmatter and placeholder checks passed with installed Ruby YAML; the Python skill validator could not run because PyYAML was absent.",
+    "overengineeringReview": "Replaced the custom glyph table and per-pixel font drawing with one measured text-overlay helper; no second renderer or provider abstraction added."
+  },
+  "mediaAcquisition": {
+    "testedDownloaderVersion": "2026.08.19",
+    "olderFailure": "yt-dlp 2026.07.04 fetched Spider-Man metadata but its android_vr media request returned HTTP 403. The current default visionos client downloaded both requested clips.",
+    "sourceUrls": ["https://www.youtube.com/watch?v=K6iqWvPPGeo&t=40s", "https://www.youtube.com/watch?v=k-T-stiSYgw"],
+    "rangeSeconds": [40,70],
+    "batmanExcerptSha256": "85bd549fe77b8f7760060fa7fab15b5ea1606efcf91e9c9c1baf90a0dec832eb",
+    "spidermanExcerptSha256": "a8c78be3d2025677e45fe9f769bc39708b3e72280e9dccfcd607419bb5e30b3e",
+    "cookiesUsed": false,
+    "paidCalls": 0,
+    "systemInstallationChanged": false
+  },
+  "voicePreparation": {
+    "performedBy": "Maintainer before blind consumer handoff",
+    "model": "s2.1-pro-free",
+    "pricingSource": "https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits",
+    "verifiedPriceUsdPerMillionUtf8Bytes": 0,
+    "generatedClips": 12,
+    "paidCalls": 0,
+    "episodes": ["Batman/Sonic", "Batman/SpongeBob"],
+    "authorization": "User explicitly authorized verified-free calls without further questions. No paid fallback."
+  },
+  "maintainerOutput": {
+    "episode": "Batman/Sonic: speed versus planning",
+    "durationSeconds": 18,
+    "sha256": "7d216486452562520188633de5df6900615734c7cb47e18448628050d6b0a96a",
+    "independentGameplay": true,
+    "directAudiovisualReview": "pending"
+  },
+  "blindConsumer": {
+    "agent": "real_media_blind_consumer",
+    "history": "none",
+    "inputs": "Only the frozen child ZIP, a new Batman/SpongeBob brief, independent Arkham gameplay and six supplied new dialogue clips",
+    "execution": "pass",
+    "realEpisodeRenderAttempts": 1,
+    "failedRenderAttempts": 0,
+    "implementationCoaching": false,
+    "rendererChanged": false,
+    "originalPackageFilesUnchanged": 28,
+    "providerCalls": 0,
+    "output": {
+      "title": "Gotham Meets Optimism",
+      "durationSeconds": 16.76,
+      "width": 480,
+      "height": 640,
+      "fps": 25,
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "bytes": 3195723,
+      "sha256": "63de842509644808f9e519818ad9bba7a483cdef7d33e2a8c951fd2d796d5dff"
+    },
+    "passedChecks": ["Clean ZIP installation", "11 contract tests", "Both diagnostic renders and numerical checks", "Full output decoding", "Exact runtime/ZIP/raw-media preservation", "18 sampled caption frames"],
+    "reportSha256": "c53dcd155ee90a43c5e76a5af92ba6311746ce024ee45f5090916f5a4cfa9ab3",
+    "commandAuditSha256": "db55014d8a2336fc4a5e4a9e6a47b4092ad2f4800c0f48f2e00b4f87c5aa6c8f",
+    "creativeAcceptance": "pending",
+    "limitations": ["No direct moving-video or audio perception by the agent or maintainer", "Voice recognition, performed humor, speech accuracy and caption synchronization unverified", "Caption phrase timings are estimated, not forced-aligned", "Supplied media preparation was performed outside the child package, not by the blind consumer"]
+  },
+  "publication": {
+    "creatorLive": false,
+    "publicPackageFreshAgentTest": "not-yet-run",
+    "goalComplete": false,
+    "privateMediaExcludedFromArchive": true,
+    "rights": "Private benchmark use only. No public redistribution rights inferred from YouTube access or voice generation."
+  }
+}
