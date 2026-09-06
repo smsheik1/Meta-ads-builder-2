@@ -23,6 +23,35 @@ type FormatProfileConfig = {
 
 const formatConfigs: FormatProfileConfig[] = [
   {
+    slug: "repo-builder",
+    promise: "Turn a reference video into a reusable Wiggly Repo with your coding agent. Inspect the ingredients, approve the blueprint, then build and test the recipe.",
+    lastUpdated: "September 2026",
+    manifestPath: "format-repositories/repo-builder-v1/format.json",
+    repositoryHref: "/format-repositories/repo-builder-v1/downloads/wiggly-repo-builder-0.1.1.zip",
+    technicalHref: "/format-repositories/repo-builder-v1/PROOF-REPORT.md",
+    whatStays: [
+      "Local reference intake, evidence hashes, and optional transcription",
+      "A reviewed blueprint separating observations from assumptions",
+      "One reusable child runtime, tested with different inputs",
+      "Validation, inspection, and a clean downloadable package",
+    ],
+    whatChanges: ["The reference video", "The creative hook and format mechanics", "The media sources and content", "The child Repo authored by your coding agent"],
+    handoff: {
+      requiredInputs: ["A permitted YouTube link or a local reference video", "A coding agent with terminal, filesystem, and media access", "Your review of the format blueprint; supplied media for no-paid proof runs"],
+      deliverables: ["Reference evidence and an approved blueprint", "A new Repo with instructions, contracts, and an official runtime", "Two different proof runs, inspection evidence, and a versioned ZIP"],
+      instructions: ["Read the packaged skill and run the free smoke test", "Inspect the reference and distinguish evidence from assumptions", "Review the blueprint before authoring a child runtime", "Test different inputs and package only after validation and honest review"],
+      estimates: [
+        { label: "Local setup + intake", cost: "$0 provider cost", time: "depends on tools and clip length" },
+        { label: "Analysis + blueprint review", cost: "Your coding agent usage", time: "depends on reference complexity" },
+        { label: "Author + test a new Repo", cost: "$0 providers with supplied media", time: "variable; not a one-click conversion" },
+        { label: "Inspect + package", cost: "$0 provider cost", time: "depends on the child runtime" },
+      ],
+      totalEstimate: "$0 media-provider cost with supplied media. Coding-agent usage is separate; authoring time varies.",
+      output: "A versioned Wiggly Repo ZIP with its runtime, contracts, and proof evidence—not an automatically published page",
+      firstQuestion: "Which reference video should we turn into a reusable Wiggly Repo?",
+    },
+  },
+  {
     slug: "lego-music-video",
     promise: "Turn your brand into a Lego music video: one original song, a miniature world, and three cinematic scenes.",
     lastUpdated: "September 2026",

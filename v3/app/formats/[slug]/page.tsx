@@ -64,6 +64,7 @@ export default async function FormatPage({
 
   const heroProof = format.proofEntries[0];
   if (!heroProof) notFound();
+  const isAuthoringKit = heroProof.role === "workflow-illustration";
   const creator = getDiscoveryCreatorByName(format.creator);
   const heroIsLandscapeVideo =
     heroProof.media.kind === "video" && heroProof.media.aspectRatio === "16:9";
@@ -104,7 +105,7 @@ export default async function FormatPage({
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-md border-2 border-[#080817] bg-[#52d6ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]">
               <BadgeCheck className="size-4" aria-hidden="true" />
-              Curated Format
+              {isAuthoringKit ? "Baseline authoring kit" : "Curated Format"}
             </span>
             <span className="rounded-md border-2 border-[#080817] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]">
               v{format.version}
@@ -137,7 +138,7 @@ export default async function FormatPage({
               href="#examples"
               className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white shadow-[4px_4px_0_#52d6ff]"
             >
-              See examples
+              {isAuthoringKit ? "See workflow & evidence" : "See examples"}
               <ArrowRight className="size-4" aria-hidden="true" />
             </a>
             {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
@@ -271,7 +272,7 @@ export default async function FormatPage({
             <div>
               {repoPageCopy?.examplesTitle === "Examples" ? null : (
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">
-                  Examples
+                  {isAuthoringKit ? "Workflow illustration" : "Examples"}
                 </p>
               )}
               <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">
@@ -311,16 +312,21 @@ export default async function FormatPage({
                 />
                 <div className="p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">
-                    Example {String(index + 1).padStart(2, "0")} · {entry.brand}
+                    {entry.role === "workflow-illustration" ? "Workflow illustration" : `Example ${String(index + 1).padStart(2, "0")}`} · {entry.brand}
                   </p>
                   <h3 className="mt-2 text-2xl font-black leading-none">
                     {entry.title}
                   </h3>
+                  {entry.role === "workflow-illustration" ? (
+                    <p className="mt-3 text-sm font-bold leading-6 text-[#596176]">
+                      {entry.curatorNote}
+                    </p>
+                  ) : null}
                   <Link
-                    href={`/s/${entry.id}`}
+                    href={entry.role === "workflow-illustration" ? "#proof-quality" : `/s/${entry.id}`}
                     className="mt-4 inline-flex items-center gap-2 text-sm font-black"
                   >
-                    Open finished ad
+                    {entry.role === "workflow-illustration" ? "See proof & limits" : "Open finished ad"}
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
                 </div>

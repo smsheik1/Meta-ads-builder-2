@@ -1,0 +1,24 @@
+{
+  "automatedChecks": [
+    "Run the 47 packaged tests for evidence hashes, transcript uncertainty, stale approvals, bounded inputs, YouTube access diagnostics, release declarations and archive integrity.",
+    "Run the free smoke test from a clean extraction. It exercises evidence-to-draft mechanics and rejects incomplete child releases.",
+    "Bind each technical inspection to actual media bytes and measured stream properties.",
+    "Verify released source parity, explicit file inventory, executable modes and reproducible archive content."
+  ],
+  "authoringProof": [
+    "Implement one official child runtime and render at least two meaningfully different content inputs without code changes between final proofs.",
+    "Declare required assets and tools. Do not replace missing real gameplay, speech or performance with fixtures unless the narrower mechanical test is explicitly identified.",
+    "Keep reference footage, extracted evidence, credentials, models and other private material outside release assets."
+  ],
+  "creativeReview": [
+    "Distinguish observations, uncertain transcripts, user-provided context and creative inference.",
+    "Require an actual blueprint decision before real implementation; benchmark approval is not a user decision.",
+    "Direct moving-video and audio perception is required for complete audiovisual review. Sampled frames, transcripts and metadata do not establish it.",
+    "Keep creative approval pending when performance, timing, source fidelity or reviewer perception remains unverified."
+  ],
+  "baselineLimits": [
+    "The initial independent analysis missed the reference's fictional-character and cloned-voice premise; the user supplied that context.",
+    "The refined child passed a fresh-agent real-gameplay and supplied-dialogue execution test without code changes. Direct voice recognition, performed quality and caption synchronization remain pending.",
+    "Generalization to unrelated genres, broad platform support and public-page launch verification are not established by this local baseline."
+  ]
+}

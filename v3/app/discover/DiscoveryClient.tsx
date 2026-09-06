@@ -439,7 +439,9 @@ export function DiscoveryClient({
                   </div>
                   <div className={styles.shelfControls}>
                     <span>
-                      {shelf.entries.length} {shelf.entries.length === 1 ? "ad" : "ads"}
+                      {shelf.entries.length} {shelf.entries.every((entry) => entry.role === "workflow-illustration")
+                        ? (shelf.entries.length === 1 ? "authoring kit" : "authoring kits")
+                        : (shelf.entries.length === 1 ? "ad" : "ads")}
                     </span>
                     <button
                       type="button"

@@ -406,6 +406,7 @@ const approvedRepoOrder = [
   ["static-hooks", "Meme"],
   ["conversations", "iMessage Ad"],
   ["written-content", "Newsletter Writer"],
+  ["repo-builder", "Wiggly Repo Builder"],
 ];
 assert.deepEqual(
   shelves.map((shelf) => [shelf.id, shelf.title]),

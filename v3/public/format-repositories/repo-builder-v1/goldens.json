@@ -1,0 +1,44 @@
+{
+  "purpose": "Evidence records for an authoring tool, not a gallery of creatively approved videos. The workflow illustration is explanatory. Read PROOF-REPORT.md for exact checks, hashes and limitations.",
+  "examples": [
+    {
+      "id": "builder-machinery",
+      "title": "Builder machinery",
+      "role": "Local technical baseline",
+      "whyItWorks": [
+        "47 local tests cover the baseline, including explicit YouTube access diagnostics.",
+        "Evidence, approvals, release boundaries and archive checks are explicit."
+      ],
+      "knownWeaknesses": [
+        "Smoke ends at a deliberately incomplete draft; it does not author a finished Format.",
+        "Technical checks do not judge whether a format was understood."
+      ]
+    },
+    {
+      "id": "reviewed-authoring",
+      "title": "Reviewed authoring proof",
+      "role": "User-assisted authoring and real-media refinement",
+      "whyItWorks": [
+        "A standalone child composed two different conversations with one unchanged runtime.",
+        "Its clean extraction reproduced both final proof outputs byte-for-byte."
+      ],
+      "knownWeaknesses": [
+        "The user corrected the missing creative hook, and root review caught implementation issues.",
+        "Early synthetic proofs did not establish the creative hook. Later real-media tests still lack direct voice-identity and audiovisual acceptance."
+      ]
+    },
+    {
+      "id": "new-content-consumer",
+      "title": "Fresh-agent real-media proof",
+      "role": "New Batman/SpongeBob episode from the frozen child ZIP",
+      "whyItWorks": [
+        "A fresh agent rendered a new 16.76-second conversation using independent Arkham gameplay and six supplied voice clips, with no code changes or coaching.",
+        "Package setup, 11 child tests, both smoke proofs, full decoding and 18 sampled caption frames passed; the real episode rendered on its first attempt."
+      ],
+      "knownWeaknesses": [
+        "The maintainer prepared gameplay and new free-model dialogue before handoff; the child consumes supplied media and does not generate voices.",
+        "Direct voice recognition, performance, caption synchronization and unrelated-format generalization remain unverified."
+      ]
+    }
+  ]
+}

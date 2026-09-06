@@ -27,6 +27,7 @@ export type RepoPackageAsset = {
 export type FormatRepoPackageData = {
   services: { name: string; purpose: string; keys: string[]; model: string }[];
   tools: string[];
+  optionalTools: string[];
   notes: string[];
   assets: RepoPackageAsset[];
   workflow: {
@@ -154,7 +155,7 @@ export function getFormatRepoPackageData(
       href,
       label,
       description,
-      image: /\.(png|jpe?g|webp)$/i.test(href),
+      image: /\.(png|jpe?g|webp|svg)$/i.test(href),
     });
   }
   for (const group of ["fixed", "characters", "backgrounds"]) {
@@ -304,6 +305,7 @@ export function getFormatRepoPackageData(
   return {
     services,
     tools,
+    optionalTools: strings(requirements.optionalTools),
     notes: [...strings(requirements.notes), string(requirements.note)].filter(
       Boolean,
     ),

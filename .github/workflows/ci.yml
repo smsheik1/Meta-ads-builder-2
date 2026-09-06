@@ -7,6 +7,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  repo-builder-kit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install local media and archive tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg zip unzip
+      - name: Extract the standalone Repo Builder artifact
+        run: unzip -q v3/public/format-repositories/repo-builder-v1/downloads/wiggly-repo-builder-0.1.1.zip -d "$RUNNER_TEMP/repo-builder-kit"
+      - name: Check source and released kit content match
+        run: node v3/public/format-repositories/repo-builder-v1/verify-kit.mjs "$RUNNER_TEMP/repo-builder-kit"
+      - name: Prove the extracted kit without network or providers
+        working-directory: ${{ runner.temp }}/repo-builder-kit
+        run: |
+          npm test
+          npm run smoke
   lego-kit:
     runs-on: ubuntu-latest
     timeout-minutes: 15

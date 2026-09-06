@@ -8,6 +8,7 @@ export type DiscoveryEntry = {
   brand: string;
   title: string;
   curatorNote: string;
+  role?: "workflow-illustration";
   goal: Exclude<DiscoveryGoal, "all">;
   media: {
     kind: "video" | "image" | "audio";

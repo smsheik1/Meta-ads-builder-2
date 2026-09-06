@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kit": "wiggly-repo-builder",
+  "version": "0.1.1",
+  "kind": "format-authoring-kit",
+  "status": "baseline",
+  "entrypoint": "SKILL.md",
+  "runtime": "bin/wiggly-repo-builder.mjs",
+  "providerCalls": false,
+  "automaticPublication": false,
+  "limitations": [
+    "The host coding agent interprets the reference and authors the child Format runtime.",
+    "Uniform frame extraction is evidence, not complete temporal or audiovisual understanding.",
+    "A scaffold is incomplete and cannot be packaged as a proved child Repo.",
+    "Technical validation does not establish creative quality, source fidelity, or asset rights."
+  ]
+}
